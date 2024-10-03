@@ -2,8 +2,7 @@ package probe;
 
 public enum AssertType {
     EQUAL(),
-    TRUE(),
-    FALSE();
+    TRUE();
 
     private AssertType() {
 

@@ -7,7 +7,7 @@ public class AssertTrueInfo extends AssertInfo {
     Predicate<Object> cond;
 
     public AssertTrueInfo(String variableName, String path, String testName, int line, Predicate<Object> cond) {
-        super(AssertType.EQUAL, variableName, path, testName, line);
+        super(AssertType.TRUE, variableName, path, testName, line);
         this.cond = cond;
     }
 
