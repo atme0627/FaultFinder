@@ -10,8 +10,36 @@ repositories {
 }
 
 dependencies {
+    implementation(fileTree(dir: 'locallib', include: ['jisd-0.2.4.jar']))
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+
+    // https://mvnrepository.com/artifact/org.ow2.asm/asm
+    implementation 'org.ow2.asm:asm:9.0'
+
+    // https://mvnrepository.com/artifact/org.ow2.asm/asm-tree
+    implementation 'org.ow2.asm:asm-tree:9.0'
+
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation 'org.json:json:20171018'
+
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    implementation 'commons-io:commons-io:2.8.0'
+
+    // jisdvis
+    implementation 'io.prometheus:simpleclient:0.11.0'
+    implementation 'io.prometheus:simpleclient_hotspot:0.11.0'
+    implementation 'io.prometheus:simpleclient_httpserver:0.11.0'
+    implementation 'io.prometheus:simpleclient_servlet:0.11.0'
+
+    // undertow server
+    implementation 'io.undertow:undertow-servlet:2.2.8.Final'
+    implementation 'org.jboss.resteasy:resteasy-undertow:4.5.12.Final'
+    implementation 'org.jboss.resteasy:resteasy-servlet-initializer:4.5.12.Final'
+
+    // jdiscript
+    implementation files('./locallib//jdiscript/jdiscript/build/libs/jdiscript-0.9.0.jar')
 }
 
 test {
