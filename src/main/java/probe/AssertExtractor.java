@@ -1,8 +1,6 @@
 package probe;
 import jisd.info.*;
 
-import java.util.ArrayList;
-
 public class AssertExtractor {
     StaticInfoFactory sif;
     String srcDir;
@@ -19,15 +17,13 @@ public class AssertExtractor {
         return ci.src();
     }
 
-    public AssertInfo getAssertByLineNum(String className, int lineNum) {
-        return null;
-    }
+    //assertが失敗した場合、そのassertのAssertInfoを生成することを想定
+    public FailedAssertInfo getAssertByLineNum(String className, int lineNum, Object actual) {
+        ClassInfo ci = sif.createClass(className);
+        String[] src = ci.src().split("\\r?\\n|\\r");
+        String assertLine = src[lineNum - 1];
 
-    public ArrayList<AssertInfo> getAssertFromMethod(String methodName) {
-        return null;
-    }
-
-    public ArrayList<AssertInfo> getAssertFromClass(String className) {
-        return null;
+        FailedAssertInfoFactory factory = new FailedAssertInfoFactory();
+        return factory.create(assertLine, actual, srcDir, className, lineNum);
     }
 }

@@ -14,7 +14,8 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
-
+    implementation 'com.github.javaparser:javaparser-core:3.19.0'
+    //----for JISD -------------------------------------------
     // https://mvnrepository.com/artifact/org.ow2.asm/asm
     implementation 'org.ow2.asm:asm:9.0'
 
