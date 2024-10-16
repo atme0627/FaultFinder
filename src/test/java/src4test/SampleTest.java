@@ -6,11 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SampleTest {
     @Test
-    void sample() {
-        int a = 1;
-        int b = 2;
+    void sample1() {
+        int a = 2;
+        int b = 1;
 
-    assertEquals(3, a+b);
+        int c = a - b; // typo '-' --> '+'
+        assertEquals(3, c); //actual : 1
     }
 }
 

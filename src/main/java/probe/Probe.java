@@ -72,7 +72,7 @@ public class Probe {
             }
 
             ValueInfo vi = dr.lv();
-            if(vi.getValue().equals(assertInfo.getActualValue().toString())){
+            if(assertInfo.eval(vi.getValue())){
                 return dr.getLocation().getLineNumber();
             }
         }
