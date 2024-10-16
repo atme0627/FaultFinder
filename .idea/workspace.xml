@@ -5,20 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="    implement reading source code.">
-      <change afterPath="$PROJECT_DIR$/src/main/java/probe/AssertLineParser.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/probe/FailedAssertInfoFactory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/probe/FailedAssertInfoFactoryTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/src4test/ParseTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/probe/AssertEqualInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/probe/FailedAssertEqualInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/probe/AssertExtractor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/probe/AssertExtractor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/probe/AssertInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/probe/FailedAssertInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/probe/AssertTrueInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/probe/FailedAssertTrueInfo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/probe/AssertType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/probe/AssertType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/probe/AssertExtractorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/probe/AssertExtractorTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/probe/FailedAssertInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/probe/FailedAssertInfo.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

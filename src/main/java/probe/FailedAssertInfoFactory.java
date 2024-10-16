@@ -11,7 +11,7 @@ public class FailedAssertInfoFactory {
     public FailedAssertInfoFactory() {
     }
 
-    public FailedAssertInfo<?> create(String assertLine, Object actual, String path, String testName, int line) {
+    public FailedAssertInfo create(String assertLine, Object actual, String path, String testName, int line) {
         //parse statement
         Statement assertStmt = StaticJavaParser.parseStatement(assertLine);
         MethodCallExpr methodCallExpr = new MethodCallExpr();

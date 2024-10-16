@@ -1,6 +1,6 @@
 package probe;
-
-public abstract class FailedAssertInfo<T> {
+//actual, expectedはStringで管理。比較もStringが一致するかどうかで判断。
+public abstract class FailedAssertInfo {
     private final String variableName;
     private final AssertType assertType;
     private final String srcDir;
@@ -19,7 +19,7 @@ public abstract class FailedAssertInfo<T> {
         this.line = line;
     }
 
-    abstract Boolean eval(T variable);
+    abstract Boolean eval(String variable);
 
 
     public AssertType getAssertType() {
@@ -34,13 +34,17 @@ public abstract class FailedAssertInfo<T> {
         return srcDir;
     }
 
-    public String getBinDir() { return  binDir; }
+    public String getBinDir() {
+        return  binDir;
+    }
 
     public String getTestClassName() {
         return testClassName;
     }
 
-    public String getTestMethodName() { return  testMethodName; }
+    public String getTestMethodName() {
+        return  testMethodName;
+    }
 
     public int getLineOfAssert() {
         return line;

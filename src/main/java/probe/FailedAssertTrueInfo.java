@@ -4,15 +4,14 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 //変数と定数の比較のみ対応 ex.) sum >= 10
-public class FailedAssertTrueInfo extends FailedAssertInfo<Integer> {
-    private final Predicate<Integer> cond;
+public class FailedAssertTrueInfo extends FailedAssertInfo {
 
-    public FailedAssertTrueInfo(String variableName, String path, String testName, int line, Predicate<Integer> cond) {
-        super(AssertType.TRUE, variableName, path, testName, line);
-        this.cond = cond;
+    public FailedAssertTrueInfo(AssertType assertType, String variableName, String srcDir, String binDir, String testClassName, String testMethodName, int line) {
+        super(assertType, variableName, srcDir, binDir, testClassName, testMethodName, line);
     }
 
-    public Boolean eval(Integer variable){
-        return cond.test(variable);
+    @Override
+    Boolean eval(String variable) {
+        return null;
     }
 }

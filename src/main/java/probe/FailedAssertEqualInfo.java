@@ -1,23 +1,24 @@
 package probe;
-
-public class FailedAssertEqualInfo extends FailedAssertInfo<Number> {
-    private final Number expected;
-    private final Number actual;
-    public FailedAssertEqualInfo(String variableName, Number expected, Number actual, String srcDir, String binDir, String testClassName, String testMethodName, int line) {
+//actual, expectedはStringで管理。比較もStringが一致するかどうかで判断。
+public class FailedAssertEqualInfo extends FailedAssertInfo {
+    private final String expected;
+    private final String actual;
+    public FailedAssertEqualInfo(String variableName, String expected, String actual, String srcDir, String binDir, String testClassName, String testMethodName, int line) {
         super(AssertType.EQUAL, variableName, srcDir, binDir,  testClassName, testMethodName, line);
         this.expected = expected;
         this.actual = actual;
     }
 
-    public Boolean eval(Number variable){
+    @Override
+    public Boolean eval(String variable){
         return variable.equals(getActualValue());
     }
 
-    public Number getExpectedValue() {
+    public String getExpectedValue() {
         return expected;
     }
 
-    public Number getActualValue() {
+    public String getActualValue() {
         return actual;
     }
 }
