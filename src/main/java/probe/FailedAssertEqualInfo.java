@@ -1,23 +1,23 @@
 package probe;
 
-public class FailedAssertEqualInfo extends FailedAssertInfo<Object> {
-    private final Object expected;
-    private final Object actual;
-    public FailedAssertEqualInfo(String variableName, Object expected, Object actual, String path, String testName, int line) {
-        super(AssertType.EQUAL, variableName, path, testName, line);
+public class FailedAssertEqualInfo extends FailedAssertInfo<Number> {
+    private final Number expected;
+    private final Number actual;
+    public FailedAssertEqualInfo(String variableName, Number expected, Number actual, String srcDir, String binDir, String testClassName, String testMethodName, int line) {
+        super(AssertType.EQUAL, variableName, srcDir, binDir,  testClassName, testMethodName, line);
         this.expected = expected;
         this.actual = actual;
     }
 
-    public Boolean eval(Object variable){
+    public Boolean eval(Number variable){
         return variable.equals(getActualValue());
     }
 
-    public Object getExpectedValue() {
+    public Number getExpectedValue() {
         return expected;
     }
 
-    public Object getActualValue() {
+    public Number getActualValue() {
         return actual;
     }
 }
