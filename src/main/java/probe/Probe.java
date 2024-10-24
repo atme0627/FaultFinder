@@ -16,9 +16,9 @@ import java.util.*;
 public class Probe {
     Debugger dbg;
     StaticInfoFactory sif;
-    FailedAssertEqualInfo assertInfo;
+    FailedAssertInfo assertInfo;
 
-    public Probe(Debugger dbg, FailedAssertEqualInfo assertInfo){
+    public Probe(Debugger dbg, FailedAssertInfo assertInfo){
         this.dbg = dbg;
         this.assertInfo = assertInfo;
         this.sif = new StaticInfoFactory(assertInfo.getSrcDir(), assertInfo.getBinDir());
@@ -39,13 +39,17 @@ public class Probe {
         ArrayList<Optional<Point>> watchPoints = new ArrayList<>();
         ArrayList<Optional<DebugResult>> results = new ArrayList<>();
         String[] varName = {assertInfo.getVariableName()};
+        //--debug
+        ArrayList<HashMap<String, DebugResult>> drs = new ArrayList<>();
 
+        dbg.setMain(assertInfo.getTestClassName());
         //run program
-        dbg.setMain(assertInfo.getTestMethodName());
         for(int line : lineWithVar){
             watchPoints.add(dbg.watch(line, varName));
         }
+
         dbg.run(1000);
+
         dbg.exit();
 
         //get debugResult
@@ -63,7 +67,7 @@ public class Probe {
         //probe
         Collections.reverse(results);
         for(Optional<DebugResult> odr : results){
-            DebugResult dr;
+            DebugResult dr = null;
             if(odr.isPresent()){
                 dr = odr.get();
             }

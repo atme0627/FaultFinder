@@ -11,10 +11,29 @@ repositories {
 
 dependencies {
     implementation(fileTree(dir: 'locallib', include: ['jisd-0.2.4.jar']))
+
+    //Junit5
+    // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
+    implementation 'org.junit.platform:junit-platform-launcher:1.10.0'
+    // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-engine
+    implementation 'org.junit.platform:junit-platform-engine:1.10.0'
+    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
+    implementation 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+
+    //parser
+    implementation 'com.github.javaparser:javaparser-core:3.19.0'
+
+    //coverage
+    // https://mvnrepository.com/artifact/org.jacoco/org.jacoco.core
+    implementation 'org.jacoco:org.jacoco.core:0.8.12'
+    // https://mvnrepository.com/artifact/org.ow2.asm/asm
+    implementation 'org.ow2.asm:asm:9.7.1'
+
+
+    //for test
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
-    implementation 'com.github.javaparser:javaparser-core:3.19.0'
     //----for JISD -------------------------------------------
     // https://mvnrepository.com/artifact/org.ow2.asm/asm
     implementation 'org.ow2.asm:asm:9.0'

@@ -1,1 +1,1 @@
-{"src4test":{"SampleTest":"SampleTest.java","ParseTest":"ParseTest.java"},"probe":{"AssertExtractorTest":"AssertExtractorTest.java","FailedAssertInfoFactoryTest":"FailedAssertInfoFactoryTest.java"}}
+{"src4test":{"SampleTest":"SampleTest.java","ParseTest":"ParseTest.java"},"probe":{"FailedAssertInfoFactoryTest":"FailedAssertInfoFactoryTest.java","AssertExtractorTest":"AssertExtractorTest.java","ProbeTest":"ProbeTest.java","TestDebuggerFactoryTest":"TestDebuggerFactoryTest.java"}}

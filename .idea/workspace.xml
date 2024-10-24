@@ -4,8 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="    implement reading source code.">
-      <change beforePath="$PROJECT_DIR$/src/main/java/probe/FailedAssertInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/probe/FailedAssertInfo.java" afterDir="false" />
+    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="testの実装">
+      <change afterPath="$PROJECT_DIR$/runwithjacoco.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/probe/TestDebuggerFactory.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/probe/ProbeTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/probe/TestDebuggerFactoryTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.jisd_static_data/0/class_data.json" beforeDir="false" afterPath="$PROJECT_DIR$/.jisd_static_data/0/class_data.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.jisd_static_data/0/defined_filename.json" beforeDir="false" afterPath="$PROJECT_DIR$/.jisd_static_data/0/defined_filename.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.jisd_static_data/0/program_structure.json" beforeDir="false" afterPath="$PROJECT_DIR$/.jisd_static_data/0/program_structure.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/locallib/jisd-all.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/probe/Probe.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/probe/Probe.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/src4test/SampleTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/src4test/SampleTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,12 +42,17 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Enum" />
-        <option value="JUnit5 Test Class" />
         <option value="Class" />
+        <option value="JUnit5 Test Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="support_to_variable_type_of_ovserved_value" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -66,45 +82,60 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
-    &quot;Gradle.AssertExtractorTest.displaySrc.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.AssertExtractorTest.displaySrcline.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.AssertExtractorTest.executor&quot;: &quot;Debug&quot;,
-    &quot;Gradle.AssertTypeTest.genFaeiFromAssertInfoFactory.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.MyFaultFinder [dependencies].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.MyFaultFinder のビルド.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.ParseTest.assertTrueParseTest.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.ParseTest.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.ParseTest.useParser.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.SampleTest.sample.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.SifDebugTest.ClassLoaderTest.executor&quot;: &quot;Debug&quot;,
-    &quot;Gradle.SifDebugTest.ClassLoaderTest1.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.SifDebugTest.ClassLoaderTest2.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.SifDebugTest.ClassLoaderTest3.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.AssertExtractorTest.displaySrc.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.AssertExtractorTest.executor&quot;: &quot;Run&quot;,
-    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary&quot;: &quot;JUnit5&quot;,
-    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5&quot;: &quot;&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;java.suggest.annotation.dependency&quot;: &quot;false&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/ezaki/IdeaProjects/MyFaultFinder/locallib/src4test&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;プロジェクト&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Downloaded.Files.Path.Enabled": "false",
+    "Gradle.AssertExtractorTest.displaySrc.executor": "Run",
+    "Gradle.AssertExtractorTest.displaySrcline.executor": "Run",
+    "Gradle.AssertExtractorTest.executor": "Debug",
+    "Gradle.AssertExtractorTest.getAssertByLineNumTest.executor": "Run",
+    "Gradle.AssertTypeTest.genFaeiFromAssertInfoFactory.executor": "Run",
+    "Gradle.FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory.executor": "Run",
+    "Gradle.FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory.executor": "Run",
+    "Gradle.MyFaultFinder [:probe.RunTest.main()].executor": "Run",
+    "Gradle.MyFaultFinder [:probe.RunTestCase.main()].executor": "Run",
+    "Gradle.MyFaultFinder [:src4test.RunTest.main()].executor": "Run",
+    "Gradle.MyFaultFinder [dependencies].executor": "Run",
+    "Gradle.MyFaultFinder のビルド.executor": "Run",
+    "Gradle.ParseTest.assertTrueParseTest.executor": "Run",
+    "Gradle.ParseTest.executor": "Run",
+    "Gradle.ParseTest.useParser.executor": "Run",
+    "Gradle.ProbeTest.RunTestCaseTest.executor": "Run",
+    "Gradle.ProbeTest.createDebugger.executor": "Run",
+    "Gradle.ProbeTest.executor": "Run",
+    "Gradle.ProbeTest.getLineWithVarTest.executor": "Run",
+    "Gradle.ProbeTest.runTest.executor": "Run",
+    "Gradle.SampleTest.executor": "Run",
+    "Gradle.SampleTest.sample.executor": "Run",
+    "Gradle.SampleTest.sample2.executor": "Run",
+    "Gradle.SifDebugTest.ClassLoaderTest.executor": "Debug",
+    "Gradle.SifDebugTest.ClassLoaderTest1.executor": "Run",
+    "Gradle.SifDebugTest.ClassLoaderTest2.executor": "Run",
+    "Gradle.SifDebugTest.ClassLoaderTest3.executor": "Run",
+    "Gradle.TestDebuggerFactoryTest.compileTestClassTest.executor": "Run",
+    "Gradle.TestDebuggerTest.compileTestClassTest.executor": "Run",
+    "Gradle.TestDebuggerTestFactory.createTest.executor": "Run",
+    "JUnit.AssertExtractorTest.displaySrc.executor": "Run",
+    "JUnit.AssertExtractorTest.executor": "Run",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
+    "git-widget-placeholder": "master",
+    "java.suggest.annotation.dependency": "false",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/ezaki/IdeaProjects/MyFaultFinder",
+    "project.structure.last.edited": "ファセット",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/locallib/src4test" />
       <recent name="$PROJECT_DIR$/locallib" />
     </key>
@@ -112,9 +143,9 @@
       <recent name="" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/locallib/src4test" />
       <recent name="$PROJECT_DIR$/locallib/jdiscript" />
-      <recent name="$PROJECT_DIR$" />
     </key>
     <key name="CreateTestDialog.RecentsKey">
       <recent name="probe" />
@@ -123,8 +154,8 @@
       <recent name="probe" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory">
-    <configuration name="FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+  <component name="RunManager" selected="Gradle.TestDebuggerFactoryTest.compileTestClassTest">
+    <configuration name="ProbeTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -137,7 +168,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;probe.FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory&quot;" />
+            <option value="&quot;probe.ProbeTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -148,7 +179,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="ProbeTest.getLineWithVarTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -161,7 +192,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;probe.FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory&quot;" />
+            <option value="&quot;probe.ProbeTest.getLineWithVarTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -172,29 +203,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="MyFaultFinder [dependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="dependencies" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <method v="2" />
-    </configuration>
-    <configuration name="ParseTest.assertTrueParseTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="ProbeTest.runTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -207,7 +216,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;src4test.ParseTest.assertTrueParseTest&quot;" />
+            <option value="&quot;probe.ProbeTest.runTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -218,7 +227,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="ParseTest.useParser" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="TestDebuggerFactoryTest.compileTestClassTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -231,7 +240,31 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;src4test.ParseTest.useParser&quot;" />
+            <option value="&quot;probe.TestDebuggerFactoryTest.compileTestClassTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="TestDebuggerTestFactory.createTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;probe.TestDebuggerTestFactory.createTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -244,11 +277,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory" />
-        <item itemvalue="Gradle.FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory" />
-        <item itemvalue="Gradle.ParseTest.assertTrueParseTest" />
-        <item itemvalue="Gradle.ParseTest.useParser" />
-        <item itemvalue="Gradle.MyFaultFinder [dependencies]" />
+        <item itemvalue="Gradle.TestDebuggerFactoryTest.compileTestClassTest" />
+        <item itemvalue="Gradle.ProbeTest.runTest" />
+        <item itemvalue="Gradle.ProbeTest" />
+        <item itemvalue="Gradle.ProbeTest.getLineWithVarTest" />
+        <item itemvalue="Gradle.TestDebuggerTestFactory.createTest" />
       </list>
     </recent_temporary>
   </component>
@@ -285,7 +318,23 @@
       <option name="project" value="LOCAL" />
       <updated>1728315296154</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="AssertInfoの変数の値をStringに変更">
+      <option name="closed" value="true" />
+      <created>1729086268763</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1729086268763</updated>
+    </task>
+    <task id="LOCAL-00005" summary="testの実装">
+      <option name="closed" value="true" />
+      <created>1729088327019</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1729088327019</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -303,27 +352,35 @@
     <MESSAGE value="init commit" />
     <MESSAGE value="modify AssertType" />
     <MESSAGE value="    implement reading source code." />
-    <option name="LAST_COMMIT_MESSAGE" value="    implement reading source code." />
+    <MESSAGE value="AssertInfoの変数の値をStringに変更" />
+    <MESSAGE value="testの実装" />
+    <option name="LAST_COMMIT_MESSAGE" value="testの実装" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <breakpoint enabled="true" type="java-exception">
+        <breakpoint type="java-exception">
           <properties class="java.lang.NoClassDefFoundError" package="java.lang" />
           <option name="timeStamp" value="4" />
         </breakpoint>
-        <line-breakpoint enabled="true" type="java-field">
+        <breakpoint type="java-exception">
+          <properties class="java.lang.RuntimeException" package="java.lang" />
+          <option name="timeStamp" value="35" />
+        </breakpoint>
+        <line-breakpoint type="java-field">
           <url>mock:///StaticFile.java</url>
           <line>26</line>
           <properties field="cd" />
           <option name="timeStamp" value="21" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$PROJECT_DIR$/locallib/jisd-0.2.4.jar!/jisd/analysis/LysMain.class</url>
-          <line>70</line>
-          <option name="timeStamp" value="26" />
-        </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
     </breakpoint-manager>
   </component>
 </project>
