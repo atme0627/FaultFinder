@@ -1,5 +1,7 @@
 package jisd.fl.coverage;
 
+import jisd.fl.util.DirectoryUtil;
+import jisd.fl.util.PropertyLoader;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.CoverageBuilder;
 import org.jacoco.core.analysis.IClassCoverage;
@@ -14,33 +16,23 @@ import java.nio.file.Paths;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
-    final String execDataPath = "./.jacoco_exec_data";
+    final String junitConsoleLauncherPath = PropertyLoader.getProperty("junitConsoleLauncherPath");
+    final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
+    final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
+    final String compiledWithJunitFilePath =PropertyLoader.getProperty("compiledWithJunitFilePath");
+    final String targetBinPath;
 
-    final String jacocoAgentPath = "./locallib";
-    final String junitStandaloneDir = "./locallib";
-    final String junitStandaloneName = "junit-platform-console-standalone-1.10.0.jar";
-    final String targetBinPath = "/Users/ezaki/IdeaProjects/proj4test/build/classes/java/main";
-    final String testBinPath = "./.probe_test_classes";
-
-    public CoverageAnalyzer(){
-        Path p = Paths.get(execDataPath);
-        //create dir
-        if(!Files.exists(p)){
-            try {
-                Files.createDirectory(p);
-            } catch (IOException e) {
-                System.out.println();
-            }
-        }
+    public CoverageAnalyzer(String targetBinPath){
+        this.targetBinPath = targetBinPath;
+        DirectoryUtil.initDirectory(jacocoAgentPath);
     }
 
     //junit console launcherにjacoco agentをつけて起動
     //methodnameは次のように指定: org.example.order.OrderTests#test1
     public int execTestMethod(String testMethodName) throws IOException, InterruptedException {
-        String cmd = "java -javaagent:" + jacocoAgentPath + "/jacocoagent.jar=destfile=" + execDataPath + "/"
-        + testMethodName+ ".exec -jar " + junitStandaloneDir + "/" + junitStandaloneName + " -cp " +
-                targetBinPath + ":" + testBinPath + " --select-method " + testMethodName;
-        System.out.println(cmd);
+        String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + jacocoExecFilePath + "/"
+        + testMethodName+ ".exec -jar " + junitConsoleLauncherPath + " -cp " +
+                targetBinPath + ":" + compiledWithJunitFilePath + " --select-method " + testMethodName;
 
         //Junit Console Launcherの終了ステータスは、
         // 1: コンテナやテストが失敗
@@ -56,7 +48,7 @@ public class CoverageAnalyzer {
         int exitValue = execTestMethod(testMethodName);
         boolean isTestPassed = (exitValue == 0);
         CoverageForTestCase<LineCoverage> coverages =
-                new CoverageForTestCase<>(testBinPath, testClassName, testMethodName, isTestPassed, Granularity.LINE);
+                new CoverageForTestCase<>(compiledWithJunitFilePath, testClassName, testMethodName, isTestPassed, Granularity.LINE);
 
         //ターゲットクラスの静的解析
         ExecutionDataStore executionData = execFileLoader(testMethodName);
@@ -90,7 +82,7 @@ public class CoverageAnalyzer {
     }
 
     private ExecutionDataStore execFileLoader(String testMethodName) throws IOException {
-        File testDatafile = new File(execDataPath + "/" + testMethodName + ".exec");
+        File testDatafile = new File(jacocoExecFilePath + "/" + testMethodName + ".exec");
         ExecFileLoader testFileLoader = new ExecFileLoader();
         testFileLoader.load(testDatafile);
         return testFileLoader.getExecutionDataStore();

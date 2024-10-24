@@ -1,8 +1,6 @@
-package jisd.fl.testutil;
+package jisd.fl.util;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TestClassCompilerTest {
 

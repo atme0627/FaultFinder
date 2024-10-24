@@ -1,4 +1,4 @@
-package jisd.fl.testutil;
+package jisd.fl.util;
 
 import jisd.debug.Debugger;
 import org.junit.jupiter.api.Test;
