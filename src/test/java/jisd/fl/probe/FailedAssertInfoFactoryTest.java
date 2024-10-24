@@ -1,5 +1,8 @@
-package probe;
+package jisd.fl.probe;
 
+import jisd.fl.probe.AssertType;
+import jisd.fl.probe.FailedAssertEqualInfo;
+import jisd.fl.probe.FailedAssertInfoFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

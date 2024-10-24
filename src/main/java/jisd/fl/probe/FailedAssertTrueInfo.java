@@ -1,7 +1,4 @@
-package probe;
-
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+package jisd.fl.probe;
 
 //変数と定数の比較のみ対応 ex.) sum >= 10
 public class FailedAssertTrueInfo extends FailedAssertInfo {

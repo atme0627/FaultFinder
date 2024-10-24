@@ -1,4 +1,4 @@
-package coverage;
+package jisd.fl.coverage;
 
 public enum Granularity {
     LINE,

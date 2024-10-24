@@ -1,4 +1,4 @@
-package probe;
+package jisd.fl.probe;
 //actual, expectedはStringで管理。比較もStringが一致するかどうかで判断。
 public class FailedAssertEqualInfo extends FailedAssertInfo {
     private final String expected;

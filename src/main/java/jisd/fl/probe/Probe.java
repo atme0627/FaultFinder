@@ -1,4 +1,4 @@
-package probe;
+package jisd.fl.probe;
 
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;

@@ -1,11 +1,10 @@
-package probe;
+package jisd.fl.probe;
 
 import jisd.debug.Debugger;
+import jisd.fl.testutil.TestDebuggerFactory;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ProbeTest {
     TestDebuggerFactory factory = new TestDebuggerFactory();

@@ -1,4 +1,4 @@
-package coverage;
+package jisd.fl.coverage;
 
 import org.jacoco.core.analysis.IClassCoverage;
 

@@ -1,11 +1,8 @@
-package probe;
+package jisd.fl.probe;
 
 import jisd.debug.Debugger;
+import jisd.fl.testutil.TestDebuggerFactory;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 class TestDebuggerFactoryTest {
     TestDebuggerFactory td = new TestDebuggerFactory();
