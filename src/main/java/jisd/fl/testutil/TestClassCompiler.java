@@ -7,13 +7,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class TestClassCompiler {
+    private String junitStandaloneDir = "./locallib";
     private String junitStandaloneName = "junit-platform-console-standalone-1.10.0.jar";
     private String testBinDir = "./.probe_test_classes";
 
     public TestClassCompiler() {
     }
 
-    public void compileTestClass(String TestSrcPath, String mainBinDir, String junitStandaloneDir) {
+    public void compileTestClass(String TestSrcPath, String mainBinDir) {
 
         //create dir
         try {
@@ -22,7 +23,7 @@ public class TestClassCompiler {
             System.out.println();
         }
 
-        String[] args = {"-cp", junitStandaloneDir + "/" + junitStandaloneName + ":" + mainBinDir, "-d", testBinDir, TestSrcPath};
+        String[] args = {"-cp", getJunitStandaloneDir() + "/" + junitStandaloneName + ":" + mainBinDir, "-d", testBinDir, TestSrcPath};
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         System.out.println("javac " + args);
         int rc = javac.run(null, null, null, args);
@@ -45,5 +46,13 @@ public class TestClassCompiler {
 
     public void setTestBinDir(String testBinDir) {
         this.testBinDir = testBinDir;
+    }
+
+    public String getJunitStandaloneDir() {
+        return junitStandaloneDir;
+    }
+
+    public void setJunitStandaloneDir(String junitStandaloneDir) {
+        this.junitStandaloneDir = junitStandaloneDir;
     }
 }

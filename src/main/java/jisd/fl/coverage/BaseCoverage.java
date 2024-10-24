@@ -1,24 +1,47 @@
 package jisd.fl.coverage;
 
 import org.jacoco.core.analysis.IClassCoverage;
+import org.jacoco.core.analysis.ICounter;
 
 import java.util.HashMap;
 //ターゲットクラスのカバレッジ（Testee）
 //行単位のカバレッジのみ対応
 
-public abstract class BaseCoverage<T> {
-    private String targetClassName;
-    private int targetClassFirstLine;
-    private int targetClassLastLine;
-    private final String targetClassPath;
-    private final Granularity granularity;
+public abstract class BaseCoverage {
+    String targetClassName;
+    int targetClassFirstLine;
+    int targetClassLastLine;
+    final String targetClassPath;
+    final Granularity granularity;
     //各行のカバレッジ情報を保持 (行番号 or メソッド名 or クラス名) --> coverage status
-    final HashMap<T, Integer> coverage = new HashMap<>();
+    final HashMap<String, Integer> coverage = new HashMap<>();
 
-    public BaseCoverage(String targetClassName, String targetClassPath, int targetClassStartLine, Granularity granularity) {
+    public BaseCoverage(String targetClassName, String targetClassPath, int targetClassFirstLine, int targetClassLastLine, Granularity granularity) {
+        this.targetClassName = targetClassName;
         this.targetClassPath = targetClassPath;
+        this.targetClassFirstLine = targetClassFirstLine;
+        this.targetClassLastLine = targetClassLastLine;
         this.granularity = granularity;
     }
+
+    //1つのテストケース(not テストスイート)を実行したときのIClassCoverageを渡す。
+    abstract public void processCoverage(IClassCoverage cc);
+
+    //標準出力にカバレッジ情報を表示
+    abstract  public void printCoverage();
+
+    protected String getColor(int status) {
+        switch (status) {
+            case ICounter.NOT_COVERED:
+                return "red";
+            case ICounter.PARTLY_COVERED:
+                return "yellow";
+            case ICounter.FULLY_COVERED:
+                return "green";
+        }
+        return "";
+    }
+
 
     public String getTargetClassName() {
         return targetClassName;
@@ -53,10 +76,11 @@ public abstract class BaseCoverage<T> {
         this.targetClassLastLine = targetClassLastLine;
     }
 
-    protected void putCoverage(T line, Integer coverageInfo){
-        coverage.put(line, coverageInfo);
+    protected void putCoverage(String line, Integer coverageInfo){
+        getCoverage().put(line, coverageInfo);
     }
 
-    //1つのテストケース(not テストスイート)を実行したときのIClassCoverageを渡す。
-    public abstract void processCoverage(IClassCoverage cc);
+    public HashMap<String, Integer> getCoverage() {
+        return coverage;
+    }
 }

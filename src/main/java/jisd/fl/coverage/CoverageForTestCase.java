@@ -3,14 +3,14 @@ package jisd.fl.coverage;
 import java.util.HashMap;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
-public class CoverageForTestCase {
+public class CoverageForTestCase<T extends BaseCoverage> {
     final String testBinPath;
     final String testClassName;
     final String testMethodName;
     final boolean isPassed;
     final Granularity granularity;
     //各クラスのカバレッジインスタンスを保持 (クラス名) --> BaseCoverage
-    final HashMap<String,? super BaseCoverage<?>> coverages = new HashMap<>();
+    private final HashMap<String, T> coverages = new HashMap<>();
 
     public CoverageForTestCase(String testBinPath, String testClassName, String testMethodName, boolean isPassed, Granularity granularity) {
         this.testBinPath = testBinPath;
@@ -20,8 +20,17 @@ public class CoverageForTestCase {
         this.granularity = granularity;
     }
 
-    public void putClassCoverage(BaseCoverage<?> cc){
-        coverages.put(cc.getTargetClassName(), cc);
+    public void putClassCoverage(T cc){
+        getCoverages().put(cc.getTargetClassName(), cc);
     }
 
+    public HashMap<String, T> getCoverages() {
+        return coverages;
+    }
+
+    public void printCoverages(){
+        for(T cov : coverages.values()){
+            cov.printCoverage();
+        }
+    }
 }
