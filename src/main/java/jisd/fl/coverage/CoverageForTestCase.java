@@ -1,14 +1,20 @@
 package jisd.fl.coverage;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
 public class CoverageForTestCase<T extends BaseCoverage> {
-    final String testBinPath;
-    final String testClassName;
-    final String testMethodName;
-    final boolean isPassed;
-    final Granularity granularity;
+    protected final String testBinPath;
+    protected final String testClassName;
+    protected final String testMethodName;
+    protected final boolean isPassed;
+    protected final Granularity granularity;
+
+    //実行されたターゲットクラスの集合
+    Set<String> targetClassNames = new HashSet<>();
+
     //各クラスのカバレッジインスタンスを保持 (クラス名) --> BaseCoverage
     private final HashMap<String, T> coverages = new HashMap<>();
 
@@ -32,5 +38,13 @@ public class CoverageForTestCase<T extends BaseCoverage> {
         for(T cov : coverages.values()){
             cov.printCoverage();
         }
+    }
+
+    public Set<String> getTargetClassNames() {
+        return targetClassNames;
+    }
+
+    protected void setTargetClassNames(Set<String> targetClassNames) {
+        this.targetClassNames = targetClassNames;
     }
 }

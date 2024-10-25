@@ -10,7 +10,7 @@ public class LineCoverage extends BaseCoverage {
 
     @Override
     public void processCoverage(IClassCoverage cc) {
-        setTargetClassName(cc.getName());
+        setTargetClassName(cc.getName().replace("/", "."));
         setTargetClassFirstLine(cc.getFirstLine());
         setTargetClassLastLine(cc.getLastLine());
 

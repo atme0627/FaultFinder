@@ -4,17 +4,21 @@ import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 //ターゲットクラスのカバレッジ（Testee）
 //行単位のカバレッジのみ対応
 
 public abstract class BaseCoverage {
-    String targetClassName;
-    int targetClassFirstLine;
-    int targetClassLastLine;
-    final String targetClassPath;
-    final Granularity granularity;
-    //各行のカバレッジ情報を保持 (行番号 or メソッド名 or クラス名) --> coverage status
-    final HashMap<String, Integer> coverage = new HashMap<>();
+    protected String targetClassName;
+    protected int targetClassFirstLine;
+    protected int targetClassLastLine;
+    protected final String targetClassPath;
+    protected final Granularity granularity;
+
+    //各行のカバレッジ情報 (行番号 or メソッド名 or クラス名) --> coverage status
+    final Map<String, Integer> coverage = new HashMap<>();
 
     public BaseCoverage(String targetClassName, String targetClassPath, int targetClassFirstLine, int targetClassLastLine, Granularity granularity) {
         this.targetClassName = targetClassName;
@@ -42,6 +46,9 @@ public abstract class BaseCoverage {
         return "";
     }
 
+    protected void putCoverage(String line, Integer coverageInfo) {
+        coverage.put(line, coverageInfo);
+    }
 
     public String getTargetClassName() {
         return targetClassName;
@@ -76,11 +83,7 @@ public abstract class BaseCoverage {
         this.targetClassLastLine = targetClassLastLine;
     }
 
-    protected void putCoverage(String line, Integer coverageInfo){
-        getCoverage().put(line, coverageInfo);
-    }
-
-    public HashMap<String, Integer> getCoverage() {
+    public Map<String, Integer> getCoverage() {
         return coverage;
     }
 }
