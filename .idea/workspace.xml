@@ -4,20 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="impl utility classes">
-      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/Coverage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/util/StaticAnalyzerTest.java" afterDir="false" />
+    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="impl analyzeLinecoverage">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.jisd_static_data/0/class_data.json" beforeDir="false" afterPath="$PROJECT_DIR$/.jisd_static_data/0/class_data.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.jisd_static_data/0/defined_filename.json" beforeDir="false" afterPath="$PROJECT_DIR$/.jisd_static_data/0/defined_filename.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.jisd_static_data/0/program_structure.json" beforeDir="false" afterPath="$PROJECT_DIR$/.jisd_static_data/0/program_structure.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fl_config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/fl_config.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/BaseCoverage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/BaseCoverage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestCase.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestCase.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/LineCoverage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/LineCoverage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -92,6 +81,7 @@
     "Gradle.AssertExtractorTest.getAssertByLineNumTest.executor": "Run",
     "Gradle.AssertTypeTest.genFaeiFromAssertInfoFactory.executor": "Run",
     "Gradle.CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTest.executor": "Run",
+    "Gradle.CoverageAnalyzerTest.analyzeLineCoverageTest (1).executor": "Run",
     "Gradle.CoverageAnalyzerTest.analyzeLineCoverageTest.executor": "Run",
     "Gradle.CoverageAnalyzerTest.execTestMethodTest.executor": "Run",
     "Gradle.FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory.executor": "Run",
@@ -135,7 +125,7 @@
     "project.structure.last.edited": "ファセット",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle"
+    "settings.editor.selected.configurable": "VisualVMLauncher"
   }
 }]]></component>
   <component name="RecentsManager">
@@ -165,7 +155,7 @@
       <recent name="probe" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.CoverageAnalyzerTest.analyzeLineCoverageTest">
+  <component name="RunManager">
     <configuration name="CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -190,7 +180,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="CoverageAnalyzerTest.analyzeLineCoverageTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="CoverageAnalyzerTest.analyzeLineCoverageTest (1)" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -288,7 +278,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeLineCoverageTest" />
+        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeLineCoverageTest (1)" />
         <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTest" />
         <item itemvalue="Gradle.StaticAnalyzerTest.getMethodNameTest" />
         <item itemvalue="Gradle.ProbeTest.getLineWithVarTest" />
@@ -377,7 +367,15 @@
       <option name="project" value="LOCAL" />
       <updated>1729780059951</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="impl analyzeLinecoverage">
+      <option name="closed" value="true" />
+      <created>1729829703236</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1729829703236</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -401,7 +399,8 @@
     <MESSAGE value="refactoring" />
     <MESSAGE value="impl CoverageAnalyzer" />
     <MESSAGE value="impl utility classes" />
-    <option name="LAST_COMMIT_MESSAGE" value="impl utility classes" />
+    <MESSAGE value="impl analyzeLinecoverage" />
+    <option name="LAST_COMMIT_MESSAGE" value="impl analyzeLinecoverage" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -71,6 +71,7 @@ public class CoverageAnalyzer {
             targetClassNames.add(lc.getTargetClassName());
         }
         coverages.setTargetClassNames(targetClassNames);
+
         return coverages;
     }
 
@@ -87,24 +88,12 @@ public class CoverageAnalyzer {
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
     public int execTestMethod(String testMethodName) throws IOException, InterruptedException {
-        String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + jacocoExecFilePath + "/"
-                + testMethodName+ ".exec -jar " + junitConsoleLauncherPath + " -cp " +
-                targetBinDir + ":" + compiledWithJunitFilePath + " --select-method " + testMethodName;
+        String generatedFilePath = jacocoExecFilePath + "/" + testMethodName+ ".exec";
 
+        String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
+                " -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" +
+                        compiledWithJunitFilePath + " --select-method " + testMethodName;
 
-
-        //execファイルが生成されるまで待機するための処理
-        WatchService watcher = null;
-        WatchKey watchKey = null;
-        try {
-            watcher = FileSystems.getDefault().newWatchService();
-
-            Watchable path = Paths.get(jacocoExecFilePath);
-            path.register(watcher, ENTRY_CREATE);
-        } catch (IOException e) {
-            e.printStackTrace();
-            exit(1);
-        }
 
         //Junit Console Launcherの終了ステータスは、
         // 1: コンテナやテストが失敗
@@ -114,19 +103,14 @@ public class CoverageAnalyzer {
         proc.waitFor();
 
         //execファイルが生成されるまで待機
-        try {
-            watchKey = watcher.take();
-        } catch (InterruptedException e) {
-            System.err.println(e.getMessage());
-            exit(1);
+        while(true){
+            File f = new File(generatedFilePath);
+            if(f.exists()){
+                break;
+            }
         }
-
         //ファイルの生成が行われたことを出力
-        for (WatchEvent<?> event : watchKey.pollEvents()) {
-            Object context = event.context();
-            System.out.println("Success to generate " + context + ".");
-        }
-        watchKey.reset();
+        System.out.println("Success to generate " + generatedFilePath + ".");
 
         return proc.exitValue();
     }
