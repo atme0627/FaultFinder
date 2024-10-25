@@ -11,13 +11,9 @@ import org.jacoco.core.tools.ExecFileLoader;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-
-import static java.lang.System.exit;
-import static java.nio.file.StandardWatchEventKinds.*;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
@@ -35,12 +31,12 @@ public class CoverageAnalyzer {
     }
 
 
-    public Coverage<LineCoverage> analyzeLineCoverage(String testClassName) throws IOException, InterruptedException {
-        Coverage<LineCoverage> coverages = new Coverage<>(testClassName, Granularity.LINE);
+    public CoverageForTestSuite analyzeLineCoverage(String testClassName) throws IOException, InterruptedException {
+        CoverageForTestSuite coverages = new CoverageForTestSuite(testClassName, Granularity.LINE);
         Set<String> targetClassNames = new HashSet<>();
         ArrayList<String> testMethodNameList = StaticAnalyzer.getMethodNames(testSrcDir, testClassName);
         for(String testMethodName : testMethodNameList){
-            CoverageForTestCase<LineCoverage> covForTestCase = analyzeLineCoverageForTestCase(testClassName + "#" + testMethodName);
+            CoverageForTestCase covForTestCase = analyzeLineCoverageForTestCase(testClassName + "#" + testMethodName);
             targetClassNames.addAll(covForTestCase.getTargetClassNames());
             coverages.putCoverage(testClassName + "#" + testMethodName, covForTestCase);
         }
@@ -49,12 +45,12 @@ public class CoverageAnalyzer {
     }
 
     //testMethodNameはクラス名とともに入力 ex.) demo.SortTest#test1
-    CoverageForTestCase<LineCoverage> analyzeLineCoverageForTestCase(String testMethodName) throws IOException, InterruptedException {
+    CoverageForTestCase analyzeLineCoverageForTestCase(String testMethodName) throws IOException, InterruptedException {
         String testClassName = testMethodName.split("#")[0];
         int exitValue = execTestMethod(testMethodName);
         boolean isTestPassed = (exitValue == 0);
-        CoverageForTestCase<LineCoverage> coverages =
-                new CoverageForTestCase<>(compiledWithJunitFilePath, testClassName, testMethodName, isTestPassed, Granularity.LINE);
+        CoverageForTestCase coverages =
+                new CoverageForTestCase(compiledWithJunitFilePath, testClassName, testMethodName, isTestPassed, Granularity.LINE);
 
         //ターゲットクラスの静的解析
         ExecutionDataStore executionData = execFileLoader(testMethodName);
@@ -65,7 +61,7 @@ public class CoverageAnalyzer {
         Set<String> targetClassNames = new HashSet<>();
         for (final IClassCoverage cc : coverageBuilder.getClasses()) {
             String targetClassName = cc.getName();
-            LineCoverage lc = new LineCoverage(targetClassName, targetBinDir, cc.getFirstLine(), cc.getLastLine());
+            CoverageOfTarget lc = new CoverageOfTarget(targetClassName, targetBinDir, cc.getFirstLine(), cc.getLastLine());
             lc.processCoverage(cc);
             coverages.putClassCoverage(lc);
             targetClassNames.add(lc.getTargetClassName());
@@ -73,14 +69,6 @@ public class CoverageAnalyzer {
         coverages.setTargetClassNames(targetClassNames);
 
         return coverages;
-    }
-
-    CoverageForTestCase<MethodCoverage> analyzeMethodCoverageForTestCase(){
-        return null;
-    }
-
-    CoverageForTestCase<ClassCoverage> analyzeClassCoverageForTestCase(){
-        return null;
     }
 
     //junit console launcherにjacoco agentをつけて起動

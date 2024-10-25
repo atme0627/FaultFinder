@@ -5,7 +5,7 @@ import org.jacoco.core.analysis.ICounter;
 import java.util.*;
 
 //対象クラスのテストスイートによるカバレッジ
-public class Coverage<T extends BaseCoverage> {
+public class CoverageForTestSuite {
     protected final String testClassName;
     protected final Granularity granularity;
 
@@ -16,9 +16,9 @@ public class Coverage<T extends BaseCoverage> {
     Map<String, int[]> targetClassFirstAndLastLineNum = new HashMap<>();
 
     //各テストケースのカバレッジインスタンスを保持 (メソッド名 ex.) demo.SortTest#test1) --> CoverageForTestCase
-    final HashMap<String, CoverageForTestCase<T>> coverages = new HashMap<>();
+    final HashMap<String, CoverageForTestCase> coverages = new HashMap<>();
 
-    public Coverage(String testClassName, Granularity granularity) {
+    public CoverageForTestSuite(String testClassName, Granularity granularity) {
         this.testClassName = testClassName;
         this.granularity = granularity;
     }
@@ -27,7 +27,7 @@ public class Coverage<T extends BaseCoverage> {
         System.out.println("Test class: " + testClassName);
         System.out.println();
         System.out.println("List of test cases");
-        for(CoverageForTestCase<T> cov : coverages.values()){
+        for(CoverageForTestCase cov : coverages.values()){
             System.out.println(cov.testMethodName);
         }
         System.out.println("------------------------------------");
@@ -66,8 +66,8 @@ public class Coverage<T extends BaseCoverage> {
                 int lastLine = targetClassFirstAndLastLineNum.get(targetClassName)[1];
                 for(int i = firstLine; i <= lastLine; i++){
                     HashMap<String, Integer> map = new HashMap<>();
-                    for(CoverageForTestCase<T> cov : coverages.values()){
-                        map.put(cov.testMethodName, cov.getCoverages().get(targetClassName).getCoverage().get(Integer.toString(i)));
+                    for(CoverageForTestCase cov : coverages.values()){
+                        map.put(cov.testMethodName, cov.getCoverageByElement(targetClassName, Integer.toString(i)));
                     }
                     covData.put(Integer.toString(i), map);
                 }
@@ -79,7 +79,7 @@ public class Coverage<T extends BaseCoverage> {
 
 
 
-    public void putCoverage(String testMethodName, CoverageForTestCase<T> cov){
+    public void putCoverage(String testMethodName, CoverageForTestCase cov){
         coverages.put(testMethodName, cov);
     }
 
@@ -92,7 +92,7 @@ public class Coverage<T extends BaseCoverage> {
     }
 
 
-    public HashMap<String, CoverageForTestCase<T>> getCoverages() {
+    public HashMap<String, CoverageForTestCase> getCoverages() {
         return coverages;
     }
 
@@ -107,9 +107,9 @@ public class Coverage<T extends BaseCoverage> {
     private void setTargetClassFirstAndLastLineNum(){
         Map<String, int[]> map = new HashMap<>();
         for(String targetClassName : targetClassNames){
-            for(CoverageForTestCase<T> covForTest : coverages.values()){
+            for(CoverageForTestCase covForTest : coverages.values()){
                 if(covForTest.getTargetClassNames().contains(targetClassName)){
-                    T covOfTargetClass = covForTest.getCoverages().get(targetClassName);
+                    CoverageOfTarget covOfTargetClass = covForTest.getCoverages().get(targetClassName);
                     map.put(targetClassName, new int[]{covOfTargetClass.targetClassFirstLine, covOfTargetClass.targetClassLastLine});
                     break;
                 }

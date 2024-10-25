@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
-public class CoverageForTestCase<T extends BaseCoverage> {
+public class CoverageForTestCase {
     protected final String testBinPath;
     protected final String testClassName;
     protected final String testMethodName;
@@ -16,7 +16,7 @@ public class CoverageForTestCase<T extends BaseCoverage> {
     Set<String> targetClassNames = new HashSet<>();
 
     //各クラスのカバレッジインスタンスを保持 (クラス名) --> BaseCoverage
-    private final HashMap<String, T> coverages = new HashMap<>();
+    private final HashMap<String, CoverageOfTarget> coverages = new HashMap<>();
 
     public CoverageForTestCase(String testBinPath, String testClassName, String testMethodName, boolean isPassed, Granularity granularity) {
         this.testBinPath = testBinPath;
@@ -26,16 +26,21 @@ public class CoverageForTestCase<T extends BaseCoverage> {
         this.granularity = granularity;
     }
 
-    public void putClassCoverage(T cc){
+    public void putClassCoverage(CoverageOfTarget cc){
         getCoverages().put(cc.getTargetClassName(), cc);
     }
 
-    public HashMap<String, T> getCoverages() {
+    public HashMap<String, CoverageOfTarget> getCoverages() {
         return coverages;
     }
 
+    //各要素単位(行、メソッド、クラス)でカバレッジを取得
+    public int getCoverageByElement(String targetClassName, String element){
+        return coverages.get(targetClassName).lineCoverage.get(element);
+    }
+
     public void printCoverages(){
-        for(T cov : coverages.values()){
+        for(CoverageOfTarget cov : coverages.values()){
             cov.printCoverage();
         }
     }

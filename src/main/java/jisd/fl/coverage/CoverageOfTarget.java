@@ -4,35 +4,46 @@ import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 //ターゲットクラスのカバレッジ（Testee）
 //行単位のカバレッジのみ対応
 
-public abstract class BaseCoverage {
+public class CoverageOfTarget {
     protected String targetClassName;
     protected int targetClassFirstLine;
     protected int targetClassLastLine;
     protected final String targetClassPath;
-    protected final Granularity granularity;
 
-    //各行のカバレッジ情報 (行番号 or メソッド名 or クラス名) --> coverage status
-    final Map<String, Integer> coverage = new HashMap<>();
+    //各行のカバレッジ情報 (行番号 or メソッド名 or クラス名) --> lineCoverage status
+    final Map<String, Integer> lineCoverage = new HashMap<>();
 
-    public BaseCoverage(String targetClassName, String targetClassPath, int targetClassFirstLine, int targetClassLastLine, Granularity granularity) {
+    public CoverageOfTarget(String targetClassName, String targetClassPath, int targetClassFirstLine, int targetClassLastLine) {
         this.targetClassName = targetClassName;
         this.targetClassPath = targetClassPath;
         this.targetClassFirstLine = targetClassFirstLine;
         this.targetClassLastLine = targetClassLastLine;
-        this.granularity = granularity;
     }
 
-    //1つのテストケース(not テストスイート)を実行したときのIClassCoverageを渡す。
-    abstract public void processCoverage(IClassCoverage cc);
 
-    //標準出力にカバレッジ情報を表示
-    abstract  public void printCoverage();
+    public void processCoverage(IClassCoverage cc) {
+        setTargetClassName(cc.getName().replace("/", "."));
+        setTargetClassFirstLine(cc.getFirstLine());
+        setTargetClassLastLine(cc.getLastLine());
+
+        for(int i = getTargetClassFirstLine(); i <= getTargetClassLastLine(); i++){
+            putCoverage(Integer.toString(i), cc.getLine(i).getStatus());
+        }
+    }
+
+    public void printCoverage(){
+        System.out.println("TargetClassName: " + targetClassName);
+        System.out.println("--------------------------------------");
+        for(int i = targetClassFirstLine; i <= targetClassLastLine; i++){
+            System.out.println(i + ": " + getColor(lineCoverage.get(Integer.toString(i))));
+        }
+        System.out.println("--------------------------------------");
+        System.out.println();
+    }
 
     protected String getColor(int status) {
         switch (status) {
@@ -47,7 +58,7 @@ public abstract class BaseCoverage {
     }
 
     protected void putCoverage(String line, Integer coverageInfo) {
-        coverage.put(line, coverageInfo);
+        lineCoverage.put(line, coverageInfo);
     }
 
     public String getTargetClassName() {
@@ -62,9 +73,6 @@ public abstract class BaseCoverage {
         return targetClassFirstLine;
     }
 
-    public Granularity getGranularity() {
-        return granularity;
-    }
 
     public int getTargetClassLastLine() {
         return targetClassLastLine;
@@ -78,12 +86,11 @@ public abstract class BaseCoverage {
         this.targetClassFirstLine = targetClassFirstLine;
     }
 
-
     public void setTargetClassLastLine(int targetClassLastLine) {
         this.targetClassLastLine = targetClassLastLine;
     }
 
-    public Map<String, Integer> getCoverage() {
-        return coverage;
+    public Map<String, Integer> getLineCoverage() {
+        return lineCoverage;
     }
 }

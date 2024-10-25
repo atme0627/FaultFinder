@@ -4,9 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="impl analyzeLinecoverage">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="improve exec time.">
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/BaseCoverage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/ClassCoverage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/Coverage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestSuite.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestCase.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestCase.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/LineCoverage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/MethodCoverage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -375,7 +381,15 @@
       <option name="project" value="LOCAL" />
       <updated>1729829703236</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="improve exec time.">
+      <option name="closed" value="true" />
+      <created>1729833179191</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1729833179191</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -400,7 +414,8 @@
     <MESSAGE value="impl CoverageAnalyzer" />
     <MESSAGE value="impl utility classes" />
     <MESSAGE value="impl analyzeLinecoverage" />
-    <option name="LAST_COMMIT_MESSAGE" value="impl analyzeLinecoverage" />
+    <MESSAGE value="improve exec time." />
+    <option name="LAST_COMMIT_MESSAGE" value="improve exec time." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
