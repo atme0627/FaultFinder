@@ -1,7 +1,8 @@
 package jisd.fl.coverage;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
@@ -16,7 +17,7 @@ public class CoverageForTestCase {
     Set<String> targetClassNames = new HashSet<>();
 
     //各クラスのカバレッジインスタンスを保持 (クラス名) --> BaseCoverage
-    private final HashMap<String, CoverageOfTarget> coverages = new HashMap<>();
+    private final Map<String, CoverageOfTarget> coverages = new LinkedHashMap<>();
 
     public CoverageForTestCase(String testBinPath, String testClassName, String testMethodName, boolean isPassed, Granularity granularity) {
         this.testBinPath = testBinPath;
@@ -26,22 +27,30 @@ public class CoverageForTestCase {
         this.granularity = granularity;
     }
 
-    public void putClassCoverage(CoverageOfTarget cc){
-        getCoverages().put(cc.getTargetClassName(), cc);
+    public void putCoverageOfTarget(CoverageOfTarget cc){
+        coverages.put(cc.getTargetClassName(), cc);
     }
 
-    public HashMap<String, CoverageOfTarget> getCoverages() {
+    public Map<String, CoverageOfTarget> getCoverages() {
         return coverages;
     }
 
     //各要素単位(行、メソッド、クラス)でカバレッジを取得
-    public int getCoverageByElement(String targetClassName, String element){
-        return coverages.get(targetClassName).lineCoverage.get(element);
+    public int getCoverageByElement(String targetClassName, String element, Granularity granularity){
+        switch (granularity){
+            case LINE:
+                return coverages.get(targetClassName).lineCoverage.get(element);
+            case METHOD:
+                return coverages.get(targetClassName).methodCoverage.get(element);
+            case CLASS:
+                return coverages.get(targetClassName).classCoverage.get(element);
+        }
+        return 0;
     }
 
-    public void printCoverages(){
+    public void printCoverages(Granularity granularity){
         for(CoverageOfTarget cov : coverages.values()){
-            cov.printCoverage();
+            cov.printCoverage(granularity);
         }
     }
 
@@ -49,7 +58,7 @@ public class CoverageForTestCase {
         return targetClassNames;
     }
 
-    protected void setTargetClassNames(Set<String> targetClassNames) {
+    void setTargetClassNames(Set<String> targetClassNames) {
         this.targetClassNames = targetClassNames;
     }
 }

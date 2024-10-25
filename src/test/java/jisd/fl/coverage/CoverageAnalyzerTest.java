@@ -13,17 +13,17 @@ class CoverageAnalyzerTest {
     }
 
     @Test
-    void analyzeLineCoverageForTestCaseTest() throws IOException, InterruptedException {
+    void analyzeCoverageForTestCaseTest() throws IOException, InterruptedException {
         String testMethodName = "demo.SortTest#test1";
         CoverageAnalyzer ca = new CoverageAnalyzer();
-        CoverageForTestCase coverges = ca.analyzeLineCoverageForTestCase(testMethodName);
-        coverges.printCoverages();
+        CoverageForTestCase coverages = ca.analyzeCoverageForTestCase(testMethodName);
+        coverages.printCoverages(Granularity.METHOD);
     }
 
     @Test
-    void analyzeLineCoverageTest() throws IOException, InterruptedException {
+    void analyzeTest() throws IOException, InterruptedException {
         CoverageAnalyzer ca = new CoverageAnalyzer();
-        CoverageForTestSuite cov = ca.analyzeLineCoverage("demo.SortTest");
-        cov.printCoverages();
+        CoverageForTestSuite cov = ca.analyze("demo.SortTest");
+        cov.printCoverages(Granularity.LINE);
     }
 }

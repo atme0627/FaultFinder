@@ -31,21 +31,21 @@ public class CoverageAnalyzer {
     }
 
 
-    public CoverageForTestSuite analyzeLineCoverage(String testClassName) throws IOException, InterruptedException {
+    public CoverageForTestSuite analyze(String testClassName) throws IOException, InterruptedException {
         CoverageForTestSuite coverages = new CoverageForTestSuite(testClassName, Granularity.LINE);
         Set<String> targetClassNames = new HashSet<>();
         ArrayList<String> testMethodNameList = StaticAnalyzer.getMethodNames(testSrcDir, testClassName);
         for(String testMethodName : testMethodNameList){
-            CoverageForTestCase covForTestCase = analyzeLineCoverageForTestCase(testClassName + "#" + testMethodName);
+            CoverageForTestCase covForTestCase = analyzeCoverageForTestCase(testMethodName);
             targetClassNames.addAll(covForTestCase.getTargetClassNames());
-            coverages.putCoverage(testClassName + "#" + testMethodName, covForTestCase);
+            coverages.putCoverage(testMethodName, covForTestCase);
         }
         coverages.setTargetClassNames(targetClassNames);
         return coverages;
     }
 
     //testMethodNameはクラス名とともに入力 ex.) demo.SortTest#test1
-    CoverageForTestCase analyzeLineCoverageForTestCase(String testMethodName) throws IOException, InterruptedException {
+    CoverageForTestCase analyzeCoverageForTestCase(String testMethodName) throws IOException, InterruptedException {
         String testClassName = testMethodName.split("#")[0];
         int exitValue = execTestMethod(testMethodName);
         boolean isTestPassed = (exitValue == 0);
@@ -61,9 +61,9 @@ public class CoverageAnalyzer {
         Set<String> targetClassNames = new HashSet<>();
         for (final IClassCoverage cc : coverageBuilder.getClasses()) {
             String targetClassName = cc.getName();
-            CoverageOfTarget lc = new CoverageOfTarget(targetClassName, targetBinDir, cc.getFirstLine(), cc.getLastLine());
+            CoverageOfTarget lc = new CoverageOfTarget(targetClassName, targetSrcDir, targetBinDir, cc.getFirstLine(), cc.getLastLine());
             lc.processCoverage(cc);
-            coverages.putClassCoverage(lc);
+            coverages.putCoverageOfTarget(lc);
             targetClassNames.add(lc.getTargetClassName());
         }
         coverages.setTargetClassNames(targetClassNames);

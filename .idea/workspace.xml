@@ -4,15 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="improve exec time.">
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/BaseCoverage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/ClassCoverage.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/Coverage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestSuite.java" afterDir="false" />
+    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="refactoring">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestCase.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestCase.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/LineCoverage.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/MethodCoverage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestSuite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestSuite.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/util/StaticAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/util/StaticAnalyzerTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,9 +87,11 @@
     "Gradle.AssertExtractorTest.executor": "Debug",
     "Gradle.AssertExtractorTest.getAssertByLineNumTest.executor": "Run",
     "Gradle.AssertTypeTest.genFaeiFromAssertInfoFactory.executor": "Run",
+    "Gradle.CoverageAnalyzerTest.analyzeCoverageForTestCaseTest.executor": "Run",
     "Gradle.CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTest.executor": "Run",
     "Gradle.CoverageAnalyzerTest.analyzeLineCoverageTest (1).executor": "Run",
     "Gradle.CoverageAnalyzerTest.analyzeLineCoverageTest.executor": "Run",
+    "Gradle.CoverageAnalyzerTest.analyzeTest.executor": "Debug",
     "Gradle.CoverageAnalyzerTest.execTestMethodTest.executor": "Run",
     "Gradle.FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory.executor": "Run",
     "Gradle.FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory.executor": "Run",
@@ -113,6 +116,7 @@
     "Gradle.SifDebugTest.ClassLoaderTest2.executor": "Run",
     "Gradle.SifDebugTest.ClassLoaderTest3.executor": "Run",
     "Gradle.StaticAnalyzerTest.getMethodNameTest.executor": "Run",
+    "Gradle.StaticAnalyzerTest.getRangeOfMethodsTest.executor": "Run",
     "Gradle.TestDebuggerFactoryTest.compileTestClassTest.executor": "Run",
     "Gradle.TestDebuggerTest.compileTestClassTest.executor": "Run",
     "Gradle.TestDebuggerTestFactory.createTest.executor": "Run",
@@ -161,8 +165,8 @@
       <recent name="probe" />
     </key>
   </component>
-  <component name="RunManager">
-    <configuration name="CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+  <component name="RunManager" selected="Gradle.CoverageAnalyzerTest.analyzeTest">
+    <configuration name="CoverageAnalyzerTest.analyzeCoverageForTestCaseTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -175,7 +179,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.coverage.CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTest&quot;" />
+            <option value="&quot;jisd.fl.coverage.CoverageAnalyzerTest.analyzeCoverageForTestCaseTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -210,7 +214,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="CoverageAnalyzerTest.execTestMethodTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="CoverageAnalyzerTest.analyzeTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -223,7 +227,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.coverage.CoverageAnalyzerTest.execTestMethodTest&quot;" />
+            <option value="&quot;jisd.fl.coverage.CoverageAnalyzerTest.analyzeTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -234,31 +238,29 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="ProbeTest.getLineWithVarTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="MyFaultFinder [dependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
+        <option name="scriptParameters" />
         <option name="taskDescriptions">
           <list />
         </option>
         <option name="taskNames">
           <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;jisd.fl.probe.ProbeTest.getLineWithVarTest&quot;" />
+            <option value="dependencies" />
           </list>
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>true</RunAsTest>
+      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="StaticAnalyzerTest.getMethodNameTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="StaticAnalyzerTest.getRangeOfMethodsTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -271,7 +273,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.util.StaticAnalyzerTest.getMethodNameTest&quot;" />
+            <option value="&quot;jisd.fl.util.StaticAnalyzerTest.getRangeOfMethodsTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -284,11 +286,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTest" />
+        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeCoverageForTestCaseTest" />
+        <item itemvalue="Gradle.StaticAnalyzerTest.getRangeOfMethodsTest" />
+        <item itemvalue="Gradle.MyFaultFinder [dependencies]" />
         <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeLineCoverageTest (1)" />
-        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTest" />
-        <item itemvalue="Gradle.StaticAnalyzerTest.getMethodNameTest" />
-        <item itemvalue="Gradle.ProbeTest.getLineWithVarTest" />
-        <item itemvalue="Gradle.CoverageAnalyzerTest.execTestMethodTest" />
       </list>
     </recent_temporary>
   </component>
@@ -389,7 +391,15 @@
       <option name="project" value="LOCAL" />
       <updated>1729833179191</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="refactoring">
+      <option name="closed" value="true" />
+      <created>1729834416996</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1729834416996</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -410,12 +420,12 @@
     <MESSAGE value="AssertInfoの変数の値をStringに変更" />
     <MESSAGE value="testの実装" />
     <MESSAGE value="impl coverage" />
-    <MESSAGE value="refactoring" />
     <MESSAGE value="impl CoverageAnalyzer" />
     <MESSAGE value="impl utility classes" />
     <MESSAGE value="impl analyzeLinecoverage" />
     <MESSAGE value="improve exec time." />
-    <option name="LAST_COMMIT_MESSAGE" value="improve exec time." />
+    <MESSAGE value="refactoring" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactoring" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -433,6 +443,11 @@
           <line>26</line>
           <properties field="cd" />
           <option name="timeStamp" value="21" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java</url>
+          <line>50</line>
+          <option name="timeStamp" value="41" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
