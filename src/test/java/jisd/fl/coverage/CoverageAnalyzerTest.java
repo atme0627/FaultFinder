@@ -5,25 +5,49 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 class CoverageAnalyzerTest {
+    String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
+    CoverageAnalyzer ca = new CoverageAnalyzer();
+    //CoveragesForTestCase coverages = ca.analyzeCoveragesForTestCase(testMethodName);
+
+    CoverageAnalyzerTest() throws IOException, InterruptedException {
+    }
+
     @Test
     void execTestMethodTest() throws IOException, InterruptedException {
-        String testMethodName = "demo.SortTest#test1";
-        CoverageAnalyzer ca = new CoverageAnalyzer();
-        ca.execTestMethod(testMethodName);
+        //ca.execTestMethod(testMethodName);
     }
 
     @Test
-    void analyzeCoverageForTestCaseTest() throws IOException, InterruptedException {
-        String testMethodName = "demo.SortTest#test1";
-        CoverageAnalyzer ca = new CoverageAnalyzer();
-        CoverageForTestCase coverages = ca.analyzeCoverageForTestCase(testMethodName);
-        coverages.printCoverages(Granularity.METHOD);
+    void analyzeLineCoverageForTestCaseTestLINE() {
+        //coverages.printCoverages(Granularity.LINE);
     }
 
     @Test
-    void analyzeTest() throws IOException, InterruptedException {
-        CoverageAnalyzer ca = new CoverageAnalyzer();
-        CoverageForTestSuite cov = ca.analyze("demo.SortTest");
+    void analyzeLineCoverageForTestCaseTestMETHOD() {
+        //coverages.printCoverages(Granularity.METHOD);
+    }
+
+    @Test
+    void analyzeLineCoverageForTestCaseTestCLASS() {
+        //coverages.printCoverages(Granularity.CLASS);
+    }
+
+
+    @Test
+    void analyzeTestLINE() throws IOException, InterruptedException {
+        CoveragesForTestSuite cov = ca.analyze(testClassName);
         cov.printCoverages(Granularity.LINE);
+    }
+
+    @Test
+    void analyzeTestMETHOD() throws IOException, InterruptedException {
+        CoveragesForTestSuite cov = ca.analyze(testClassName);
+        cov.printCoverages(Granularity.METHOD);
+    }
+
+    @Test
+    void analyzeTestCLASS() throws IOException, InterruptedException {
+        CoveragesForTestSuite cov = ca.analyze(testClassName);
+        cov.printCoverages(Granularity.CLASS);
     }
 }

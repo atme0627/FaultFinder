@@ -5,6 +5,7 @@ import javax.tools.ToolProvider;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 public class TestClassCompiler {
     private final String junitConsoleLauncherPath = PropertyLoader.getProperty("junitConsoleLauncherPath");
@@ -17,9 +18,9 @@ public class TestClassCompiler {
 
         DirectoryUtil.initDirectory(compiledWithJunitFilePath);
 
-        String[] args = {"-cp", junitConsoleLauncherPath + ":" + mainBinDir, " -d ", compiledWithJunitFilePath, TestSrcPath};
+        String[] args = {"-cp", junitConsoleLauncherPath + ":" + mainBinDir, "-d", compiledWithJunitFilePath, TestSrcPath};
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-        System.out.println("javac " + args);
+        System.out.println("javac " + Arrays.toString(args));
         int rc = javac.run(null, null, null, args);
         if (rc != 0) {
             throw new RuntimeException("failed to compile.");
