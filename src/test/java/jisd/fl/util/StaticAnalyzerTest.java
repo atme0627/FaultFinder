@@ -6,16 +6,24 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StaticAnalyzerTest {
     @Test
+    void getClassNameTest() throws IOException {
+        String targetSrcPath = "./src/main/java";
+        Set<String> classNames = StaticAnalyzer.getClassNames(targetSrcPath);
+        System.out.println(Arrays.toString(classNames.toArray()));
+    }
+
+    @Test
     void getMethodNameTest() throws IOException {
         String targetSrcPath = "../proj4test/src/test/java";
         String targetClassName = "demo.SortTest";
-        ArrayList<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcPath, targetClassName);
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcPath, targetClassName);
         System.out.println(Arrays.toString(methodNames.toArray()));
     }
 
