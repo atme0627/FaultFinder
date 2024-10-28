@@ -1,5 +1,6 @@
 package jisd.fl.coverage;
 
+import jisd.fl.sbfl.FaultFinder;
 import jisd.fl.sbfl.SbflStatus;
 
 import java.util.*;
@@ -11,7 +12,7 @@ public abstract class Coverages {
     Set<String> targetClassNames;  //実行されたターゲットクラスの集合
 
     //各クラスのカバレッジインスタンスを保持 (ターゲットクラス名) --> CoverageOfTarget
-    HashMap<String, CoverageOfTargetForTestCase> coverages = new LinkedHashMap<>();
+    HashMap<String, CoverageOfTarget> coverages = new LinkedHashMap<>();
 
     public Coverages(String testClassName, Set<String> targetClassNames) {
         this.testClassName = testClassName;
@@ -23,7 +24,7 @@ public abstract class Coverages {
     }
 
     public void printCoverages(Granularity granularity){
-        for(CoverageOfTargetForTestCase cov : coverages.values()){
+        for(CoverageOfTarget cov : coverages.values()){
             cov.printCoverage(granularity);
         }
     }
@@ -32,7 +33,7 @@ public abstract class Coverages {
         return targetClassNames;
     }
 
-    protected void putCoverageOfTarget(CoverageOfTargetForTestCase cov){
+    protected void putCoverageOfTarget(CoverageOfTarget cov) {
         coverages.put(cov.getTargetClassName(), cov);
     }
 }

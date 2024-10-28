@@ -12,13 +12,13 @@ public class CoveragesForTestSuite extends Coverages{
     protected void addCoveragesForTestCase(CoveragesForTestCase newCovForTestCase) {
         for(String targetClassName : targetClassNames){
             if(newCovForTestCase.coverages.containsKey(targetClassName)){
-                CoverageOfTargetForTestCase covForTarget = newCovForTestCase.coverages.get(targetClassName);
+                CoverageOfTarget covForTarget = newCovForTestCase.coverages.get(targetClassName);
                 addCoverageOfTargetForTestCase(covForTarget);
             }
         }
     }
 
-    private void addCoverageOfTargetForTestCase(CoverageOfTargetForTestCase newCov){
+    private void addCoverageOfTargetForTestCase(CoverageOfTarget newCov){
         String targetClassName = newCov.getTargetClassName();
         boolean isEmpty = !coverages.containsKey(targetClassName);
 
@@ -28,10 +28,12 @@ public class CoveragesForTestSuite extends Coverages{
         }
         //すでにtargetClassのカバレッジがあるとき
         else {
-            CoverageOfTargetForTestCase existedCov = coverages.get(targetClassName);
+            CoverageOfTarget existedCov = coverages.get(targetClassName);
             existedCov.combineCoverages(newCov);
         }
     }
+
+
 
     public String getTestClassName() {
         return testClassName;

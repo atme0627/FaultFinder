@@ -4,22 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="suport to all granularity">
-      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTargetForTestCase.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoveragesForTestCase.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/sbfl/FaultFinder.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/sbfl/Formula.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/sbfl/SbflStatus.java" afterDir="false" />
+    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="impl coverage function">
+      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/sbfl/FaultFinderTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fl_config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/fl_config.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestCase.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/Coverages.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageForTestSuite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoveragesForTestSuite.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestClassCompiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestClassCompiler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/util/StaticAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/util/StaticAnalyzerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTargetForTestCase.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTargetForTestCase.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/Coverages.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/Coverages.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoveragesForTestSuite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoveragesForTestSuite.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/sbfl/FaultFinder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/sbfl/FaultFinder.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,9 +36,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="JUnit5 Test Class" />
         <option value="Enum" />
         <option value="Class" />
+        <option value="JUnit5 Test Class" />
       </list>
     </option>
   </component>
@@ -107,6 +99,7 @@
     "Gradle.CoverageAnalyzerTest.execTestMethodTest.executor": "Debug",
     "Gradle.FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory.executor": "Run",
     "Gradle.FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory.executor": "Run",
+    "Gradle.FaultFinderTest.printFLResultsTest.executor": "Run",
     "Gradle.MyFaultFinder [:probe.RunTest.main()].executor": "Run",
     "Gradle.MyFaultFinder [:probe.RunTestCase.main()].executor": "Run",
     "Gradle.MyFaultFinder [:src4test.RunTest.main()].executor": "Run",
@@ -170,6 +163,7 @@
       <recent name="$PROJECT_DIR$/locallib/jdiscript" />
     </key>
     <key name="CreateTestDialog.RecentsKey">
+      <recent name="jisd.fl.sbfl" />
       <recent name="jisd.fl.util" />
       <recent name="jisd.fl.testutil" />
       <recent name="jisd.fl.coverage" />
@@ -179,7 +173,7 @@
       <recent name="probe" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.CoverageAnalyzerTest.analyzeTestCLASS">
+  <component name="RunManager" selected="Gradle.FaultFinderTest.printFLResultsTest">
     <configuration name="CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTestLINE" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -276,7 +270,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="CoverageAnalyzerTest.execTestMethodTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="FaultFinderTest.printFLResultsTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -289,7 +283,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.coverage.CoverageAnalyzerTest.execTestMethodTest&quot;" />
+            <option value="&quot;jisd.fl.sbfl.FaultFinderTest.printFLResultsTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -302,11 +296,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.FaultFinderTest.printFLResultsTest" />
+        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTestLINE" />
         <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTestCLASS" />
         <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTestMETHOD" />
-        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTestLINE" />
         <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTestLINE" />
-        <item itemvalue="Gradle.CoverageAnalyzerTest.execTestMethodTest" />
       </list>
     </recent_temporary>
   </component>
@@ -423,7 +417,23 @@
       <option name="project" value="LOCAL" />
       <updated>1729848731140</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="suport to all granularity">
+      <option name="closed" value="true" />
+      <created>1730047063219</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1730047063219</updated>
+    </task>
+    <task id="LOCAL-00015" summary="impl coverage function">
+      <option name="closed" value="true" />
+      <created>1730047102916</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1730047102916</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -450,7 +460,8 @@
     <MESSAGE value="improve exec time." />
     <MESSAGE value="refactoring" />
     <MESSAGE value="suport to all granularity" />
-    <option name="LAST_COMMIT_MESSAGE" value="suport to all granularity" />
+    <MESSAGE value="impl coverage function" />
+    <option name="LAST_COMMIT_MESSAGE" value="impl coverage function" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
