@@ -10,6 +10,17 @@ public class SbflStatus {
         updateStatus(isExecuted, isPassed);
     }
 
+    public SbflStatus(boolean isPassed, int e, int n){
+        if(isPassed){
+            this.ep = e;
+            this.np = n;
+        }
+        else {
+           this.ef = e;
+           this.nf = n;
+        }
+    }
+
     private SbflStatus(){
     }
 

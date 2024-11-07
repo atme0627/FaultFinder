@@ -1,13 +1,12 @@
 package jisd.fl.sbfl;
 
 import jisd.fl.coverage.CoverageAnalyzer;
-import jisd.fl.coverage.CoveragesForTestSuite;
+import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.concurrent.ExecutionException;
 
 class FaultFinderTest {
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
@@ -17,9 +16,9 @@ class FaultFinderTest {
     }
 
     @Test
-    void printFLResultsTest() throws IOException, InterruptedException {
-        CoveragesForTestSuite cov = ca.analyze(testClassName);
+    void printFLResultsTest() throws IOException, InterruptedException, ExecutionException {
+        CoverageCollection cov = ca.analyze(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.printFLResults();
+        ff.printFLResults(100);
     }
 }

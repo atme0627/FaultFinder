@@ -4,14 +4,23 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="impl coverage function">
-      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/sbfl/FaultFinderTest.java" afterDir="false" />
+    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="impl FaultFinder.java">
+      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/JacocoUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/MyCoverageVisiter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestRunnerWithAPI.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTarget.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTargetForTestCase.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageOfTargetForTestCase.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/Coverages.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/Coverages.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoveragesForTestSuite.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoveragesForTestSuite.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/sbfl/FaultFinder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/sbfl/FaultFinder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/sbfl/SbflStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/sbfl/SbflStatus.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestClassCompiler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestRunner.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestDebuggerFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestDebuggerFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/sbfl/FaultFinderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/sbfl/FaultFinderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/util/TestClassCompilerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/util/TestRunnerTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,8 +46,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Enum" />
-        <option value="Class" />
         <option value="JUnit5 Test Class" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -62,6 +71,10 @@
     &quot;accountId&quot;: &quot;0f137e7c-2ecc-4908-9bd2-22e34d31d10a&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jacoco/org.jacoco.core/0.8.12/f399dcfa8622445933c84f5a11e9c5a3b1cb2768/org.jacoco.core-0.8.12-sources.jar!/org/jacoco/core/analysis/Analyzer.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jacoco/org.jacoco.core/0.8.12/f399dcfa8622445933c84f5a11e9c5a3b1cb2768/org.jacoco.core-0.8.12-sources.jar!/org/jacoco/core/analysis/CoverageBuilder.java" root0="SKIP_INSPECTION" />
+  </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
   </component>
@@ -94,9 +107,10 @@
     "Gradle.CoverageAnalyzerTest.analyzeLineCoverageTest.executor": "Run",
     "Gradle.CoverageAnalyzerTest.analyzeTest.executor": "Run",
     "Gradle.CoverageAnalyzerTest.analyzeTestCLASS.executor": "Run",
-    "Gradle.CoverageAnalyzerTest.analyzeTestLINE.executor": "Run",
+    "Gradle.CoverageAnalyzerTest.analyzeTestLINE.executor": "Debug",
     "Gradle.CoverageAnalyzerTest.analyzeTestMETHOD.executor": "Run",
     "Gradle.CoverageAnalyzerTest.execTestMethodTest.executor": "Debug",
+    "Gradle.CoverageAnalyzerTest.executor": "Run",
     "Gradle.FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory.executor": "Run",
     "Gradle.FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory.executor": "Run",
     "Gradle.FaultFinderTest.printFLResultsTest.executor": "Run",
@@ -126,6 +140,7 @@
     "Gradle.TestDebuggerFactoryTest.compileTestClassTest.executor": "Run",
     "Gradle.TestDebuggerTest.compileTestClassTest.executor": "Run",
     "Gradle.TestDebuggerTestFactory.createTest.executor": "Run",
+    "Gradle.TestRunnerTest.compileTestClassTest.executor": "Run",
     "JUnit.AssertExtractorTest.displaySrc.executor": "Run",
     "JUnit.AssertExtractorTest.executor": "Run",
     "Repository.Attach.Annotations": "false",
@@ -147,6 +162,7 @@
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
       <recent name="jisd.fl.coverage" />
+      <recent name="jisd.fl.util" />
       <recent name="coverage" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
@@ -173,8 +189,8 @@
       <recent name="probe" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.FaultFinderTest.printFLResultsTest">
-    <configuration name="CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTestLINE" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+  <component name="RunManager" selected="Gradle.CoverageAnalyzerTest.analyzeTestMETHOD">
+    <configuration name="CoverageAnalyzerTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -187,7 +203,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.coverage.CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTestLINE&quot;" />
+            <option value="&quot;jisd.fl.coverage.CoverageAnalyzerTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -270,7 +286,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="FaultFinderTest.printFLResultsTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="TestRunnerTest.compileTestClassTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -283,7 +299,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.sbfl.FaultFinderTest.printFLResultsTest&quot;" />
+            <option value="&quot;jisd.fl.util.TestRunnerTest.compileTestClassTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -296,11 +312,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.FaultFinderTest.printFLResultsTest" />
-        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTestLINE" />
-        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTestCLASS" />
         <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTestMETHOD" />
-        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeLineCoverageForTestCaseTestLINE" />
+        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTestCLASS" />
+        <item itemvalue="Gradle.CoverageAnalyzerTest.analyzeTestLINE" />
+        <item itemvalue="Gradle.CoverageAnalyzerTest" />
+        <item itemvalue="Gradle.TestRunnerTest.compileTestClassTest" />
       </list>
     </recent_temporary>
   </component>
@@ -433,7 +449,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730047102916</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="impl FaultFinder.java">
+      <option name="closed" value="true" />
+      <created>1730092030190</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1730092030190</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -461,7 +485,8 @@
     <MESSAGE value="refactoring" />
     <MESSAGE value="suport to all granularity" />
     <MESSAGE value="impl coverage function" />
-    <option name="LAST_COMMIT_MESSAGE" value="impl coverage function" />
+    <MESSAGE value="impl FaultFinder.java" />
+    <option name="LAST_COMMIT_MESSAGE" value="impl FaultFinder.java" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -479,11 +504,6 @@
           <line>26</line>
           <properties field="cd" />
           <option name="timeStamp" value="21" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/coverage/CoverageAnalyzer.java</url>
-          <line>90</line>
-          <option name="timeStamp" value="45" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

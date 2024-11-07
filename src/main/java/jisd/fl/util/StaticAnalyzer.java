@@ -50,6 +50,7 @@ public class StaticAnalyzer {
     //targetSrcPathは最後"/"なし
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1の形式
+    //publicメソッド以外は取得しない
     public static Set<String> getMethodNames(String targetSrcPath, String targetClassName) throws IOException {
         String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
         Path p = Paths.get(targetJavaPath);
@@ -58,7 +59,10 @@ public class StaticAnalyzer {
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
-                methodNames.add(targetClassName.replace("/", ".") + "#" + n.getNameAsString());
+                //publicメソッドかどうか確認
+                if(n.isPublic()) {
+                    methodNames.add(targetClassName.replace("/", ".") + "#" + n.getNameAsString());
+                }
                 super.visit(n, arg);
             }
         }

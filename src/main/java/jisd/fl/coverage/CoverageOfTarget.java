@@ -1,26 +1,79 @@
 package jisd.fl.coverage;
 
-import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.SbflStatus;
+import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
+import org.apache.commons.lang3.tuple.Pair;
+import org.jacoco.core.analysis.IClassCoverage;
+import org.jacoco.core.analysis.ICounter;
 
 import java.io.IOException;
 import java.util.*;
 
 public class CoverageOfTarget {
-    protected final String targetSrcPath;
     protected String targetClassName;
     protected Set<String> targetMethodNames;
+
 
     //各行のカバレッジ情報 (行番号, メソッド名, クラス名) --> lineCoverage status
     protected Map<String, SbflStatus> lineCoverage = new LinkedHashMap<>();
     protected Map<String, SbflStatus> methodCoverage = new LinkedHashMap<>();
     protected Map<String, SbflStatus> classCoverage = new LinkedHashMap<>();
+    protected final String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
 
-    public CoverageOfTarget(String targetClassName, String targetSrcPath) throws IOException {
+    public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;
-        this.targetSrcPath = targetSrcPath;
-        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetSrcPath, targetClassName);
+        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName);
+    }
+
+    public void processCoverage(IClassCoverage cc, boolean isTestPassed) throws IOException {
+        int targetClassFirstLine = cc.getFirstLine();
+        int targetClassLastLine = cc.getLastLine();
+
+        //line coverage
+        for(int i = targetClassFirstLine; i <= targetClassLastLine; i++){
+            if(cc.getLine(i).getStatus() == ICounter.EMPTY) continue;
+            boolean isTestExecuted = !(cc.getLine(i).getStatus() == ICounter.NOT_COVERED);
+            putCoverageStatus(Integer.toString(i), new SbflStatus(isTestExecuted , isTestPassed), Granularity.LINE);
+        }
+
+        //method coverage
+        Map<String, Pair<Integer, Integer>> rangeOfMethod = StaticAnalyzer.getRangeOfMethods(targetSrcDir, targetClassName);
+        for(String targetMethodName : targetMethodNames){
+            Pair<Integer, Integer> range = rangeOfMethod.get(targetMethodName);
+            putCoverageStatus(targetMethodName, getMethodSbflStatus(cc, range, isTestPassed), Granularity.METHOD);
+        }
+
+        //class coverage
+        putCoverageStatus(targetClassName, new SbflStatus(true, isTestPassed), Granularity.CLASS);
+    }
+
+    protected void putCoverageStatus(String element, SbflStatus status, Granularity granularity){
+        switch (granularity){
+            case LINE:
+                lineCoverage.put(element, status);
+                break;
+            case METHOD:
+                methodCoverage.put(element, status);
+                break;
+            case CLASS:
+                classCoverage.put(element, status);
+                break;
+        }
+    }
+
+    protected SbflStatus getMethodSbflStatus(IClassCoverage cc, Pair<Integer, Integer> range, boolean isTestPassed){
+        int methodBegin = range.getLeft();
+        int methodEnd = range.getRight();
+        boolean isTestExecuted = false;
+        for(int i = methodBegin; i <= methodEnd; i++){
+            int status = cc.getLine(i).getStatus();
+            if(status == ICounter.PARTLY_COVERED || status == ICounter.FULLY_COVERED) {
+                isTestExecuted = true;
+                break;
+            }
+        }
+        return new SbflStatus(isTestExecuted, isTestPassed);
     }
 
     public Map<String, SbflStatus> getCoverage(Granularity granularity){

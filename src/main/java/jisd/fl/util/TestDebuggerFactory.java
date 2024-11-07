@@ -3,7 +3,7 @@ package jisd.fl.util;
 import jisd.debug.Debugger;
 
 public class TestDebuggerFactory {
-    private final TestClassCompiler tcc = new TestClassCompiler();
+    private final TestRunner tcc = new TestRunner();
     public TestDebuggerFactory() {
     }
 
