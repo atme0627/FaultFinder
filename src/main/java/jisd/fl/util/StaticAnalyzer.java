@@ -1,5 +1,7 @@
 package jisd.fl.util;
 
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
@@ -26,13 +28,13 @@ public class StaticAnalyzer {
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 if(file.toString().endsWith(".java")){
                     classNames.add(p.relativize(file).toString().split("\\.")[0].replace("/", "."));
-
                 }
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
             public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                System.out.println("failed: " + file.toString());
                 return FileVisitResult.CONTINUE;
             }
 
@@ -89,5 +91,67 @@ public class StaticAnalyzer {
         return rangeOfMethod;
     }
 
+    public static MethodCallGraph getMethodCallGraph(String targetSrcPath) throws IOException {
+        Set<String> targetClassNames = getClassNames(targetSrcPath);
+        Set<String> targetMethodNames = new HashSet<>();
+        MethodCallGraph mcg = new MethodCallGraph();
+
+        for(String targetClassName : targetClassNames) {
+            targetMethodNames.addAll(getMethodNames(targetSrcPath, targetClassName));
+        }
+
+        for(String targetClassName : targetClassNames){
+            getCalledMethodsForClass(targetSrcPath, targetClassName, targetMethodNames, mcg);
+        }
+
+        return mcg;
+    }
+
+
+    //直接的な呼び出し関係しか取れてない
+    //ex.) NormalDistributionImpl#getInitialDomainはオーバライドメソッドであり
+    //その抽象クラス内で呼び出されているが、この呼び出し関係は取れていない。
+
+    private static void getCalledMethodsForClass(String targetSrcPath, String targetClassName, Set<String> targetMethodNames, MethodCallGraph mcg) throws IOException {
+        String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
+        Path p = Paths.get(targetJavaPath);
+        CompilationUnit unit = StaticJavaParser.parse(p);
+        class MethodVisitor extends VoidVisitorAdapter<String>{
+            @Override
+            public void visit(MethodCallExpr n, String arg) {
+                Optional<MethodDeclaration> callerMethodOptional = n.findAncestor(MethodDeclaration.class);
+
+                //メソッド呼び出しがメソッド内で行われていない場合(ex. フィールドの定義)
+                if(callerMethodOptional.isEmpty()){
+                    return;
+                }
+
+                MethodDeclaration callerMethod = callerMethodOptional.get();
+                String callerMethodName = targetClassName + "#" + callerMethod.getNameAsString();
+                String calleeMethodName = "fail";
+                for(String targetMethodName : targetMethodNames){
+                    if(getMethodNameWithoutPackage(targetMethodName).equals(n.getNameAsString())){
+                        calleeMethodName = targetMethodName;
+                        break;
+                    }
+                }
+
+                //呼び出されているメソッドが、外部のものでないことを確認
+                if(!targetMethodNames.contains(calleeMethodName)){
+                    return;
+                }
+
+                //System.out.println("caller: " + callerMethodName +  " callee: " + calleeMethodName);
+
+                mcg.setElement(callerMethodName, calleeMethodName);
+                super.visit(n, arg);
+            }
+        }
+        unit.accept(new MethodVisitor(), "");
+    }
+
+    private static String getMethodNameWithoutPackage(String methodName){
+        return methodName.split("#")[1];
+    }
 }
 

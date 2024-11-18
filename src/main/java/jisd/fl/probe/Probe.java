@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import com.sun.jdi.VMDisconnectedException;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.debug.Point;
@@ -39,8 +40,6 @@ public class Probe {
         ArrayList<Optional<Point>> watchPoints = new ArrayList<>();
         ArrayList<Optional<DebugResult>> results = new ArrayList<>();
         String[] varName = {assertInfo.getVariableName()};
-        //--debug
-        ArrayList<HashMap<String, DebugResult>> drs = new ArrayList<>();
 
         dbg.setMain(assertInfo.getTestClassName());
         //run program
@@ -48,7 +47,11 @@ public class Probe {
             watchPoints.add(dbg.watch(line, varName));
         }
 
-        dbg.run(1000);
+        try {
+            dbg.run(1000);
+        }
+        catch (VMDisconnectedException ignored){
+        }
 
         dbg.exit();
 
@@ -66,6 +69,7 @@ public class Probe {
 
         //probe
         Collections.reverse(results);
+        int probeLine = -1;
         for(Optional<DebugResult> odr : results){
             DebugResult dr = null;
             if(odr.isPresent()){
@@ -75,11 +79,27 @@ public class Probe {
                 throw new NoSuchElementException("There is no information in a DebugResult.");
             }
 
-            ValueInfo vi = dr.lv();
+            //値がセットされていない場合はスキップ
+            ValueInfo vi = null;
+            try {
+                vi = dr.lv();
+            }
+            catch (RuntimeException e){
+                continue;
+            }
+
             if(assertInfo.eval(vi.getValue())){
-                return dr.getLocation().getLineNumber();
+                probeLine =  dr.getLocation().getLineNumber();
+                //System.out.println("probeLine: " + probeLine);
             }
         }
-        throw new RuntimeException("No matching rows found.");
+
+        if(probeLine == -1){
+            throw new RuntimeException("No matching rows found.");
+        }
+        else {
+            //probrLineにいるときにはまだその行は実行されていない
+            return probeLine - 1;
+        }
     }
 }

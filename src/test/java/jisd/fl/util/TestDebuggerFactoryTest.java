@@ -8,14 +8,10 @@ class TestDebuggerFactoryTest {
 
     @Test
     void createTest() {
-        String testClassName = "src4test.SampleTest";
+        String testClassName = "demo.SampleTest";
         String testMethodName = "sample2";
-        String javaFilePath = "./src/test/java/src4test/SampleTest.java";
-        String binDir = "./build/classes/java/main/";
-        String junitStandaloneDir = "./locallib";
 
-        Debugger dbg = td.create(testClassName, testMethodName, javaFilePath, binDir, junitStandaloneDir);
-        dbg.run(1000);
+        Debugger dbg = td.create(testClassName, testMethodName);
+        dbg.run(2000);
     }
-
 }

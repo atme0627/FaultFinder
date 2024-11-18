@@ -2,6 +2,10 @@ plugins {
     id 'java'
 }
 
+apply plugin: 'application'
+
+mainClassName = 'jisd.fl.util.TestLauncher'
+
 group = 'org.example'
 version = '1.0-SNAPSHOT'
 
@@ -11,6 +15,11 @@ repositories {
 
 dependencies {
     implementation(fileTree(dir: 'locallib', include: ['jisd-0.2.4.jar']))
+
+    //test用
+    runtimeOnly(files('/Users/ezaki/IdeaProjects/proj4test/build/classes/java/main'))
+    runtimeOnly(files('/Users/ezaki/IdeaProjects/proj4test/build/classes/java/test'))
+    runtimeOnly(files('/Users/ezaki/IdeaProjects/MyFaultFinder/.probe_test_classes'))
 
     //Junit5
     // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
