@@ -14,14 +14,17 @@ public  class TestRunner {
     private static final String compiledWithJunitFilePath = PropertyLoader.getProperty("compiledWithJunitFilePath");
     private static final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
     private static final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-    private static final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
-    private static final String testSrcDir = PropertyLoader.getProperty("testSrcDir");
+    private static final String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
+    private static final String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
+    private static final String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
+
+    private static final String junitClassPath = PropertyLoader.getJunitClassPaths();
 
     public static void compileTestClass(String testClassName) {
 
         DirectoryUtil.initDirectory(compiledWithJunitFilePath);
 
-        String[] args = {"-cp", junitConsoleLauncherPath + ":" + targetBinDir,  testSrcDir + "/" + testClassName.replace(".", "/") + ".java", "-d", compiledWithJunitFilePath};
+        String[] args = {"-cp", junitClassPath + ":" + targetBinDir + ":" + testBinDir,  testSrcDir + "/" + testClassName.replace(".", "/") + ".java", "-d", compiledWithJunitFilePath};
 
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         System.out.println("javac " + Arrays.toString(args));
@@ -33,7 +36,7 @@ public  class TestRunner {
 
     //true: 成功    false: 失敗
     public static Boolean execTestCase(String testMethodName) throws IOException, InterruptedException {
-        String cmd = "java -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" +
+        String cmd = "java -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" + testBinDir + ":" +
                 compiledWithJunitFilePath + " --select-method " + testMethodName;
 
         Process proc = Runtime.getRuntime().exec(cmd);
@@ -50,7 +53,7 @@ public  class TestRunner {
         String junitTestSelectOption =" --select-method " + testClassName;
 
         String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
-                " -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" +
+                " -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" + testBinDir + ":" +
                 compiledWithJunitFilePath + junitTestSelectOption;
 
         //Junit Console Launcherの終了ステータスは、

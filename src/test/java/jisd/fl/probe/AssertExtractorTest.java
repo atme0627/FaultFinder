@@ -12,19 +12,19 @@ class AssertExtractorTest {
 
     @Test
     void getAssertByLineNumTest() {
-        String srcDir = PropertyLoader.getProperty("testSrcDir");
-        String binDir = PropertyLoader.getProperty("testBinDir");
-        String testClassName = "demo.SampleTest";
-        String testMethodName = "sample1";
-        int assertLineNum = 14;
-        String expected = "3";
-        String actual = "1";
+        String srcDir = PropertyLoader.getProperty("d4jTestSrcDir");
+        String binDir = PropertyLoader.getProperty("d4jTestBinDir");
+        String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
+        String testMethodName = "testSingleVariableAndConstraint()";
+        int assertLineNum = 75;
+        int nthArg = 2;
+        String actual = "0.0";
         AssertExtractor ae = new AssertExtractor(srcDir, binDir);
 
-        FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName, assertLineNum, actual);
+        FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName, assertLineNum, nthArg, actual);
 
         assertEquals(fai.getAssertType(), AssertType.EQUAL);
-        assertEquals(fai.getVariableName(), "c");
+        assertEquals(fai.getVariableName(), "solution.getPoint()[0]");
         assertEquals(fai.getSrcDir(), srcDir);
         assertEquals(fai.getBinDir(), binDir);
         assertEquals(fai.getTestClassName(), testClassName);
@@ -34,5 +34,7 @@ class AssertExtractorTest {
         assertFalse(fai.eval("2"));
         assertFalse(fai.eval("3"));
     }
+
+
 }
 

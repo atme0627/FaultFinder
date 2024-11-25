@@ -6,33 +6,11 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 class CoverageAnalyzerTest {
-    String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
+    String testClassName = "org.apache.commons.math.analysis.integration.RombergIntegratorTest";
     CoverageAnalyzer ca = new CoverageAnalyzer();
-    //CoveragesForTestCase coverages = ca.analyzeCoveragesForTestCase(testMethodName);
 
     CoverageAnalyzerTest() throws IOException, InterruptedException {
     }
-
-    @Test
-    void execTestMethodTest() throws IOException, InterruptedException {
-        //ca.execTestMethod(testMethodName);
-    }
-
-    @Test
-    void analyzeLineCoverageForTestCaseTestLINE() {
-        //coverages.printCoverages(Granularity.LINE);
-    }
-
-    @Test
-    void analyzeLineCoverageForTestCaseTestMETHOD() {
-        //coverages.printCoverages(Granularity.METHOD);
-    }
-
-    @Test
-    void analyzeLineCoverageForTestCaseTestCLASS() {
-        //coverages.printCoverages(Granularity.CLASS);
-    }
-
 
     @Test
     void analyzeTestLINE() throws IOException, InterruptedException, ExecutionException {

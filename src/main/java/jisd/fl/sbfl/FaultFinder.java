@@ -11,7 +11,7 @@ import java.util.*;
 
 
 public class FaultFinder {
-    String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+    String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
     MethodCallGraph callGraph;
     SbflResult sbflResult;
 

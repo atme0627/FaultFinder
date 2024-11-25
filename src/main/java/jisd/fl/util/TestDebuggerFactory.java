@@ -6,10 +6,10 @@ import jisd.fl.util.TestLauncher;
 public class TestDebuggerFactory {
     public TestDebuggerFactory() {
     }
-
+    //TODO: junit4に対応　クラスパスを追加
     public Debugger create(String testClassName, String testMethodName) {
-        String testBinDir = PropertyLoader.getProperty("testBinDir");
-        String targetBinDir = PropertyLoader.getProperty("targetBinDir");
+        String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
+        String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
         return new Debugger("jisd.fl.util.TestLauncher " + testClassName + " " + testMethodName,
                 "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir
         + ":" + "/Users/ezaki/.gradle/caches/modules-2/files-2.1/org.junit.platform/junit-platform-launcher/1.10.0/89a1922534ed102be1fb2a8c0b2c6151297a12bf/junit-platform-launcher-1.10.0.jar"

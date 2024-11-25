@@ -26,4 +26,26 @@ public class PropertyLoader {
     public static String getProperty(final String key) {
         return properties.getProperty(key);
     }
+
+    public static  String getJunitClassPaths(){
+        String junitPlatformLauncher = getProperty("junit-platform-launcher");
+        String junitPlatformEngine = getProperty("junit-platform-engine");
+        String junitPlatformCommons = getProperty("junit-platform-commons");
+        String junitJupiterEngine = getProperty("junit-jupiter-engine");
+        String junitJupiterApi = getProperty("junit-jupiter-api");
+        String openTest4j = getProperty("opentest4j");
+        String junit4 = getProperty("junit4");
+        String junitVintageEngine = getProperty("junit-vintage-engine");
+
+        String cp = junitPlatformLauncher +
+                ":" + junitPlatformEngine +
+                ":" + junitPlatformCommons +
+                ":" + junitJupiterEngine +
+                ":" + junitJupiterApi +
+                ":" + openTest4j +
+                ":" + junit4 +
+                ":" + junitVintageEngine;
+
+        return cp;
+    }
 }

@@ -14,9 +14,6 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMetho
 
 //junit platform launcherを用いてテストケースを実行
 public class TestLauncher implements Runnable {
-    private final String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-    private final String testBinDir = PropertyLoader.getProperty("testBinDir");
-
     String testClassName;
     String testMethodName;
 
@@ -35,6 +32,7 @@ public class TestLauncher implements Runnable {
 
     @Override
     public void run() {
+        TestRunner.compileTestClass(testClassName);
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(
                         selectMethod(testClassName + "#" + testMethodName)

@@ -14,12 +14,19 @@ repositories {
 }
 
 dependencies {
-    implementation(fileTree(dir: 'locallib', include: ['jisd-0.2.4.jar']))
+    implementation(fileTree(dir: 'locallib', include: ['jisd-0.2.5_bata.jar']))
 
     //test用
     runtimeOnly(files('/Users/ezaki/IdeaProjects/proj4test/build/classes/java/main'))
     runtimeOnly(files('/Users/ezaki/IdeaProjects/proj4test/build/classes/java/test'))
-    runtimeOnly(files('/Users/ezaki/IdeaProjects/MyFaultFinder/.probe_test_classes'))
+    runtimeOnly(files('/Users/ezaki/IdeaProjects/.probe_test_classes'))
+    //defects4j
+    runtimeOnly(files('/Users/ezaki/Desktop/tools/defects4j/tmp/math87_buggy/target/test-classes'))
+    runtimeOnly(files('/Users/ezaki/Desktop/tools/defects4j/tmp/math87_buggy/target/classes'))
+
+    //junit4
+    // https://mvnrepository.com/artifact/junit/junit
+    implementation 'junit:junit:4.13.2'
 
     //Junit5
     // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
@@ -28,6 +35,8 @@ dependencies {
     implementation 'org.junit.platform:junit-platform-engine:1.10.0'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
     implementation 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    // https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine
+    testImplementation 'org.junit.vintage:junit-vintage-engine:5.10.0'
 
     //parser
     implementation 'com.github.javaparser:javaparser-core:3.19.0'

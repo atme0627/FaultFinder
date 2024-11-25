@@ -23,6 +23,15 @@ class TestLauncherTest {
     }
 
     @Test
+    void launchTest2(){
+        String testClassName = "org.apache.commons.math.analysis.integration.RombergIntegratorTest";
+        String testMethodName = "testSinFunction";
+        //カッコつけたら動かない
+        TestLauncher tl = new TestLauncher(testClassName, testMethodName);
+        tl.run();
+    }
+
+    @Test
     void jisdtest1(){
         String testClassName = "demo.SampleTest";
         String testMethodName = "sample2";

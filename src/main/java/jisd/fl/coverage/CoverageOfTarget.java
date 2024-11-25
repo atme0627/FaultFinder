@@ -19,7 +19,7 @@ public class CoverageOfTarget {
     protected Map<String, SbflStatus> lineCoverage = new LinkedHashMap<>();
     protected Map<String, SbflStatus> methodCoverage = new LinkedHashMap<>();
     protected Map<String, SbflStatus> classCoverage = new LinkedHashMap<>();
-    protected final String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+    protected final String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
 
     public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;
