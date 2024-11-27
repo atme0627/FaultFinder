@@ -23,14 +23,14 @@ public class CoverageAnalyzer {
         Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testSrcDir, testClassName);
 
         //テストクラスをコンパイル
-        TestRunner.compileTestClass(testClassName);
+        TestUtil.compileTestClass(testClassName);
         MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
 
         for(String testMethodName : testMethodNames){
             //execファイルの生成
             //テストケースをjacocoAgentつきで実行
             String jacocoExecName = testMethodName + ".jacocoexec";
-            boolean isTestPassed = TestRunner.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
+            boolean isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
             cv.setTestsPassed(isTestPassed);
             ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
             JacocoUtil.analyzeWithJacoco(execData, cv);

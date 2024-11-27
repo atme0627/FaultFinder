@@ -1,5 +1,6 @@
 package jisd.fl.util;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import org.apache.commons.lang3.tuple.Pair;
@@ -106,8 +107,6 @@ public class StaticAnalyzer {
 
         return mcg;
     }
-
-
     //直接的な呼び出し関係しか取れてない
     //ex.) NormalDistributionImpl#getInitialDomainはオーバライドメソッドであり
     //その抽象クラス内で呼び出されているが、この呼び出し関係は取れていない。
@@ -152,6 +151,18 @@ public class StaticAnalyzer {
 
     private static String getMethodNameWithoutPackage(String methodName){
         return methodName.split("#")[1];
+    }
+
+    public static String getClassNameWithPackage(String targetSrcDir, String className) throws IOException {
+        Set<String> classNames = getClassNames(targetSrcDir);
+        for(String n : classNames){
+            String[] ns = n.split("\\.");
+            if(ns[ns.length - 1].equals(className)){
+                return n;
+            }
+        }
+        throw new RuntimeException("StaticAnalyzer#getClassNameWithPackage\n" +
+                "Cannot find class: " + className);
     }
 }
 

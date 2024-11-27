@@ -1,24 +1,31 @@
 package jisd.fl.sbfl;
 
+import jisd.debug.Debugger;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
+import jisd.fl.probe.AssertExtractor;
+import jisd.fl.probe.FailedAssertInfo;
+import jisd.fl.probe.Probe;
 import jisd.fl.util.MethodCallGraph;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
+import jisd.fl.util.TestDebuggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 
 
 public class FaultFinder {
+    String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
+    String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
     String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
     MethodCallGraph callGraph;
     SbflResult sbflResult;
 
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
     private double removeConst = 0.8;
-    //susp時に同じクラスの他のメソッドの疑惑値にかける定数
-    private double suspConst = 1.2;
+    //susp時に同じクラスの他のメソッドの疑惑値に足す定数
+    private double suspConst = 0.2;
     //probe時に使用する定数
     private double probeC1 = 0.2;
     private double probeC2 = 0.1;
@@ -49,21 +56,58 @@ public class FaultFinder {
         });
     }
 
-
     public SbflResult getFLResults(){
         return sbflResult;
     }
 
-
-    public void remove(int rank){
+    public void remove(int rank) throws IOException {
         if(!validCheck(rank)) return;
         String targetMethod = sbflResult.getMethodOfRank(rank);
+        String contextClass = targetMethod.split("#")[0];
         sbflResult.setSuspicious(targetMethod, 0);
 
-        //Set<String> context = StaticAnalyzer.getMethodNames(targetSrcDir, )
+        Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass);
+        for(String contextMethod : contexts) {
+            double preScore = sbflResult.getSuspicious(contextMethod);
+            sbflResult.setSuspicious(contextMethod, preScore * removeConst);
+        }
+
+        System.out.println("remove: " + targetMethod);
+        sbflResult.printFLResults(10);
+    }
+
+    public void susp(int rank) throws IOException {
+        if(!validCheck(rank)) return;
+        String targetMethod = sbflResult.getMethodOfRank(rank);
+        String contextClass = targetMethod.split("#")[0];
+        sbflResult.setSuspicious(targetMethod, 0);
+
+        Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass);
+        for(String contextMethod : contexts) {
+            double preScore = sbflResult.getSuspicious(contextMethod);
+            sbflResult.setSuspicious(contextMethod, preScore + suspConst);
+        }
+
+        System.out.println("susp: " + targetMethod);
+        sbflResult.printFLResults(10);
+    }
+
+    public void probe(String targetTestClass,
+                      String targetTestMethod,
+                      int failedAssertLine,
+                      int nthArg,
+                      String actualValue){
+
+        TestDebuggerFactory factory = new TestDebuggerFactory();
+        AssertExtractor ae = new AssertExtractor(testSrcDir, testBinDir);
+        FailedAssertInfo fai = ae.getAssertByLineNum(targetTestClass, targetTestMethod, failedAssertLine, nthArg, actualValue);
+        Debugger dbg = factory.create(targetTestClass, targetTestMethod);
+        Probe prb = new Probe(dbg, fai);
+        //int resultLine = prb.run(2000);
 
 
     }
+
 
     private boolean validCheck(int rank){
         if(granularity != Granularity.METHOD){

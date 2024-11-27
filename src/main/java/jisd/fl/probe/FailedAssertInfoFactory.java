@@ -16,7 +16,6 @@ public class FailedAssertInfoFactory {
 
         methodCallExpr = assertStmt.findAll(methodCallExpr.getClass()).get(0);
         String methodName = methodCallExpr.getName().getIdentifier();
-        //NodeList<Expression> args = methodCallExpr.getArguments();
         Expression arg = methodCallExpr.getArguments().get(nthArg - 1);
 
         switch(methodName) {

@@ -5,11 +5,8 @@ import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
-public  class TestRunner {
+public  class TestUtil {
     private static final String junitConsoleLauncherPath = PropertyLoader.getProperty("junitConsoleLauncherPath");
     private static final String compiledWithJunitFilePath = PropertyLoader.getProperty("compiledWithJunitFilePath");
     private static final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
@@ -32,16 +29,6 @@ public  class TestRunner {
         if (rc != 0) {
             throw new RuntimeException("failed to compile.");
         }
-    }
-
-    //true: 成功    false: 失敗
-    public static Boolean execTestCase(String testMethodName) throws IOException, InterruptedException {
-        String cmd = "java -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" + testBinDir + ":" +
-                compiledWithJunitFilePath + " --select-method " + testMethodName;
-
-        Process proc = Runtime.getRuntime().exec(cmd);
-        proc.waitFor();
-        return proc.exitValue() == 0;
     }
 
     //junit console launcherにjacoco agentをつけて起動
@@ -75,4 +62,10 @@ public  class TestRunner {
         System.out.println("testResult " + (proc.exitValue() == 0 ? "o" : "x"));
         return proc.exitValue() == 0;
     }
+
+//    public static boolean execTestCaseWithJacocoAPI(String testClassName, String execFileName){
+//        String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
+//
+//
+//    }
 }
