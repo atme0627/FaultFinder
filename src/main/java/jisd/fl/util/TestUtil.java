@@ -1,5 +1,7 @@
 package jisd.fl.util;
 
+import jisd.debug.Debugger;
+
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.File;
@@ -61,6 +63,16 @@ public  class TestUtil {
         System.out.println("Success to generate " + generatedFilePath + ".");
         System.out.println("testResult " + (proc.exitValue() == 0 ? "o" : "x"));
         return proc.exitValue() == 0;
+    }
+
+    public static Debugger testDebuggerFactory(String testClassName, String testMethodName) {
+        String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
+        String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
+        String junitClassPath = PropertyLoader.getJunitClassPaths();
+        Debugger dbg = new Debugger("jisd.fl.util.TestLauncher " + testClassName + " " + testMethodName,
+                "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
+        dbg.setMain(testClassName);
+        return dbg;
     }
 
 //    public static boolean execTestCaseWithJacocoAPI(String testClassName, String execFileName){

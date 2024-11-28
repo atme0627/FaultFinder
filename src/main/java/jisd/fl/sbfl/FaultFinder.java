@@ -6,10 +6,7 @@ import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.AssertExtractor;
 import jisd.fl.probe.FailedAssertInfo;
 import jisd.fl.probe.Probe;
-import jisd.fl.util.MethodCallGraph;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.StaticAnalyzer;
-import jisd.fl.util.TestDebuggerFactory;
+import jisd.fl.util.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -101,7 +98,7 @@ public class FaultFinder {
         TestDebuggerFactory factory = new TestDebuggerFactory();
         AssertExtractor ae = new AssertExtractor(testSrcDir, testBinDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(targetTestClass, targetTestMethod, failedAssertLine, nthArg, actualValue);
-        Debugger dbg = factory.create(targetTestClass, targetTestMethod);
+        Debugger dbg = TestUtil.testDebuggerFactory(targetTestClass, targetTestMethod);
         Probe prb = new Probe(dbg, fai);
         //int resultLine = prb.run(2000);
 

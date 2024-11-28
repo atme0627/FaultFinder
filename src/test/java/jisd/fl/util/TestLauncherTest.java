@@ -8,8 +8,6 @@ import jisd.debug.value.ValueInfo;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 class TestLauncherTest {
@@ -38,7 +36,7 @@ class TestLauncherTest {
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
 
         TestDebuggerFactory td = new TestDebuggerFactory();
-        Debugger dbg = td.create(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         dbg.setSrcDir(testSrcDir);
         dbg.setMain("demo.SampleTest");
         Optional<Point> p = dbg.stopAt(25);
@@ -54,7 +52,7 @@ class TestLauncherTest {
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
 
         TestDebuggerFactory td = new TestDebuggerFactory();
-        Debugger dbg = td.create(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         dbg.setSrcDir(testSrcDir);
         dbg.setMain("demo.SampleTest");
         Optional<Point> p = dbg.watch(25);

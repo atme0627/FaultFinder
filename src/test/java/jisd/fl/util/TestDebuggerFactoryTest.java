@@ -11,7 +11,7 @@ class TestDebuggerFactoryTest {
         String testClassName = "org.apache.commons.math.analysis.integration.RombergIntegratorTest";
         String testMethodName = "testSinFunction";
 
-        Debugger dbg = td.create(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         dbg.setMain(testClassName);
 
         dbg.run(2000);

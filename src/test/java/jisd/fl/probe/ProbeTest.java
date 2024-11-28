@@ -8,6 +8,7 @@ import com.github.javaparser.ast.stmt.Statement;
 import jisd.debug.Debugger;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestDebuggerFactory;
+import jisd.fl.util.TestUtil;
 import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +30,7 @@ class ProbeTest {
         AssertExtractor ae = new AssertExtractor(srcDir, binDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName, assertLineNum, nthArg, actual);
 
-        Debugger dbg = factory.create(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         Probe prb = new Probe(dbg, fai);
         ArrayList<Integer> lineWithVar = prb.getLineWithVar();
         System.out.println(Arrays.toString(lineWithVar.toArray()));
@@ -48,7 +49,7 @@ class ProbeTest {
         AssertExtractor ae = new AssertExtractor(srcDir, binDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName, assertLineNum, nthArg, actual);
 
-        Debugger dbg = factory.create(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         Probe prb = new Probe(dbg, fai);
         ArrayList<Integer> lineWithVar = prb.getLineWithVar();
         System.out.println(Arrays.toString(lineWithVar.toArray()));
@@ -67,7 +68,7 @@ class ProbeTest {
         AssertExtractor ae = new AssertExtractor(srcDir, binDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName + "()", assertLineNum, nthArg, actual);
 
-        Debugger dbg = factory.create(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         Probe prb = new Probe(dbg, fai);
         ArrayList<Integer> lineWithVar = prb.getLineWithVar();
         System.out.println(Arrays.toString(lineWithVar.toArray()));
@@ -120,7 +121,7 @@ class ProbeTest {
         AssertExtractor ae = new AssertExtractor(srcDir, binDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName + "()", assertLineNum, nthArg, actual);
 
-        Debugger dbg = factory.create(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         Probe prb = new Probe(dbg, fai);
 
         List<String> probeMethod = prb.probeLineParser(47);
