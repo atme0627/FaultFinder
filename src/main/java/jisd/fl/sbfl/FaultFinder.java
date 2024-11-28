@@ -4,7 +4,7 @@ import jisd.debug.Debugger;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.AssertExtractor;
-import jisd.fl.probe.FailedAssertInfo;
+import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.Probe;
 import jisd.fl.util.*;
 
@@ -95,7 +95,6 @@ public class FaultFinder {
                       int nthArg,
                       String actualValue){
 
-        TestDebuggerFactory factory = new TestDebuggerFactory();
         AssertExtractor ae = new AssertExtractor(testSrcDir, testBinDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(targetTestClass, targetTestMethod, failedAssertLine, nthArg, actualValue);
         Debugger dbg = TestUtil.testDebuggerFactory(targetTestClass, targetTestMethod);

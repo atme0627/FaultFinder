@@ -6,6 +6,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.debug.Debugger;
+import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestDebuggerFactory;
 import jisd.fl.util.TestUtil;

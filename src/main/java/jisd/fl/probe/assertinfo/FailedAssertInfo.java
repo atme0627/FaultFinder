@@ -1,4 +1,5 @@
-package jisd.fl.probe;
+package jisd.fl.probe.assertinfo;
+
 //actual, expectedはStringで管理。比較もStringが一致するかどうかで判断。
 public abstract class FailedAssertInfo {
     private final String variableName;
@@ -19,7 +20,7 @@ public abstract class FailedAssertInfo {
         this.line = line;
     }
 
-    abstract Boolean eval(String variable);
+    public abstract Boolean eval(String variable);
 
 
     public AssertType getAssertType() {

@@ -1,4 +1,4 @@
-package jisd.fl.probe;
+package jisd.fl.probe.assertinfo;
 
 //変数と定数の比較のみ対応 ex.) sum >= 10
 public class FailedAssertTrueInfo extends FailedAssertInfo {
@@ -8,7 +8,7 @@ public class FailedAssertTrueInfo extends FailedAssertInfo {
     }
 
     @Override
-    Boolean eval(String variable) {
+    public Boolean eval(String variable) {
         return null;
     }
 }

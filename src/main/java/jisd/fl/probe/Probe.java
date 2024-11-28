@@ -2,8 +2,6 @@ package jisd.fl.probe;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -14,6 +12,7 @@ import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
+import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
 import jisd.info.ClassInfo;

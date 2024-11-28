@@ -1,8 +1,7 @@
 package jisd.fl.probe;
 
-import jisd.fl.probe.AssertExtractor;
-import jisd.fl.probe.AssertType;
-import jisd.fl.probe.FailedAssertInfo;
+import jisd.fl.probe.assertinfo.AssertType;
+import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.Test;
 

@@ -1,12 +1,7 @@
 package jisd.fl.probe;
 
-import jisd.fl.probe.AssertType;
-import jisd.fl.probe.FailedAssertEqualInfo;
-import jisd.fl.probe.FailedAssertInfoFactory;
 import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class FailedAssertInfoFactoryTest {
     FailedAssertInfoFactory factory = new FailedAssertInfoFactory();

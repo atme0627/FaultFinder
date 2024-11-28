@@ -1,4 +1,5 @@
 package jisd.fl.probe;
+import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.info.*;
 
 public class AssertExtractor {
