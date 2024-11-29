@@ -36,6 +36,8 @@ public class PropertyLoader {
         String openTest4j = getProperty("opentest4j");
         String junit4 = getProperty("junit4");
         String junitVintageEngine = getProperty("junit-vintage-engine");
+        String apiguardian = getProperty("apiguardian");
+        String hamcrest = getProperty("hamcrest");
 
         String cp = junitPlatformLauncher +
                 ":" + junitPlatformEngine +
@@ -44,6 +46,8 @@ public class PropertyLoader {
                 ":" + junitJupiterApi +
                 ":" + openTest4j +
                 ":" + junit4 +
+                ":" + apiguardian +
+                ":" + hamcrest +
                 ":" + junitVintageEngine;
 
         return cp;

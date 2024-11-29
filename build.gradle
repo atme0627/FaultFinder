@@ -36,7 +36,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
     implementation 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     // https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine
-    testImplementation 'org.junit.vintage:junit-vintage-engine:5.10.0'
+    implementation 'org.junit.vintage:junit-vintage-engine:5.10.0'
 
     //parser
     implementation 'com.github.javaparser:javaparser-core:3.19.0'

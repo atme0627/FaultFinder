@@ -5,7 +5,7 @@ import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.AssertExtractor;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.Probe;
+import jisd.fl.probe.NewProbe;
 import jisd.fl.util.*;
 
 import java.io.IOException;
@@ -98,11 +98,22 @@ public class FaultFinder {
         AssertExtractor ae = new AssertExtractor(testSrcDir, testBinDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(targetTestClass, targetTestMethod, failedAssertLine, nthArg, actualValue);
         Debugger dbg = TestUtil.testDebuggerFactory(targetTestClass, targetTestMethod);
-        Probe prb = new Probe(dbg, fai);
-        //int resultLine = prb.run(2000);
-
-
+        NewProbe prb = new NewProbe(dbg, fai);
+//        List<String> probeMethods = prb.run(2000);
+//
+//        //probeMethodsがメソッドを持っているかチェック
+//        if(probeMethods.get(0).startsWith("#")){
+//            throw new RuntimeException("FaultFinder#probe\n" +
+//                    "probeLine does not have methods. probeLine: " + probeMethods.get(0).substring(1));
+//        }
+//
+//        //calc suspicious score
+//        for(String probeMethod : probeMethods){
+//
+//        }
     }
+
+    //TODO: あるメソッドを呼び出したメソッドとそのメソッドが呼び出したメソッドをコールスタックから取得する
 
 
     private boolean validCheck(int rank){

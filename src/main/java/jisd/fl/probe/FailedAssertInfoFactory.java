@@ -1,7 +1,6 @@
 package jisd.fl.probe;
 
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
@@ -42,12 +41,8 @@ public class FailedAssertInfoFactory {
                                                               String testMethodName,
                                                               int line){
         String variableName = arg.toString();
-        return new FailedAssertEqualInfo(variableName,
-                                        actual,
-                                        srcDir,
-                                        binDir,
-                                        testClassName,
-                                        testMethodName,
-                                        line);
+        //return new FailedAssertEqualInfo(testClassName, testMethodName, line, variableName,
+        //        , , actual, , );
+        return null;
     }
 }

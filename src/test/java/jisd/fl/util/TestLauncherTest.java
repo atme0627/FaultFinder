@@ -35,7 +35,6 @@ class TestLauncherTest {
         String testMethodName = "sample2";
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
 
-        TestDebuggerFactory td = new TestDebuggerFactory();
         Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         dbg.setSrcDir(testSrcDir);
         dbg.setMain("demo.SampleTest");
@@ -51,7 +50,6 @@ class TestLauncherTest {
         String testMethodName = "sample2";
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
 
-        TestDebuggerFactory td = new TestDebuggerFactory();
         Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         dbg.setSrcDir(testSrcDir);
         dbg.setMain("demo.SampleTest");

@@ -1,7 +1,9 @@
 package jisd.fl.util;
 
+import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.core.LauncherConfig;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
@@ -9,6 +11,7 @@ import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import java.io.PrintWriter;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectPackage;
 
 //junit platform launcherを用いてテストケースを実行
 public class TestLauncher implements Runnable {

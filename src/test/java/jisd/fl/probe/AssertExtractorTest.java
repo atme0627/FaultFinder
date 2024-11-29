@@ -24,11 +24,8 @@ class AssertExtractorTest {
 
         assertEquals(fai.getAssertType(), AssertType.EQUAL);
         assertEquals(fai.getVariableName(), "solution.getPoint()[0]");
-        assertEquals(fai.getSrcDir(), srcDir);
-        assertEquals(fai.getBinDir(), binDir);
         assertEquals(fai.getTestClassName(), testClassName);
         assertEquals(fai.getTestMethodName(), testMethodName);
-        assertEquals(fai.getLineOfAssert(), assertLineNum);
         assertTrue(fai.eval(actual));
         assertFalse(fai.eval("2"));
         assertFalse(fai.eval("3"));

@@ -17,7 +17,7 @@ public  class TestUtil {
     private static final String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
     private static final String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
 
-    private static final String junitClassPath = PropertyLoader.getJunitClassPaths();
+    private static final String junitClassPath = PropertyLoader.getProperty("junit4");
 
     public static void compileTestClass(String testClassName) {
 
@@ -69,10 +69,14 @@ public  class TestUtil {
         String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
         String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
         String junitClassPath = PropertyLoader.getJunitClassPaths();
+
         Debugger dbg = new Debugger("jisd.fl.util.TestLauncher " + testClassName + " " + testMethodName,
                 "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
+
+
         dbg.setMain(testClassName);
         return dbg;
+
     }
 
 //    public static boolean execTestCaseWithJacocoAPI(String testClassName, String execFileName){
