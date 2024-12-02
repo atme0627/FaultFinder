@@ -34,7 +34,7 @@ public class Probe extends AbstractProbe{
     public ProbeResult run(int sleepTime) {
         Map<String, ArrayList<Integer>> canSetLines = getCanSetLine();
         List<Optional<Point>> watchPoints = new ArrayList<>();
-        List<Triple<LocalDateTime, Location, String>> watchedValues = new ArrayList<>();
+        List<ProbeInfo> watchedValues = new ArrayList<>();
         ProbeResult result = new ProbeResult();
 
         dbg.setMain(assertInfo.getTypeName());
@@ -63,7 +63,7 @@ public class Probe extends AbstractProbe{
             Optional<DebugResult> od = p.getResults("this." +  assertInfo.getFieldName());
             if(od.isEmpty()) continue;
 
-            Triple<LocalDateTime, Location, String> values = getValuesFromDebugResult(od.get());
+            ProbeInfo values = getValuesFromDebugResult(od.get());
             if(values == null) continue;
 
             watchedValues.add(values);
@@ -75,15 +75,15 @@ public class Probe extends AbstractProbe{
         }
 
         //debugResultを通過した順にソート
-        watchedValues.sort(Comparator.comparing(Triple::getLeft));
+        watchedValues.sort(ProbeInfo::compareTo);
         printWatchedValues(watchedValues);
 
         //初めてactualの値と一致した場所をprobeの対象とする。
         //一致した時点で終了
         boolean isFound = false;
-        for(Triple<LocalDateTime, Location, String> values : watchedValues){
-            Location loc = values.getMiddle();
-            String value = values.getRight();
+        for(ProbeInfo values : watchedValues){
+            Location loc = values.loc;
+            String value = values.value;
             if (!assertInfo.eval(value)) continue;
             //実行しているメソッドを取得
             int probeLine = loc.getLineNumber();
@@ -107,7 +107,7 @@ public class Probe extends AbstractProbe{
         return result;
     }
 
-    private Triple<LocalDateTime, Location, String> getValuesFromDebugResult(DebugResult dr){
+    private ProbeInfo getValuesFromDebugResult(DebugResult dr){
         ValueInfo vi;
         try {
             vi = dr.getLatestValue();
@@ -119,6 +119,7 @@ public class Probe extends AbstractProbe{
         LocalDateTime createdAt = vi.getCreatedAt();
         Location loc = dr.getLocation();
         String value;
+
         //配列の場合
         if(assertInfo.isArray()){
             ArrayList<ValueInfo> array = vi.ch();
@@ -129,16 +130,36 @@ public class Probe extends AbstractProbe{
         else {
             value = vi.getValue();
         }
-        return Triple.of(createdAt, loc, value);
+
+        return new ProbeInfo(createdAt, loc, value);
     }
 
 
-    private void printWatchedValues(List<Triple<LocalDateTime, Location, String>> watchedValues){
-        for(Triple<LocalDateTime, Location, String> values : watchedValues){
-            LocalDateTime createAt = values.getLeft();
-            Location loc = values.getMiddle();
-            String value = values.getRight();
+    private void printWatchedValues(List<ProbeInfo> watchedValues){
+        for(ProbeInfo values : watchedValues){
+            LocalDateTime createAt = values.createAt;
+            Location loc = values.loc;
+            String value = values.value;
             System.out.println("CreateAt: " + createAt + " Line: " + loc.getLineNumber() + " value: " + value);
+        }
+    }
+
+    private static class ProbeInfo implements Comparable<ProbeInfo>{
+        LocalDateTime createAt;
+        Location loc;
+        String value;
+
+        ProbeInfo(LocalDateTime createAt,
+                    Location loc,
+                  String value){
+            this.createAt = createAt;
+            this.loc = loc;
+            this.value = value;
+        }
+
+        @Override
+        public int compareTo(ProbeInfo o) {
+            return createAt.compareTo(o.createAt);
         }
     }
 }
