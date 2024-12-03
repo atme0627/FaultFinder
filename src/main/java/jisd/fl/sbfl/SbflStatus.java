@@ -47,6 +47,10 @@ public class SbflStatus {
         return formula.calc(this);
     }
 
+    public boolean isElementExecuted(){
+     return (ep != 0) || (ef != 0);
+    }
+
     public SbflStatus combine(SbflStatus status){
         SbflStatus newStatus = new SbflStatus();
         newStatus.ep = this.ep + status.ep;

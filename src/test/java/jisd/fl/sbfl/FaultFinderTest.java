@@ -17,7 +17,7 @@ class FaultFinderTest {
 
     @Test
     void printFLResultsTest() throws IOException, InterruptedException, ExecutionException {
-        CoverageCollection cov = ca.analyze(testClassName);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         SbflResult result = ff.getFLResults();
         result.printFLResults(10);

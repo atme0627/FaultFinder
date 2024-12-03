@@ -6,12 +6,18 @@ import jisd.debug.Debugger;
 import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
+import jisd.fl.coverage.CoverageAnalyzer;
+import jisd.fl.coverage.CoverageCollection;
+import jisd.fl.coverage.CoverageOfTarget;
+import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
+import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
 import jisd.info.*;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -104,9 +110,19 @@ public class Probe extends AbstractProbe{
         if (!isFound) throw new RuntimeException("No matching rows found.");
 
         //メソッドを呼び出したメソッドをコールスタックから取得
-        result.setCallerMethod(getCallerMethod(probeLine));
+        String callerMethod = getCallerMethod(probeLine);
+        result.setCallerMethod(callerMethod);
 
         //callerメソッドが呼び出したメソッドをカバレッジから取得
+        String callerClass = callerMethod.split("#")[0];
+        Set<String> siblingMethods;
+        try {
+             siblingMethods = getSiblingMethods(callerClass);
+        }
+        catch (IOException | InterruptedException e){
+            throw new RuntimeException(e);
+        }
+        result.setSiblingMethods(siblingMethods);
 
         return result;
     }
@@ -154,5 +170,18 @@ public class Probe extends AbstractProbe{
         StringBuilder callerMethod = new StringBuilder(stackTrace[2]);
         callerMethod.setCharAt(callerMethod.lastIndexOf("."), '#');
         return callerMethod.substring(callerMethod.indexOf("]") + 1, callerMethod.indexOf("(")).trim();
+    }
+
+    Set<String> getSiblingMethods(String callerClass) throws IOException, InterruptedException {
+        CoverageAnalyzer analyzer = new CoverageAnalyzer();
+        Set<String> siblingMethods = new HashSet<>();
+        CoverageCollection covOfFailedTest = analyzer.analyze(assertInfo.getTestClassName(), assertInfo.getTestClassName() + "#" + assertInfo.getTestMethodName());
+        Map<String, SbflStatus> covOfCallerClass = covOfFailedTest.getCoverageOfTarget(callerClass, Granularity.METHOD);
+        covOfCallerClass.forEach((method, status) -> {
+            if(status.isElementExecuted()){
+                siblingMethods.add(method);
+            }
+        });
+        return siblingMethods;
     }
 }

@@ -62,10 +62,7 @@ public class StaticAnalyzer {
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
-                //publicメソッドかどうか確認
-                if(n.isPublic()) {
-                    methodNames.add(targetClassName.replace("/", ".") + "#" + n.getNameAsString());
-                }
+                methodNames.add(targetClassName.replace("/", ".") + "#" + n.getNameAsString());
                 super.visit(n, arg);
             }
         }

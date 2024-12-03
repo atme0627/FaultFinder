@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Set;
 
 import static org.jdiscript.util.Utils.unchecked;
 
@@ -37,9 +38,16 @@ class ProbeTest {
     void runTest(){
         Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         Probe prb = new Probe(fai);
-        ProbeResult result = prb.run(2000);
+        ProbeResult result = prb.run(3000);
+        System.out.println("probe method");
         System.out.println(result.getProbeMethod());
+        System.out.println("caller method");
         System.out.println(result.getCallerMethod());
+        Set<String> siblingMethods = result.getSiblingMethods();
+        System.out.println("sibling methods");
+        for(String sibling : siblingMethods){
+            System.out.println(sibling);
+        }
     }
 
     @Test

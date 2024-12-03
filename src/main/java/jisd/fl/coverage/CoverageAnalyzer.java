@@ -18,7 +18,7 @@ public class CoverageAnalyzer {
         targetClassNames = StaticAnalyzer.getClassNames(targetSrcDir);
     }
 
-    public CoverageCollection analyze(String testClassName) throws IOException, InterruptedException{
+    public CoverageCollection analyzeAll(String testClassName) throws IOException, InterruptedException{
 
         Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testSrcDir, testClassName);
 
@@ -35,7 +35,18 @@ public class CoverageAnalyzer {
             ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
             JacocoUtil.analyzeWithJacoco(execData, cv);
         }
+        return cv.getCoverages();
+    }
 
+    public CoverageCollection analyze(String testClassName, String testMethodName) throws IOException, InterruptedException{
+        //execファイルの生成
+        //テストケースをjacocoAgentつきで実行
+        MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
+        String jacocoExecName = testMethodName + ".jacocoexec";
+        boolean isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
+        cv.setTestsPassed(isTestPassed);
+        ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
+        JacocoUtil.analyzeWithJacoco(execData, cv);
         return cv.getCoverages();
     }
 }

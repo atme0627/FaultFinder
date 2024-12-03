@@ -13,20 +13,20 @@ class CoverageAnalyzerTest {
     }
 
     @Test
-    void analyzeTestLINE() throws IOException, InterruptedException, ExecutionException {
-        CoverageCollection cov = ca.analyze(testClassName);
+    void analyzeAllTestLINE() throws IOException, InterruptedException, ExecutionException {
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         cov.printCoverages(Granularity.LINE);
     }
 
     @Test
     void analyzeTestMETHOD() throws IOException, InterruptedException, ExecutionException {
-        CoverageCollection cov = ca.analyze(testClassName);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         cov.printCoverages(Granularity.METHOD);
     }
 
     @Test
-    void analyzeTestCLASS() throws IOException, InterruptedException, ExecutionException {
-        CoverageCollection cov = ca.analyze(testClassName);
+    void analyzeAllTestCLASS() throws IOException, InterruptedException, ExecutionException {
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         cov.printCoverages(Granularity.CLASS);
     }
 }

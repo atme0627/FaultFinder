@@ -9,10 +9,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StaticAnalyzerTest {
-    String targetSrcPath = "/Users/ezaki/Desktop/tools/defects4j/tmp/math87_buggy/src/java";
+    String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
     @Test
     void getClassNameTest() throws IOException {
-        ArrayList<String> classNames = new ArrayList<>(StaticAnalyzer.getClassNames(targetSrcPath));
+        ArrayList<String> classNames = new ArrayList<>(StaticAnalyzer.getClassNames(targetSrcDir));
         Collections.sort(classNames);
         for(String className : classNames){
             System.out.println(className);
@@ -21,8 +21,8 @@ class StaticAnalyzerTest {
 
     @Test
     void getMethodNameTest() throws IOException {
-        String targetClassName = "demo.SortTest";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcPath, targetClassName);
+        String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName);
         for(String methodName : methodNames){
             System.out.println(methodName);
         }
@@ -31,7 +31,7 @@ class StaticAnalyzerTest {
     @Test
     void getRangeOfMethodsTest() throws IOException {
         String targetClassName = "demo.SortTest";
-        Map<String, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfMethods(targetSrcPath, targetClassName);
+        Map<String, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfMethods(targetSrcDir, targetClassName);
         methodNames.forEach((k, v)->{
             System.out.println("method name: " + k + ", start: " + v.getLeft() + ", end: " + v.getRight());
         });
@@ -40,7 +40,7 @@ class StaticAnalyzerTest {
     @Test
     void getMethodCallGraphTest() throws IOException {
 
-        MethodCallGraph mcg = StaticAnalyzer.getMethodCallGraph(targetSrcPath);
+        MethodCallGraph mcg = StaticAnalyzer.getMethodCallGraph(targetSrcDir);
         mcg.printCallGraph();
     }
 }

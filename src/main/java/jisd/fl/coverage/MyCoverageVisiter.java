@@ -1,7 +1,5 @@
-package jisd.fl.util;
+package jisd.fl.coverage;
 
-import jisd.fl.coverage.CoverageOfTarget;
-import jisd.fl.coverage.CoverageCollection;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICoverageVisitor;
 
