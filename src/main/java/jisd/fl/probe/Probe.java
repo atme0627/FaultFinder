@@ -8,15 +8,17 @@ import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.TestUtil;
 import jisd.info.*;
-import org.apache.commons.lang3.tuple.Triple;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class Probe extends AbstractProbe{
-    public Probe(Debugger dbg, FailedAssertInfo assertInfo){
-        super(dbg, assertInfo);
+    public Probe(FailedAssertInfo assertInfo){
+        super(assertInfo);
         String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
         String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
         this.sif = new StaticInfoFactory(targetSrcDir, targetBinDir);
@@ -37,9 +39,8 @@ public class Probe extends AbstractProbe{
         List<ProbeInfo> watchedValues = new ArrayList<>();
         ProbeResult result = new ProbeResult();
 
-        dbg.setMain(assertInfo.getTypeName());
-
         //set watchPoint
+        dbg.setMain(assertInfo.getTypeName());
         String[] fieldName = {"this." + assertInfo.getFieldName()};
         for(List<Integer> lineWithVar : canSetLines.values()) {
             for (int line : lineWithVar) {
@@ -52,7 +53,7 @@ public class Probe extends AbstractProbe{
             dbg.run(sleepTime);
         } catch (VMDisconnectedException ignored) {
         }
-        dbg.exit();
+        //dbg.exit();
 
         //get Values from debugResult
         for (Optional<Point> op : watchPoints) {
@@ -80,29 +81,32 @@ public class Probe extends AbstractProbe{
 
         //初めてactualの値と一致した場所をprobeの対象とする。
         //一致した時点で終了
+        int probeLine = 0;
         boolean isFound = false;
         for(ProbeInfo values : watchedValues){
             Location loc = values.loc;
             String value = values.value;
             if (!assertInfo.eval(value)) continue;
             //実行しているメソッドを取得
-            int probeLine = loc.getLineNumber();
+            probeLine = loc.getLineNumber();
+            int finalProbeLine = probeLine;
             final String[] probeMethod = new String[1];
             canSetLines.forEach((method, list)->{
-                if(list.contains(probeLine)){
+                if(list.contains(finalProbeLine)){
                     probeMethod[0] = method;
                 }
             });
             isFound = true;
-            result.setProbeMethod(loc.getClassName() + "#" + probeMethod[0]);
+            //シグニチャは含めない
+            result.setProbeMethod(loc.getClassName() + "#" + probeMethod[0].substring(0, probeMethod[0].indexOf("(")));
             break;
         }
         if (!isFound) throw new RuntimeException("No matching rows found.");
 
-
         //メソッドを呼び出したメソッドをコールスタックから取得
+        result.setCallerMethod(getCallerMethod(probeLine));
 
-        //calleeメソッドが呼び出したメソッドをカバレッジから取得
+        //callerメソッドが呼び出したメソッドをカバレッジから取得
 
         return result;
     }
@@ -134,32 +138,21 @@ public class Probe extends AbstractProbe{
         return new ProbeInfo(createdAt, loc, value);
     }
 
+    String getCallerMethod(int probeLine){
+        PrintStream stdout = System.out;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(bos);
+        dbg = TestUtil.testDebuggerFactory(assertInfo.getTestClassName(), assertInfo.getTestMethodName());
+        dbg.setMain(assertInfo.getTypeName());
+        dbg.stopAt(probeLine);
+        dbg.run(2000);
+        System.setOut(ps);
+        dbg.where();
+        System.setOut(stdout);
 
-    private void printWatchedValues(List<ProbeInfo> watchedValues){
-        for(ProbeInfo values : watchedValues){
-            LocalDateTime createAt = values.createAt;
-            Location loc = values.loc;
-            String value = values.value;
-            System.out.println("CreateAt: " + createAt + " Line: " + loc.getLineNumber() + " value: " + value);
-        }
-    }
-
-    private static class ProbeInfo implements Comparable<ProbeInfo>{
-        LocalDateTime createAt;
-        Location loc;
-        String value;
-
-        ProbeInfo(LocalDateTime createAt,
-                    Location loc,
-                  String value){
-            this.createAt = createAt;
-            this.loc = loc;
-            this.value = value;
-        }
-
-        @Override
-        public int compareTo(ProbeInfo o) {
-            return createAt.compareTo(o.createAt);
-        }
+        String[] stackTrace = bos.toString().split("\\n");
+        StringBuilder callerMethod = new StringBuilder(stackTrace[2]);
+        callerMethod.setCharAt(callerMethod.lastIndexOf("."), '#');
+        return callerMethod.substring(callerMethod.indexOf("]") + 1, callerMethod.indexOf("(")).trim();
     }
 }

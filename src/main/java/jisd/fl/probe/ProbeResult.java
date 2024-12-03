@@ -4,20 +4,18 @@ import java.util.Set;
 
 public class ProbeResult {
     private String probeMethod;
-    private Set<String> callerMethods;
+    private String callerMethod;
     private Set<String> siblingMethods;
 
     public ProbeResult(){
     }
 
-
-
     public String getProbeMethod() {
         return probeMethod;
     }
 
-    public Set<String> getCallerMethods() {
-        return callerMethods;
+    public String getCallerMethod() {
+        return callerMethod;
     }
 
     public Set<String> getSiblingMethods() {
@@ -28,8 +26,8 @@ public class ProbeResult {
         this.probeMethod = probeMethod;
     }
 
-    void setCallerMethods(Set<String> callerMethods) {
-        this.callerMethods = callerMethods;
+    void setCallerMethod(String callerMethod) {
+        this.callerMethod = callerMethod;
     }
 
     void setSiblingMethods(Set<String> siblingMethods) {

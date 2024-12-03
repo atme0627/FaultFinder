@@ -98,7 +98,7 @@ public class FaultFinder {
         AssertExtractor ae = new AssertExtractor(testSrcDir, testBinDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(targetTestClass, targetTestMethod, failedAssertLine, nthArg, actualValue);
         Debugger dbg = TestUtil.testDebuggerFactory(targetTestClass, targetTestMethod);
-        NewProbe prb = new NewProbe(dbg, fai);
+        NewProbe prb = new NewProbe(fai);
 //        List<String> probeMethods = prb.run(2000);
 //
 //        //probeMethodsがメソッドを持っているかチェック

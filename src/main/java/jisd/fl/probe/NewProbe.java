@@ -18,8 +18,8 @@ import java.util.*;
 //理想的には、"==" と同じ方法で判定したいが、型の問題で難しそう
 public class NewProbe extends AbstractProbe{
 
-    public NewProbe(Debugger dbg, FailedAssertInfo assertInfo) {
-        super(dbg, assertInfo);
+    public NewProbe(FailedAssertInfo assertInfo) {
+        super(assertInfo);
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
         String testBinDir = PropertyLoader.getProperty("testBinDir");
         this.sif = new StaticInfoFactory(testSrcDir, testBinDir);

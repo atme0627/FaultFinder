@@ -1,17 +1,16 @@
 package jisd.fl.probe;
 
-import com.sun.jdi.VMDisconnectedException;
 import jisd.debug.Debugger;
-import jisd.debug.Point;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.jdiscript.util.Utils.unchecked;
 
 class ProbeTest {
     String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
@@ -23,13 +22,6 @@ class ProbeTest {
     String fieldName = "point";
     String actual = "0.0";
 
-//    String testClassName = "org.apache.commons.math.analysis.integration.RombergIntegratorTest";
-//    String testMethodName = "testSinFunction";
-//    String variableName = "result";
-//    String typeName = "double";
-//    String fieldName = "primitive";
-//    String actual = "-0.5000000001514787";
-
     FailedAssertInfo fai = new FailedAssertEqualInfo(
             testClassName,
             testMethodName,
@@ -39,12 +31,34 @@ class ProbeTest {
             actual,
             0);
 
-    Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
+
 
     @Test
     void runTest(){
-        Probe prb = new Probe(dbg, fai);
-        ProbeResult result = prb.run(3000);
+        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
+        Probe prb = new Probe(fai);
+        ProbeResult result = prb.run(2000);
         System.out.println(result.getProbeMethod());
+        System.out.println(result.getCallerMethod());
+    }
+
+    @Test
+    void getCallStack(){
+        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
+        PrintStream stdout = System.out;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(bos);
+
+        dbg.setMain(fai.getTypeName());
+        dbg.setSrcDir(targetSrcDir, testSrcDir);
+        dbg.stopAt(50);
+        dbg.run(2000);
+        System.setOut(ps);
+        dbg.where();
+        System.setOut(stdout);
+
+        String[] stackTrace = bos.toString().split("\\n");
+        String calleeMethod = stackTrace[2].substring(stackTrace[2].indexOf("]") + 1, stackTrace[2].indexOf("(")).trim();
+        System.out.println("Callee method: " + calleeMethod);
     }
 }

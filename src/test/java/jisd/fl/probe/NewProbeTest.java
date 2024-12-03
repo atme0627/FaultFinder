@@ -30,7 +30,7 @@ class NewProbeTest {
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName, assertLineNum, nthArg, actual);
 
         Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
-        NewProbe prb = new NewProbe(dbg, fai);
+        NewProbe prb = new NewProbe(fai);
         List<Integer> lineWithVar = prb.getLineWithVar();
         System.out.println(Arrays.toString(lineWithVar.toArray()));
     }
@@ -48,7 +48,7 @@ class NewProbeTest {
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName, assertLineNum, nthArg, actual);
 
         Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
-        NewProbe prb = new NewProbe(dbg, fai);
+        NewProbe prb = new NewProbe(fai);
         List<Integer> lineWithVar = prb.getLineWithVar();
         System.out.println(Arrays.toString(lineWithVar.toArray()));
     }
@@ -66,7 +66,7 @@ class NewProbeTest {
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName + "()", assertLineNum, nthArg, actual);
 
         Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
-        NewProbe prb = new NewProbe(dbg, fai);
+        NewProbe prb = new NewProbe(fai);
         List<Integer> lineWithVar = prb.getLineWithVar();
         System.out.println(Arrays.toString(lineWithVar.toArray()));
 //        List<String> result = prb.run(2000);
@@ -118,7 +118,7 @@ class NewProbeTest {
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName + "()", assertLineNum, nthArg, actual);
 
         Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
-        NewProbe prb = new NewProbe(dbg, fai);
+        NewProbe prb = new NewProbe(fai);
 
         List<String> probeMethod = prb.probeLineParser(47);
 

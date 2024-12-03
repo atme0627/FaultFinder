@@ -8,15 +8,18 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import jisd.debug.Debugger;
+import jisd.debug.Location;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
+import jisd.fl.util.TestUtil;
 import jisd.info.ClassInfo;
 import jisd.info.StaticInfoFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,8 +30,8 @@ public abstract class AbstractProbe {
     StaticInfoFactory sif;
     FailedAssertInfo assertInfo;
 
-    public AbstractProbe(Debugger dbg, FailedAssertInfo assertInfo) {
-        this.dbg = dbg;
+    public AbstractProbe(FailedAssertInfo assertInfo) {
+        this.dbg = TestUtil.testDebuggerFactory(assertInfo.getTestClassName(), assertInfo.getTestMethodName());
         this.assertInfo = assertInfo;
     }
 
@@ -162,5 +165,33 @@ public abstract class AbstractProbe {
 //        }
 
         return typeNameWithPackage;
+    }
+
+    protected void printWatchedValues(List<ProbeInfo> watchedValues){
+        for(ProbeInfo values : watchedValues){
+            LocalDateTime createAt = values.createAt;
+            Location loc = values.loc;
+            String value = values.value;
+            System.out.println("CreateAt: " + createAt + " Line: " + loc.getLineNumber() + " value: " + value);
+        }
+    }
+
+    protected static class ProbeInfo implements Comparable<Probe.ProbeInfo>{
+        LocalDateTime createAt;
+        Location loc;
+        String value;
+
+        ProbeInfo(LocalDateTime createAt,
+                    Location loc,
+                  String value){
+            this.createAt = createAt;
+            this.loc = loc;
+            this.value = value;
+        }
+
+        @Override
+        public int compareTo(ProbeInfo o) {
+            return createAt.compareTo(o.createAt);
+        }
     }
 }
