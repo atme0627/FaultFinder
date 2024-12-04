@@ -1,7 +1,5 @@
 package jisd.fl.util;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.StaticJavaParser;
@@ -54,7 +52,8 @@ public class StaticAnalyzer {
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1の形式
     //publicメソッド以外は取得しない
-    public static Set<String> getMethodNames(String targetSrcPath, String targetClassName) throws IOException {
+    //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
+    public static Set<String> getMethodNames(String targetSrcPath, String targetClassName, boolean publicOnly) throws IOException {
         String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
         Path p = Paths.get(targetJavaPath);
         Set<String> methodNames = new LinkedHashSet<>();
@@ -62,8 +61,10 @@ public class StaticAnalyzer {
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
-                methodNames.add(targetClassName.replace("/", ".") + "#" + n.getNameAsString());
-                super.visit(n, arg);
+                if(!publicOnly || n.isPublic()) {
+                    methodNames.add(targetClassName.replace("/", ".") + "#" + n.getNameAsString());
+                    super.visit(n, arg);
+                }
             }
         }
         unit.accept(new MethodVisitor(), "");
@@ -95,7 +96,7 @@ public class StaticAnalyzer {
         MethodCallGraph mcg = new MethodCallGraph();
 
         for(String targetClassName : targetClassNames) {
-            targetMethodNames.addAll(getMethodNames(targetSrcPath, targetClassName));
+            targetMethodNames.addAll(getMethodNames(targetSrcPath, targetClassName, false));
         }
 
         for(String targetClassName : targetClassNames){

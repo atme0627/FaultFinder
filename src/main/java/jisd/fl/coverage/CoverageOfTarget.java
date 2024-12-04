@@ -23,7 +23,7 @@ public class CoverageOfTarget {
 
     public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;
-        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName);
+        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName, false);
     }
 
     public void processCoverage(IClassCoverage cc, boolean isTestPassed) throws IOException {

@@ -20,7 +20,7 @@ public class CoverageAnalyzer {
 
     public CoverageCollection analyzeAll(String testClassName) throws IOException, InterruptedException{
 
-        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testSrcDir, testClassName);
+        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testSrcDir, testClassName, true);
 
         //テストクラスをコンパイル
         TestUtil.compileTestClass(testClassName);

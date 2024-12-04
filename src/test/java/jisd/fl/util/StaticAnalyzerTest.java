@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.*;
 
 import org.apache.commons.lang3.tuple.Pair;
-import static org.junit.jupiter.api.Assertions.*;
 
 class StaticAnalyzerTest {
     String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
@@ -22,7 +21,7 @@ class StaticAnalyzerTest {
     @Test
     void getMethodNameTest() throws IOException {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName);
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName, false);
         for(String methodName : methodNames){
             System.out.println(methodName);
         }

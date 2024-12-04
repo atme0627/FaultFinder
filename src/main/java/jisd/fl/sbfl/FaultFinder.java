@@ -1,12 +1,10 @@
 package jisd.fl.sbfl;
 
-import jisd.debug.Debugger;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
-import jisd.fl.probe.AssertExtractor;
 import jisd.fl.probe.Probe;
+import jisd.fl.probe.ProbeResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.NewProbe;
 import jisd.fl.util.*;
 
 import java.io.IOException;
@@ -62,56 +60,77 @@ public class FaultFinder {
         if(!validCheck(rank)) return;
         String targetMethod = sbflResult.getMethodOfRank(rank);
         String contextClass = targetMethod.split("#")[0];
+        System.out.println("remove: " + targetMethod);
+        System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass);
+        Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass, false);
         for(String contextMethod : contexts) {
             double preScore = sbflResult.getSuspicious(contextMethod);
             sbflResult.setSuspicious(contextMethod, preScore * removeConst);
+            System.out.println("    " + contextMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(contextMethod));
         }
 
-        System.out.println("remove: " + targetMethod);
         sbflResult.printFLResults(10);
     }
 
     public void susp(int rank) throws IOException {
         if(!validCheck(rank)) return;
         String targetMethod = sbflResult.getMethodOfRank(rank);
+        System.out.println("susp: " + targetMethod);
         String contextClass = targetMethod.split("#")[0];
+        System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass);
+        Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass, false);
         for(String contextMethod : contexts) {
             double preScore = sbflResult.getSuspicious(contextMethod);
             sbflResult.setSuspicious(contextMethod, preScore + suspConst);
+            System.out.println("    " + contextMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(contextMethod));
         }
 
-        System.out.println("susp: " + targetMethod);
         sbflResult.printFLResults(10);
     }
 
-    public void probe(String targetTestClass,
-                      String targetTestMethod,
-                      int failedAssertLine,
-                      int nthArg,
-                      String actualValue){
-
-        AssertExtractor ae = new AssertExtractor(testSrcDir, testBinDir);
-        FailedAssertInfo fai = ae.getAssertByLineNum(targetTestClass, targetTestMethod, failedAssertLine, nthArg, actualValue);
-        Debugger dbg = TestUtil.testDebuggerFactory(targetTestClass, targetTestMethod);
+    public void probe(FailedAssertInfo fai){
+        System.out.println("probe: " + fai.getTestClassName() + "#" + fai.getTestMethodName() + ":" + fai.getVariableName() + "." + fai.getFieldName());
         Probe prb = new Probe(fai);
-//        List<String> probeMethods = prb.run(2000);
-//
-//        //probeMethodsがメソッドを持っているかチェック
-//        if(probeMethods.get(0).startsWith("#")){
-//            throw new RuntimeException("FaultFinder#probe\n" +
-//                    "probeLine does not have methods. probeLine: " + probeMethods.get(0).substring(1));
-//        }
-//
-//        //calc suspicious score
-//        for(String probeMethod : probeMethods){
-//
-//        }
+        ProbeResult probeResult = null;
+        try {
+             probeResult = prb.run(2000);
+        } catch (RuntimeException e){
+        //probeMethodsがメソッドを持っているかチェック
+            throw new RuntimeException("FaultFinder#probe\n" +
+                    "probeLine does not have methods.");
+        }
+
+        //calc suspicious score
+        double callerFactor = 0.0;
+        double siblingFactor = 0.0;
+        double preScore;
+        String probeMethod = probeResult.getProbeMethod();
+        String callerMethod = probeResult.getCallerMethod();
+        callerFactor = probeC2 * sbflResult.getSuspicious(callerMethod);
+        for(String siblingMethod : probeResult.getSiblingMethods()){
+            if (probeMethod.equals(siblingMethod)) continue;
+            siblingFactor += probeC2 * sbflResult.getSuspicious(siblingMethod);
+        }
+
+        //set suspicious score
+        preScore = sbflResult.getSuspicious(probeMethod);
+        sbflResult.setSuspicious(probeMethod, preScore * (1 + probeC1) + callerFactor + siblingFactor);
+        System.out.println("    " + probeMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(probeMethod));
+        preScore = sbflResult.getSuspicious(callerMethod);
+        sbflResult.setSuspicious(callerMethod, preScore + callerFactor + siblingFactor);
+        System.out.println("    " + callerMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(callerMethod));
+        for(String siblingMethod : probeResult.getSiblingMethods()){
+            if (probeMethod.equals(siblingMethod)) continue;
+            preScore = sbflResult.getSuspicious(siblingMethod);
+            sbflResult.setSuspicious(siblingMethod, preScore + callerFactor + siblingFactor);
+            System.out.println("    " + siblingMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(siblingMethod));
+        }
+
+        sbflResult.printFLResults(10);
     }
 
     //TODO: あるメソッドを呼び出したメソッドとそのメソッドが呼び出したメソッドをコールスタックから取得する
