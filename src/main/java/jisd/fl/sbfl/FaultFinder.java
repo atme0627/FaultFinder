@@ -60,7 +60,7 @@ public class FaultFinder {
         if(!validCheck(rank)) return;
         String targetMethod = sbflResult.getMethodOfRank(rank);
         String contextClass = targetMethod.split("#")[0];
-        System.out.println("remove: " + targetMethod);
+        System.out.println("[remove] " + targetMethod);
         System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
         sbflResult.setSuspicious(targetMethod, 0);
 
@@ -81,7 +81,7 @@ public class FaultFinder {
     public void susp(int rank) throws IOException {
         if(!validCheck(rank)) return;
         String targetMethod = sbflResult.getMethodOfRank(rank);
-        System.out.println("susp: " + targetMethod);
+        System.out.println("[susp] " + targetMethod);
         String contextClass = targetMethod.split("#")[0];
         System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
         sbflResult.setSuspicious(targetMethod, 0);
@@ -101,7 +101,7 @@ public class FaultFinder {
     }
 
     public void probe(FailedAssertInfo fai){
-        System.out.println("probe: " + fai.getTestClassName() + "#" + fai.getTestMethodName() + ":" + fai.getVariableName() + "." + fai.getFieldName());
+        System.out.println("[probe] " + fai.getTestClassName() + "#" + fai.getTestMethodName() + ": " + fai.getVariableName() + "." + fai.getFieldName());
         Probe prb = new Probe(fai);
         ProbeResult probeResult = null;
         try {

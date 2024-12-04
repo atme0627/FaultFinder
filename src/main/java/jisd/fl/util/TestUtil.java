@@ -26,7 +26,7 @@ public  class TestUtil {
         String[] args = {"-cp", junitClassPath + ":" + targetBinDir + ":" + testBinDir,  testSrcDir + "/" + testClassName.replace(".", "/") + ".java", "-d", compiledWithJunitFilePath};
 
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-        System.out.println("javac " + Arrays.toString(args));
+        //System.out.println("javac " + Arrays.toString(args));
         int rc = javac.run(null, null, null, args);
         if (rc != 0) {
             throw new RuntimeException("failed to compile.");

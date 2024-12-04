@@ -68,8 +68,6 @@ class FaultFinderTest {
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probe(fai);
         ff.susp(1);
-        ff.getFLResults().printFLResults();
+        ff.getFLResults().printFLResults(20);
     }
-
-
 }

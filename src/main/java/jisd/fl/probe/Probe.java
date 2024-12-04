@@ -17,11 +17,15 @@ import jisd.info.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class Probe extends AbstractProbe{
+    PrintStream stdOut = System.out;
+    PrintStream stdErr = System.err;
+
     public Probe(FailedAssertInfo assertInfo){
         super(assertInfo);
         String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
@@ -44,6 +48,7 @@ public class Probe extends AbstractProbe{
         List<ProbeInfo> watchedValues = new ArrayList<>();
         ProbeResult result = new ProbeResult();
 
+        disableStdOut("    >> Probe Info: Setting watch points.");
         //set watchPoint
         dbg.setMain(assertInfo.getTypeName());
         String[] fieldName = {"this." + assertInfo.getFieldName()};
@@ -53,13 +58,15 @@ public class Probe extends AbstractProbe{
             }
         }
 
+        disableStdOut("    >> Probe Info: Running debugger.");
         //run debugger
         try {
             dbg.run(sleepTime);
         } catch (VMDisconnectedException ignored) {
         }
-        //dbg.exit();
+        dbg.exit();
 
+        disableStdOut("    >> Probe Info: Extracting values from debug results.");
         //get Values from debugResult
         for (Optional<Point> op : watchPoints) {
             Point p;
@@ -82,8 +89,9 @@ public class Probe extends AbstractProbe{
 
         //debugResultを通過した順にソート
         watchedValues.sort(ProbeInfo::compareTo);
+        enableStdOut();
         printWatchedValues(watchedValues);
-
+        disableStdOut("    >> Probe Info: Searching probe line.");
         //初めてactualの値と一致した場所をprobeの対象とする。
         //一致した時点で終了
         int probeLine = 0;
@@ -109,9 +117,11 @@ public class Probe extends AbstractProbe{
         if (!isFound) throw new RuntimeException("No matching rows found.");
 
         //メソッドを呼び出したメソッドをコールスタックから取得
+        disableStdOut("    >> Probe Info: Searching caller method from call stack.");
         String callerMethod = getCallerMethod(probeLine);
         result.setCallerMethod(callerMethod);
 
+        disableStdOut("    >> Probe Info: Searching sibling method from coverage.");
         //callerメソッドが呼び出したメソッドをカバレッジから取得
         String callerClass = callerMethod.split("#")[0];
         Set<String> siblingMethods;
@@ -122,7 +132,7 @@ public class Probe extends AbstractProbe{
             throw new RuntimeException(e);
         }
         result.setSiblingMethods(siblingMethods);
-
+        enableStdOut();
         return result;
     }
 
@@ -160,6 +170,7 @@ public class Probe extends AbstractProbe{
         dbg = TestUtil.testDebuggerFactory(assertInfo.getTestClassName(), assertInfo.getTestMethodName());
         dbg.setMain(assertInfo.getTypeName());
         dbg.stopAt(probeLine);
+        disableStdOut("    >> Probe Info: Running debugger.");
         dbg.run(2000);
         System.setOut(ps);
         dbg.where();
@@ -179,6 +190,7 @@ public class Probe extends AbstractProbe{
     Set<String> getSiblingMethods(String callerClass) throws IOException, InterruptedException {
         CoverageAnalyzer analyzer = new CoverageAnalyzer();
         Set<String> siblingMethods = new HashSet<>();
+        disableStdOut("    >> Probe Info: Analyzing coverage.");
         CoverageCollection covOfFailedTest = analyzer.analyze(assertInfo.getTestClassName(), assertInfo.getTestClassName() + "#" + assertInfo.getTestMethodName());
         Map<String, SbflStatus> covOfCallerClass = covOfFailedTest.getCoverageOfTarget(callerClass, Granularity.METHOD);
         covOfCallerClass.forEach((method, status) -> {
@@ -187,5 +199,20 @@ public class Probe extends AbstractProbe{
             }
         });
         return siblingMethods;
+    }
+
+    private void disableStdOut(String msg){
+        System.setOut(stdOut);
+        System.out.println(msg);
+        PrintStream nop = new PrintStream(new OutputStream() {
+            public void write(int b) { /* noop */ }
+        });
+        System.setOut(nop);
+        System.setErr(nop);
+    }
+
+    private void enableStdOut(){
+        System.setOut(stdOut);
+        System.setErr(stdErr);
     }
 }

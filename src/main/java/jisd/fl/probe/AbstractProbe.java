@@ -172,7 +172,7 @@ public abstract class AbstractProbe {
             LocalDateTime createAt = values.createAt;
             Location loc = values.loc;
             String value = values.value;
-            System.out.println("CreateAt: " + createAt + " Line: " + loc.getLineNumber() + " value: " + value);
+            System.out.println("    >> Probe Info: CreateAt: " + createAt + " Line: " + loc.getLineNumber() + " value: " + value);
         }
     }
 

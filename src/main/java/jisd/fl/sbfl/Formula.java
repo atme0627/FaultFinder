@@ -30,6 +30,15 @@ public enum Formula {
 
             return ef / Math.sqrt((ef + nf) * (ef + ep));
         }
+    },
+    JACCARD {
+        double calc(SbflStatus status){
+            double ep = status.getEp();
+            double ef = status.getEf();
+            double nf = status.getNf();
+
+            return ef / (ef + nf + ep);
+        }
     };
 
     abstract double calc(SbflStatus status);

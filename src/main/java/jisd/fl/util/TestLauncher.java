@@ -44,6 +44,6 @@ public class TestLauncher implements Runnable {
         launcher.registerTestExecutionListeners(listener);
 
         launcher.execute(request);
-        listener.getSummary().printTo(new PrintWriter(System.out));
+        //listener.getSummary().printTo(new PrintWriter(System.out));
     }
 }
