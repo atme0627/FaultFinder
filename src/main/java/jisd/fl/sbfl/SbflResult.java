@@ -1,5 +1,6 @@
 package jisd.fl.sbfl;
 
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
@@ -8,14 +9,14 @@ import java.util.List;
 import static java.lang.Math.min;
 
 public class SbflResult {
-    List<Pair<String, Double>> result;
+    List<MutablePair<String, Double>> result;
 
     public SbflResult(){
         result = new ArrayList<>();
     }
 
     public void setElement(String element, SbflStatus status, Formula f){
-        Pair<String, Double> p = Pair.of(element, status.getSuspiciousness(f));
+        MutablePair<String, Double> p = MutablePair.of(element, status.getSuspiciousness(f));
         if(!p.getRight().isNaN()){
             result.add(p);
         }
@@ -56,20 +57,27 @@ public class SbflResult {
     }
 
     public double getSuspicious(String targetElementName){
-        Pair<String, Double> element = searchElement(targetElementName);
+        MutablePair<String, Double> element = searchElement(targetElementName);
         return element.getRight();
     }
 
     public void setSuspicious(String targetElementName, double suspicious){
-        Pair<String, Double> element = searchElement(targetElementName);
+        MutablePair<String, Double> element = searchElement(targetElementName);
         element.setValue(suspicious);
     }
 
-    private Pair<String, Double> searchElement(String targetElementName){
-        for(Pair<String, Double> element : result){
+    private MutablePair<String, Double> searchElement(String targetElementName){
+        for(MutablePair<String, Double> element : result){
             if(element.getLeft().equals(targetElementName)) return element;
         }
         System.err.println("Element not found. name: " + targetElementName);
         return null;
+    }
+
+    public boolean isElementExist(String targetElementName){
+        for(MutablePair<String, Double> element : result){
+            if(element.getLeft().equals(targetElementName)) return true;
+        }
+        return false;
     }
 }

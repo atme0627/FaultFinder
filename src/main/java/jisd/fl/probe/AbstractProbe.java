@@ -35,7 +35,7 @@ public abstract class AbstractProbe {
         this.assertInfo = assertInfo;
     }
 
-    public abstract ProbeResult run(int sleepTime);
+    public abstract ProbeResult run(int sleepTime) throws IOException;
     //probe.runで出力された行のパースを行い
     //probe対象のメソッドを返す
     //メソッドが存在しない場合、"#" + assertStmtの形式の要素を1つ持つListを返す

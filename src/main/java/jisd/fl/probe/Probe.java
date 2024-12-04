@@ -2,17 +2,16 @@ package jisd.fl.probe;
 
 import com.sun.jdi.VMDisconnectedException;
 import jisd.debug.DebugResult;
-import jisd.debug.Debugger;
 import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.coverage.CoverageAnalyzer;
 import jisd.fl.coverage.CoverageCollection;
-import jisd.fl.coverage.CoverageOfTarget;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.StaticAnalyzer;
 import jisd.fl.util.TestUtil;
 import jisd.info.*;
 
@@ -103,8 +102,8 @@ public class Probe extends AbstractProbe{
                 }
             });
             isFound = true;
-            //シグニチャは含めない
-            result.setProbeMethod(loc.getClassName() + "#" + probeMethod[0].substring(0, probeMethod[0].indexOf("(")));
+            //シグニチャも含める
+            result.setProbeMethod(loc.getClassName() + "#" + probeMethod[0]);
             break;
         }
         if (!isFound) throw new RuntimeException("No matching rows found.");
@@ -154,7 +153,7 @@ public class Probe extends AbstractProbe{
         return new ProbeInfo(createdAt, loc, value);
     }
 
-    String getCallerMethod(int probeLine){
+    String getCallerMethod(int probeLine) {
         PrintStream stdout = System.out;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(bos);
@@ -166,10 +165,15 @@ public class Probe extends AbstractProbe{
         dbg.where();
         System.setOut(stdout);
 
+        //callerMethodをシグニチャ付きで取得する
         String[] stackTrace = bos.toString().split("\\n");
-        StringBuilder callerMethod = new StringBuilder(stackTrace[2]);
-        callerMethod.setCharAt(callerMethod.lastIndexOf("."), '#');
-        return callerMethod.substring(callerMethod.indexOf("]") + 1, callerMethod.indexOf("(")).trim();
+        String callerMethod = stackTrace[2];
+        StringBuilder callerClassBuilder = new StringBuilder(callerMethod);
+        callerClassBuilder.setCharAt(callerClassBuilder.lastIndexOf("."), '#');
+        String callerClass = callerClassBuilder.substring(callerClassBuilder.indexOf("]") + 2).split("#")[0];
+        int line = Integer.parseInt(callerMethod.substring(callerMethod.indexOf("(") + 1, callerMethod.length() - 1).substring(6));
+        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
+        return StaticAnalyzer.getMethodNameFormLine(targetSrcDir, callerClass, line);
     }
 
     Set<String> getSiblingMethods(String callerClass) throws IOException, InterruptedException {

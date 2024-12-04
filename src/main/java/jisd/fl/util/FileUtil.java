@@ -5,11 +5,23 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class DirectoryUtil {
+public class FileUtil {
     public static void initDirectory(String dirPath){
         File parentDir = new File(dirPath);
         if(parentDir.exists()){
             deleteDirectory(parentDir);
+        }
+        try {
+            Files.createDirectory(Path.of(dirPath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void createDirectory(String dirPath){
+        File parentDir = new File(dirPath);
+        if(parentDir.exists()){
+            return;
         }
         try {
             Files.createDirectory(Path.of(dirPath));

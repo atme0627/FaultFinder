@@ -41,7 +41,7 @@ public class FailedAssertInfoFactory {
                                                               String testMethodName,
                                                               int line){
         String variableName = arg.toString();
-        //return new FailedAssertEqualInfo(testClassName, testMethodName, line, variableName,
+        //return new FailedAssertEqualInfo(coverageCollectionName, testMethodName, line, variableName,
         //        , , actual, , );
         return null;
     }

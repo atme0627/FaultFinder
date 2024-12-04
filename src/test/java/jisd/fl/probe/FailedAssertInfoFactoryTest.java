@@ -20,7 +20,7 @@ class FailedAssertInfoFactoryTest {
 //        assertEquals("12", fai.getActualValue());
 //        assertEquals(srcDir, fai.getSrcDir());
 //        assertEquals(binDir, fai.getBinDir());
-//        assertEquals(testClassName, fai.getTestClassName());
+//        assertEquals(coverageCollectionName, fai.getTestClassName());
 //        assertEquals(testMethodName, fai.getTestMethodName());
 //        assertEquals(line, fai.getLineOfAssert());
     }

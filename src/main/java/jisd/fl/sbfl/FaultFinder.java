@@ -66,11 +66,15 @@ public class FaultFinder {
 
         Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass, false);
         for(String contextMethod : contexts) {
+            if(!sbflResult.isElementExist(contextMethod)) continue;
+            if(contextMethod.equals(targetMethod)) continue;
             double preScore = sbflResult.getSuspicious(contextMethod);
             sbflResult.setSuspicious(contextMethod, preScore * removeConst);
             System.out.println("    " + contextMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(contextMethod));
         }
 
+        System.out.println();
+        sbflResult.sort();
         sbflResult.printFLResults(10);
     }
 
@@ -84,11 +88,15 @@ public class FaultFinder {
 
         Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass, false);
         for(String contextMethod : contexts) {
+            if(!sbflResult.isElementExist(contextMethod)) continue;
+            if(contextMethod.equals(targetMethod)) continue;
             double preScore = sbflResult.getSuspicious(contextMethod);
             sbflResult.setSuspicious(contextMethod, preScore + suspConst);
             System.out.println("    " + contextMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(contextMethod));
         }
 
+        System.out.println();
+        sbflResult.sort();
         sbflResult.printFLResults(10);
     }
 
@@ -103,6 +111,8 @@ public class FaultFinder {
             throw new RuntimeException("FaultFinder#probe\n" +
                     "probeLine does not have methods.");
         }
+
+        System.out.println("probe method: " + probeResult.getProbeMethod());
 
         //calc suspicious score
         double callerFactor = 0.0;
@@ -130,6 +140,8 @@ public class FaultFinder {
             System.out.println("    " + siblingMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(siblingMethod));
         }
 
+        System.out.println();
+        sbflResult.sort();
         sbflResult.printFLResults(10);
     }
 

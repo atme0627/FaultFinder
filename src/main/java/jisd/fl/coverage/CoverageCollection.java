@@ -2,19 +2,20 @@ package jisd.fl.coverage;
 
 import jisd.fl.sbfl.SbflStatus;
 
+import java.io.Serializable;
 import java.util.*;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
-public class CoverageCollection {
+public class CoverageCollection implements Serializable {
 
-    protected final String testClassName;
+    protected final String coverageCollectionName;
     Set<String> targetClassNames;  //実行されたターゲットクラスの集合
 
     //各クラスのカバレッジインスタンスを保持 (ターゲットクラス名) --> CoverageOfTarget
     HashMap<String, CoverageOfTarget> coverages = new LinkedHashMap<>();
 
-    public CoverageCollection(String testClassName, Set<String> targetClassNames) {
-        this.testClassName = testClassName;
+    public CoverageCollection(String coverageCollectionName, Set<String> targetClassNames) {
+        this.coverageCollectionName = coverageCollectionName;
         this.targetClassNames = targetClassNames;
     }
 

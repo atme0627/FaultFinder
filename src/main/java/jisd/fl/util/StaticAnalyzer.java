@@ -1,5 +1,6 @@
 package jisd.fl.util;
 
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.StaticJavaParser;
@@ -50,7 +51,7 @@ public class StaticAnalyzer {
 
     //targetSrcPathは最後"/"なし
     //targetClassNameはdemo.SortTestのように記述
-    //返り値は demo.SortTest#test1の形式
+    //返り値は demo.SortTest#test1(int a)の形式
     //publicメソッド以外は取得しない
     //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
     public static Set<String> getMethodNames(String targetSrcPath, String targetClassName, boolean publicOnly) throws IOException {
@@ -62,7 +63,15 @@ public class StaticAnalyzer {
             @Override
             public void visit(MethodDeclaration n, String arg) {
                 if(!publicOnly || n.isPublic()) {
-                    methodNames.add(targetClassName.replace("/", ".") + "#" + n.getNameAsString());
+                    methodNames.add(targetClassName.replace("/", ".") + "#" + n.getSignature());
+                    super.visit(n, arg);
+                }
+            }
+
+            @Override
+            public void visit(ConstructorDeclaration n, String arg) {
+                if(!publicOnly || n.isPublic()) {
+                    methodNames.add(targetClassName.replace("/", ".") + "#" + n.getSignature());
                     super.visit(n, arg);
                 }
             }
@@ -73,16 +82,27 @@ public class StaticAnalyzer {
 
     //targetSrcPathは最後"/"なし
     //targetMethodNameはdemo.SortTestのように記述
-    //返り値はmap: targetMethodName ex.) demo.SortTest#test1 --> Pair(start, end)
-    public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetSrcPath, String targetClassName) throws IOException {
+    //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
+    public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetSrcPath, String targetClassName) {
         Map<String, Pair<Integer, Integer>> rangeOfMethod = new HashMap<>();
         String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
         Path p = Paths.get(targetJavaPath);
-        CompilationUnit unit = StaticJavaParser.parse(p);
+        CompilationUnit unit = null;
+        try {
+            unit = StaticJavaParser.parse(p);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
-                rangeOfMethod.put(targetClassName.replace("/", ".")  + "#" + n.getNameAsString(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
+                rangeOfMethod.put(targetClassName.replace("/", ".")  + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
+                super.visit(n, arg);
+            }
+
+            @Override
+            public void visit(ConstructorDeclaration n, String arg) {
+                rangeOfMethod.put(targetClassName.replace("/", ".")  + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
                 super.visit(n, arg);
             }
         }
@@ -161,6 +181,18 @@ public class StaticAnalyzer {
         }
         throw new RuntimeException("StaticAnalyzer#getClassNameWithPackage\n" +
                 "Cannot find class: " + className);
+    }
+
+    public static String getMethodNameFormLine(String targetSrcDir, String targetClassName, int line) {
+        Map<String, Pair<Integer, Integer>> ranges = getRangeOfMethods(targetSrcDir, targetClassName);
+        String[] method = new String[1];
+        ranges.forEach((m, pair) -> {
+            if(pair.getLeft() <= line && line <= pair.getRight()) {
+                method[0] = m;
+            }
+        });
+
+        return method[0];
     }
 }
 

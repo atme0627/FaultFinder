@@ -3,7 +3,7 @@ package jisd.fl.coverage;
 import jisd.fl.util.*;
 import org.jacoco.core.data.ExecutionDataStore;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.Set;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
@@ -14,11 +14,15 @@ public class CoverageAnalyzer {
     Set<String> targetClassNames;
 
     public CoverageAnalyzer() throws IOException {
-        DirectoryUtil.initDirectory(jacocoExecFilePath);
+        FileUtil.initDirectory(jacocoExecFilePath);
         targetClassNames = StaticAnalyzer.getClassNames(targetSrcDir);
     }
 
     public CoverageCollection analyzeAll(String testClassName) throws IOException, InterruptedException{
+        //デシリアライズ処理
+        if(isCovDataExist(testClassName)){
+            return deserialize(testClassName);
+        }
 
         Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testSrcDir, testClassName, true);
 
@@ -35,6 +39,9 @@ public class CoverageAnalyzer {
             ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
             JacocoUtil.analyzeWithJacoco(execData, cv);
         }
+
+        //シリアライズ処理
+        serialize(cv.getCoverages());
         return cv.getCoverages();
     }
 
@@ -48,6 +55,46 @@ public class CoverageAnalyzer {
         ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
         JacocoUtil.analyzeWithJacoco(execData, cv);
         return cv.getCoverages();
+    }
+
+    private boolean isCovDataExist(String coverageCollectionName){
+        String dirPath = "./.coverage_data";
+        String covFileName = dirPath + "/" + coverageCollectionName + ".cov";
+        File data = new File(covFileName);
+        return data.exists();
+    }
+
+    private void serialize(CoverageCollection cc){
+        String dirPath = "./.coverage_data";
+        String covFileName = dirPath + "/" + cc.coverageCollectionName + ".cov";
+        FileUtil.createDirectory(dirPath);
+        File data = new File(covFileName);
+
+        try {
+            data.createNewFile();
+            FileOutputStream fileOutputStream = new FileOutputStream(covFileName);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(cc);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private CoverageCollection deserialize(String coverageCollectionName){
+        String dirPath = "./.coverage_data";
+        String covFileName = dirPath + "/" + coverageCollectionName + ".cov";
+
+        try {
+            FileInputStream fileInputStream = new FileInputStream(covFileName);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            CoverageCollection cc = (CoverageCollection) objectInputStream.readObject();
+            objectInputStream.close();
+            return cc;
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 

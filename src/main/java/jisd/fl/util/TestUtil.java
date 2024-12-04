@@ -21,7 +21,7 @@ public  class TestUtil {
 
     public static void compileTestClass(String testClassName) {
 
-        DirectoryUtil.initDirectory(compiledWithJunitFilePath);
+        FileUtil.initDirectory(compiledWithJunitFilePath);
 
         String[] args = {"-cp", junitClassPath + ":" + targetBinDir + ":" + testBinDir,  testSrcDir + "/" + testClassName.replace(".", "/") + ".java", "-d", compiledWithJunitFilePath};
 
@@ -79,7 +79,7 @@ public  class TestUtil {
 
     }
 
-//    public static boolean execTestCaseWithJacocoAPI(String testClassName, String execFileName){
+//    public static boolean execTestCaseWithJacocoAPI(String coverageCollectionName, String execFileName){
 //        String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
 //
 //

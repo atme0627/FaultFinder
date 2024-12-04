@@ -1,6 +1,8 @@
 package jisd.fl.sbfl;
 
-public class SbflStatus {
+import java.io.Serializable;
+
+public class SbflStatus implements Serializable {
     private int ep = 0;
     private int ef = 0;
     private int np = 0;

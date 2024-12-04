@@ -29,11 +29,11 @@ class StaticAnalyzerTest {
 
     @Test
     void getRangeOfMethodsTest() throws IOException {
-        String targetClassName = "demo.SortTest";
-        Map<String, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfMethods(targetSrcDir, targetClassName);
-        methodNames.forEach((k, v)->{
-            System.out.println("method name: " + k + ", start: " + v.getLeft() + ", end: " + v.getRight());
-        });
+//        String targetClassName = "demo.SortTest";
+//        Map<String, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfMethods(targetSrcDir, targetClassName);
+//        methodNames.forEach((k, v)->{
+//            System.out.println("method name: " + k + ", start: " + v.getLeft() + ", end: " + v.getRight());
+//        });
     }
 
     @Test
@@ -41,5 +41,13 @@ class StaticAnalyzerTest {
 
         MethodCallGraph mcg = StaticAnalyzer.getMethodCallGraph(targetSrcDir);
         mcg.printCallGraph();
+    }
+
+    @Test
+    void getMethodNameFormLineTest() {
+        String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
+        int line = 343;
+        String methodName = StaticAnalyzer.getMethodNameFormLine(targetSrcDir, targetClassName, line);
+        System.out.println(methodName);
     }
 }

@@ -8,9 +8,10 @@ import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 
-public class CoverageOfTarget {
+public class CoverageOfTarget implements Serializable {
     protected String targetClassName;
     protected Set<String> targetMethodNames;
 
