@@ -11,61 +11,23 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 class TestLauncherTest {
-    @Test
-    void launchTest(){
-        String testClassName = "demo.SampleTest";
-        String testMethodName = "sample2";
-        //カッコつけたら動かない
-        TestLauncher tl = new TestLauncher(testClassName, testMethodName);
-        tl.run();
-    }
 
     @Test
-    void launchTest2(){
-        String testClassName = "org.apache.commons.math.analysis.integration.RombergIntegratorTest";
-        String testMethodName = "testSinFunction";
+    void launchTest(){
+        String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
         //カッコつけたら動かない
-        TestLauncher tl = new TestLauncher(testClassName, testMethodName);
+        TestLauncher tl = new TestLauncher(testMethodName);
         tl.run();
     }
 
     @Test
     void jisdtest1(){
-        String testClassName = "demo.SampleTest";
-        String testMethodName = "sample2";
-        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
+        String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
+        String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
 
-        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
         dbg.setSrcDir(testSrcDir);
-        dbg.setMain("demo.SampleTest");
-        Optional<Point> p = dbg.stopAt(25);
+        dbg.setMain("java.jisd.fl.util.TestLauncher");
         dbg.run(1000);
-        dbg.locals();
-
     }
-
-    @Test
-    void jisdtest2(){
-        String testClassName = "demo.SampleTest";
-        String testMethodName = "sample2";
-        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-
-        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
-        dbg.setSrcDir(testSrcDir);
-        dbg.setMain("demo.SampleTest");
-        Optional<Point> p = dbg.watch(25);
-        try {
-            dbg.run(1000);
-        }
-        catch (VMDisconnectedException e){
-        }
-        dbg.exit();
-        DebugResult dr = p.get().getResults("c").get();
-        ArrayList<ValueInfo> vis = dr.getValues();
-        for(ValueInfo vi : vis){
-            System.out.println(vi.getValue());
-        }
-    }
-
-
 }

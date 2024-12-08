@@ -1,42 +1,36 @@
 package jisd.fl.util;
 
-import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
-import org.junit.platform.launcher.core.LauncherConfig;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 
-import java.io.PrintWriter;
-
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectPackage;
 
 //junit platform launcherを用いてテストケースを実行
-public class TestLauncher implements Runnable {
+public class TestLauncher {
     String testClassName;
     String testMethodName;
 
     //testMethodNameはカッコつけたら動かない
-    public TestLauncher(String testClassName, String testMethodName){
-        this.testClassName = testClassName;
+    //testMethodNameはclassを含む書き方
+    public TestLauncher(String testMethodName){
+        this.testClassName = testMethodName.split("#")[0];
         this.testMethodName = testMethodName;
     }
 
     public static void main(String[] args) {
-        String testClassName = args[0];
-        String testMethodName = args[1];
-        TestLauncher tl = new TestLauncher(testClassName, testMethodName);
+        String testMethodName = args[0];
+        TestLauncher tl = new TestLauncher(testMethodName);
         tl.run();
     }
 
-    @Override
-    public void run() {
+    public boolean run() {
         TestUtil.compileTestClass(testClassName);
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(
-                        selectMethod(testClassName + "#" + testMethodName)
+                        selectMethod(testMethodName)
                 ).build();
 
         Launcher launcher = LauncherFactory.create();
@@ -44,6 +38,10 @@ public class TestLauncher implements Runnable {
         launcher.registerTestExecutionListeners(listener);
 
         launcher.execute(request);
+        //listener.getSummary().printFailuresTo(new PrintWriter(System.out));
         //listener.getSummary().printTo(new PrintWriter(System.out));
+        boolean isTestPassed = listener.getSummary().getTotalFailureCount() == 0;
+        System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));
+        return isTestPassed;
     }
 }

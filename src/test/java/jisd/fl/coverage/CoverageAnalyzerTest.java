@@ -3,7 +3,6 @@ package jisd.fl.coverage;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 class CoverageAnalyzerTest {
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
@@ -15,6 +14,12 @@ class CoverageAnalyzerTest {
     @Test
     void analyzeTestMETHOD() throws IOException, InterruptedException {
         CoverageCollection cov = ca.analyzeAll(testClassName);
+        cov.printCoverages(Granularity.METHOD);
+    }
+
+    @Test
+    void jacocoAPITest() throws Exception {
+        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
         cov.printCoverages(Granularity.METHOD);
     }
 }

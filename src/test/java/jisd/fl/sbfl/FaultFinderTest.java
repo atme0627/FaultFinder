@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutionException;
 
 class FaultFinderTest {
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
-    String testMethodName = "testSingleVariableAndConstraint";
+    String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
     String variableName = "solution";
     String typeName = "org.apache.commons.math.optimization.RealPointValuePair";
     String fieldName = "point";
@@ -63,7 +63,7 @@ class FaultFinderTest {
     }
 
     @Test
-    void debugTest() throws IOException, InterruptedException {
+    void debugTest() throws Exception {
         CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probe(fai);

@@ -81,7 +81,6 @@ public class StaticAnalyzer {
     }
 
     //targetSrcPathは最後"/"なし
-    //targetMethodNameはdemo.SortTestのように記述
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
     public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetSrcPath, String targetClassName) {
         Map<String, Pair<Integer, Integer>> rangeOfMethod = new HashMap<>();

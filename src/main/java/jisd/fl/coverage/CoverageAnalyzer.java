@@ -1,6 +1,7 @@
 package jisd.fl.coverage;
 
 import jisd.fl.util.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
@@ -40,6 +41,35 @@ public class CoverageAnalyzer {
             JacocoUtil.analyzeWithJacoco(execData, cv);
         }
 
+        //シリアライズ処理
+        serialize(cv.getCoverages());
+        return cv.getCoverages();
+    }
+
+    public CoverageCollection analyzeAllWithAPI(String testClassName) throws Exception {
+        //デシリアライズ処理
+        if(isCovDataExist(testClassName)){
+            return deserialize(testClassName);
+        }
+
+        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testSrcDir, testClassName, true);
+
+        //テストクラスをコンパイル
+        TestUtil.compileTestClass(testClassName);
+        MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
+
+        JacocoUtil jacocoUtil= new JacocoUtil();
+        for(String testMethodName : testMethodNames){
+            Pair<Boolean, ExecutionDataStore> execWithAPI = jacocoUtil.execTestCaseWithJacocoAPI(testMethodName);
+            boolean isTestPassed = execWithAPI.getLeft();
+            ExecutionDataStore execData = execWithAPI.getRight();
+
+            cv.setTestsPassed(isTestPassed);
+            JacocoUtil.analyzeWithJacoco(execData, cv);
+        }
+
+        //TestLauncherをリロード
+        ClassLoader.getSystemClassLoader().loadClass(TestLauncher.class.getName());
         //シリアライズ処理
         serialize(cv.getCoverages());
         return cv.getCoverages();

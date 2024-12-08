@@ -6,7 +6,6 @@ import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 public  class TestUtil {
     private static final String junitConsoleLauncherPath = PropertyLoader.getProperty("junitConsoleLauncherPath");
@@ -34,12 +33,13 @@ public  class TestUtil {
     }
 
     //junit console launcherにjacoco agentをつけて起動
-    //methodNameは次のように指定: org.example.order.OrderTests#test1
+    //methodNameは次のように指定: org.example.order.OrderTests#test1(int a)
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
-    public static boolean execTestCaseWithJacocoAgent(String testClassName , String execFileName) throws IOException, InterruptedException {
+    public static boolean execTestCaseWithJacocoAgent(String testMethodNameWithSignature, String execFileName) throws IOException, InterruptedException {
+        String testMethodName = testMethodNameWithSignature.split("\\(")[0];
         String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
-        String junitTestSelectOption =" --select-method " + testClassName;
+        String junitTestSelectOption =" --select-method " + testMethodName;
 
         String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
                 " -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" + testBinDir + ":" +
@@ -65,23 +65,15 @@ public  class TestUtil {
         return proc.exitValue() == 0;
     }
 
-    public static Debugger testDebuggerFactory(String testClassName, String testMethodName) {
+    public static Debugger testDebuggerFactory(String testMethodName) {
         String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
         String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
         String junitClassPath = PropertyLoader.getJunitClassPaths();
 
-        Debugger dbg = new Debugger("jisd.fl.util.TestLauncher " + testClassName + " " + testMethodName,
+        Debugger dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethodName,
                 "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
 
-
-        dbg.setMain(testClassName);
         return dbg;
 
     }
-
-//    public static boolean execTestCaseWithJacocoAPI(String coverageCollectionName, String execFileName){
-//        String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
-//
-//
-//    }
 }

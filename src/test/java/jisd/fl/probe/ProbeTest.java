@@ -11,13 +11,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.Set;
 
-import static org.jdiscript.util.Utils.unchecked;
-
 class ProbeTest {
     String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
     String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
-    String testMethodName = "testSingleVariableAndConstraint";
+    String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
     String variableName = "solution";
     String typeName = "org.apache.commons.math.optimization.RealPointValuePair";
     String fieldName = "point";
@@ -32,11 +30,8 @@ class ProbeTest {
             actual,
             0);
 
-
-
     @Test
     void runTest(){
-        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
         Probe prb = new Probe(fai);
         ProbeResult result = prb.run(3000);
         System.out.println("probe method");
@@ -52,7 +47,7 @@ class ProbeTest {
 
     @Test
     void getCallStack(){
-        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
         PrintStream stdout = System.out;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(bos);

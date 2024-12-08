@@ -101,7 +101,7 @@ public class FaultFinder {
     }
 
     public void probe(FailedAssertInfo fai){
-        System.out.println("[probe] " + fai.getTestClassName() + "#" + fai.getTestMethodName() + ": " + fai.getVariableName() + "." + fai.getFieldName());
+        System.out.println("[probe] " + fai.getTestMethodName() + ": " + fai.getVariableName() + "." + fai.getFieldName());
         Probe prb = new Probe(fai);
         ProbeResult probeResult = null;
         try {

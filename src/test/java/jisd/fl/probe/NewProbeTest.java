@@ -29,7 +29,7 @@ class NewProbeTest {
         AssertExtractor ae = new AssertExtractor(srcDir, binDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName, assertLineNum, nthArg, actual);
 
-        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
         NewProbe prb = new NewProbe(fai);
         List<Integer> lineWithVar = prb.getLineWithVar();
         System.out.println(Arrays.toString(lineWithVar.toArray()));
@@ -47,7 +47,7 @@ class NewProbeTest {
         AssertExtractor ae = new AssertExtractor(srcDir, binDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName, assertLineNum, nthArg, actual);
 
-        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
         NewProbe prb = new NewProbe(fai);
         List<Integer> lineWithVar = prb.getLineWithVar();
         System.out.println(Arrays.toString(lineWithVar.toArray()));
@@ -65,7 +65,7 @@ class NewProbeTest {
         AssertExtractor ae = new AssertExtractor(srcDir, binDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName + "()", assertLineNum, nthArg, actual);
 
-        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
         NewProbe prb = new NewProbe(fai);
         List<Integer> lineWithVar = prb.getLineWithVar();
         System.out.println(Arrays.toString(lineWithVar.toArray()));
@@ -117,7 +117,7 @@ class NewProbeTest {
         AssertExtractor ae = new AssertExtractor(srcDir, binDir);
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName + "()", assertLineNum, nthArg, actual);
 
-        Debugger dbg = TestUtil.testDebuggerFactory(testClassName, testMethodName);
+        Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
         NewProbe prb = new NewProbe(fai);
 
         List<String> probeMethod = prb.probeLineParser(47);

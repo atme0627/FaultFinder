@@ -10,5 +10,5 @@ java -cp ./build/classes/java/main:\
 /Users/ezaki/.gradle/caches/modules-2/files-2.1/org.junit.vintage/junit-vintage-engine/5.10.0/af4e0a3cb6901aa53d6401003fc10638014b39b1/junit-vintage-engine-5.10.0.jar:\
 /Users/ezaki/.gradle/caches/modules-2/files-2.1/junit/junit/4.13.2/8ac9e16d933b6fb43bc7f576336b8f4d7eb5ba12/junit-4.13.2.jar:\
 /Users/ezaki/.gradle/caches/modules-2/files-2.1/org.apiguardian/apiguardian-api/1.1.2/a231e0d844d2721b0fa1b238006d15c6ded6842a/apiguardian-api-1.1.2.jar:\
- jisd.fl.util.TestLauncher org.apache.commons.math.optimization.linear.SimplexSolverTest testSingleVariableAndConstraint
+ jisd.fl.util.TestLauncher org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint
 
