@@ -23,7 +23,6 @@ class AssertExtractorTest {
         FailedAssertInfo fai = ae.getAssertByLineNum(testClassName, testMethodName, assertLineNum, nthArg, actual);
 
         assertEquals(fai.getAssertType(), AssertType.EQUAL);
-        assertEquals(fai.getVariableName(), "solution.getPoint()[0]");
         assertEquals(fai.getTestClassName(), testClassName);
         assertEquals(fai.getTestMethodName(), testMethodName);
         assertTrue(fai.eval(actual));

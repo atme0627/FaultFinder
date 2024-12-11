@@ -7,36 +7,13 @@ public class FailedAssertEqualInfo extends FailedAssertInfo {
 
     public FailedAssertEqualInfo(String testClassName,
                                  String testMethodName,
-                                 String variableName,
-                                 String typeName,
-                                 String fieldName,
                                  String actual,
-                                 int arrayNth) {
+                                 VariableInfo variableInfo) {
 
         super(AssertType.EQUAL,
                 testClassName,
                 testMethodName,
-                variableName,
-                typeName,
-                fieldName,
-                arrayNth
-        );
-        this.actual = actual;
-    }
-
-    public FailedAssertEqualInfo(String testClassName,
-                                 String testMethodName,
-                                 String variableName,
-                                 String typeName,
-                                 String fieldName,
-                                 String actual) {
-        super(AssertType.EQUAL,
-                testClassName,
-                testMethodName,
-                variableName,
-                typeName,
-                fieldName,
-                -1
+                variableInfo
         );
         this.actual = actual;
     }
@@ -46,9 +23,7 @@ public class FailedAssertEqualInfo extends FailedAssertInfo {
         return variable.equals(getActualValue());
     }
 
-
     public String getActualValue() {
         return actual;
     }
-
 }

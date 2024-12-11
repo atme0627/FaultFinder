@@ -5,67 +5,51 @@ import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.debug.Location;
 import jisd.debug.Point;
+import jisd.debug.value.PrimitiveInfo;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
+import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
 import jisd.info.ClassInfo;
-import jisd.info.FieldInfo;
 import jisd.info.StaticInfoFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class AbstractProbe {
 
     FailedAssertInfo assertInfo;
     Debugger dbg;
-    StaticInfoFactory sif;
-    ClassInfo ci;
+    StaticInfoFactory targetSif;
+    StaticInfoFactory testSif;
     PrintStream stdOut = System.out;
     PrintStream stdErr = System.err;
-    Map<String, ArrayList<Integer>> canSetLines;
+
 
     public AbstractProbe(FailedAssertInfo assertInfo) {
         String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
         String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
+        String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
+        String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
 
         this.assertInfo = assertInfo;
         this.dbg = createDebugger();
 
-        this.sif = new StaticInfoFactory(targetSrcDir, targetBinDir);
-        this.ci = sif.createClass(assertInfo.getTypeName());
-        this.canSetLines =  getCanSetLine();
+        this.targetSif = new StaticInfoFactory(targetSrcDir, targetBinDir);
+        this.testSif = new StaticInfoFactory(testSrcDir, testBinDir);
     }
 
-    public Map<String, ArrayList<Integer>> getCanSetLine() {
-        FieldInfo fi = ci.field(assertInfo.getFieldName());
-        return fi.canSet();
-    }
-
+    public abstract List<Integer> getCanSetLine(VariableInfo variableInfo);
     public abstract ProbeResult run(int sleepTime) throws IOException;
-    abstract ProbeResult searchProbeLine(List<ProbeInfo> watchedValues);
+    protected abstract ProbeResult searchProbeLine(List<ProbeInfo> watchedValues);
 
-    protected void printWatchedValues(List<ProbeInfo> watchedValues){
-        System.out.println("    >> ---------------------------------");
-        System.out.println("    >> field name: "
-                + assertInfo.getVariableName()
-                + "."
-                + assertInfo.getFieldName()
-                + " type: " + assertInfo.getTypeName());
-
-        for(ProbeInfo values : watchedValues){
-            System.out.println("    >> Probe Info: " + values);
-        }
-    }
-
-    private ProbeInfo getValuesFromDebugResult(DebugResult dr){
+    //primitive型の値のみを取得
+    //variableInfoが参照型の場合、fieldを取得してその中から目的のprimitive型の値を探す
+    private ProbeInfo getValuesFromDebugResult(DebugResult dr, VariableInfo variableInfo){
         ValueInfo vi;
         try {
             vi = dr.getLatestValue();
@@ -74,37 +58,57 @@ public abstract class AbstractProbe {
             return null;
         }
 
+        //対象の変数がnullの場合、nullを返す
+        if(vi.getValue().isEmpty()) return null;
+
+        PrimitiveInfo pi = getPrimitiveInfoFromValueInfo(vi, variableInfo);
         LocalDateTime createdAt = vi.getCreatedAt();
         Location loc = dr.getLocation();
-        String value;
-
-        //配列の場合
-        if(assertInfo.isArray()){
-            ArrayList<ValueInfo> array = vi.ch();
-            //null check
-            if(array.isEmpty()) return null;
-            value = array.get(assertInfo.getArrayNth()).getValue();
-        }
-        else {
-            value = vi.getValue();
-        }
+        String value = Objects.requireNonNull(pi).getValue();
 
         return new ProbeInfo(createdAt, loc, value);
     }
 
-    List<ProbeInfo> extractInfoFromDebugger(String dbgMain,
-                                            String fieldName,
-                                            int sleepTime){
+    //参照型の配列には未対応
+    private PrimitiveInfo getPrimitiveInfoFromValueInfo(ValueInfo vi, VariableInfo variableInfo){
+        //プリミティブ型の場合
+        if(variableInfo.isPrimitive()) return (PrimitiveInfo) vi;
 
+        //プリミティブ型の配列の場合
+        if(variableInfo.isArray()){
+            int arrayNth = variableInfo.getArrayNth();
+            ArrayList<ValueInfo> arrayElements = vi.ch();
+            return (PrimitiveInfo) arrayElements.get(arrayNth);
+        }
+
+        //参照型の場合
+        if(variableInfo.isPrimitive()){
+            ArrayList<ValueInfo> fieldElements = vi.ch();
+            boolean isFound = false;
+            String fieldName = variableInfo.getTargetField().getVariableName();
+            for(ValueInfo e : fieldElements){
+                if(e.getName().equals(fieldName)){
+                    getPrimitiveInfoFromValueInfo(e, variableInfo.getTargetField());
+                    isFound = true;
+                    break;
+                }
+            }
+            if(!isFound) throw new NoSuchElementException(fieldName + " is not found in fields of" + variableInfo.getVariableName(false));
+        }
+        return null;
+    }
+
+    protected List<ProbeInfo> extractInfoFromDebugger(VariableInfo variableInfo, int sleepTime){
         disableStdOut("    >> Probe Info: Running debugger.");
+        List<Integer> canSetLines = getCanSetLine(variableInfo);
+        String dbgMain = variableInfo.getLocateClass();
+        String varName = variableInfo.getVariableName(true);
         List<Optional<Point>> watchPoints = new ArrayList<>();
         //set watchPoint
         dbg.setMain(dbgMain);
-        String[] fieldNames = {"this." + fieldName};
-        for (List<Integer> lineWithVar : canSetLines.values()) {
-            for (int line : lineWithVar) {
-                watchPoints.add(dbg.watch(line, fieldNames));
-            }
+        String[] fieldNames = {varName};
+        for (int line : canSetLines) {
+            watchPoints.add(dbg.watch(line, fieldNames));
         }
 
         //run debugger
@@ -115,21 +119,22 @@ public abstract class AbstractProbe {
         dbg.exit();
 
         enableStdOut();
-        List<ProbeInfo> watchedValues = getInfoFromWatchPoints(watchPoints);
+        List<ProbeInfo> watchedValues = getInfoFromWatchPoints(watchPoints, variableInfo);
         watchedValues.sort(ProbeInfo::compareTo);
         return watchedValues;
     }
 
-    private  List<ProbeInfo> getInfoFromWatchPoints(List<Optional<Point>> watchPoints){
+    private List<ProbeInfo> getInfoFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo variableInfo){
         //get Values from debugResult
+        String varName = variableInfo.getVariableName(true);
         List<ProbeInfo> watchedValues = new ArrayList<>();
         for (Optional<Point> op : watchPoints) {
             Point p;
             if (op.isEmpty()) continue;
             p = op.get();
-            Optional<DebugResult> od = p.getResults("this." + assertInfo.getFieldName());
+            Optional<DebugResult> od = p.getResults(varName);
             if (od.isEmpty()) continue;
-            ProbeInfo values = getValuesFromDebugResult(od.get());
+            ProbeInfo values = getValuesFromDebugResult(od.get(), variableInfo);
             if (values == null) continue;
             watchedValues.add(values);
         }
@@ -156,13 +161,26 @@ public abstract class AbstractProbe {
         System.setErr(stdErr);
     }
 
-    void printProbeLine(int probeLine){
+    protected void printWatchedValues(List<ProbeInfo> watchedValues, VariableInfo variableInfo){
+        System.out.println("    >> ---------------------------------");
+        System.out.println("    >> field name: "
+                + variableInfo.getVariableName(true)
+                + " type: "
+                + variableInfo.getVariableType());
+
+        for(ProbeInfo values : watchedValues){
+            System.out.println("    >> Probe Info: " + values);
+        }
+    }
+
+    protected void printProbeLine(int probeLine, VariableInfo variableInfo){
+        ClassInfo ci = targetSif.createClass(variableInfo.getLocateClass());
         System.out.println("    >> [probe line]");
         System.out.println("    >> " + probeLine + ": " + ci.src().split("\n")[probeLine - 1]);
         System.out.println("    >> ---------------------------------");
     }
 
-    Debugger createDebugger(){
+    protected Debugger createDebugger(){
         return TestUtil.testDebuggerFactory(assertInfo.getTestMethodName());
     }
 

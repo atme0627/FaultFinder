@@ -5,10 +5,11 @@ import jisd.fl.coverage.CoverageAnalyzer;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
+import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
-import jisd.fl.util.TestUtil;
+import jisd.info.ClassInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,19 +26,19 @@ public class Probe extends AbstractProbe{
     //失敗テスト実行時に、actualに一致した瞬間に呼び出しているメソッドを返す。
     @Override
     public ProbeResult run(int sleepTime) {
-        String dbgMain = assertInfo.getTypeName();
-        String fieldName = assertInfo.getFieldName();
+        //targetのfieldを直接probe
+        VariableInfo variableInfo = assertInfo.getVariableInfo().getTargetField();
 
-        List<ProbeInfo> watchedValues = extractInfoFromDebugger(dbgMain, fieldName, sleepTime);
-        printWatchedValues(watchedValues);
+        List<ProbeInfo> watchedValues = extractInfoFromDebugger(variableInfo, sleepTime);
+        printWatchedValues(watchedValues, variableInfo);
         ProbeResult result = searchProbeLine(watchedValues);
 
         int probeLine = result.getProbeLine();
-        printProbeLine(probeLine);
+        printProbeLine(probeLine, variableInfo);
 
         //メソッドを呼び出したメソッドをコールスタックから取得
         disableStdOut("    >> Probe Info: Searching caller method from call stack.");
-        String callerMethod = getCallerMethod(probeLine);
+        String callerMethod = getCallerMethod(probeLine, variableInfo);
         result.setCallerMethod(callerMethod);
 
         //callerメソッドが呼び出したメソッドをカバレッジから取得
@@ -56,8 +57,10 @@ public class Probe extends AbstractProbe{
     }
 
     @Override
-    ProbeResult searchProbeLine(List<ProbeInfo> watchedValues){
-        disableStdOut("    >> Probe Info: Searching probe line.");
+    protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues){
+        System.out.println("    >> Probe Info: Searching probe line.");
+
+        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
 
         //初めてactualの値と一致した場所をprobeの対象とする。
         //一致した時点で終了
@@ -70,29 +73,23 @@ public class Probe extends AbstractProbe{
             if (!assertInfo.eval(value)) continue;
             //実行しているメソッドを取得
             probeLine = loc.getLineNumber();
-            int finalProbeLine = probeLine;
-            final String[] probeMethod = new String[1];
-            canSetLines.forEach((method, list) -> {
-                if (list.contains(finalProbeLine)) {
-                    probeMethod[0] = method;
-                }
-            });
+            String probeMethod = StaticAnalyzer.getMethodNameFormLine(targetSrcDir, loc.getClassName() ,probeLine);
             isFound = true;
             //シグニチャも含める
             result.setProbeLine(probeLine);
-            result.setProbeMethod(loc.getClassName() + "#" + probeMethod[0]);
+            result.setProbeMethod(probeMethod);
             break;
         }
         if (!isFound) throw new RuntimeException("No matching rows found.");
         return result;
     }
 
-    String getCallerMethod(int probeLine) {
+    String getCallerMethod(int probeLine, VariableInfo variableInfo) {
         PrintStream stdout = System.out;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(bos);
         dbg = createDebugger();
-        dbg.setMain(assertInfo.getTypeName());
+        dbg.setMain(variableInfo.getLocateClass());
         dbg.stopAt(probeLine);
         disableStdOut("    >> Probe Info: Running debugger.");
         dbg.run(2000);
@@ -123,5 +120,16 @@ public class Probe extends AbstractProbe{
             }
         });
         return siblingMethods;
+    }
+
+    @Override
+    public List<Integer> getCanSetLine(VariableInfo variableInfo) {
+        List<Integer> canSetLines = new ArrayList<>();
+        ClassInfo ci = targetSif.createClass(variableInfo.getLocateClass());
+        Map<String, ArrayList<Integer>> canSet= ci.field(variableInfo.getVariableName()).canSet();
+        for (List<Integer> lineWithVar : canSet.values()) {
+            canSetLines.addAll(lineWithVar);
+        }
+        return canSetLines;
     }
 }

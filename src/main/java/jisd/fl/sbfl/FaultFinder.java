@@ -5,6 +5,7 @@ import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.Probe;
 import jisd.fl.probe.ProbeResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
+import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.*;
 
 import java.io.IOException;
@@ -101,7 +102,8 @@ public class FaultFinder {
     }
 
     public void probe(FailedAssertInfo fai){
-        System.out.println("[probe] " + fai.getTestMethodName() + ": " + fai.getVariableName() + "." + fai.getFieldName());
+        VariableInfo variableInfo = fai.getVariableInfo();
+        System.out.println("[probe] " + fai.getTestMethodName() + ": " + variableInfo);
         Probe prb = new Probe(fai);
         ProbeResult probeResult = null;
         try {

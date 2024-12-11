@@ -5,29 +5,45 @@ import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.probe.assertinfo.VariableInfo;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 class FaultFinderTest {
+    CoverageAnalyzer ca = new CoverageAnalyzer();
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
     String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
     String variableName = "solution";
-    String typeName = "org.apache.commons.math.optimization.RealPointValuePair";
+    String variableType = "org.apache.commons.math.optimization.RealPointValuePair";
     String fieldName = "point";
+    String fieldType = "double[]";
     String actual = "0.0";
-    CoverageAnalyzer ca = new CoverageAnalyzer();
+
+    VariableInfo field = new VariableInfo(
+            variableType,
+            fieldName,
+            fieldType,
+            true,
+            0,
+            null
+    );
+
+    VariableInfo probeVariable = new VariableInfo(
+            testClassName,
+            variableName,
+            variableType,
+            false,
+            -1,
+            field
+    );
 
     FailedAssertInfo fai = new FailedAssertEqualInfo(
             testClassName,
             testMethodName,
-            variableName,
-            typeName,
-            fieldName,
             actual,
-            0);
+            probeVariable);
 
     FaultFinderTest() throws IOException {
     }

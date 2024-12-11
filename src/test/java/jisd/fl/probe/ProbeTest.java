@@ -1,34 +1,44 @@
 package jisd.fl.probe;
 
-import jisd.debug.Debugger;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.TestUtil;
+import jisd.fl.probe.assertinfo.VariableInfo;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.Set;
 
 class ProbeTest {
-    String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-    String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
     String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
     String variableName = "solution";
-    String typeName = "org.apache.commons.math.optimization.RealPointValuePair";
+    String variableType = "org.apache.commons.math.optimization.RealPointValuePair";
     String fieldName = "point";
+    String fieldType = "double[]";
     String actual = "0.0";
+
+    VariableInfo field = new VariableInfo(
+            variableType,
+            fieldName,
+            fieldType,
+            true,
+            0,
+            null
+            );
+
+    VariableInfo probeVariable = new VariableInfo(
+            testClassName,
+            variableName,
+            variableType,
+            false,
+            -1,
+            field
+    );
 
     FailedAssertInfo fai = new FailedAssertEqualInfo(
             testClassName,
             testMethodName,
-            variableName,
-            typeName,
-            fieldName,
             actual,
-            0);
+            probeVariable);
 
     @Test
     void runTest(){
@@ -43,25 +53,5 @@ class ProbeTest {
         for(String sibling : siblingMethods){
             System.out.println(sibling);
         }
-    }
-
-    @Test
-    void getCallStack(){
-        Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
-        PrintStream stdout = System.out;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(bos);
-
-        dbg.setMain(fai.getTypeName());
-        dbg.setSrcDir(targetSrcDir, testSrcDir);
-        dbg.stopAt(50);
-        dbg.run(2000);
-        System.setOut(ps);
-        dbg.where();
-        System.setOut(stdout);
-
-        String[] stackTrace = bos.toString().split("\\n");
-        String calleeMethod = stackTrace[2].substring(stackTrace[2].indexOf("]") + 1, stackTrace[2].indexOf("(")).trim();
-        System.out.println("Callee method: " + calleeMethod);
     }
 }
