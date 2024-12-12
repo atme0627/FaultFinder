@@ -1,14 +1,14 @@
 package jisd.fl.util;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Nested;
 
 import java.io.IOException;
 import java.util.*;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 class StaticAnalyzerTest {
     String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
+    String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
     @Test
     void getClassNameTest() throws IOException {
         ArrayList<String> classNames = new ArrayList<>(StaticAnalyzer.getClassNames(targetSrcDir));
@@ -37,17 +37,44 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getMethodCallGraphTest() throws IOException {
-
-        MethodCallGraph mcg = StaticAnalyzer.getMethodCallGraph(targetSrcDir);
-        mcg.printCallGraph();
+    void getCalleeMethodsForMethodsTest(){
+        String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName, false);
+        String callerMethodName = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
+        Set<String> calleeMethods = StaticAnalyzer.getCalledMethodsForMethod(targetSrcDir, callerMethodName, methodNames);
+        for(String methodName : calleeMethods){
+            System.out.println(methodName);
+        }
     }
 
     @Test
     void getMethodNameFormLineTest() {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
         int line = 343;
-        String methodName = StaticAnalyzer.getMethodNameFormLine(targetSrcDir, targetClassName, line);
+        String methodName = StaticAnalyzer.getMethodNameFormLine(targetClassName, line);
         System.out.println(methodName);
+    }
+
+    @Nested
+    class getAssertLineTest {
+        @Test
+        void test1() {
+            String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
+            List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "coefficients");
+            System.out.println(Arrays.toString(result.toArray()));
+        }
+        @Test
+        void test2() {
+            String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
+            List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "basicRow");
+            System.out.println(Arrays.toString(result.toArray()));
+        }
+        @Test
+        void test3() {
+            String locateMethod = "org.apache.commons.math.optimization.RealPointValuePair#RealPointValuePair(double[], double)";
+            List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "this.point");
+            System.out.println(Arrays.toString(result.toArray()));
+        }
+
     }
 }

@@ -1,6 +1,9 @@
 package jisd.fl.util;
 
 import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.StaticJavaParser;
@@ -14,7 +17,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
 public class StaticAnalyzer {
-    public static Set<String> getClassNames(String targetSrcPath) throws IOException {
+    public static Set<String> getClassNames(String targetSrcPath) {
         Set<String> classNames = new LinkedHashSet<>();
         Path p = Paths.get(targetSrcPath);
 
@@ -44,7 +47,11 @@ public class StaticAnalyzer {
             }
         }
 
-        Files.walkFileTree(p, new ClassExplorer());
+        try {
+            Files.walkFileTree(p, new ClassExplorer());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return classNames;
     }
 
@@ -54,11 +61,16 @@ public class StaticAnalyzer {
     //返り値は demo.SortTest#test1(int a)の形式
     //publicメソッド以外は取得しない
     //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
-    public static Set<String> getMethodNames(String targetSrcPath, String targetClassName, boolean publicOnly) throws IOException {
+    public static Set<String> getMethodNames(String targetSrcPath, String targetClassName, boolean publicOnly) {
         String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
         Path p = Paths.get(targetJavaPath);
         Set<String> methodNames = new LinkedHashSet<>();
-        CompilationUnit unit = StaticJavaParser.parse(p);
+        CompilationUnit unit = null;
+        try {
+            unit = StaticJavaParser.parse(p);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
@@ -109,7 +121,7 @@ public class StaticAnalyzer {
         return rangeOfMethod;
     }
 
-    public static MethodCallGraph getMethodCallGraph(String targetSrcPath) throws IOException {
+    public static MethodCallGraph getMethodCallGraph(String targetSrcPath) {
         Set<String> targetClassNames = getClassNames(targetSrcPath);
         Set<String> targetMethodNames = new HashSet<>();
         MethodCallGraph mcg = new MethodCallGraph();
@@ -124,14 +136,21 @@ public class StaticAnalyzer {
 
         return mcg;
     }
+
+
     //直接的な呼び出し関係しか取れてない
     //ex.) NormalDistributionImpl#getInitialDomainはオーバライドメソッドであり
     //その抽象クラス内で呼び出されているが、この呼び出し関係は取れていない。
 
-    private static void getCalledMethodsForClass(String targetSrcPath, String targetClassName, Set<String> targetMethodNames, MethodCallGraph mcg) throws IOException {
+    private static void getCalledMethodsForClass(String targetSrcPath, String targetClassName, Set<String> targetMethodNames, MethodCallGraph mcg) {
         String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
         Path p = Paths.get(targetJavaPath);
-        CompilationUnit unit = StaticJavaParser.parse(p);
+        CompilationUnit unit = null;
+        try {
+            unit = StaticJavaParser.parse(p);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodCallExpr n, String arg) {
@@ -146,7 +165,7 @@ public class StaticAnalyzer {
                 String callerMethodName = targetClassName + "#" + callerMethod.getNameAsString();
                 String calleeMethodName = "fail";
                 for(String targetMethodName : targetMethodNames){
-                    if(getMethodNameWithoutPackage(targetMethodName).equals(n.getNameAsString())){
+                    if(getMethodNameWithoutPackageAndSig(targetMethodName).equals(n.getNameAsString())){
                         calleeMethodName = targetMethodName;
                         break;
                     }
@@ -166,11 +185,52 @@ public class StaticAnalyzer {
         unit.accept(new MethodVisitor(), "");
     }
 
-    private static String getMethodNameWithoutPackage(String methodName){
-        return methodName.split("#")[1];
+    public static Set<String> getCalledMethodsForMethod(String targetSrcPath,
+                                                         String callerMethodName,
+                                                         Set<String> targetMethodNames) {
+        Set<String> calleeMethods = new HashSet<>();
+        String targetClassName = callerMethodName.split("#")[0];
+        String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
+        Path p = Paths.get(targetJavaPath);
+        CompilationUnit unit = null;
+        try {
+            unit = StaticJavaParser.parse(p);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Optional<MethodDeclaration> callerMethodOptional = unit.findFirst(MethodDeclaration.class,
+                (n) -> n.getNameAsString().equals(getMethodNameWithoutPackageAndSig(callerMethodName)));
+
+        if(callerMethodOptional.isEmpty()) {
+            throw new RuntimeException("can't find " + callerMethodName);
+        }
+        MethodDeclaration callerMethod = callerMethodOptional.get();
+
+        class MethodVisitor extends VoidVisitorAdapter<String>{
+            @Override
+            public void visit(MethodCallExpr n, String arg) {
+                for(String targetMethodName : targetMethodNames) {
+                    if (getMethodNameWithoutPackageAndSig(targetMethodName).equals(n.getNameAsString())) {
+                        String calleeMethodName = targetMethodName;
+                        //System.out.println("caller: " + callerMethodName +  " callee: " + calleeMethodName);
+                        calleeMethods.add(calleeMethodName);
+                        break;
+                    }
+                }
+                super.visit(n, arg);
+            }
+        }
+
+        callerMethod.accept(new MethodVisitor(), "");
+        return calleeMethods;
     }
 
-    public static String getClassNameWithPackage(String targetSrcDir, String className) throws IOException {
+    private static String getMethodNameWithoutPackageAndSig(String methodName){
+        return methodName.split("#")[1].split("\\(")[0];
+    }
+
+    public static String getClassNameWithPackage(String targetSrcDir, String className) {
         Set<String> classNames = getClassNames(targetSrcDir);
         for(String n : classNames){
             String[] ns = n.split("\\.");
@@ -182,7 +242,8 @@ public class StaticAnalyzer {
                 "Cannot find class: " + className);
     }
 
-    public static String getMethodNameFormLine(String targetSrcDir, String targetClassName, int line) {
+    public static String getMethodNameFormLine(String targetClassName, int line) {
+        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
         Map<String, Pair<Integer, Integer>> ranges = getRangeOfMethods(targetSrcDir, targetClassName);
         String[] method = new String[1];
         ranges.forEach((m, pair) -> {
@@ -192,6 +253,50 @@ public class StaticAnalyzer {
         });
 
         return method[0];
+    }
+
+    //(あるメソッドの<行番号, ソースコード>のlist, 対象の変数) --> 変数が代入されている行（初期化も含む）
+    public static List<Integer> getAssignLine(String className, String variable) {
+        List<Integer> assignLine = new ArrayList<>();
+
+        class MethodVisitor extends VoidVisitorAdapter<String> {
+            @Override
+            public void visit(AssignExpr n, String variable) {
+                Expression targetExpr = n.getTarget();
+
+                //配列参照の場合
+                if(targetExpr.isArrayAccessExpr()){
+                    targetExpr = targetExpr.asArrayAccessExpr().getName();
+                }
+
+                if (targetExpr.toString().equals(variable)) {
+                    assignLine.add(n.getEnd().get().line);
+                }
+                super.visit(n, variable);
+            }
+
+            @Override
+            public void visit(VariableDeclarator n, String variable) {
+                if (n.getName().toString().equals(variable)) {
+                    assignLine.add(n.getEnd().get().line);
+                }
+                super.visit(n, variable);
+            }
+        }
+
+        CompilationUnit unit = JavaParserUtil.parseClass(className);
+        unit.accept(new MethodVisitor(), variable);
+//        if (isConstructor) {
+//            //コンストラクタ
+//            ConstructorDeclaration cd = JavaParserUtil.parseConstructor(methodName);
+//            cd.accept(new MethodVisitor(), variable);
+//        } else {
+//            //メソッド
+//            MethodDeclaration md = JavaParserUtil.parseMethod(methodName);
+//            md.accept(new MethodVisitor(), variable);
+//        }
+        assignLine.sort(Comparator.naturalOrder());
+        return assignLine;
     }
 }
 

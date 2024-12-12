@@ -4,13 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="impl probe">
+    <list default="true" id="81462e5c-1ca3-45d0-a933-843692a6a4c7" name="変更" comment="introduce variableInfo">
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fl_config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/fl_config.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/locallib/jisd-0.2.4.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/AssertExtractorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/AssertExtractorTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/util/StaticAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/util/StaticAnalyzerTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +38,13 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="MyFaultFinder" type="f1a62948:ProjectNode" />
-                <item name="実行構成" type="7b0102dc:RunConfigurationsNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MyFaultFinder" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -117,9 +122,15 @@
     "Gradle.CoverageAnalyzerTest.analyzeTestMETHOD.executor": "Run",
     "Gradle.CoverageAnalyzerTest.execTestMethodTest.executor": "Debug",
     "Gradle.CoverageAnalyzerTest.executor": "Run",
+    "Gradle.CoverageAnalyzerTest.jacocoAPITest.executor": "Run",
     "Gradle.FailedAssertInfoFactoryTest.genFaeiFromAssertInfoFactory.executor": "Run",
     "Gradle.FailedAssertInfoFactoryTest.genFatiFromAssertInfoFactory.executor": "Run",
+    "Gradle.FaultFinderTest.debugTest.executor": "Run",
     "Gradle.FaultFinderTest.printFLResultsTest.executor": "Run",
+    "Gradle.FaultFinderTest.probeTest.executor": "Run",
+    "Gradle.FaultFinderTest.removeTest.executor": "Run",
+    "Gradle.FaultFinderTest.suspTest.executor": "Run",
+    "Gradle.Gradle 依存関係のロード.executor": "Run",
     "Gradle.MyFaultFinder [:jisd.fl.util.TestLauncher.main()].executor": "Run",
     "Gradle.MyFaultFinder [:jisd.fl.util.junitEntryPoint.main()].executor": "Run",
     "Gradle.MyFaultFinder [:probe.RunTest.main()].executor": "Run",
@@ -138,14 +149,23 @@
     "Gradle.ParseTest.assertTrueParseTest.executor": "Run",
     "Gradle.ParseTest.executor": "Run",
     "Gradle.ParseTest.useParser.executor": "Run",
+    "Gradle.ProbeExTest.runD4jTest.executor": "Debug",
+    "Gradle.ProbeExTest.tmpTest.executor": "Run",
     "Gradle.ProbeTest.RunTestCaseTest.executor": "Run",
     "Gradle.ProbeTest.createDebugger.executor": "Run",
     "Gradle.ProbeTest.debug.executor": "Run",
-    "Gradle.ProbeTest.executor": "Run",
-    "Gradle.ProbeTest.getLineWithVarD4jTest.executor": "Debug",
+    "Gradle.ProbeTest.debug2.executor": "Run",
+    "Gradle.ProbeTest.executor": "Debug",
+    "Gradle.ProbeTest.getCallStack.executor": "Run",
+    "Gradle.ProbeTest.getClassNameFromMethodCallTest.executor": "Run",
+    "Gradle.ProbeTest.getLineWithVarD4jTest.executor": "Run",
     "Gradle.ProbeTest.getLineWithVarTest.executor": "Run",
+    "Gradle.ProbeTest.probeLineParserTest.executor": "Run",
+    "Gradle.ProbeTest.probeLineParserTest2.executor": "Run",
+    "Gradle.ProbeTest.probeLineParserTest3.executor": "Run",
     "Gradle.ProbeTest.runD4jTest.executor": "Run",
-    "Gradle.ProbeTest.runTest.executor": "Run",
+    "Gradle.ProbeTest.runD4jTest2.executor": "Run",
+    "Gradle.ProbeTest.runTest.executor": "Debug",
     "Gradle.ProbeTest.useProbej.executor": "Run",
     "Gradle.SampleTest.executor": "Run",
     "Gradle.SampleTest.sample.executor": "Run",
@@ -156,16 +176,20 @@
     "Gradle.SifDebugTest.ClassLoaderTest3.executor": "Run",
     "Gradle.StaticAnalyzerTest.getClassNameTest.executor": "Run",
     "Gradle.StaticAnalyzerTest.getMethodCallGraphTest.executor": "Run",
+    "Gradle.StaticAnalyzerTest.getMethodNameFormLineTest.executor": "Run",
     "Gradle.StaticAnalyzerTest.getMethodNameTest.executor": "Run",
     "Gradle.StaticAnalyzerTest.getRangeOfMethodsTest.executor": "Run",
+    "Gradle.StaticAnalyzerTest.staticInfoTest.executor": "Debug",
     "Gradle.TestDebuggerFactoryTest.compileTestClassTest.executor": "Run",
     "Gradle.TestDebuggerFactoryTest.createTest.executor": "Run",
     "Gradle.TestDebuggerFactoryTest.entryPointTest.executor": "Run",
     "Gradle.TestDebuggerTest.compileTestClassTest.executor": "Run",
     "Gradle.TestDebuggerTestFactory.createTest.executor": "Run",
     "Gradle.TestLauncherTest.jisdtest.executor": "Run",
+    "Gradle.TestLauncherTest.jisdtest1.executor": "Run",
     "Gradle.TestLauncherTest.jisdtest2.executor": "Run",
     "Gradle.TestLauncherTest.launchTest.executor": "Run",
+    "Gradle.TestLauncherTest.launchTest2.executor": "Run",
     "Gradle.TestRunnerTest.compileTestClassTest.executor": "Run",
     "Gradle.ソースのダウンロード.executor": "Run",
     "JUnit.AssertExtractorTest.displaySrc.executor": "Run",
@@ -189,8 +213,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CreateClassDialog.RecentsKey">
-      <recent name="jisd.fl.coverage" />
       <recent name="jisd.fl.util" />
+      <recent name="jisd.fl.coverage" />
       <recent name="coverage" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
@@ -206,31 +230,99 @@
       <recent name="$PROJECT_DIR$/locallib/src4test" />
       <recent name="$PROJECT_DIR$/locallib/jdiscript" />
     </key>
+    <key name="MoveMembersDialog.RECENTS_KEY">
+      <recent name="jisd.fl.util.TestUtil" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="jisd.fl.coverage" />
+    </key>
     <key name="CreateTestDialog.RecentsKey">
+      <recent name="jisd.fl.probe" />
       <recent name="jisd.fl.util" />
       <recent name="jisd.fl.sbfl" />
       <recent name="jisd.fl.testutil" />
       <recent name="jisd.fl.coverage" />
-      <recent name="probe" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="probe" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.ProbeTest.useProbej">
-    <configuration name="junitEntryPoint" type="Application" factoryName="Application" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="jisd.fl.util.junitEntryPoint" />
+  <component name="RunManager" selected="Gradle.ProbeTest.runTest">
+    <configuration name="TestLauncher" type="Application" factoryName="Application" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jisd.fl.util.TestLauncher" />
       <module name="MyFaultFinder.main" />
-      <option name="PROGRAM_PARAMETERS" value="demo.SampleTest sample2" />
+      <option name="PROGRAM_PARAMETERS" value="org.apache.commons.math.optimization.linear.SimplexSolverTest testSingleVariableAndConstraint" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="jisd.fl.util.*" />
+          <option name="PATTERN" value="jisd.fl.coverage.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
+    </configuration>
+    <configuration name="junitEntryPoint" type="Application" factoryName="Application" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="jisd.fl.util.junitEntryPoint" />
+      <module name="MyFaultFinder.main" />
+      <option name="PROGRAM_PARAMETERS" value="demo.SampleTest sample2" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="jisd.fl.coverage.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="FaultFinderTest.printFLResultsTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;jisd.fl.sbfl.FaultFinderTest.printFLResultsTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="FaultFinderTest.probeTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;jisd.fl.sbfl.FaultFinderTest.probeTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
     </configuration>
     <configuration name="MyFaultFinder [:jisd.fl.util.TestLauncher.main()]" type="GradleRunConfiguration" factoryName="Gradle">
       <ExternalSystemSettings>
@@ -254,29 +346,7 @@
       <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="MyFaultFinder [dependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="dependencies" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <method v="2" />
-    </configuration>
-    <configuration name="ProbeTest.debug" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="ProbeExTest.runD4jTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -289,7 +359,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.probe.ProbeTest.debug&quot;" />
+            <option value="&quot;jisd.fl.probe.ProbeExTest.runD4jTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -300,7 +370,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="ProbeTest.getLineWithVarD4jTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="ProbeTest.runTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -313,7 +383,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.probe.ProbeTest.getLineWithVarD4jTest&quot;" />
+            <option value="&quot;jisd.fl.probe.ProbeTest.runTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -324,7 +394,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="ProbeTest.runD4jTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="StaticAnalyzerTest.staticInfoTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -337,31 +407,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.probe.ProbeTest.runD4jTest&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>true</RunAsTest>
-      <method v="2" />
-    </configuration>
-    <configuration name="ProbeTest.useProbej" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;jisd.fl.probe.ProbeTest.useProbej&quot;" />
+            <option value="&quot;jisd.fl.util.StaticAnalyzerTest.staticInfoTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -374,11 +420,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.ProbeTest.useProbej" />
-        <item itemvalue="Gradle.MyFaultFinder [dependencies]" />
-        <item itemvalue="Gradle.ProbeTest.getLineWithVarD4jTest" />
-        <item itemvalue="Gradle.ProbeTest.debug" />
-        <item itemvalue="Gradle.ProbeTest.runD4jTest" />
+        <item itemvalue="Gradle.ProbeTest.runTest" />
+        <item itemvalue="Gradle.StaticAnalyzerTest.staticInfoTest" />
+        <item itemvalue="Gradle.FaultFinderTest.probeTest" />
+        <item itemvalue="Gradle.FaultFinderTest.printFLResultsTest" />
+        <item itemvalue="Gradle.ProbeExTest.runD4jTest" />
       </list>
     </recent_temporary>
   </component>
@@ -535,7 +581,111 @@
       <option name="project" value="LOCAL" />
       <updated>1731937295634</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="support junit4&#10;sbflのランクを出すところまでは実装&#10;jacocoはagentをつける実装のまま">
+      <option name="closed" value="true" />
+      <created>1732512553545</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1732512553545</updated>
+    </task>
+    <task id="LOCAL-00020" summary="impl probe#assertLineParser">
+      <option name="closed" value="true" />
+      <created>1732709894850</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1732709894850</updated>
+    </task>
+    <task id="LOCAL-00021" summary="refactoring">
+      <option name="closed" value="true" />
+      <created>1732779527771</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1732779527771</updated>
+    </task>
+    <task id="LOCAL-00022" summary="refactoring">
+      <option name="closed" value="true" />
+      <created>1732780268787</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1732780268787</updated>
+    </task>
+    <task id="LOCAL-00023" summary="impl sugiyama-san's probe">
+      <option name="closed" value="true" />
+      <created>1732888660602</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1732888660602</updated>
+    </task>
+    <task id="LOCAL-00024" summary="change triple to ProbeInfo">
+      <option name="closed" value="true" />
+      <created>1733117323604</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1733117323604</updated>
+    </task>
+    <task id="LOCAL-00025" summary="impl getCallerMethod">
+      <option name="closed" value="true" />
+      <created>1733205543290</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1733205543290</updated>
+    </task>
+    <task id="LOCAL-00026" summary="impl getSiblingMethod">
+      <option name="closed" value="true" />
+      <created>1733208624434</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1733208624434</updated>
+    </task>
+    <task id="LOCAL-00027" summary="impl FaultFinder#probe">
+      <option name="closed" value="true" />
+      <created>1733290966680</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1733290966680</updated>
+    </task>
+    <task id="LOCAL-00028" summary="modify FaultFinder#probe">
+      <option name="closed" value="true" />
+      <created>1733297969297</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1733297969297</updated>
+    </task>
+    <task id="LOCAL-00029" summary="modify FaultFinder#probe output">
+      <option name="closed" value="true" />
+      <created>1733299802647</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1733299802647</updated>
+    </task>
+    <task id="LOCAL-00030" summary="refactoring">
+      <option name="closed" value="true" />
+      <created>1733677001100</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1733677001100</updated>
+    </task>
+    <task id="LOCAL-00031" summary="introduce variableInfo">
+      <option name="closed" value="true" />
+      <created>1733896952530</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1733896952530</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -563,9 +713,19 @@
     <MESSAGE value="suport to all granularity" />
     <MESSAGE value="impl coverage function" />
     <MESSAGE value="impl FaultFinder.java" />
-    <MESSAGE value="refactoring" />
     <MESSAGE value="impl probe" />
-    <option name="LAST_COMMIT_MESSAGE" value="impl probe" />
+    <MESSAGE value="support junit4&#10;sbflのランクを出すところまでは実装&#10;jacocoはagentをつける実装のまま" />
+    <MESSAGE value="impl probe#assertLineParser" />
+    <MESSAGE value="impl sugiyama-san's probe" />
+    <MESSAGE value="change triple to ProbeInfo" />
+    <MESSAGE value="impl getCallerMethod" />
+    <MESSAGE value="impl getSiblingMethod" />
+    <MESSAGE value="impl FaultFinder#probe" />
+    <MESSAGE value="modify FaultFinder#probe" />
+    <MESSAGE value="modify FaultFinder#probe output" />
+    <MESSAGE value="refactoring" />
+    <MESSAGE value="introduce variableInfo" />
+    <option name="LAST_COMMIT_MESSAGE" value="introduce variableInfo" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -593,6 +753,21 @@
           <url>jar://$PROJECT_DIR$/locallib/jisd-0.2.4.jar!/jisd/analysis/LysMain.class</url>
           <line>90</line>
           <option name="timeStamp" value="101" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/Probe.java</url>
+          <line>127</line>
+          <option name="timeStamp" value="160" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>jar://$PROJECT_DIR$/locallib/jisd-0.2.5_bata.jar!/jisd/analysis/LysMain.class</url>
+          <line>67</line>
+          <option name="timeStamp" value="165" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>jar://$PROJECT_DIR$/locallib/jisd-0.2.5_bata.jar!/jisd/analysis/LysMain.class</url>
+          <line>77</line>
+          <option name="timeStamp" value="167" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

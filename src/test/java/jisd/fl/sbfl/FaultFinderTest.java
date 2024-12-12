@@ -23,7 +23,7 @@ class FaultFinderTest {
 
     VariableInfo field = new VariableInfo(
             variableType,
-            fieldName,
+            "", fieldName,
             fieldType,
             true,
             0,
@@ -32,7 +32,7 @@ class FaultFinderTest {
 
     VariableInfo probeVariable = new VariableInfo(
             testClassName,
-            variableName,
+            "", variableName,
             variableType,
             false,
             -1,
@@ -44,7 +44,6 @@ class FaultFinderTest {
             testMethodName,
             actual,
             probeVariable);
-
     FaultFinderTest() throws IOException {
     }
 
@@ -85,5 +84,35 @@ class FaultFinderTest {
         ff.probe(fai);
         ff.susp(1);
         ff.getFLResults().printFLResults(20);
+    }
+
+    @Test
+    void probeTest2() throws IOException, InterruptedException {
+        String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
+        String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
+        String locateClass = "org.apache.commons.math.optimization.linear.SimplexTableau";
+        String locateMethod = "getSolution";
+        String variableName = "coefficients";
+        String variableType = "double[]";
+        String actual = "0.0";
+
+        VariableInfo probeVariable = new VariableInfo(
+                locateClass,
+                "", variableName,
+                variableType,
+                false,
+                0,
+                field
+        );
+
+        FailedAssertInfo fai = new FailedAssertEqualInfo(
+                testClassName,
+                testMethodName,
+                actual,
+                probeVariable);
+
+        CoverageCollection cov = ca.analyzeAll(testClassName);
+        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
+        ff.probe(fai);
     }
 }

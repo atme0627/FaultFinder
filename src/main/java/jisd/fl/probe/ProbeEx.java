@@ -44,17 +44,18 @@ public class ProbeEx extends AbstractProbe{
 
     //assert文から遡って、最後に変数が目的の条件を満たしている行で呼び出しているメソッドを返す。
     public ProbeResult run(int sleepTime) {
-        VariableInfo variableInfo = assertInfo.getVariableInfo();
-        List<ProbeInfo> watchedValues = extractInfoFromDebugger(variableInfo, sleepTime);
-        printWatchedValues(watchedValues, variableInfo);
-        ProbeResult result = searchProbeLine(watchedValues);
-        int probeLine = result.getProbeLine();
-        printProbeLine(probeLine, variableInfo);
-        return result;
+//        VariableInfo variableInfo = assertInfo.getVariableInfo();
+//        List<ProbeInfo> watchedValues = extractInfoFromDebugger(variableInfo, sleepTime);
+//        printWatchedValues(watchedValues, variableInfo);
+//        ProbeResult result = searchProbeLine(watchedValues, );
+//        int probeLine = result.getProbeLine();
+//        printProbeLine(probeLine, variableInfo);
+//        return result;
+        return null;
     }
 
     @Override
-    protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues) {
+    protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignLine) {
         return null;
     }
 
@@ -136,11 +137,7 @@ public class ProbeEx extends AbstractProbe{
         }
 
         String typeNameWithPackage;
-        try {
-            typeNameWithPackage = StaticAnalyzer.getClassNameWithPackage(targetSrcDir, typeName);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        typeNameWithPackage = StaticAnalyzer.getClassNameWithPackage(targetSrcDir, typeName);
 
 //        //B以降
 //        //X.Y or X.Y()に対し、Xのフィールド、メソッドにYが含まれていることを確認し、Yの型を返す。

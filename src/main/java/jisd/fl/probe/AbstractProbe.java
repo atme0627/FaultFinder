@@ -14,6 +14,7 @@ import jisd.fl.util.TestUtil;
 import jisd.info.ClassInfo;
 import jisd.info.StaticInfoFactory;
 
+import java.awt.desktop.SystemEventListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -45,28 +46,31 @@ public abstract class AbstractProbe {
 
     public abstract List<Integer> getCanSetLine(VariableInfo variableInfo);
     public abstract ProbeResult run(int sleepTime) throws IOException;
-    protected abstract ProbeResult searchProbeLine(List<ProbeInfo> watchedValues);
+    protected abstract ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignLine);
 
     //primitive型の値のみを取得
     //variableInfoが参照型の場合、fieldを取得してその中から目的のprimitive型の値を探す
-    private ProbeInfo getValuesFromDebugResult(DebugResult dr, VariableInfo variableInfo){
-        ValueInfo vi;
+    private List<ProbeInfo> getValuesFromDebugResult(DebugResult dr, VariableInfo variableInfo){
+        List<ProbeInfo> pis = new ArrayList<>();
+        List<ValueInfo> vis;
         try {
-            vi = dr.getLatestValue();
+            vis = dr.getValues();
         }
         catch (RuntimeException e) {
-            return null;
+            return pis;
         }
 
-        //対象の変数がnullの場合、nullを返す
-        if(vi.getValue().isEmpty()) return null;
+        for(ValueInfo vi : vis) {
+            //対象の変数がnullの場合飛ばす
+            if (vi.getValue().isEmpty()) continue;
 
-        PrimitiveInfo pi = getPrimitiveInfoFromValueInfo(vi, variableInfo);
-        LocalDateTime createdAt = vi.getCreatedAt();
-        Location loc = dr.getLocation();
-        String value = Objects.requireNonNull(pi).getValue();
-
-        return new ProbeInfo(createdAt, loc, value);
+            PrimitiveInfo pi = getPrimitiveInfoFromValueInfo(vi, variableInfo);
+            LocalDateTime createdAt = vi.getCreatedAt();
+            Location loc = dr.getLocation();
+            String value = Objects.requireNonNull(pi).getValue();
+            pis.add(new ProbeInfo(createdAt, loc, value));
+        }
+        return pis;
     }
 
     //参照型の配列には未対応
@@ -101,6 +105,7 @@ public abstract class AbstractProbe {
     protected List<ProbeInfo> extractInfoFromDebugger(VariableInfo variableInfo, int sleepTime){
         disableStdOut("    >> Probe Info: Running debugger.");
         List<Integer> canSetLines = getCanSetLine(variableInfo);
+        disableStdOut(Arrays.toString(canSetLines.toArray()));
         String dbgMain = variableInfo.getLocateClass();
         String varName = variableInfo.getVariableName(true);
         List<Optional<Point>> watchPoints = new ArrayList<>();
@@ -134,9 +139,7 @@ public abstract class AbstractProbe {
             p = op.get();
             Optional<DebugResult> od = p.getResults(varName);
             if (od.isEmpty()) continue;
-            ProbeInfo values = getValuesFromDebugResult(od.get(), variableInfo);
-            if (values == null) continue;
-            watchedValues.add(values);
+            watchedValues.addAll(getValuesFromDebugResult(od.get(), variableInfo));
         }
 
         if (watchedValues.isEmpty()) {
@@ -161,15 +164,15 @@ public abstract class AbstractProbe {
         System.setErr(stdErr);
     }
 
-    protected void printWatchedValues(List<ProbeInfo> watchedValues, VariableInfo variableInfo){
+    protected void printWatchedValues(List<ProbeInfo> watchedValues, VariableInfo variableInfo, List<Integer> assignLine){
         System.out.println("    >> ---------------------------------");
-        System.out.println("    >> field name: "
+        System.out.println("    >> [field name] "
                 + variableInfo.getVariableName(true)
-                + " type: "
+                + " [type] "
                 + variableInfo.getVariableType());
-
+        System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
         for(ProbeInfo values : watchedValues){
-            System.out.println("    >> Probe Info: " + values);
+            System.out.println("    >>" + values);
         }
     }
 

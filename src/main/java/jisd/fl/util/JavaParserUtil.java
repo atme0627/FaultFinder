@@ -1,0 +1,57 @@
+package jisd.fl.util;
+
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+
+public class JavaParserUtil {
+    static String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
+
+    public static CompilationUnit parseClass(String className){
+        Path p = Paths.get(getFullPath(className));
+        CompilationUnit unit = null;
+        try {
+            unit = StaticJavaParser.parse(p);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return unit;
+    }
+
+    //methodNameはクラス、シグニチャを含む
+    public static MethodDeclaration parseMethod(String methodName){
+        String className = methodName.split("#")[0];
+        CompilationUnit unit = parseClass(className);
+        Optional<MethodDeclaration> omd = unit.findFirst(MethodDeclaration.class,
+                (n)->n.getSignature().toString().equals(methodName.split("#")[1]));
+
+        return omd.orElse(null);
+    }
+
+    public static ConstructorDeclaration parseConstructor(String constructorName){
+        String className = constructorName.split("#")[0];
+        CompilationUnit unit = parseClass(className);
+        Optional<ConstructorDeclaration> ocd = unit.findFirst(ConstructorDeclaration.class,
+                (n)->n.getSignature().toString().equals(constructorName.split("#")[1]));
+
+        return ocd.orElse(null);
+    }
+
+    private static String getFullPath(String className){
+        return targetSrcDir + "/" + className.replace(".", "/") + ".java";
+    }
+
+    public static boolean isConstructor(String methodName){
+        String className = methodName.split("#")[0];
+        String classNameWithoutPackage = className.substring(className.lastIndexOf('.') + 1);
+        String methodNameWithoutPackage = methodName.substring(0, methodName.indexOf("(")).split("#")[1];
+        return classNameWithoutPackage.equals(methodNameWithoutPackage);
+    }
+
+}

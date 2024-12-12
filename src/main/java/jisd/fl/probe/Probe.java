@@ -10,6 +10,8 @@ import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
 import jisd.info.ClassInfo;
+import jisd.info.LocalInfo;
+import jisd.info.MethodInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,9 +32,13 @@ public class Probe extends AbstractProbe{
         VariableInfo variableInfo = assertInfo.getVariableInfo().getTargetField();
 
         List<ProbeInfo> watchedValues = extractInfoFromDebugger(variableInfo, sleepTime);
-        printWatchedValues(watchedValues, variableInfo);
-        ProbeResult result = searchProbeLine(watchedValues);
 
+        List<Integer> assignLines = StaticAnalyzer.getAssignLine(
+                variableInfo.getLocateClass(),
+                variableInfo.getVariableName(true));
+
+        printWatchedValues(watchedValues, variableInfo, assignLines);
+        ProbeResult result = searchProbeLine(watchedValues, assignLines);
         int probeLine = result.getProbeLine();
         printProbeLine(probeLine, variableInfo);
 
@@ -46,7 +52,7 @@ public class Probe extends AbstractProbe{
         String callerClass = callerMethod.split("#")[0];
         Set<String> siblingMethods;
         try {
-             siblingMethods = getSiblingMethods(callerClass);
+             siblingMethods = getSiblingMethods(callerClass, result.getCallerMethod());
         }
         catch (IOException | InterruptedException e){
             throw new RuntimeException(e);
@@ -57,30 +63,62 @@ public class Probe extends AbstractProbe{
     }
 
     @Override
-    protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues){
+    protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignedLine){
         System.out.println("    >> Probe Info: Searching probe line.");
 
-        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
 
-        //初めてactualの値と一致した場所をprobeの対象とする。
-        //一致した時点で終了
-        int probeLine = 0;
         boolean isFound = false;
         ProbeResult result = new ProbeResult();
-        for (ProbeInfo values : watchedValues) {
-            Location loc = values.loc;
-            String value = values.value;
-            if (!assertInfo.eval(value)) continue;
-            //実行しているメソッドを取得
-            probeLine = loc.getLineNumber();
-            String probeMethod = StaticAnalyzer.getMethodNameFormLine(targetSrcDir, loc.getClassName() ,probeLine);
-            isFound = true;
-            //シグニチャも含める
-            result.setProbeLine(probeLine);
-            result.setProbeMethod(probeMethod);
-            break;
+
+        List<ProbeInfo> matchValues = new ArrayList<>();
+        for (ProbeInfo pi : watchedValues) {
+            if (assertInfo.eval(pi.value)) {
+                matchValues.add(pi);
+                isFound = true;
+            }
         }
         if (!isFound) throw new RuntimeException("No matching rows found.");
+
+
+        //assignLineのうち実行されたものを集める
+        List<Integer> executedAssignedLines = new ArrayList<>();
+        for(int l : assignedLine){
+            for(ProbeInfo pi : matchValues){
+                if(pi.loc.getLineNumber() == l) {
+                    executedAssignedLines.add(l);
+                    break;
+                }
+            }
+        }
+
+        //新しいものから探して最初にexecutedAssignedLines内の値に一致したものがobjective
+        int probeLine = 0;
+        String locationClass = null;
+        if(executedAssignedLines.isEmpty()) {
+            probeLine = matchValues.get(0).loc.getLineNumber() - 1;
+            locationClass = matchValues.get(0).loc.getClassName();
+        }
+        else {
+            matchValues.sort(Comparator.reverseOrder());
+            for (ProbeInfo pi : matchValues) {
+                boolean isFounded = false;
+                for(int l : executedAssignedLines) {
+                    if (pi.loc.getLineNumber() == l) {
+                        probeLine = pi.loc.getLineNumber();
+                        locationClass = pi.loc.getClassName();
+                        isFounded = true;
+                        break;
+                    }
+                }
+                if(isFounded) break;
+            }
+        }
+
+        //実行しているメソッドを取得
+        String probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
+        //シグニチャも含める
+        result.setProbeLine(probeLine);
+        result.setProbeMethod(probeMethod);
         return result;
     }
 
@@ -105,17 +143,23 @@ public class Probe extends AbstractProbe{
         String callerClass = callerClassBuilder.substring(callerClassBuilder.indexOf("]") + 2).split("#")[0];
         int line = Integer.parseInt(callerMethod.substring(callerMethod.indexOf("(") + 1, callerMethod.length() - 1).substring(6));
         String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-        return StaticAnalyzer.getMethodNameFormLine(targetSrcDir, callerClass, line);
+        return StaticAnalyzer.getMethodNameFormLine(callerClass, line);
     }
 
-    Set<String> getSiblingMethods(String callerClass) throws IOException, InterruptedException {
+    Set<String> getSiblingMethods(String callerClass, String callerMethod) throws IOException, InterruptedException {
         CoverageAnalyzer analyzer = new CoverageAnalyzer();
         Set<String> siblingMethods = new HashSet<>();
+        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
+        Set<String> targetMethods = StaticAnalyzer.getMethodNames(targetSrcDir, callerClass, false);
         disableStdOut("    >> Probe Info: Analyzing coverage.");
+
+        Set<String> canBeCallMethods = StaticAnalyzer.getCalledMethodsForMethod(targetSrcDir, callerMethod, targetMethods);
+        System.out.println(Arrays.toString(canBeCallMethods.toArray()));
+
         CoverageCollection covOfFailedTest = analyzer.analyze(assertInfo.getTestClassName(), assertInfo.getTestMethodName());
         Map<String, SbflStatus> covOfCallerClass = covOfFailedTest.getCoverageOfTarget(callerClass, Granularity.METHOD);
         covOfCallerClass.forEach((method, status) -> {
-            if(status.isElementExecuted()){
+            if(canBeCallMethods.contains(method) && status.isElementExecuted()){
                 siblingMethods.add(method);
             }
         });
@@ -126,10 +170,19 @@ public class Probe extends AbstractProbe{
     public List<Integer> getCanSetLine(VariableInfo variableInfo) {
         List<Integer> canSetLines = new ArrayList<>();
         ClassInfo ci = targetSif.createClass(variableInfo.getLocateClass());
-        Map<String, ArrayList<Integer>> canSet= ci.field(variableInfo.getVariableName()).canSet();
-        for (List<Integer> lineWithVar : canSet.values()) {
-            canSetLines.addAll(lineWithVar);
+
+        if(variableInfo.isField()) {
+            Map<String, ArrayList<Integer>> canSet = ci.field(variableInfo.getVariableName()).canSet();
+            for (List<Integer> lineWithVar : canSet.values()) {
+                canSetLines.addAll(lineWithVar);
+            }
+            return canSetLines;
         }
-        return canSetLines;
+        else {
+            MethodInfo mi = ci.method(variableInfo.getLocateMethod());
+            LocalInfo li = mi.local(variableInfo.getVariableName());
+
+            return li.canSet();
+        }
     }
 }

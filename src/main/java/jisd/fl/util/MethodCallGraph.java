@@ -40,7 +40,7 @@ public class MethodCallGraph {
         }
     }
 
-    Set<String> getParent(String methodName){
+    public Set<String> getParent(String methodName){
         if(!graph.containsKey(methodName)){
             throw new RuntimeException("Method not found: " + methodName);
         }
@@ -48,7 +48,7 @@ public class MethodCallGraph {
         return graph.get(methodName).getLeft();
     }
 
-    Set<String> getChild(String methodName){
+    public Set<String> getChild(String methodName){
         if(!graph.containsKey(methodName)){
             throw new RuntimeException("Method not found: " + methodName);
         }
