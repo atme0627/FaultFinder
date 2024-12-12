@@ -1,6 +1,5 @@
 package jisd.fl.probe;
 
-import jisd.debug.Location;
 import jisd.fl.coverage.CoverageAnalyzer;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
@@ -153,7 +152,7 @@ public class Probe extends AbstractProbe{
         Set<String> targetMethods = StaticAnalyzer.getMethodNames(targetSrcDir, callerClass, false);
         disableStdOut("    >> Probe Info: Analyzing coverage.");
 
-        Set<String> canBeCallMethods = StaticAnalyzer.getCalledMethodsForMethod(targetSrcDir, callerMethod, targetMethods);
+        Set<String> canBeCallMethods = StaticAnalyzer.getCalledMethodsForMethod(callerMethod, targetMethods);
         System.out.println(Arrays.toString(canBeCallMethods.toArray()));
 
         CoverageCollection covOfFailedTest = analyzer.analyze(assertInfo.getTestClassName(), assertInfo.getTestMethodName());

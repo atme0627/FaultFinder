@@ -41,7 +41,7 @@ class StaticAnalyzerTest {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
         Set<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName, false);
         String callerMethodName = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
-        Set<String> calleeMethods = StaticAnalyzer.getCalledMethodsForMethod(targetSrcDir, callerMethodName, methodNames);
+        Set<String> calleeMethods = StaticAnalyzer.getCalledMethodsForMethod(callerMethodName, methodNames);
         for(String methodName : calleeMethods){
             System.out.println(methodName);
         }

@@ -6,7 +6,6 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import org.apache.commons.lang3.tuple.Pair;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
@@ -62,15 +61,9 @@ public class StaticAnalyzer {
     //publicメソッド以外は取得しない
     //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
     public static Set<String> getMethodNames(String targetSrcPath, String targetClassName, boolean publicOnly) {
-        String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
-        Path p = Paths.get(targetJavaPath);
         Set<String> methodNames = new LinkedHashSet<>();
-        CompilationUnit unit = null;
-        try {
-            unit = StaticJavaParser.parse(p);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
+
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
@@ -94,16 +87,10 @@ public class StaticAnalyzer {
 
     //targetSrcPathは最後"/"なし
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
-    public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetSrcPath, String targetClassName) {
+    public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetClassName) {
         Map<String, Pair<Integer, Integer>> rangeOfMethod = new HashMap<>();
-        String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
-        Path p = Paths.get(targetJavaPath);
-        CompilationUnit unit = null;
-        try {
-            unit = StaticJavaParser.parse(p);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
+
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
@@ -131,7 +118,7 @@ public class StaticAnalyzer {
         }
 
         for(String targetClassName : targetClassNames){
-            getCalledMethodsForClass(targetSrcPath, targetClassName, targetMethodNames, mcg);
+            getCalledMethodsForClass(targetClassName, targetMethodNames, mcg);
         }
 
         return mcg;
@@ -141,16 +128,9 @@ public class StaticAnalyzer {
     //直接的な呼び出し関係しか取れてない
     //ex.) NormalDistributionImpl#getInitialDomainはオーバライドメソッドであり
     //その抽象クラス内で呼び出されているが、この呼び出し関係は取れていない。
+    private static void getCalledMethodsForClass(String targetClassName, Set<String> targetMethodNames, MethodCallGraph mcg) {
+        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
 
-    private static void getCalledMethodsForClass(String targetSrcPath, String targetClassName, Set<String> targetMethodNames, MethodCallGraph mcg) {
-        String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
-        Path p = Paths.get(targetJavaPath);
-        CompilationUnit unit = null;
-        try {
-            unit = StaticJavaParser.parse(p);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodCallExpr n, String arg) {
@@ -185,36 +165,16 @@ public class StaticAnalyzer {
         unit.accept(new MethodVisitor(), "");
     }
 
-    public static Set<String> getCalledMethodsForMethod(String targetSrcPath,
-                                                         String callerMethodName,
-                                                         Set<String> targetMethodNames) {
+    public static Set<String> getCalledMethodsForMethod(String callerMethodName,  Set<String> targetMethodNames) {
         Set<String> calleeMethods = new HashSet<>();
-        String targetClassName = callerMethodName.split("#")[0];
-        String targetJavaPath = targetSrcPath + "/" + targetClassName.replace(".", "/") + ".java";
-        Path p = Paths.get(targetJavaPath);
-        CompilationUnit unit = null;
-        try {
-            unit = StaticJavaParser.parse(p);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        Optional<MethodDeclaration> callerMethodOptional = unit.findFirst(MethodDeclaration.class,
-                (n) -> n.getNameAsString().equals(getMethodNameWithoutPackageAndSig(callerMethodName)));
-
-        if(callerMethodOptional.isEmpty()) {
-            throw new RuntimeException("can't find " + callerMethodName);
-        }
-        MethodDeclaration callerMethod = callerMethodOptional.get();
+        MethodDeclaration callerMethod = JavaParserUtil.parseMethod(callerMethodName);
 
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodCallExpr n, String arg) {
                 for(String targetMethodName : targetMethodNames) {
                     if (getMethodNameWithoutPackageAndSig(targetMethodName).equals(n.getNameAsString())) {
-                        String calleeMethodName = targetMethodName;
-                        //System.out.println("caller: " + callerMethodName +  " callee: " + calleeMethodName);
-                        calleeMethods.add(calleeMethodName);
+                        calleeMethods.add(targetMethodName);
                         break;
                     }
                 }
@@ -243,8 +203,7 @@ public class StaticAnalyzer {
     }
 
     public static String getMethodNameFormLine(String targetClassName, int line) {
-        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-        Map<String, Pair<Integer, Integer>> ranges = getRangeOfMethods(targetSrcDir, targetClassName);
+        Map<String, Pair<Integer, Integer>> ranges = getRangeOfMethods(targetClassName);
         String[] method = new String[1];
         ranges.forEach((m, pair) -> {
             if(pair.getLeft() <= line && line <= pair.getRight()) {
@@ -286,15 +245,6 @@ public class StaticAnalyzer {
 
         CompilationUnit unit = JavaParserUtil.parseClass(className);
         unit.accept(new MethodVisitor(), variable);
-//        if (isConstructor) {
-//            //コンストラクタ
-//            ConstructorDeclaration cd = JavaParserUtil.parseConstructor(methodName);
-//            cd.accept(new MethodVisitor(), variable);
-//        } else {
-//            //メソッド
-//            MethodDeclaration md = JavaParserUtil.parseMethod(methodName);
-//            md.accept(new MethodVisitor(), variable);
-//        }
         assignLine.sort(Comparator.naturalOrder());
         return assignLine;
     }
