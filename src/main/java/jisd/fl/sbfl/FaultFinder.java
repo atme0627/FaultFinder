@@ -65,7 +65,7 @@ public class FaultFinder {
         System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass, false);
+        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false);
         for(String contextMethod : contexts) {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
@@ -87,7 +87,7 @@ public class FaultFinder {
         System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(targetSrcDir, contextClass, false);
+        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false);
         for(String contextMethod : contexts) {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;

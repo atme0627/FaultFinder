@@ -5,6 +5,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.stmt.ExpressionStmt;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -60,7 +61,7 @@ public class StaticAnalyzer {
     //返り値は demo.SortTest#test1(int a)の形式
     //publicメソッド以外は取得しない
     //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
-    public static Set<String> getMethodNames(String targetSrcPath, String targetClassName, boolean publicOnly) {
+    public static Set<String> getMethodNames(String targetClassName, boolean publicOnly) {
         Set<String> methodNames = new LinkedHashSet<>();
         CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
 
@@ -85,7 +86,7 @@ public class StaticAnalyzer {
         return methodNames;
     }
 
-    //targetSrcPathは最後"/"なし
+
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
     public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetClassName) {
         Map<String, Pair<Integer, Integer>> rangeOfMethod = new HashMap<>();
@@ -108,13 +109,36 @@ public class StaticAnalyzer {
         return rangeOfMethod;
     }
 
+
+    //返り値はmap ex.) Integer --> Pair(start, end)
+    public static Map<Integer, Pair<Integer, Integer>> getRangeOfStatement(String targetClassName) {
+        Map<Integer, Pair<Integer, Integer>> rangeOfStatement = new HashMap<>();
+        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
+
+        class MethodVisitor extends VoidVisitorAdapter<String>{
+            @Override
+            public void visit(ExpressionStmt n, String arg) {
+                Pair<Integer, Integer> range = Pair.of(n.getBegin().get().line, n.getEnd().get().line);
+                for(int i = range.getLeft(); i <= range.getRight(); i++) {
+                    rangeOfStatement.put(i, range);
+                }
+                super.visit(n, arg);
+            }
+        }
+
+        unit.accept(new MethodVisitor(), "");
+        return rangeOfStatement;
+    }
+
+
+
     public static MethodCallGraph getMethodCallGraph(String targetSrcPath) {
         Set<String> targetClassNames = getClassNames(targetSrcPath);
         Set<String> targetMethodNames = new HashSet<>();
         MethodCallGraph mcg = new MethodCallGraph();
 
         for(String targetClassName : targetClassNames) {
-            targetMethodNames.addAll(getMethodNames(targetSrcPath, targetClassName, false));
+            targetMethodNames.addAll(getMethodNames(targetClassName, false));
         }
 
         for(String targetClassName : targetClassNames){

@@ -10,11 +10,12 @@ import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.StaticAnalyzer;
 import jisd.fl.util.TestUtil;
 import jisd.info.ClassInfo;
 import jisd.info.StaticInfoFactory;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.awt.desktop.SystemEventListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -46,7 +47,91 @@ public abstract class AbstractProbe {
 
     public abstract List<Integer> getCanSetLine(VariableInfo variableInfo);
     public abstract ProbeResult run(int sleepTime) throws IOException;
-    protected abstract ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignLine);
+
+    protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignedLine){
+        System.out.println("    >> Probe Info: Searching probe line.");
+        boolean isFound = false;
+        ProbeResult result = new ProbeResult();
+
+        List<ProbeInfo> matchValues = new ArrayList<>();
+        for (ProbeInfo pi : watchedValues) {
+            if (assertInfo.eval(pi.value)) {
+                matchValues.add(pi);
+                isFound = true;
+            }
+        }
+        if (!isFound) throw new RuntimeException("No matching rows found.");
+
+
+        //assignLineのうち実行されたものを集める
+        List<Integer> executedAssignedLines = new ArrayList<>();
+        for(int l : assignedLine){
+            for(ProbeInfo pi : matchValues){
+                if(pi.loc.getLineNumber() == l) {
+                    executedAssignedLines.add(l);
+                    break;
+                }
+            }
+        }
+
+        //新しいものから探して最初にexecutedAssignedLines内の値に一致したものがobjective
+        int probeLine = 0;
+        String locationClass = null;
+        if(executedAssignedLines.isEmpty()) {
+            probeLine = matchValues.get(0).loc.getLineNumber() - 1;
+            locationClass = matchValues.get(0).loc.getClassName();
+        }
+        else {
+            matchValues.sort(Comparator.reverseOrder());
+            for (ProbeInfo pi : matchValues) {
+                boolean isFounded = false;
+                for(int l : executedAssignedLines) {
+                    if (pi.loc.getLineNumber() == l) {
+                        probeLine = pi.loc.getLineNumber();
+                        locationClass = pi.loc.getClassName();
+                        isFounded = true;
+                        break;
+                    }
+                }
+                if(isFounded) break;
+            }
+        }
+
+        //実行しているメソッドを取得
+        String probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
+        Pair<Integer, Integer> probeLines = StaticAnalyzer.getRangeOfStatement(locationClass).get(probeLine);
+
+        //シグニチャも含める
+        result.setLines(probeLines);
+        result.setProbeMethod(probeMethod);
+        result.setSrc(getProbeStatement(locationClass, probeLines));
+        return result;
+    }
+
+    //Statementのソースコードを取得
+    private String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines){
+        ClassInfo ci = targetSif.createClass(locationClass);
+        String[] src = ci.src().split("\n");
+        StringBuilder stmt = new StringBuilder();
+        for(int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
+            stmt.append(src[i - 1]);
+            stmt.append("\n");
+        }
+        return stmt.toString();
+    }
+
+    //一回のprobeを行う
+    //条件を満たす行の情報を返す
+    protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
+        List<ProbeInfo> watchedValues = extractInfoFromDebugger(variableInfo, sleepTime);
+        List<Integer> assignLines = StaticAnalyzer.getAssignLine(
+                variableInfo.getLocateClass(),
+                variableInfo.getVariableName(true));
+        printWatchedValues(watchedValues, variableInfo, assignLines);
+        ProbeResult result = searchProbeLine(watchedValues, assignLines);
+        printProbeStatement(result, variableInfo);
+        return result;
+    }
 
     //primitive型の値のみを取得
     //variableInfoが参照型の場合、fieldを取得してその中から目的のprimitive型の値を探す
@@ -176,10 +261,14 @@ public abstract class AbstractProbe {
         }
     }
 
-    protected void printProbeLine(int probeLine, VariableInfo variableInfo){
-        ClassInfo ci = targetSif.createClass(variableInfo.getLocateClass());
-        System.out.println("    >> [probe line]");
-        System.out.println("    >> " + probeLine + ": " + ci.src().split("\n")[probeLine - 1]);
+    protected void printProbeStatement(ProbeResult result, VariableInfo variableInfo){
+        System.out.println("    >> [probe Statement]");
+        Pair<Integer, Integer> probeLines = result.getProbeLines();
+        String[] src = result.getSrc().split("\n");
+        int l = 0;
+        for(int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
+            System.out.println("    >> " + i + ": " + src[l++]);
+        }
         System.out.println("    >> ---------------------------------");
     }
 

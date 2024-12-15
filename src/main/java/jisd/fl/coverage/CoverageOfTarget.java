@@ -24,7 +24,7 @@ public class CoverageOfTarget implements Serializable {
 
     public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;
-        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName, false);
+        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetClassName, false);
     }
 
     public void processCoverage(IClassCoverage cc, boolean isTestPassed) throws IOException {

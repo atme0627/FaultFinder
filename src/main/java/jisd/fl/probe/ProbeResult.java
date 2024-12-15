@@ -1,9 +1,12 @@
 package jisd.fl.probe;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.Set;
 
 public class ProbeResult {
-    private int probeLine;
+    private Pair<Integer, Integer> lines;
+    private String src;
     private String probeMethod;
     private String callerMethod;
     private Set<String> siblingMethods;
@@ -35,11 +38,19 @@ public class ProbeResult {
         this.siblingMethods = siblingMethods;
     }
 
-    public int getProbeLine() {
-        return probeLine;
+    public Pair<Integer, Integer> getProbeLines() {
+        return lines;
     }
 
-    public void setProbeLine(int probeLine) {
-        this.probeLine = probeLine;
+    public void setLines(Pair<Integer, Integer> lines) {
+        this.lines = lines;
+    }
+
+    public String getSrc() {
+        return src;
+    }
+
+    public void setSrc(String src) {
+        this.src = src;
     }
 }

@@ -1,16 +1,16 @@
 package jisd.fl.util;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 
-import java.io.IOException;
 import java.util.*;
 
 class StaticAnalyzerTest {
     String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
     String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
     @Test
-    void getClassNameTest() throws IOException {
+    void getClassNameTest() {
         ArrayList<String> classNames = new ArrayList<>(StaticAnalyzer.getClassNames(targetSrcDir));
         Collections.sort(classNames);
         for(String className : classNames){
@@ -19,27 +19,27 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getMethodNameTest() throws IOException {
+    void getMethodNameTest() {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName, false);
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false);
         for(String methodName : methodNames){
             System.out.println(methodName);
         }
     }
 
     @Test
-    void getRangeOfMethodsTest() throws IOException {
-//        String targetClassName = "demo.SortTest";
-//        Map<String, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfMethods(targetSrcDir, targetClassName);
-//        methodNames.forEach((k, v)->{
-//            System.out.println("method name: " + k + ", start: " + v.getLeft() + ", end: " + v.getRight());
-//        });
+    void getRangeOfStatementTest() {
+        String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
+        Map<Integer, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfStatement(targetClassName);
+        methodNames.forEach((k, v)->{
+            System.out.println("line: " + k + ", start: " + v.getLeft() + ", end: " + v.getRight());
+        });
     }
 
     @Test
     void getCalleeMethodsForMethodsTest(){
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetSrcDir, targetClassName, false);
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false);
         String callerMethodName = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
         Set<String> calleeMethods = StaticAnalyzer.getCalledMethodsForMethod(callerMethodName, methodNames);
         for(String methodName : calleeMethods){

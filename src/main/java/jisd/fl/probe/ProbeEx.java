@@ -48,8 +48,8 @@ public class ProbeEx extends AbstractProbe{
 //        List<ProbeInfo> watchedValues = extractInfoFromDebugger(variableInfo, sleepTime);
 //        printWatchedValues(watchedValues, variableInfo);
 //        ProbeResult result = searchProbeLine(watchedValues, );
-//        int probeLine = result.getProbeLine();
-//        printProbeLine(probeLine, variableInfo);
+//        int probeLine = result.getProbeLines();
+//        printProbeStatement(probeLine, variableInfo);
 //        return result;
         return null;
     }
