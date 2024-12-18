@@ -1,8 +1,11 @@
 package jisd.fl.probe;
 
+import jisd.debug.Debugger;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.TestUtil;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -71,6 +74,11 @@ class ProbeTest {
         System.out.println(result.getProbeMethod());
         System.out.println("caller method");
         System.out.println(result.getCallerMethod());
+        Set<String> siblingMethods = result.getSiblingMethods();
+        System.out.println("sibling methods");
+        for(String sibling : siblingMethods){
+            System.out.println(sibling);
+        }
     }
 
      @Test
@@ -96,10 +104,7 @@ class ProbeTest {
                  field);
 
          Probe prb = new Probe(fai2);
-         Set<String> callee = prb.getCalleeMethods(testMethod, locateMethod);
-
-         for(String c: callee){
-             System.out.println(c);
-         }
+         MethodCollection callee = prb.getCalleeMethods(testMethod, locateMethod);
+         callee.print();
     }
 }

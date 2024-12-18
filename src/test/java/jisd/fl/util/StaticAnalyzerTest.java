@@ -4,6 +4,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 
+import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 class StaticAnalyzerTest {
@@ -19,7 +20,7 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getMethodNameTest() {
+    void getMethodNameTest() throws NoSuchFileException {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
         Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true);
         for(String methodName : methodNames){
@@ -28,7 +29,7 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getRangeOfStatementTest() {
+    void getRangeOfStatementTest() throws NoSuchFileException {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
         Map<Integer, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfStatement(targetClassName);
         methodNames.forEach((k, v)->{
@@ -37,7 +38,7 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getCalleeMethodsForMethodsTest(){
+    void getCalleeMethodsForMethodsTest() throws NoSuchFileException {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
         Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true);
         String callerMethodName = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
@@ -48,7 +49,7 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getMethodNameFormLineTest() {
+    void getMethodNameFormLineTest() throws NoSuchFileException {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
         int line = 343;
         String methodName = StaticAnalyzer.getMethodNameFormLine(targetClassName, line);
@@ -58,19 +59,19 @@ class StaticAnalyzerTest {
     @Nested
     class getAssertLineTest {
         @Test
-        void test1() {
+        void test1() throws NoSuchFileException {
             String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
             List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "coefficients");
             System.out.println(Arrays.toString(result.toArray()));
         }
         @Test
-        void test2() {
+        void test2() throws NoSuchFileException {
             String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
             List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "basicRow");
             System.out.println(Arrays.toString(result.toArray()));
         }
         @Test
-        void test3() {
+        void test3() throws NoSuchFileException {
             String locateMethod = "org.apache.commons.math.optimization.RealPointValuePair#RealPointValuePair(double[], double)";
             List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "this.point");
             System.out.println(Arrays.toString(result.toArray()));
@@ -78,7 +79,7 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getAllMethodTest(){
+    void getAllMethodTest() throws NoSuchFileException {
         Set<String> allMethods = StaticAnalyzer.getAllMethods(targetSrcDir, false, false);
         for(String methodNames : allMethods){
             System.out.println(methodNames);
@@ -86,7 +87,7 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getMethodCallingLineTest() {
+    void getMethodCallingLineTest() throws NoSuchFileException {
         String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
         List<Integer> result = StaticAnalyzer.getMethodCallingLine(locateMethod);
         System.out.println(Arrays.toString(result.toArray()));

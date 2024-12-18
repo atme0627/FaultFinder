@@ -6,6 +6,7 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -13,19 +14,21 @@ import java.util.Optional;
 public class JavaParserUtil {
     static String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
 
-    public static CompilationUnit parseClass(String className){
+    public static CompilationUnit parseClass(String className) throws NoSuchFileException {
         Path p = Paths.get(getFullPath(className));
         CompilationUnit unit = null;
         try {
             unit = StaticJavaParser.parse(p);
-        } catch (IOException e) {
+        } catch (NoSuchFileException e) {
+            throw new NoSuchFileException(className);
+        } catch (IOException e){
             throw new RuntimeException(e);
         }
         return unit;
     }
 
     //methodNameはクラス、シグニチャを含む
-    public static MethodDeclaration parseMethod(String methodName){
+    public static MethodDeclaration parseMethod(String methodName) throws NoSuchFileException {
         String className = methodName.split("#")[0];
         CompilationUnit unit = parseClass(className);
         Optional<MethodDeclaration> omd = unit.findFirst(MethodDeclaration.class,
@@ -34,7 +37,7 @@ public class JavaParserUtil {
         return omd.orElse(null);
     }
 
-    public static ConstructorDeclaration parseConstructor(String constructorName){
+    public static ConstructorDeclaration parseConstructor(String constructorName) throws NoSuchFileException {
         String className = constructorName.split("#")[0];
         CompilationUnit unit = parseClass(className);
         Optional<ConstructorDeclaration> ocd = unit.findFirst(ConstructorDeclaration.class,

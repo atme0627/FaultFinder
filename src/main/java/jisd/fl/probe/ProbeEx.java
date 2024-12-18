@@ -12,6 +12,7 @@ import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -20,10 +21,15 @@ import java.util.*;
 //理想的には、"==" と同じ方法で判定したいが、型の問題で難しそう
 public class ProbeEx extends AbstractProbe{
     static String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-    static Set<String> allMethods = StaticAnalyzer.getAllMethods(targetSrcDir, false, false);
+    static Set<String> allMethods;
 
     public ProbeEx(FailedAssertInfo assertInfo) {
         super(assertInfo);
+        try {
+            allMethods = StaticAnalyzer.getAllMethods(targetSrcDir, false, false);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //assert文から遡って、最後に変数が目的の条件を満たしている行で呼び出しているメソッドを返す。

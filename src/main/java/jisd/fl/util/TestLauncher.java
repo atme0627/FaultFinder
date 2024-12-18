@@ -41,7 +41,7 @@ public class TestLauncher {
         //listener.getSummary().printFailuresTo(new PrintWriter(System.out));
         //listener.getSummary().printTo(new PrintWriter(System.out));
         boolean isTestPassed = listener.getSummary().getTotalFailureCount() == 0;
-        System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));
+        //System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));
         return isTestPassed;
     }
 }

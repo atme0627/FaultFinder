@@ -25,12 +25,12 @@ public class StaticAnalyzer {
 
         class ClassExplorer implements FileVisitor<Path> {
             @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                 if(file.toString().endsWith(".java")){
                     classNames.add(p.relativize(file).toString().split("\\.")[0].replace("/", "."));
                 }
@@ -38,13 +38,13 @@ public class StaticAnalyzer {
             }
 
             @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
                 System.out.println("failed: " + file.toString());
                 return FileVisitResult.CONTINUE;
             }
 
             @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
                 return FileVisitResult.CONTINUE;
             }
         }
@@ -63,7 +63,7 @@ public class StaticAnalyzer {
     //返り値は demo.SortTest#test1(int a)の形式
     //publicメソッド以外は取得しない
     //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
-    public static Set<String> getMethodNames(String targetClassName, boolean publicOnly, boolean withPackage, boolean withSignature) {
+    public static Set<String> getMethodNames(String targetClassName, boolean publicOnly, boolean withPackage, boolean withSignature) throws NoSuchFileException {
         Set<String> methodNames = new LinkedHashSet<>();
         CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
         Function<CallableDeclaration<?>, String> methodNameBuilder = (n) -> (
@@ -90,7 +90,7 @@ public class StaticAnalyzer {
         return methodNames;
     }
 
-    public static Set<String> getAllMethods(String targetSrcDir, boolean withPackage, boolean withSignature){
+    public static Set<String> getAllMethods(String targetSrcDir, boolean withPackage, boolean withSignature) throws NoSuchFileException {
         Set<String> allClasses = getClassNames(targetSrcDir);
         Set<String> allMethods = new HashSet<>();
         for(String className : allClasses){
@@ -100,7 +100,7 @@ public class StaticAnalyzer {
     }
 
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
-    public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetClassName) {
+    public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetClassName) throws NoSuchFileException {
         Map<String, Pair<Integer, Integer>> rangeOfMethod = new HashMap<>();
         CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
 
@@ -123,7 +123,7 @@ public class StaticAnalyzer {
 
 
     //返り値はmap ex.) Integer --> Pair(start, end)
-    public static Map<Integer, Pair<Integer, Integer>> getRangeOfStatement(String targetClassName) {
+    public static Map<Integer, Pair<Integer, Integer>> getRangeOfStatement(String targetClassName) throws NoSuchFileException {
         Map<Integer, Pair<Integer, Integer>> rangeOfStatement = new HashMap<>();
         CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
 
@@ -144,7 +144,7 @@ public class StaticAnalyzer {
 
 
 
-    public static MethodCallGraph getMethodCallGraph(String targetSrcPath) {
+    public static MethodCallGraph getMethodCallGraph(String targetSrcPath) throws NoSuchFileException {
         Set<String> targetClassNames = getClassNames(targetSrcPath);
         Set<String> targetMethodNames = new HashSet<>();
         MethodCallGraph mcg = new MethodCallGraph();
@@ -164,7 +164,7 @@ public class StaticAnalyzer {
     //直接的な呼び出し関係しか取れてない
     //ex.) NormalDistributionImpl#getInitialDomainはオーバライドメソッドであり
     //その抽象クラス内で呼び出されているが、この呼び出し関係は取れていない。
-    private static void getCalledMethodsForClass(String targetClassName, Set<String> targetMethodNames, MethodCallGraph mcg) {
+    private static void getCalledMethodsForClass(String targetClassName, Set<String> targetMethodNames, MethodCallGraph mcg) throws NoSuchFileException {
         CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
 
         class MethodVisitor extends VoidVisitorAdapter<String>{
@@ -201,7 +201,7 @@ public class StaticAnalyzer {
         unit.accept(new MethodVisitor(), "");
     }
 
-    public static Set<String> getCalledMethodsForMethod(String callerMethodName,  Set<String> targetMethodNames) {
+    public static Set<String> getCalledMethodsForMethod(String callerMethodName,  Set<String> targetMethodNames) throws NoSuchFileException {
         Set<String> calleeMethods = new HashSet<>();
         MethodDeclaration callerMethod = JavaParserUtil.parseMethod(callerMethodName);
 
@@ -238,7 +238,7 @@ public class StaticAnalyzer {
                 "Cannot find class: " + className);
     }
 
-    public static String getMethodNameFormLine(String targetClassName, int line) {
+    public static String getMethodNameFormLine(String targetClassName, int line) throws NoSuchFileException {
         Map<String, Pair<Integer, Integer>> ranges = getRangeOfMethods(targetClassName);
         String[] method = new String[1];
         ranges.forEach((m, pair) -> {
@@ -251,7 +251,7 @@ public class StaticAnalyzer {
     }
 
     //(クラス, 対象の変数) --> 変数が代入されている行（初期化も含む）
-    public static List<Integer> getAssignLine(String className, String variable) {
+    public static List<Integer> getAssignLine(String className, String variable) throws NoSuchFileException {
         List<Integer> assignLine = new ArrayList<>();
 
         class MethodVisitor extends VoidVisitorAdapter<String> {
@@ -287,7 +287,7 @@ public class StaticAnalyzer {
 
     //(メソッド, 対象の変数) --> メソッドが呼ばれている行
     //methodNameはクラス、シグニチャを含む
-    public static List<Integer> getMethodCallingLine(String methodName) {
+    public static List<Integer> getMethodCallingLine(String methodName) throws NoSuchFileException {
         List<Integer> methodCallingLine = new ArrayList<>();
 
         class MethodVisitor extends VoidVisitorAdapter<String> {

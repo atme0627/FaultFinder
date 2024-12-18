@@ -1,21 +1,24 @@
 package jisd.fl.probe;
 
+import jisd.fl.util.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.NoSuchFileException;
+import java.util.Map;
 
 public class StackTrace {
-    List<Pair<Integer, String>> st = new ArrayList<>();
-    public StackTrace(String rawTrace){
-        parseRawTrace(rawTrace);
+    MethodCollection st = new MethodCollection();
+
+    //targetMethod: スタックトレース取得時に実行中のメソッド
+    public StackTrace(String rawTrace, String targetMethod){
+        parseRawTrace(rawTrace, targetMethod);
     }
 
-    private void parseRawTrace(String rawTrace) {
+    private void parseRawTrace(String rawTrace, String targetMethod) {
         String[] splitStackTrace = rawTrace.split("\\n");
         for (String e : splitStackTrace) {
             if(e.isEmpty()) continue;
-            st.add(normalizeElement(e));
+            st.addElement(normalizeElement(e));
         }
     }
 
@@ -28,10 +31,24 @@ public class StackTrace {
     }
 
     public int getLine(int depth){
-        return st.get(depth).getLeft();
+        return st.getLine(depth);
     }
 
     public String getMethod(int depth){
-        return st.get(depth).getRight();
+        return st.getMethod(depth);
+    }
+
+    //methodはシグニチャつき
+    public Pair<Integer, String> getMethodAndCallLocation(int depth){
+        int callLocation = st.getLine(depth + 1);
+        int methodLocation = st.getLine(depth);
+        String targetClass = st.getMethod(depth).split("#")[0];
+        String method = null;
+        try {
+            method = StaticAnalyzer.getMethodNameFormLine(targetClass, methodLocation);
+        } catch (NoSuchFileException e) {
+            return null;
+        }
+        return Pair.of(callLocation, method);
     }
 }

@@ -18,9 +18,11 @@ import jisd.info.MethodInfo;
 import jisd.info.StaticInfoFactory;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.NoSuchFileException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -30,8 +32,8 @@ public abstract class AbstractProbe {
     Debugger dbg;
     StaticInfoFactory targetSif;
     StaticInfoFactory testSif;
-    PrintStream stdOut = System.out;
-    PrintStream stdErr = System.err;
+    static PrintStream stdOut = System.out;
+    static PrintStream stdErr = System.err;
 
 
     public AbstractProbe(FailedAssertInfo assertInfo) {
@@ -119,8 +121,14 @@ public abstract class AbstractProbe {
         }
 
         //実行しているメソッドを取得
-        String probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
-        Pair<Integer, Integer> probeLines = StaticAnalyzer.getRangeOfStatement(locationClass).get(probeLine);
+        String probeMethod = null;
+        Pair<Integer, Integer> probeLines = null;
+        try {
+            probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
+            probeLines = StaticAnalyzer.getRangeOfStatement(locationClass).get(probeLine);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
 
         //シグニチャも含める
         result.setLines(probeLines);
@@ -145,12 +153,18 @@ public abstract class AbstractProbe {
     //条件を満たす行の情報を返す
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
         List<ProbeInfo> watchedValues = extractInfoFromDebugger(variableInfo, sleepTime);
-        List<Integer> assignLines = StaticAnalyzer.getAssignLine(
-                variableInfo.getLocateClass(),
-                variableInfo.getVariableName(true));
+        List<Integer> assignLines = null;
+        try {
+            assignLines = StaticAnalyzer.getAssignLine(
+                    variableInfo.getLocateClass(),
+                    variableInfo.getVariableName(true));
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         printWatchedValues(watchedValues, variableInfo, assignLines);
         ProbeResult result = searchProbeLine(watchedValues, assignLines);
         printProbeStatement(result, variableInfo);
+
         return result;
     }
 
@@ -211,7 +225,6 @@ public abstract class AbstractProbe {
     protected List<ProbeInfo> extractInfoFromDebugger(VariableInfo variableInfo, int sleepTime){
         disableStdOut("    >> Probe Info: Running debugger.");
         List<Integer> canSetLines = getCanSetLine(variableInfo);
-        disableStdOut(Arrays.toString(canSetLines.toArray()));
         String dbgMain = variableInfo.getLocateClass();
         String varName = variableInfo.getVariableName(true);
         List<Optional<Point>> watchPoints = new ArrayList<>();
@@ -256,7 +269,6 @@ public abstract class AbstractProbe {
     }
 
     protected void disableStdOut(String msg){
-        System.setOut(stdOut);
         if(!msg.isEmpty()) System.out.println(msg);
         PrintStream nop = new PrintStream(new OutputStream() {
             public void write(int b) { /* noop */ }
@@ -278,7 +290,7 @@ public abstract class AbstractProbe {
                 + variableInfo.getVariableType());
         System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
         for(ProbeInfo values : watchedValues){
-            System.out.println("    >>" + values);
+            System.out.println("    >> " + values);
         }
     }
 
@@ -295,6 +307,83 @@ public abstract class AbstractProbe {
 
     protected Debugger createDebugger(){
         return TestUtil.testDebuggerFactory(assertInfo.getTestMethodName());
+    }
+
+    //動的解析
+    //テストケース実行時の実際に呼び出されているメソット群を返す
+    //locateMethodはフルネーム、シグニチャあり
+    MethodCollection getCalleeMethods(String testMethod,
+                                 String locateMethod){
+        System.out.println("    >> Probe Info: Collecting callee methods.");
+        System.out.println("    >> Probe Info: Target method --> " + locateMethod);
+
+        MethodCollection calleeMethods = new MethodCollection();
+        String locateClass = locateMethod.split("#")[0];
+        List<Integer> methodCallingLines = null;
+        try {
+            methodCallingLines = StaticAnalyzer.getMethodCallingLine(locateMethod);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+
+        Debugger dbg = TestUtil.testDebuggerFactory(testMethod);
+        dbg.setMain(locateClass);
+
+        disableStdOut("");
+        StackTrace st;
+
+        for(int l : methodCallingLines){
+            dbg.stopAt(l);
+        }
+
+        dbg.run(2000);
+        //callerMethodを取得
+        st = getStackTrace(dbg);
+        String callerMethod = st.getMethod(1);
+
+        for(int i = 0; i < methodCallingLines.size(); i++) {
+            //TODO: メソッド呼び出しが行われるまで
+            dbg.step();
+            while (true) {
+                int probingLine = methodCallingLines.get(i);
+                st = getStackTrace(dbg);
+                dbg.stepOut();
+                Pair<Integer, String> e = st.getMethodAndCallLocation(0);
+                //ここで外部APIのメソッドは弾かれる
+                if(e != null) calleeMethods.addElement(e);
+
+                //終了判定
+                //stepOutで次の行に移った場合終了
+                if(dbg.loc().getLineNumber() != probingLine) break;
+                //stepOutで元の行に戻った場合、ステップして新しいメソッド呼び出しが行われなければ終了
+                dbg.step();
+                st = getStackTrace(dbg);
+                if (st.getMethod(0).equals(locateMethod.substring(0, locateMethod.lastIndexOf("(")))
+                        || st.getMethod(0).equals(callerMethod)) {
+                    break;
+                }
+            }
+            //すでにbreakpointにいる場合はスキップしない
+            if(!methodCallingLines.contains(dbg.loc().getLineNumber())) {
+                dbg.cont(2000);
+            }
+        }
+
+        enableStdOut();
+
+        return calleeMethods;
+    }
+
+    protected StackTrace getStackTrace(Debugger dbg){
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(bos);
+        PrintStream out = System.out;
+        System.setOut(ps);
+        bos.reset();
+        dbg.where();
+        System.setOut(out);
+
+        return new StackTrace(bos.toString(), "");
     }
 
     protected static class ProbeInfo implements Comparable<Probe.ProbeInfo>{
