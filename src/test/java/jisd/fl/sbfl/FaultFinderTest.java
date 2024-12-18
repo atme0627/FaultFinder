@@ -22,7 +22,6 @@ class FaultFinderTest {
     String actual = "0.0";
 
     VariableInfo field = new VariableInfo(
-            variableType,
             "", fieldName,
             fieldType,
             true,
@@ -31,7 +30,6 @@ class FaultFinderTest {
     );
 
     VariableInfo probeVariable = new VariableInfo(
-            testClassName,
             "", variableName,
             variableType,
             false,
@@ -40,7 +38,6 @@ class FaultFinderTest {
     );
 
     FailedAssertInfo fai = new FailedAssertEqualInfo(
-            testClassName,
             testMethodName,
             actual,
             probeVariable);
@@ -97,7 +94,6 @@ class FaultFinderTest {
         String actual = "0.0";
 
         VariableInfo probeVariable = new VariableInfo(
-                locateClass,
                 "", variableName,
                 variableType,
                 false,
@@ -106,7 +102,6 @@ class FaultFinderTest {
         );
 
         FailedAssertInfo fai = new FailedAssertEqualInfo(
-                testClassName,
                 testMethodName,
                 actual,
                 probeVariable);

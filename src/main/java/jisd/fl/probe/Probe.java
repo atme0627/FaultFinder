@@ -24,7 +24,7 @@ public class Probe extends AbstractProbe{
     @Override
     public ProbeResult run(int sleepTime) {
         //targetのfieldを直接probe
-        VariableInfo variableInfo = assertInfo.getVariableInfo().getTargetField();
+        VariableInfo variableInfo = assertInfo.getVariableInfo();
         ProbeResult result = probing(sleepTime, variableInfo);
 
         //メソッドを呼び出したメソッドをコールスタックから取得

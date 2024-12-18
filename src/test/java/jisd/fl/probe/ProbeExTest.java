@@ -22,7 +22,6 @@ class ProbeExTest {
     String actual = "0.0";
 
     FailedAssertInfo fai = new FailedAssertEqualInfo(
-            testClassName,
             testMethodName,
             actual,
             null);
