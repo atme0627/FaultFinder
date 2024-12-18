@@ -45,7 +45,7 @@ class ProbeTest {
 
     @Test
     void probeTest() {
-        String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint()";
+        String testMethod = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint()";
         String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
         String variableName = "coefficients";
         String variableType = "double[]";
@@ -61,7 +61,7 @@ class ProbeTest {
         );
 
         FailedAssertInfo fai = new FailedAssertEqualInfo(
-                testMethodName,
+                testMethod,
                 actual,
                 probeVariable);
 

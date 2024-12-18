@@ -257,7 +257,7 @@ public abstract class AbstractProbe {
 
     protected void disableStdOut(String msg){
         System.setOut(stdOut);
-        System.out.println(msg);
+        if(!msg.isEmpty()) System.out.println(msg);
         PrintStream nop = new PrintStream(new OutputStream() {
             public void write(int b) { /* noop */ }
         });

@@ -81,6 +81,8 @@ public class Probe extends AbstractProbe{
     //locateMethodはフルネーム、シグニチャあり
     Set<String> getCalleeMethods(String testMethod,
                                  String locateMethod){
+        System.out.println("    >>> Probe Info: Correcting callee methods.");
+        System.out.println("    >>> Probe Info: Target method --> " + locateMethod);
 
         Set<String> calleeMethods = new HashSet<>();
         String locateClass = locateMethod.split("#")[0];
@@ -91,9 +93,9 @@ public class Probe extends AbstractProbe{
         dbg.setMain(locateClass);
         dbg.setSrcDir(targetSrcDir);
 
-        PrintStream stdout = System.out;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(bos);
+        disableStdOut("");
+        StackTrace st;
+        PrintStream stdOut = System.out;
 
         for(int l : methodCallingLines){
             dbg.stopAt(l);
@@ -101,35 +103,20 @@ public class Probe extends AbstractProbe{
 
         dbg.run(2000);
         //callerMethodを取得
-        System.setOut(ps);
-        bos.reset();
-        dbg.where();
-        System.setOut(stdout);
-
-        StackTrace st = new StackTrace(bos.toString());
+        st = getStackTrace(dbg, stdOut);
         String callerMethod = st.getMethod(1);
 
         for(int i = 0; i < methodCallingLines.size(); i++) {
-            System.out.println("[================= i = " + i + " =====================================]");
             boolean finished = false;
             //TODO: メソッド呼び出しが行われるまで
             dbg.step();
             while (!finished) {
-                System.setOut(ps);
-                bos.reset();
-                dbg.where();
-                System.setOut(stdout);
+                st = getStackTrace(dbg, stdOut);
                 dbg.stepOut();
-
-                st = new StackTrace(bos.toString());
                 calleeMethods.add(st.getMethod(0));
 
                 dbg.step();
-                System.setOut(ps);
-                bos.reset();
-                dbg.where();
-                System.setOut(stdout);
-                st = new StackTrace(bos.toString());
+                st = getStackTrace(dbg, stdOut);
                 if (st.getMethod(0).equals(locateMethod.substring(0, locateMethod.lastIndexOf("(")))
                         || st.getMethod(0).equals(callerMethod)) {
                     finished = true;
@@ -141,6 +128,19 @@ public class Probe extends AbstractProbe{
             }
         }
 
+        enableStdOut();
         return calleeMethods;
+    }
+
+    private StackTrace getStackTrace(Debugger dbg, PrintStream stdOut){
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(bos);
+
+        System.setOut(ps);
+        bos.reset();
+        dbg.where();
+        System.setOut(stdOut);
+
+        return new StackTrace(bos.toString());
     }
 }
