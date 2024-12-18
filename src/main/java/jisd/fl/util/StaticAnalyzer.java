@@ -1,5 +1,6 @@
 package jisd.fl.util;
 
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
+import java.util.function.Function;
 
 public class StaticAnalyzer {
     public static Set<String> getClassNames(String targetSrcPath) {
@@ -61,23 +63,25 @@ public class StaticAnalyzer {
     //返り値は demo.SortTest#test1(int a)の形式
     //publicメソッド以外は取得しない
     //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
-    public static Set<String> getMethodNames(String targetClassName, boolean publicOnly) {
+    public static Set<String> getMethodNames(String targetClassName, boolean publicOnly, boolean withPackage, boolean withSignature) {
         Set<String> methodNames = new LinkedHashSet<>();
         CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
+        Function<CallableDeclaration<?>, String> methodNameBuilder = (n) -> (
+                ((withPackage) ? targetClassName.replace("/", ".") + "#" : "")
+                + ((withSignature) ? n.getSignature() : n.getNameAsString()));
 
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
                 if(!publicOnly || n.isPublic()) {
-                    methodNames.add(targetClassName.replace("/", ".") + "#" + n.getSignature());
+                    methodNames.add(methodNameBuilder.apply(n));
                     super.visit(n, arg);
                 }
             }
-
             @Override
             public void visit(ConstructorDeclaration n, String arg) {
                 if(!publicOnly || n.isPublic()) {
-                    methodNames.add(targetClassName.replace("/", ".") + "#" + n.getSignature());
+                    methodNames.add(methodNameBuilder.apply(n));
                     super.visit(n, arg);
                 }
             }
@@ -86,6 +90,14 @@ public class StaticAnalyzer {
         return methodNames;
     }
 
+    public static Set<String> getAllMethods(String targetSrcDir, boolean withPackage, boolean withSignature){
+        Set<String> allClasses = getClassNames(targetSrcDir);
+        Set<String> allMethods = new HashSet<>();
+        for(String className : allClasses){
+            allMethods.addAll(getMethodNames(className, false, withPackage, withSignature));
+        }
+        return allMethods;
+    }
 
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
     public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetClassName) {
@@ -138,7 +150,7 @@ public class StaticAnalyzer {
         MethodCallGraph mcg = new MethodCallGraph();
 
         for(String targetClassName : targetClassNames) {
-            targetMethodNames.addAll(getMethodNames(targetClassName, false));
+            targetMethodNames.addAll(getMethodNames(targetClassName, false, false, true));
         }
 
         for(String targetClassName : targetClassNames){
@@ -238,7 +250,7 @@ public class StaticAnalyzer {
         return method[0];
     }
 
-    //(あるメソッドの<行番号, ソースコード>のlist, 対象の変数) --> 変数が代入されている行（初期化も含む）
+    //(クラス, 対象の変数) --> 変数が代入されている行（初期化も含む）
     public static List<Integer> getAssignLine(String className, String variable) {
         List<Integer> assignLine = new ArrayList<>();
 
@@ -271,6 +283,28 @@ public class StaticAnalyzer {
         unit.accept(new MethodVisitor(), variable);
         assignLine.sort(Comparator.naturalOrder());
         return assignLine;
+    }
+
+    //(メソッド, 対象の変数) --> メソッドが呼ばれている行
+    //methodNameはクラス、シグニチャを含む
+    public static List<Integer> getMethodCallingLine(String methodName) {
+        List<Integer> methodCallingLine = new ArrayList<>();
+
+        class MethodVisitor extends VoidVisitorAdapter<String> {
+            @Override
+            public void visit(MethodCallExpr n, String arg) {
+                int line = n.getBegin().get().line;
+                if(!methodCallingLine.contains(line)) {
+                    methodCallingLine.add(line);
+                }
+                super.visit(n, arg);
+            }
+        }
+
+        MethodDeclaration md = JavaParserUtil.parseMethod(methodName);
+        md.accept(new MethodVisitor(), "");
+        methodCallingLine.sort(Comparator.naturalOrder());
+        return methodCallingLine;
     }
 }
 

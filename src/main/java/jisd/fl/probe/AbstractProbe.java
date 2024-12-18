@@ -13,6 +13,8 @@ import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
 import jisd.fl.util.TestUtil;
 import jisd.info.ClassInfo;
+import jisd.info.LocalInfo;
+import jisd.info.MethodInfo;
 import jisd.info.StaticInfoFactory;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -45,20 +47,39 @@ public abstract class AbstractProbe {
         this.testSif = new StaticInfoFactory(testSrcDir, testBinDir);
     }
 
-    public abstract List<Integer> getCanSetLine(VariableInfo variableInfo);
     public abstract ProbeResult run(int sleepTime) throws IOException;
+
+    public List<Integer> getCanSetLine(VariableInfo variableInfo) {
+        List<Integer> canSetLines = new ArrayList<>();
+        ClassInfo ci = targetSif.createClass(variableInfo.getLocateClass());
+
+        if(variableInfo.isField()) {
+            Map<String, ArrayList<Integer>> canSet = ci.field(variableInfo.getVariableName()).canSet();
+            for (List<Integer> lineWithVar : canSet.values()) {
+                canSetLines.addAll(lineWithVar);
+            }
+            return canSetLines;
+        }
+        else {
+            MethodInfo mi = ci.method(variableInfo.getLocateMethod());
+            LocalInfo li = mi.local(variableInfo.getVariableName());
+
+            return li.canSet();
+        }
+    }
+
 
     protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignedLine){
         System.out.println("    >> Probe Info: Searching probe line.");
         boolean isFound = false;
         ProbeResult result = new ProbeResult();
-
+        watchedValues.sort(Comparator.reverseOrder());
         List<ProbeInfo> matchValues = new ArrayList<>();
         for (ProbeInfo pi : watchedValues) {
-            if (assertInfo.eval(pi.value)) {
-                matchValues.add(pi);
-                isFound = true;
-            }
+            if (!assertInfo.eval(pi.value)) break;
+            matchValues.add(pi);
+            isFound = true;
+
         }
         if (!isFound) throw new RuntimeException("No matching rows found.");
 
@@ -78,8 +99,8 @@ public abstract class AbstractProbe {
         int probeLine = 0;
         String locationClass = null;
         if(executedAssignedLines.isEmpty()) {
-            probeLine = matchValues.get(0).loc.getLineNumber() - 1;
-            locationClass = matchValues.get(0).loc.getClassName();
+            probeLine = matchValues.get(matchValues.size() - 1).loc.getLineNumber() - 1;
+            locationClass = matchValues.get(matchValues.size() - 1).loc.getClassName();
         }
         else {
             matchValues.sort(Comparator.reverseOrder());

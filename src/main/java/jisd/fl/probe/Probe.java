@@ -1,15 +1,11 @@
 package jisd.fl.probe;
 
-import jisd.fl.coverage.CoverageAnalyzer;
-import jisd.fl.coverage.CoverageCollection;
-import jisd.fl.coverage.Granularity;
+import jisd.debug.Debugger;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.sbfl.SbflStatus;
+import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
-import jisd.info.ClassInfo;
-import jisd.info.LocalInfo;
-import jisd.info.MethodInfo;
+import jisd.fl.util.TestUtil;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.ByteArrayOutputStream;
@@ -76,41 +72,75 @@ public class Probe extends AbstractProbe{
     }
 
     Set<String> getSiblingMethods(String callerClass, String callerMethod) throws IOException, InterruptedException {
-        CoverageAnalyzer analyzer = new CoverageAnalyzer();
         Set<String> siblingMethods = new HashSet<>();
-        Set<String> targetMethods = StaticAnalyzer.getMethodNames(callerClass, false);
-        disableStdOut("    >> Probe Info: Analyzing coverage.");
-
-        Set<String> canBeCallMethods = StaticAnalyzer.getCalledMethodsForMethod(callerMethod, targetMethods);
-        System.out.println(Arrays.toString(canBeCallMethods.toArray()));
-
-        CoverageCollection covOfFailedTest = analyzer.analyze(assertInfo.getTestClassName(), assertInfo.getTestMethodName());
-        Map<String, SbflStatus> covOfCallerClass = covOfFailedTest.getCoverageOfTarget(callerClass, Granularity.METHOD);
-        covOfCallerClass.forEach((method, status) -> {
-            if(canBeCallMethods.contains(method) && status.isElementExecuted()){
-                siblingMethods.add(method);
-            }
-        });
         return siblingMethods;
     }
 
-    @Override
-    public List<Integer> getCanSetLine(VariableInfo variableInfo) {
-        List<Integer> canSetLines = new ArrayList<>();
-        ClassInfo ci = targetSif.createClass(variableInfo.getLocateClass());
+    //動的解析
+    //テストケース実行時の実際に呼び出されているメソット群を返す
+    //locateMethodはフルネーム、シグニチャあり
+    Set<String> getCalleeMethods(String testMethod,
+                                 String locateMethod){
 
-        if(variableInfo.isField()) {
-            Map<String, ArrayList<Integer>> canSet = ci.field(variableInfo.getVariableName()).canSet();
-            for (List<Integer> lineWithVar : canSet.values()) {
-                canSetLines.addAll(lineWithVar);
+        Set<String> calleeMethods = new HashSet<>();
+        String locateClass = locateMethod.split("#")[0];
+        List<Integer> methodCallingLines = StaticAnalyzer.getMethodCallingLine(locateMethod);
+
+        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
+        Debugger dbg = TestUtil.testDebuggerFactory(testMethod);
+        dbg.setMain(locateClass);
+        dbg.setSrcDir(targetSrcDir);
+
+        PrintStream stdout = System.out;
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(bos);
+
+        for(int l : methodCallingLines){
+            dbg.stopAt(l);
+        }
+
+        dbg.run(2000);
+        //callerMethodを取得
+        System.setOut(ps);
+        bos.reset();
+        dbg.where();
+        System.setOut(stdout);
+
+        StackTrace st = new StackTrace(bos.toString());
+        String callerMethod = st.getMethod(1);
+
+        for(int i = 0; i < methodCallingLines.size(); i++) {
+            System.out.println("[================= i = " + i + " =====================================]");
+            boolean finished = false;
+            //TODO: メソッド呼び出しが行われるまで
+            dbg.step();
+            while (!finished) {
+                System.setOut(ps);
+                bos.reset();
+                dbg.where();
+                System.setOut(stdout);
+                dbg.stepOut();
+
+                st = new StackTrace(bos.toString());
+                calleeMethods.add(st.getMethod(0));
+
+                dbg.step();
+                System.setOut(ps);
+                bos.reset();
+                dbg.where();
+                System.setOut(stdout);
+                st = new StackTrace(bos.toString());
+                if (st.getMethod(0).equals(locateMethod.substring(0, locateMethod.lastIndexOf("(")))
+                        || st.getMethod(0).equals(callerMethod)) {
+                    finished = true;
+                }
             }
-            return canSetLines;
+            //すでにbreakpointにいる場合はスキップしない
+            if(!methodCallingLines.contains(dbg.loc().getLineNumber())) {
+                dbg.cont(2000);
+            }
         }
-        else {
-            MethodInfo mi = ci.method(variableInfo.getLocateMethod());
-            LocalInfo li = mi.local(variableInfo.getVariableName());
 
-            return li.canSet();
-        }
+        return calleeMethods;
     }
 }

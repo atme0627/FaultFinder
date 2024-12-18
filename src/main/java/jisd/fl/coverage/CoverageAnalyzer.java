@@ -25,7 +25,7 @@ public class CoverageAnalyzer {
             return deserialize(testClassName);
         }
 
-        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true);
+        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true, false, true);
 
         //テストクラスをコンパイル
         TestUtil.compileTestClass(testClassName);
@@ -52,7 +52,7 @@ public class CoverageAnalyzer {
             return deserialize(testClassName);
         }
 
-        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true);
+        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true, false, true);
 
         //テストクラスをコンパイル
         TestUtil.compileTestClass(testClassName);

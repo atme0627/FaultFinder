@@ -21,7 +21,7 @@ class StaticAnalyzerTest {
     @Test
     void getMethodNameTest() {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false);
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true);
         for(String methodName : methodNames){
             System.out.println(methodName);
         }
@@ -39,7 +39,7 @@ class StaticAnalyzerTest {
     @Test
     void getCalleeMethodsForMethodsTest(){
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false);
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true);
         String callerMethodName = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
         Set<String> calleeMethods = StaticAnalyzer.getCalledMethodsForMethod(callerMethodName, methodNames);
         for(String methodName : calleeMethods){
@@ -75,6 +75,20 @@ class StaticAnalyzerTest {
             List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "this.point");
             System.out.println(Arrays.toString(result.toArray()));
         }
+    }
 
+    @Test
+    void getAllMethodTest(){
+        Set<String> allMethods = StaticAnalyzer.getAllMethods(targetSrcDir, false, false);
+        for(String methodNames : allMethods){
+            System.out.println(methodNames);
+        }
+    }
+
+    @Test
+    void getMethodCallingLineTest() {
+        String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
+        List<Integer> result = StaticAnalyzer.getMethodCallingLine(locateMethod);
+        System.out.println(Arrays.toString(result.toArray()));
     }
 }

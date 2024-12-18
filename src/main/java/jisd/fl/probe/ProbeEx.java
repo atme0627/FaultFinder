@@ -8,13 +8,8 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
-import jisd.info.ClassInfo;
-import jisd.info.LocalInfo;
-import jisd.info.MethodInfo;
-import jisd.info.StaticInfoFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -24,84 +19,58 @@ import java.util.*;
 //値のStringを比較して一致かどうかを判定
 //理想的には、"==" と同じ方法で判定したいが、型の問題で難しそう
 public class ProbeEx extends AbstractProbe{
+    static String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
+    static Set<String> allMethods = StaticAnalyzer.getAllMethods(targetSrcDir, false, false);
 
     public ProbeEx(FailedAssertInfo assertInfo) {
         super(assertInfo);
-        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-        String testBinDir = PropertyLoader.getProperty("testBinDir");
-        this.targetSif = new StaticInfoFactory(testSrcDir, testBinDir);
-    }
-
-    //呼び出し関係は考えていないバージョン
-    //そのメソッド内だけ検索する
-    @Override
-    public List<Integer> getCanSetLine(VariableInfo variableInfo) {
-        ClassInfo ci = testSif.createClass(assertInfo.getTestClassName());
-        MethodInfo mi = ci.method(assertInfo.getTestMethodName().split("#")[1] + "()");
-        LocalInfo li = mi.local(variableInfo.getVariableName());
-        return li.canSet();
     }
 
     //assert文から遡って、最後に変数が目的の条件を満たしている行で呼び出しているメソッドを返す。
     public ProbeResult run(int sleepTime) {
-//        VariableInfo variableInfo = assertInfo.getVariableInfo();
-//        List<ProbeInfo> watchedValues = extractInfoFromDebugger(variableInfo, sleepTime);
-//        printWatchedValues(watchedValues, variableInfo);
-//        ProbeResult result = searchProbeLine(watchedValues, );
-//        int probeLine = result.getProbeLines();
-//        printProbeStatement(probeLine, variableInfo);
-//        return result;
         return null;
     }
 
-    @Override
-    protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignLine) {
-        return null;
-    }
+    //次のprobe対象のメソッドを返す
+    public List<String> probeStatementParser(ProbeResult pr) {
 
-    //probe.runで出力された行のパースを行い
-    //probe対象のメソッドを返す
-    //メソッドが存在しない場合、"#" + assertStmtの形式の要素を1つ持つListを返す
-    public List<String> probeLineParser(int probeLine) {
-        List<String> probeTargetMethods = new ArrayList<>();
-        ClassInfo ci = targetSif.createClass(assertInfo.getTestClassName());
-        String[] src = ci.src().split("\\r?\\n|\\r");
-        String assertLine = src[probeLine - 1];
-
+        List<String> markingMethods = new ArrayList<>();
         //parse statement
         //assertStmtは一つの代入文のみがある前提
-        Statement assertStmt = StaticJavaParser.parseStatement(assertLine);
+        Statement probeStmt = StaticJavaParser.parseStatement(pr.getSrc());
 
         //MethodCallExprからsimpleNameを取り出し、className#methodNameの形に
-        List<MethodCallExpr> methodCallExprs = assertStmt.findAll(MethodCallExpr.class);
+        List<MethodCallExpr> methodCallExprs = probeStmt.findAll(MethodCallExpr.class);
 
-        //メソッドがあるかチェック
-        if(methodCallExprs.isEmpty()){
-            probeTargetMethods.add("#" + assertStmt.toString());
-            return probeTargetMethods;
-        }
+        //メソッドがない場合は終了
+        if(methodCallExprs.isEmpty()) return null;
+        //メソッド外部APIでないものを抽出する。
+        methodCallExprs = removeExternalApiMethod(methodCallExprs);
 
         for (MethodCallExpr mce : methodCallExprs) {
             Optional<Expression> exp = mce.getScope();
             String probeTargetClass;
-            //ex.) add(a, b);
-            if (exp.isEmpty()) {
-                probeTargetClass = assertInfo.getTestClassName();
-            }
-
+            if (!exp.isEmpty()) {
             //ex.) X.add(a, b);
-            else {
                 probeTargetClass = getClassNameFromMethodCall(exp.get().toString(), assertInfo.getTestClassName(), assertInfo.getTestMethodName());
+                markingMethods.add(probeTargetClass + "#" + mce.getName());
             }
-
-            probeTargetMethods.add(probeTargetClass + "#" + mce.getName());
         }
 
-        return probeTargetMethods;
+        markingMethods.add(pr.getProbeMethod());
+        return markingMethods;
     }
 
-    //MethodName: A.add のような形式
-    //testMethodName: このメソッド呼び出しを行ったテストメソッド ex.) SampleTest#test1
+    public List<MethodCallExpr> removeExternalApiMethod(List<MethodCallExpr> mces){
+        List<MethodCallExpr> filteredMethods = new ArrayList<>();
+        for(MethodCallExpr mce : mces){
+            String methodName = mce.getNameAsString();
+            if(allMethods.contains(methodName)) filteredMethods.add(mce);
+        }
+        return filteredMethods;
+    }
+
+    //sibling method の中から探す
     private String getClassNameFromMethodCall(String methodCall, String testClassName, String testMethodName) {
         String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
         String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
