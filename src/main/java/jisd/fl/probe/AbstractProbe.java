@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
@@ -75,23 +76,26 @@ public abstract class AbstractProbe {
         System.out.println("    >> Probe Info: Searching probe line.");
         boolean isFound = false;
         ProbeResult result = new ProbeResult();
-        watchedValues.sort(Comparator.reverseOrder());
-        List<ProbeInfo> matchValues = new ArrayList<>();
-        for (ProbeInfo pi : watchedValues) {
-            if (!assertInfo.eval(pi.value)) break;
-            matchValues.add(pi);
-            isFound = true;
-
-        }
-        if (!isFound) throw new RuntimeException("No matching rows found.");
 
 
-        //assignLineのうち実行されたものを集める
-        List<Integer> executedAssignedLines = new ArrayList<>();
-        for(int l : assignedLine){
-            for(ProbeInfo pi : matchValues){
+//        List<ProbeInfo> matchValues = new ArrayList<>();
+//        for (ProbeInfo pi : watchedValues) {
+//            if (!assertInfo.eval(pi.value)) continue;
+//            matchValues.add(pi);
+//            isFound = true;
+//        }
+//        if (!isFound) throw new RuntimeException("No matching rows found.");
+
+        //assignLineが実行された直後のProbeInfoの行を集める
+        //watchedValuesの最後の要素がassignLineになることはない(はず)
+        List<Integer> afterAssignedLines = new ArrayList<>();
+        for(int i = 0; i < watchedValues.size() - 1; i++){
+            ProbeInfo pi = watchedValues.get(i);
+            for(int l : assignedLine){
+                //assignLine lが実行された場合
                 if(pi.loc.getLineNumber() == l) {
-                    executedAssignedLines.add(l);
+                    //直後のProbeInfoの行を追加
+                    afterAssignedLines.add(watchedValues.get(i + 1).loc.getLineNumber());
                     break;
                 }
             }
@@ -100,23 +104,36 @@ public abstract class AbstractProbe {
         //新しいものから探して最初にexecutedAssignedLines内の値に一致したものがobjective
         int probeLine = 0;
         String locationClass = null;
-        if(executedAssignedLines.isEmpty()) {
-            probeLine = matchValues.get(matchValues.size() - 1).loc.getLineNumber() - 1;
-            locationClass = matchValues.get(matchValues.size() - 1).loc.getClassName();
+        if(afterAssignedLines.isEmpty()) {
+            //ここに来た時点で、値はこのメソッド内で変更されていない
+            //渡された値がそもそも間違い
+            //引数のパターンしかない(?)
+            probeLine = watchedValues.get(0).loc.getLineNumber();
+            locationClass = watchedValues.get(0).loc.getClassName();
+            String probeMethod = null;
+            try {
+                probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+
+            result.setProbeMethod(probeMethod);
+            result.setArgument(true);
+            return result;
         }
         else {
-            matchValues.sort(Comparator.reverseOrder());
-            for (ProbeInfo pi : matchValues) {
-                boolean isFounded = false;
-                for(int l : executedAssignedLines) {
-                    if (pi.loc.getLineNumber() == l) {
-                        probeLine = pi.loc.getLineNumber();
-                        locationClass = pi.loc.getClassName();
-                        isFounded = true;
-                        break;
-                    }
+            watchedValues.sort(Comparator.reverseOrder());
+            //watchedValuesの最後の要素がassignLineになることはない(はず)
+            for(int i = 0; i < watchedValues.size() - 1; i++){
+                ProbeInfo pi = watchedValues.get(i);
+                //piがafterAssignedLineだった場合
+                if(afterAssignedLines.contains(pi.loc.getLineNumber())){
+                    //その直前のProbeInfoが正解の行
+                    pi = watchedValues.get(i + 1);
+                    probeLine = pi.loc.getLineNumber();
+                    locationClass = pi.loc.getClassName();
+                    break;
                 }
-                if(isFounded) break;
             }
         }
 
@@ -152,7 +169,7 @@ public abstract class AbstractProbe {
     //一回のprobeを行う
     //条件を満たす行の情報を返す
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
-        List<ProbeInfo> watchedValues = extractInfoFromDebugger(variableInfo, sleepTime);
+        ProbeInfoCollection watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
         List<Integer> assignLines = null;
         try {
             assignLines = StaticAnalyzer.getAssignLine(
@@ -161,40 +178,53 @@ public abstract class AbstractProbe {
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
-        printWatchedValues(watchedValues, variableInfo, assignLines);
+        printWatchedValues(watchedValueCollection, variableInfo, assignLines);
+        List<ProbeInfo> watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true));
         ProbeResult result = searchProbeLine(watchedValues, assignLines);
-        printProbeStatement(result, variableInfo);
-
+        if(!result.isArgument()) printProbeStatement(result, variableInfo);
+        result.setVariableInfo(variableInfo);
         return result;
     }
 
     //primitive型の値のみを取得
     //variableInfoが参照型の場合、fieldを取得してその中から目的のprimitive型の値を探す
-    private List<ProbeInfo> getValuesFromDebugResult(DebugResult dr, VariableInfo variableInfo){
+    private List<ProbeInfo> getValuesFromDebugResult(VariableInfo targetInfo, HashMap<String, DebugResult> drs){
         List<ProbeInfo> pis = new ArrayList<>();
-        List<ValueInfo> vis;
-        try {
-            vis = dr.getValues();
-        }
-        catch (RuntimeException e) {
-            return pis;
-        }
+        drs.forEach((variable, dr) -> {
+            List<ValueInfo> vis = null;
+            try {
+                vis = new ArrayList<>(dr.getValues());
+            } catch (RuntimeException e) {
+                return;
+            }
 
-        for(ValueInfo vi : vis) {
-            //対象の変数がnullの場合飛ばす
-            if (vi.getValue().isEmpty()) continue;
+            VariableInfo variableInfo = variable.equals(targetInfo.getVariableName(true)) ? targetInfo : null;
 
-            PrimitiveInfo pi = getPrimitiveInfoFromValueInfo(vi, variableInfo);
-            LocalDateTime createdAt = vi.getCreatedAt();
-            Location loc = dr.getLocation();
-            String value = Objects.requireNonNull(pi).getValue();
-            pis.add(new ProbeInfo(createdAt, loc, value));
-        }
+            for (ValueInfo vi : vis) {
+                LocalDateTime createdAt = vi.getCreatedAt();
+                Location loc = dr.getLocation();
+                String variableName = vi.getName();
+                String value;
+                //対象の変数がnullの場合
+                if (vi.getValue().isEmpty()) {
+                    value = "null";
+                } else {
+                    PrimitiveInfo pi = getPrimitiveInfoFromValueInfo(vi, variableInfo);
+                    if(pi == null){
+                        return;
+                    }
+                    value = pi.getValue();
+                }
+                pis.add(new ProbeInfo(createdAt, loc, variableName, value));
+            }
+        });
         return pis;
     }
 
     //参照型の配列には未対応
+    //viがnullの時はprimitive型かそのラッパー型の場合のみ探す。
     private PrimitiveInfo getPrimitiveInfoFromValueInfo(ValueInfo vi, VariableInfo variableInfo){
+        if(variableInfo == null) return getPrimitiveInfoFromValueInfo(vi);
         //プリミティブ型の場合
         if(variableInfo.isPrimitive()) return (PrimitiveInfo) vi;
 
@@ -222,7 +252,14 @@ public abstract class AbstractProbe {
         return null;
     }
 
-    protected List<ProbeInfo> extractInfoFromDebugger(VariableInfo variableInfo, int sleepTime){
+    //TODO: viがprimitive型とそのラッパー型である場合のみ考える。
+    //そうでない場合はnullを返す。
+    private PrimitiveInfo getPrimitiveInfoFromValueInfo(ValueInfo vi) {
+        if(!(vi instanceof PrimitiveInfo)) return null;
+        return (PrimitiveInfo) vi;
+    }
+
+    protected ProbeInfoCollection extractInfoFromDebugger(VariableInfo variableInfo, int sleepTime){
         disableStdOut("    >> Probe Info: Running debugger.");
         List<Integer> canSetLines = getCanSetLine(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
@@ -230,9 +267,10 @@ public abstract class AbstractProbe {
         List<Optional<Point>> watchPoints = new ArrayList<>();
         //set watchPoint
         dbg.setMain(dbgMain);
-        String[] fieldNames = {varName};
+        //String[] fieldNames = {varName};
         for (int line : canSetLines) {
-            watchPoints.add(dbg.watch(line, fieldNames));
+            //watchPoints.add(dbg.watch(line, fieldNames));
+            watchPoints.add(dbg.watch(line));
         }
 
         //run debugger
@@ -243,22 +281,25 @@ public abstract class AbstractProbe {
         dbg.exit();
 
         enableStdOut();
-        List<ProbeInfo> watchedValues = getInfoFromWatchPoints(watchPoints, variableInfo);
-        watchedValues.sort(ProbeInfo::compareTo);
+        ProbeInfoCollection watchedValues = getInfoFromWatchPoints(watchPoints, variableInfo);
+        watchedValues.sort();
         return watchedValues;
     }
 
-    private List<ProbeInfo> getInfoFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo variableInfo){
+    private ProbeInfoCollection getInfoFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo variableInfo){
         //get Values from debugResult
+        //実行されなかった行の情報は飛ばす。
+        //実行されたがnullのものは含む。
         String varName = variableInfo.getVariableName(true);
-        List<ProbeInfo> watchedValues = new ArrayList<>();
+        ProbeInfoCollection watchedValues = new ProbeInfoCollection();
         for (Optional<Point> op : watchPoints) {
             Point p;
             if (op.isEmpty()) continue;
             p = op.get();
             Optional<DebugResult> od = p.getResults(varName);
+            HashMap<String, DebugResult> drs = p.getResults();
             if (od.isEmpty()) continue;
-            watchedValues.addAll(getValuesFromDebugResult(od.get(), variableInfo));
+            watchedValues.addElements(getValuesFromDebugResult(variableInfo, drs));
         }
 
         if (watchedValues.isEmpty()) {
@@ -282,16 +323,14 @@ public abstract class AbstractProbe {
         System.setErr(stdErr);
     }
 
-    protected void printWatchedValues(List<ProbeInfo> watchedValues, VariableInfo variableInfo, List<Integer> assignLine){
+    protected void printWatchedValues(ProbeInfoCollection watchedValues, VariableInfo variableInfo, List<Integer> assignLine){
         System.out.println("    >> ---------------------------------");
         System.out.println("    >> [field name] "
                 + variableInfo.getVariableName(true)
                 + " [type] "
                 + variableInfo.getVariableType());
         System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
-        for(ProbeInfo values : watchedValues){
-            System.out.println("    >> " + values);
-        }
+        watchedValues.print(variableInfo.getVariableName(true));
     }
 
     protected void printProbeStatement(ProbeResult result, VariableInfo variableInfo){
@@ -386,16 +425,32 @@ public abstract class AbstractProbe {
         return new StackTrace(bos.toString(), "");
     }
 
-    protected static class ProbeInfo implements Comparable<Probe.ProbeInfo>{
+    Pair<Integer, String> getCallerMethod(Pair<Integer, Integer> probeLines, String locateClass) {
+        dbg = createDebugger();
+        dbg.setMain(locateClass);
+        disableStdOut("    >> Probe Info: Running debugger.");
+        dbg.stopAt(probeLines.getLeft());
+        dbg.run(2000);
+        enableStdOut();
+        StackTrace st = getStackTrace(dbg);
+
+        //callerMethodをシグニチャ付きで取得する
+        return st.getMethodAndCallLocation(1);
+    }
+
+    protected static class ProbeInfo implements Comparable<ProbeInfo>{
         LocalDateTime createAt;
         Location loc;
+        String variableName;
         String value;
 
         ProbeInfo(LocalDateTime createAt,
-                    Location loc,
+                  Location loc,
+                  String variableName,
                   String value){
             this.createAt = createAt;
             this.loc = loc;
+            this.variableName = variableName;
             this.value = value;
         }
 
@@ -406,7 +461,53 @@ public abstract class AbstractProbe {
 
         @Override
         public String toString(){
-            return "CreateAt: " + createAt + " Line: " + loc.getLineNumber() + " value: " + value;
+            return   "[CreateAt] " + createAt +
+                    " [Variable] " + variableName +
+                    " [Line] " + loc.getLineNumber() +
+                    " [value] " + value;
+        }
+    }
+
+    protected static class ProbeInfoCollection {
+        Map<String, List<ProbeInfo>> piCollection = new HashMap<>();
+
+        public void addElements(List<ProbeInfo> pis){
+            for(ProbeInfo pi : pis){
+                if(piCollection.containsKey(pi.variableName)){
+                    piCollection.get(pi.variableName).add(pi);
+                }
+                else {
+                    List<ProbeInfo> newPis = new ArrayList<>();
+                    newPis.add(pi);
+                    piCollection.put(pi.variableName, newPis);
+                }
+            }
+        }
+
+        public List<ProbeInfo> getPis(String key){
+            return piCollection.get(key);
+        }
+
+        public boolean isEmpty(){
+            return piCollection.isEmpty();
+        }
+
+        public void sort(){
+            for(List<ProbeInfo> pis : piCollection.values()){
+                pis.sort(ProbeInfo::compareTo);
+            }
+        }
+
+        public void print(String key){
+            for(ProbeInfo pi : piCollection.get(key)) {
+                System.out.println("    >> " + pi);
+            }
+        }
+
+        public void printAll(){
+            for(String key : piCollection.keySet()){
+                print(key);
+            }
         }
     }
 }

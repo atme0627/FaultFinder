@@ -19,11 +19,15 @@ public class Probe extends AbstractProbe{
         //targetのfieldを直接probe
         VariableInfo variableInfo = assertInfo.getVariableInfo();
         ProbeResult result = probing(sleepTime, variableInfo);
+        if(result.isArgument()){
+            System.out.println("    >> Probe Info: There is no probe line in " + variableInfo.getLocateMethod());
+            return result;
+        }
 
         //メソッドを呼び出したメソッドをコールスタックから取得
         System.out.println("    >> Probe Info: Searching caller method from call stack.");
         Pair<Integer, Integer> probeLines = result.getProbeLines();
-        String callerMethod = getCallerMethod(probeLines, variableInfo);
+        String callerMethod = getCallerMethod(probeLines, variableInfo.getLocateClass()).getRight();
         result.setCallerMethod(callerMethod);
 
         //callerメソッドが呼び出したメソッドをカバレッジから取得
@@ -36,19 +40,6 @@ public class Probe extends AbstractProbe{
 
         result.setSiblingMethods(siblingMethods);
         return result;
-    }
-
-    String getCallerMethod(Pair<Integer, Integer> probeLines, VariableInfo variableInfo) {
-        dbg = createDebugger();
-        dbg.setMain(variableInfo.getLocateClass());
-        disableStdOut("    >> Probe Info: Running debugger.");
-        dbg.stopAt(probeLines.getLeft());
-        dbg.run(2000);
-        enableStdOut();
-        StackTrace st = getStackTrace(dbg);
-
-        //callerMethodをシグニチャ付きで取得する
-        return st.getMethodAndCallLocation(1).getRight();
     }
 
     Set<String> getSiblingMethods(String testMethod, String callerMethod, String probeMethod) {

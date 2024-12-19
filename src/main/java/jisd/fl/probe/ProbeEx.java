@@ -2,24 +2,25 @@ package jisd.fl.probe;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
+import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.util.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
+import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.IOException;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 //値のStringを比較して一致かどうかを判定
 //理想的には、"==" と同じ方法で判定したいが、型の問題で難しそう
-public class ProbeEx extends AbstractProbe{
+public class ProbeEx extends AbstractProbe {
     static String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
     static Set<String> allMethods;
 
@@ -32,134 +33,113 @@ public class ProbeEx extends AbstractProbe{
         }
     }
 
-    //assert文から遡って、最後に変数が目的の条件を満たしている行で呼び出しているメソッドを返す。
     public ProbeResult run(int sleepTime) {
         return null;
     }
 
-    //次のprobe対象のメソッドを返す
-    public List<String> probeStatementParser(ProbeResult pr) {
-
-        List<String> markingMethods = new ArrayList<>();
-        //parse statement
-        //assertStmtは一つの代入文のみがある前提
-        Statement probeStmt = StaticJavaParser.parseStatement(pr.getSrc());
-
-        //MethodCallExprからsimpleNameを取り出し、className#methodNameの形に
-        List<MethodCallExpr> methodCallExprs = probeStmt.findAll(MethodCallExpr.class);
-
-        //メソッドがない場合は終了
-        if(methodCallExprs.isEmpty()) return null;
-        //メソッド外部APIでないものを抽出する。
-        methodCallExprs = removeExternalApiMethod(methodCallExprs);
-
-        for (MethodCallExpr mce : methodCallExprs) {
-            Optional<Expression> exp = mce.getScope();
-            String probeTargetClass;
-            if (!exp.isEmpty()) {
-            //ex.) X.add(a, b);
-                probeTargetClass = getClassNameFromMethodCall(exp.get().toString(), assertInfo.getTestClassName(), assertInfo.getTestMethodName());
-                markingMethods.add(probeTargetClass + "#" + mce.getName());
-            }
+    //次のprobe対象のVariableInfoを返す
+    public List<VariableInfo> searchNextProbeTargets(ProbeResult pr) {
+        List<VariableInfo> vis = new ArrayList<>();
+        if(pr.isArgument()){
+            String argVariable = getArgumentVariable(pr);
+            VariableInfo vi = new VariableInfo(
+                    pr.getProbeMethod(),
+                    argVariable,
+                    pr.getVariableInfo().getVariableType(),
+                    pr.getVariableInfo().isField(),
+                    pr.getVariableInfo().getArrayNth(),
+                    pr.getVariableInfo().getTargetField()
+                    );
+            vis.add(vi);
         }
+        else {
 
-        markingMethods.add(pr.getProbeMethod());
-        return markingMethods;
+        }
+        return vis;
     }
 
-    public List<MethodCallExpr> removeExternalApiMethod(List<MethodCallExpr> mces){
-        List<MethodCallExpr> filteredMethods = new ArrayList<>();
-        for(MethodCallExpr mce : mces){
-            String methodName = mce.getNameAsString();
-            if(allMethods.contains(methodName)) filteredMethods.add(mce);
-        }
-        return filteredMethods;
-    }
+    //メソッド呼び出しで使われた変数名を返す
+    private String getArgumentVariable(ProbeResult pr){
+        String locateClass = pr.getProbeMethod().split("#")[0];
+        Pair<Integer, String> callerNameAndCallLocation = getCallerMethod(pr.getProbeLines(), locateClass);
+        int index = getIndexOfArgument(pr);
+        int line = callerNameAndCallLocation.getLeft();
+        String locateMethod = callerNameAndCallLocation.getRight();
 
-    //sibling method の中から探す
-    private String getClassNameFromMethodCall(String methodCall, String testClassName, String testMethodName) {
-        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-        String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
-        //argと()を消す
-        int argPlace = methodCall.lastIndexOf('(');
-        if (argPlace == -1) argPlace = methodCall.length();
-        String[] methodCallElements = methodCall.substring(0, argPlace).split("\\.");
-
-        String p = testSrcDir + "/" + testClassName.replace(".", "/") + ".java";
-        Path source = Paths.get(p);
-
-        CompilationUnit unit = null;
-        try {
-            unit = StaticJavaParser.parse(source);
-        } catch (IOException e) {
-            e.printStackTrace(System.err);
-        }
-
-        //MethodNameのAのクラスを調べる
-        String typeName = unit.accept(new GenericVisitorAdapter<>() {
+        class BlockStmtVisitor extends GenericVisitorAdapter<String, Integer> {
             @Override
-            public String visit(VariableDeclarator vd, String variableName) {
-                if (vd.getNameAsString().equals(variableName)) {
-                    return vd.getTypeAsString();
+            public String visit(final MethodCallExpr n, final Integer line) {
+                if(n.getBegin().get().line == line){
+                    return n.getArgument(index).toString();
                 }
-                return null;
+                return super.visit(n, line);
             }
-        }, methodCallElements[0]);
-
-        if (typeName == null) {
-            throw new RuntimeException("Probe#getClassNameFromMethodCall\n" +
-                    "Cannot find type of variable: " + methodCallElements[0]);
         }
 
-        String typeNameWithPackage;
-        typeNameWithPackage = StaticAnalyzer.getClassNameWithPackage(targetSrcDir, typeName);
+        BlockStmt bs;
+        try {
+            MethodDeclaration md = JavaParserUtil.parseMethod(locateMethod);
+            bs = md.getBody().get();
+        } catch (NoSuchFileException e) {
+            //targetMethodがコンストラクタの場合
+            try {
+                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(locateMethod);
+                bs = cd.getBody();
+            } catch (NoSuchFileException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
 
-//        //B以降
-//        //X.Y or X.Y()に対し、Xのフィールド、メソッドにYが含まれていることを確認し、Yの型を返す。
-//        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-//        unit = StaticJavaParser.parse(targetSrcDir + "/" + typeNameWithPackage.replace(".", "/") + ".java");
-//
-//        String element = methodCallElements[1];
-//        String newTypeName;
-//        //method
-//        if (element.endsWith("()")) {
-//            newTypeName = unit.accept(new GenericVisitorAdapter<>() {
-//                @Override
-//                public String visit(MethodDeclaration md, String methodName) {
-//                    if ((md.getNameAsString() + "()").equals(methodName)) {
-//                        return md.getTypeAsString();
-//                    }
-//                    return null;
-//                }
-//            }, element);
-//        }
-//        //field
-//        else {
-//            newTypeName = unit.accept(new GenericVisitorAdapter<>() {
-//                @Override
-//                public String visit(VariableDeclarator vd, String variableName) {
-//                    if (vd.getNameAsString().equals(variableName)) {
-//                        return vd.getTypeAsString();
-//                    }
-//                    return null;
-//                }
-//            }, element);
-//        }
-//
-//        if (newTypeName == null) {
-//            throw new RuntimeException("Probe#getClassNameFromMethodCall\n" +
-//                    "Cannot find type of variable: " + element);
-//        }
-//
-//        String newTypeNameWithPackage;
-//        try {
-//            newTypeNameWithPackage = StaticAnalyzer.getClassNameWithPackage(, newTypeName);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-
-        return typeNameWithPackage;
+        return bs.accept(new BlockStmtVisitor(), line);
     }
 
 
+    private int getIndexOfArgument(ProbeResult pr){
+        String targetMethod = pr.getProbeMethod();
+        String variable = pr.getVariableInfo().getVariableName();
+        int index = -1;
+        NodeList<Parameter> prms;
+        try {
+            MethodDeclaration md = JavaParserUtil.parseMethod(targetMethod);
+            prms = md.getParameters();
+        } catch (NoSuchFileException e) {
+            //targetMethodがコンストラクタの場合
+            try {
+                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(targetMethod);
+                prms = cd.getParameters();
+            } catch (NoSuchFileException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        for(int i = 0; i < prms.size() - 1; i++){
+            Parameter prm = prms.get(i);
+            if(prm.getName().toString().equals(variable)){
+                index = i;
+            }
+        }
+
+        if(index == -1) throw new RuntimeException("parameter " + variable + " is not found.");
+        return index;
+    }
+    Set<String> getVariableFromProbeLine(String probeLine){
+        Statement stmt = StaticJavaParser.parseStatement(probeLine);
+        return null;
+    }
+
+    Set<String> getLocalVariables(String targetMethod){
+        Set<String> lvs = new HashSet<>();
+        MethodDeclaration md;
+        try {
+            md = JavaParserUtil.parseMethod(targetMethod);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<VariableDeclarator> vds = md.findAll(VariableDeclarator.class);
+        for(VariableDeclarator vd : vds){
+            lvs.add(vd.getNameAsString());
+        }
+        return lvs;
+    }
 }

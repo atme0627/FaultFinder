@@ -1,6 +1,6 @@
 package jisd.fl.probe.assertinfo;
 
-public class VariableInfo {
+public class VariableInfo implements Cloneable{
     private final String locateClass;
     private final String locateMethod; //ローカル変数の場合のみ
     private final String variableName;

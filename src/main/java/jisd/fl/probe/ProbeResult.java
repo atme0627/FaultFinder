@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import jisd.fl.probe.assertinfo.VariableInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Set;
@@ -10,6 +11,9 @@ public class ProbeResult {
     private String probeMethod;
     private String callerMethod;
     private Set<String> siblingMethods;
+    //falseの場合はその変数の欠陥が引数由来
+    private boolean isArgument = false;
+    private VariableInfo vi;
 
     public ProbeResult(){
     }
@@ -52,5 +56,21 @@ public class ProbeResult {
 
     public void setSrc(String src) {
         this.src = src;
+    }
+
+    public boolean isArgument() {
+        return isArgument;
+    }
+
+    public void setArgument(boolean argument) {
+        isArgument = argument;
+    }
+
+    public VariableInfo getVariableInfo() {
+        return vi;
+    }
+
+    public void setVariableInfo(VariableInfo vi) {
+        this.vi = vi;
     }
 }
