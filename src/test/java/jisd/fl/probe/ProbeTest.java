@@ -19,9 +19,11 @@ class ProbeTest {
         VariableInfo probeVariable = new VariableInfo(
                 locateClass,
                 variableName,
-                variableType,
+                false,
+                true,
                 true,
                 0,
+                actual,
                 null
                 );
 
@@ -36,11 +38,12 @@ class ProbeTest {
         System.out.println(result.getProbeMethod());
         System.out.println("caller method");
         System.out.println(result.getCallerMethod());
-        Set<String> siblingMethods = result.getSiblingMethods();
-        System.out.println("sibling methods");
-        for(String sibling : siblingMethods){
-            System.out.println(sibling);
-        }
+        Map<String, String> neighbor = result.getValuesInLine();
+        System.out.println("neighbor variables");
+        neighbor.forEach((variable, value) -> {
+                System.out.println(variable + ": " + value);
+            }
+        );
     }
 
     @Test
@@ -54,9 +57,11 @@ class ProbeTest {
         VariableInfo probeVariable = new VariableInfo(
                 locateMethod,
                 variableName,
-                variableType,
                 false,
+                false,
+                true,
                 0,
+                actual,
                 null
         );
 
@@ -90,9 +95,11 @@ class ProbeTest {
         VariableInfo probeVariable = new VariableInfo(
                 locateMethod,
                 variableName,
-                variableType,
                 false,
+                false,
+                true,
                 0,
+                actual,
                 null
         );
 
@@ -106,33 +113,5 @@ class ProbeTest {
 
         System.out.println("probe method");
         System.out.println(result.getProbeMethod());
-    }
-
-
-     @Test
-    void getCalleeMethodsOfMethod() {
-        String testMethod = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint()";
-        String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
-        String variableName = "coefficients";
-        String variableType = "double[]";
-        String actual = "0.0";
-
-         VariableInfo field = new VariableInfo(
-                 locateMethod,
-                 variableName,
-                 variableType,
-                 false,
-                 0,
-                 null
-         );
-
-         FailedAssertInfo fai2 = new FailedAssertEqualInfo(
-                 testMethod,
-                 actual,
-                 field);
-
-         Probe prb = new Probe(fai2);
-         MethodCollection callee = prb.getCalleeMethods(testMethod, locateMethod);
-         callee.print();
     }
 }

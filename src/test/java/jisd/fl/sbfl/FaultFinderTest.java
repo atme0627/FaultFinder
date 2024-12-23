@@ -22,18 +22,24 @@ class FaultFinderTest {
     String actual = "0.0";
 
     VariableInfo field = new VariableInfo(
-            "", fieldName,
-            fieldType,
+            variableType,
+            fieldName,
+            false,
+            true,
             true,
             0,
+            actual,
             null
     );
 
     VariableInfo probeVariable = new VariableInfo(
-            "", variableName,
-            variableType,
+            testMethodName,
+            variableName,
+            false,
+            false,
             false,
             -1,
+            actual,
             field
     );
 
@@ -46,7 +52,7 @@ class FaultFinderTest {
 
 
     @Test
-    void printFLResultsTest() throws IOException, InterruptedException, ExecutionException {
+    void printFLResultsTest() throws IOException, InterruptedException{
         CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         SbflResult result = ff.getFLResults();
@@ -81,33 +87,5 @@ class FaultFinderTest {
         ff.probe(fai);
         ff.susp(1);
         ff.getFLResults().printFLResults(20);
-    }
-
-    @Test
-    void probeTest2() throws IOException, InterruptedException {
-        String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
-        String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
-        String locateClass = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        String locateMethod = "getSolution";
-        String variableName = "coefficients";
-        String variableType = "double[]";
-        String actual = "0.0";
-
-        VariableInfo probeVariable = new VariableInfo(
-                "", variableName,
-                variableType,
-                false,
-                0,
-                field
-        );
-
-        FailedAssertInfo fai = new FailedAssertEqualInfo(
-                testMethodName,
-                actual,
-                probeVariable);
-
-        CoverageCollection cov = ca.analyzeAll(testClassName);
-        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.probe(fai);
     }
 }

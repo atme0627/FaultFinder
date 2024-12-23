@@ -1,6 +1,5 @@
 package jisd.fl.probe;
 
-import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VMDisconnectedException;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
@@ -74,17 +73,7 @@ public abstract class AbstractProbe {
 
     protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignedLine){
         System.out.println("    >> Probe Info: Searching probe line.");
-        boolean isFound = false;
         ProbeResult result = new ProbeResult();
-
-
-//        List<ProbeInfo> matchValues = new ArrayList<>();
-//        for (ProbeInfo pi : watchedValues) {
-//            if (!assertInfo.eval(pi.value)) continue;
-//            matchValues.add(pi);
-//            isFound = true;
-//        }
-//        if (!isFound) throw new RuntimeException("No matching rows found.");
 
         //assignLineが実行された直後のProbeInfoの行を集める
         //watchedValuesの最後の要素がassignLineになることはない(はず)
@@ -174,15 +163,17 @@ public abstract class AbstractProbe {
         try {
             assignLines = StaticAnalyzer.getAssignLine(
                     variableInfo.getLocateClass(),
-                    variableInfo.getVariableName(true));
+                    variableInfo.getVariableName(true, false));
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
         printWatchedValues(watchedValueCollection, variableInfo, assignLines);
-        List<ProbeInfo> watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true));
+        List<ProbeInfo> watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
         ProbeResult result = searchProbeLine(watchedValues, assignLines);
-        if(!result.isArgument()) printProbeStatement(result, variableInfo);
+        if(!result.isArgument()) printProbeStatement(result);
+
         result.setVariableInfo(variableInfo);
+        result.setValuesInLine(watchedValueCollection.getvaluesFromLines(result.getProbeLines()));
         return result;
     }
 
@@ -198,36 +189,45 @@ public abstract class AbstractProbe {
                 return;
             }
 
-            VariableInfo variableInfo = variable.equals(targetInfo.getVariableName(true)) ? targetInfo : null;
+            VariableInfo variableInfo = variable.equals(targetInfo.getVariableName(true, false)) ? targetInfo : null;
 
             for (ValueInfo vi : vis) {
                 LocalDateTime createdAt = vi.getCreatedAt();
                 Location loc = dr.getLocation();
-                String variableName = vi.getName();
+                String variableName = (variableInfo == null) ? vi.getName() : variableInfo.getVariableName(true, true);
                 String value;
                 //対象の変数がnullの場合
                 if (vi.getValue().isEmpty()) {
                     value = "null";
+                    pis.add(new ProbeInfo(createdAt, loc, variableName, value));
                 } else {
-                    PrimitiveInfo pi = getPrimitiveInfoFromValueInfo(vi, variableInfo);
-                    if(pi == null){
-                        return;
+                    //viがprobe対象
+                    if(variableInfo != null){
+                        value = getPrimitiveInfoFromReferenceType(vi, variableInfo).getValue();
+                        pis.add(new ProbeInfo(createdAt, loc, variableName, value));
                     }
-                    value = pi.getValue();
+                    //viがプリミティブ型の配列
+                    else if(vi.getName().contains("[")) {
+                        List<PrimitiveInfo> piList = getPrimitiveInfoFromArrayType(vi);
+                        for(int i = 0; i < piList.size(); i++){
+                            value = piList.get(i).getValue();
+                            pis.add(new ProbeInfo(createdAt, loc, variableName + "[" + i + "]", value));
+                        }
+                    }
+
+                    //viがプリミティブ型かそのラッパー
+                    else if(isPrimitive(vi)) {
+                        value = getPrimitiveInfoFromPrimitiveType(vi).getValue();
+                        pis.add(new ProbeInfo(createdAt, loc, variableName, value));
+                    }
                 }
-                pis.add(new ProbeInfo(createdAt, loc, variableName, value));
             }
         });
         return pis;
     }
 
     //参照型の配列には未対応
-    //viがnullの時はprimitive型かそのラッパー型の場合のみ探す。
-    private PrimitiveInfo getPrimitiveInfoFromValueInfo(ValueInfo vi, VariableInfo variableInfo){
-        if(variableInfo == null) return getPrimitiveInfoFromValueInfo(vi);
-        //プリミティブ型の場合
-        if(variableInfo.isPrimitive()) return (PrimitiveInfo) vi;
-
+    private PrimitiveInfo getPrimitiveInfoFromReferenceType(ValueInfo vi, VariableInfo variableInfo){
         //プリミティブ型の配列の場合
         if(variableInfo.isArray()){
             int arrayNth = variableInfo.getArrayNth();
@@ -235,41 +235,107 @@ public abstract class AbstractProbe {
             return (PrimitiveInfo) arrayElements.get(arrayNth);
         }
 
+        //プリミティブ型の場合
+        if(variableInfo.isPrimitive()) {
+            return getPrimitiveInfoFromPrimitiveType(vi);
+        }
         //参照型の場合
-        if(variableInfo.isPrimitive()){
+        else {
             ArrayList<ValueInfo> fieldElements = vi.ch();
             boolean isFound = false;
             String fieldName = variableInfo.getTargetField().getVariableName();
             for(ValueInfo e : fieldElements){
                 if(e.getName().equals(fieldName)){
-                    getPrimitiveInfoFromValueInfo(e, variableInfo.getTargetField());
+                    getPrimitiveInfoFromReferenceType(e, variableInfo.getTargetField());
                     isFound = true;
                     break;
                 }
             }
-            if(!isFound) throw new NoSuchElementException(fieldName + " is not found in fields of" + variableInfo.getVariableName(false));
+            if(!isFound) throw new NoSuchElementException(fieldName + " is not found in fields of" + variableInfo.getVariableName(false, false));
         }
-        return null;
+        throw new RuntimeException();
     }
 
-    //TODO: viがprimitive型とそのラッパー型である場合のみ考える。
+    private boolean isPrimitive(ValueInfo vi){
+        Set<String> primitiveWrapper = new HashSet<>(List.of(
+                "java.lang.Boolean",
+                "java.lang.Byte",
+                "java.lang.Character",
+                "java.lang.Double",
+                "java.lang.Float",
+                "java.lang.Integer",
+                "java.lang.Long",
+                "java.lang.Short"
+        ));
+
+        if (vi instanceof PrimitiveInfo) return true;
+
+        String law = vi.getValue();
+        String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
+        return primitiveWrapper.contains(valueType);
+    }
+    //viがprimitive型とそのラッパー型である場合のみ考える。
     //そうでない場合はnullを返す。
-    private PrimitiveInfo getPrimitiveInfoFromValueInfo(ValueInfo vi) {
-        if(!(vi instanceof PrimitiveInfo)) return null;
-        return (PrimitiveInfo) vi;
+    private PrimitiveInfo getPrimitiveInfoFromPrimitiveType(ValueInfo vi) {
+        if(vi instanceof PrimitiveInfo) return (PrimitiveInfo) vi;
+
+        Set<String> primitiveWrapper = new HashSet<>(List.of(
+                "java.lang.Boolean",
+                "java.lang.Byte",
+                "java.lang.Character",
+                "java.lang.Double",
+                "java.lang.Float",
+                "java.lang.Integer",
+                "java.lang.Long",
+                "java.lang.Short"
+        ));
+
+        //ex) vi.getValue() --> instance of java.lang.Integer(id=2827)
+        String law = vi.getValue();
+        String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
+
+        //プリミティブ型のラッパークラスのとき
+        if(primitiveWrapper.contains(valueType)) {
+            return (PrimitiveInfo) vi.ch().get(0);
+        }
+
+        throw new RuntimeException(vi.getName() + " is not primitive.");
+    }
+
+    private ArrayList<PrimitiveInfo> getPrimitiveInfoFromArrayType(ValueInfo vi) {
+        //    vi.getValue() --> instance of double[1] (id=2814)
+        String law = vi.getValue();
+        String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
+
+        Set<String> primitiveType = new HashSet<>(List.of(
+                "boolean",
+                "byte",
+                "char",
+                "double",
+                "float",
+                "int",
+                "long",
+                "short"
+        ));
+
+        //プリミティブ型の配列のとき
+        if(primitiveType.contains(valueType.substring(0, valueType.indexOf("[")))){
+            ArrayList<PrimitiveInfo> pis = new ArrayList<>();
+            vi.ch().forEach(e -> pis.add((PrimitiveInfo) e));
+            return pis;
+        }
+        throw new RuntimeException(vi.getName() + "is not array.");
     }
 
     protected ProbeInfoCollection extractInfoFromDebugger(VariableInfo variableInfo, int sleepTime){
         disableStdOut("    >> Probe Info: Running debugger.");
         List<Integer> canSetLines = getCanSetLine(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
-        String varName = variableInfo.getVariableName(true);
         List<Optional<Point>> watchPoints = new ArrayList<>();
+
         //set watchPoint
         dbg.setMain(dbgMain);
-        //String[] fieldNames = {varName};
         for (int line : canSetLines) {
-            //watchPoints.add(dbg.watch(line, fieldNames));
             watchPoints.add(dbg.watch(line));
         }
 
@@ -290,7 +356,7 @@ public abstract class AbstractProbe {
         //get Values from debugResult
         //実行されなかった行の情報は飛ばす。
         //実行されたがnullのものは含む。
-        String varName = variableInfo.getVariableName(true);
+        String varName = variableInfo.getVariableName(true, false);
         ProbeInfoCollection watchedValues = new ProbeInfoCollection();
         for (Optional<Point> op : watchPoints) {
             Point p;
@@ -326,14 +392,13 @@ public abstract class AbstractProbe {
     protected void printWatchedValues(ProbeInfoCollection watchedValues, VariableInfo variableInfo, List<Integer> assignLine){
         System.out.println("    >> ---------------------------------");
         System.out.println("    >> [field name] "
-                + variableInfo.getVariableName(true)
-                + " [type] "
-                + variableInfo.getVariableType());
+                + variableInfo.getVariableName(true, false));
         System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
-        watchedValues.print(variableInfo.getVariableName(true));
+        //watchedValues.print(variableInfo.getVariableName(true));
+        watchedValues.printAll();
     }
 
-    protected void printProbeStatement(ProbeResult result, VariableInfo variableInfo){
+    protected void printProbeStatement(ProbeResult result){
         System.out.println("    >> [probe Statement]");
         Pair<Integer, Integer> probeLines = result.getProbeLines();
         String[] src = result.getSrc().split("\n");
@@ -443,6 +508,7 @@ public abstract class AbstractProbe {
         Location loc;
         String variableName;
         String value;
+        int arrayIndex = -1;
 
         ProbeInfo(LocalDateTime createAt,
                   Location loc,
@@ -496,6 +562,20 @@ public abstract class AbstractProbe {
             for(List<ProbeInfo> pis : piCollection.values()){
                 pis.sort(ProbeInfo::compareTo);
             }
+        }
+
+        public Map<String, String> getvaluesFromLines(Pair<Integer, Integer> lines){
+            Map<String, String> pis = new HashMap<>();
+            for(List<ProbeInfo> l : piCollection.values()){
+                for(ProbeInfo pi : l){
+                    for(int i = lines.getLeft(); i <= lines.getRight(); i++) {
+                        if (pi.loc.getLineNumber() == i) {
+                            pis.put(pi.variableName, pi.value);
+                        }
+                    }
+                }
+            }
+            return pis;
         }
 
         public void print(String key){

@@ -5,6 +5,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
@@ -15,6 +16,7 @@ import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.StringBufferInputStream;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 
@@ -34,28 +36,123 @@ public class ProbeEx extends AbstractProbe {
     }
 
     public ProbeResult run(int sleepTime) {
-        return null;
+        return probing(sleepTime, assertInfo.getVariableInfo());
     }
 
     //次のprobe対象のVariableInfoを返す
     public List<VariableInfo> searchNextProbeTargets(ProbeResult pr) {
         List<VariableInfo> vis = new ArrayList<>();
+        //感染した変数が引数のものだった場合
         if(pr.isArgument()){
             String argVariable = getArgumentVariable(pr);
             VariableInfo vi = new VariableInfo(
                     pr.getProbeMethod(),
                     argVariable,
-                    pr.getVariableInfo().getVariableType(),
-                    pr.getVariableInfo().isField(),
+                    pr.getVariableInfo().isPrimitive(),
+                    isFieldVariable(argVariable, pr.getProbeMethod()),
+                    pr.getVariableInfo().isArray(),
                     pr.getVariableInfo().getArrayNth(),
+                    pr.getVariableInfo().getActualValue(),
                     pr.getVariableInfo().getTargetField()
                     );
             vis.add(vi);
         }
         else {
+            Set<String> neighborVariables = getNeighborVariables(pr);
+            for(String n : neighborVariables){
+                String variableName = n;
+                boolean isArray;
+                boolean isField = false;
+                int arrayNth;
+                //フィールドかどうか判定
+                if(n.contains("this.")){
+                    isField = true;
+                    variableName = n.substring("this.".length());
+                }
+                //配列かどうか判定
+                if(n.contains("[")){
+                    variableName = variableName.split("\\[")[0];
+                    arrayNth = Integer.parseInt(n.substring(n.indexOf("[") + 1, n.indexOf("]")));
+                    isArray = true;
+                }
+                else {
+                    arrayNth = -1;
+                    isArray = false;
+                }
 
+                VariableInfo vi = new VariableInfo(
+                        pr.getProbeMethod(),
+                        variableName,
+                        true,
+                        isField,
+                        isArray,
+                        arrayNth,
+                        pr.getValuesInLine().get(n),
+                        null
+                );
+                vis.add(vi);
+            }
         }
         return vis;
+    }
+
+    private boolean isFieldVariable(String variable, String targetMethod){
+        String targetClass = targetMethod.split("#")[0];
+        MethodDeclaration md;
+        CompilationUnit unit;
+        try {
+            md = JavaParserUtil.parseMethod(targetMethod);
+            unit = JavaParserUtil.parseClass(targetClass);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+
+        //method内で定義されたローカル変数の場合
+        List<VariableDeclarator> vds = md.findAll(VariableDeclarator.class);
+        for(VariableDeclarator vd : vds){
+            if(vd.getName().toString().equals(variable)){
+                return false;
+            }
+        }
+
+        //fieldの場合
+        List<FieldDeclaration> fds = unit.findAll(FieldDeclaration.class);
+        vds = new ArrayList<>();
+        for(FieldDeclaration fd : fds){
+            vds.addAll(fd.getVariables());
+        }
+
+        for(VariableDeclarator vd : vds){
+            if(vd.getName().toString().equals(variable)){
+                return true;
+            }
+        }
+
+        throw new RuntimeException("Variable \"" + variable + "\" is not found in " + targetClass);
+    }
+
+    //probeLine中で使われている変数群を返す
+    private Set<String> getNeighborVariables(ProbeResult pr){
+        Set<String> neighbor = new HashSet<>();
+        Set<String> watched = pr.getValuesInLine().keySet();
+        Statement stmt = StaticJavaParser.parseStatement(pr.getSrc());
+        List<SimpleName> variableNames = stmt.findAll(SimpleName.class);
+        variableNames.forEach((v) -> {
+            for(String w : watched) {
+                //プリミティブ型の場合
+                if (w.equals(v.toString()) || w.equals("this." + v)) {
+                    neighbor.add(w);
+                }
+
+                if(!w.contains("[")) continue;
+                String withoutArray = w.substring(0, w.indexOf("["));
+                //配列の場合
+                if (withoutArray.contains(v.toString()) || withoutArray.contains("this." + v)) {
+                    neighbor.add(w);
+                }
+            }
+        });
+        return neighbor;
     }
 
     //メソッド呼び出しで使われた変数名を返す
@@ -121,25 +218,5 @@ public class ProbeEx extends AbstractProbe {
 
         if(index == -1) throw new RuntimeException("parameter " + variable + " is not found.");
         return index;
-    }
-    Set<String> getVariableFromProbeLine(String probeLine){
-        Statement stmt = StaticJavaParser.parseStatement(probeLine);
-        return null;
-    }
-
-    Set<String> getLocalVariables(String targetMethod){
-        Set<String> lvs = new HashSet<>();
-        MethodDeclaration md;
-        try {
-            md = JavaParserUtil.parseMethod(targetMethod);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
-        List<VariableDeclarator> vds = md.findAll(VariableDeclarator.class);
-        for(VariableDeclarator vd : vds){
-            lvs.add(vd.getNameAsString());
-        }
-        return lvs;
     }
 }

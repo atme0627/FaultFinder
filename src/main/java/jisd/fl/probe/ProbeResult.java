@@ -3,6 +3,7 @@ package jisd.fl.probe;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Map;
 import java.util.Set;
 
 public class ProbeResult {
@@ -14,6 +15,8 @@ public class ProbeResult {
     //falseの場合はその変数の欠陥が引数由来
     private boolean isArgument = false;
     private VariableInfo vi;
+    //probeLineで観測された変数の値のペア
+    private Map<String, String> valuesInLine;
 
     public ProbeResult(){
     }
@@ -72,5 +75,13 @@ public class ProbeResult {
 
     public void setVariableInfo(VariableInfo vi) {
         this.vi = vi;
+    }
+
+    public Map<String, String> getValuesInLine() {
+        return valuesInLine;
+    }
+
+    public void setValuesInLine(Map<String, String> valuesInLine) {
+        this.valuesInLine = valuesInLine;
     }
 }

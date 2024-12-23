@@ -1,23 +1,27 @@
 package jisd.fl.probe.assertinfo;
 
-public class VariableInfo implements Cloneable{
+public class VariableInfo {
     private final String locateClass;
     private final String locateMethod; //ローカル変数の場合のみ
     private final String variableName;
-    private final String variableType;
     private final boolean isPrimitive;
     private final boolean isField;
+    private final boolean isArray;
     private final int arrayNth;
+    private final String actualValue;
     private final VariableInfo targetField;
 
     //locateはローカル変数の場合はメソッド名まで(フルネーム、シグニチャあり)
     //フィールドの場合はクラス名まで
     public VariableInfo(String locate,
                         String variableName,
-                        String variableType,
+                        boolean isPrimitive,
                         boolean isField,
+                        boolean isArray,
                         int arrayNth,
+                        String actualValue,
                         VariableInfo targetField){
+
 
         if(isField) {
             this.locateClass = locate;
@@ -29,25 +33,12 @@ public class VariableInfo implements Cloneable{
         }
 
         this.variableName = variableName;
-        this.variableType = variableType;
+        this.isPrimitive =isPrimitive;
         this.isField = isField;
         this.arrayNth = arrayNth;
+        this.isArray = isArray;
         this.targetField = targetField;
-
-        switch (variableType){
-            case "char":
-            case "boolean":
-            case "byte":
-            case "short":
-            case "int":
-            case "float":
-            case "long":
-            case "double":
-                this.isPrimitive = true;
-                break;
-            default:
-                this.isPrimitive = false;
-        }
+        this.actualValue = actualValue;
     }
 
     public String getLocateClass() {
@@ -55,19 +46,15 @@ public class VariableInfo implements Cloneable{
     }
 
     public String getVariableName(){
-        return getVariableName(false);
+        return getVariableName(false, false);
     }
 
-    public String getVariableName(boolean withThis) {
-        return (isField() && withThis ? "this." : "") + variableName;
-    }
-
-    public String getVariableType() {
-        return variableType;
+    public String getVariableName(boolean withThis, boolean withArray) {
+        return (isField() && withThis ? "this." : "") + variableName + (isArray() && withArray ? "[" + arrayNth + "]" : "");
     }
 
     public boolean isArray() {
-        return variableType.endsWith("[]");
+        return isArray;
     }
 
     public boolean isPrimitive() {
@@ -102,5 +89,9 @@ public class VariableInfo implements Cloneable{
     @Override
     public String toString(){
         return this.variableName + ((this.targetField != null) ? "." + this.targetField.variableName : "");
+    }
+
+    public String getActualValue() {
+        return actualValue;
     }
 }
