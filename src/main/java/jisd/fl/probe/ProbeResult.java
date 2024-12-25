@@ -10,7 +10,8 @@ public class ProbeResult {
     private Pair<Integer, Integer> lines;
     private String src;
     private String probeMethod;
-    private String callerMethod;
+    //呼び出し側のメソッドと呼び出している行
+    private Pair<Integer, String> callerMethod;
     private Set<String> siblingMethods;
     //falseの場合はその変数の欠陥が引数由来
     private boolean isArgument = false;
@@ -25,7 +26,7 @@ public class ProbeResult {
         return probeMethod;
     }
 
-    public String getCallerMethod() {
+    public Pair<Integer, String> getCallerMethod() {
         return callerMethod;
     }
 
@@ -37,7 +38,7 @@ public class ProbeResult {
         this.probeMethod = probeMethod;
     }
 
-    void setCallerMethod(String callerMethod) {
+    void setCallerMethod(Pair<Integer, String> callerMethod) {
         this.callerMethod = callerMethod;
     }
 

@@ -29,9 +29,9 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getRangeOfStatementTest() throws NoSuchFileException {
+    void getRangeOfAllStatementsTest() throws NoSuchFileException {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Map<Integer, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfStatement(targetClassName);
+        Map<Integer, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfAllStatements(targetClassName);
         methodNames.forEach((k, v)->{
             System.out.println("line: " + k + ", start: " + v.getLeft() + ", end: " + v.getRight());
         });

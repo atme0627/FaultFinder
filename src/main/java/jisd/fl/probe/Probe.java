@@ -14,7 +14,6 @@ public class Probe extends AbstractProbe{
 
     //assertInfoで指定されたtypeのクラスの中で
     //失敗テスト実行時に、actualに一致した瞬間に呼び出しているメソッドを返す。
-    @Override
     public ProbeResult run(int sleepTime) {
         //targetのfieldを直接probe
         VariableInfo variableInfo = assertInfo.getVariableInfo();
@@ -27,7 +26,7 @@ public class Probe extends AbstractProbe{
         //メソッドを呼び出したメソッドをコールスタックから取得
         System.out.println("    >> Probe Info: Searching caller method from call stack.");
         Pair<Integer, Integer> probeLines = result.getProbeLines();
-        String callerMethod = getCallerMethod(probeLines, variableInfo.getLocateClass()).getRight();
+        Pair<Integer, String> callerMethod = getCallerMethod(probeLines, variableInfo.getLocateClass());
         result.setCallerMethod(callerMethod);
 
         //callerメソッドが呼び出したメソッドをカバレッジから取得
@@ -35,7 +34,7 @@ public class Probe extends AbstractProbe{
         Set<String> siblingMethods;
         siblingMethods = getSiblingMethods(
                 assertInfo.getTestMethodName(),
-                result.getCallerMethod(),
+                result.getCallerMethod().getRight(),
                 result.getProbeMethod());
 
         result.setSiblingMethods(siblingMethods);

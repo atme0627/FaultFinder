@@ -34,7 +34,8 @@ public class JavaParserUtil {
         Optional<MethodDeclaration> omd = unit.findFirst(MethodDeclaration.class,
                 (n)->n.getSignature().toString().equals(methodName.split("#")[1]));
 
-        return omd.orElse(null);
+        if(omd.isEmpty()) throw new NoSuchFileException(methodName + "is not found.");
+        return omd.get();
     }
 
     public static ConstructorDeclaration parseConstructor(String constructorName) throws NoSuchFileException {
@@ -43,7 +44,8 @@ public class JavaParserUtil {
         Optional<ConstructorDeclaration> ocd = unit.findFirst(ConstructorDeclaration.class,
                 (n)->n.getSignature().toString().equals(constructorName.split("#")[1]));
 
-        return ocd.orElse(null);
+        if(ocd.isEmpty()) throw new NoSuchFileException(constructorName + "is not found.");
+        return ocd.get();
     }
 
 

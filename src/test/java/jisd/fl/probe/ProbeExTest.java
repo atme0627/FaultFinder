@@ -24,17 +24,17 @@ import java.nio.file.NoSuchFileException;
 import java.util.List;
 
 class ProbeExTest {
-    String testMethod = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint()";
-    String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
-    String variableName = "coefficients";
+    String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint()";
+    String locateClass = "org.apache.commons.math.optimization.RealPointValuePair";
+    String variableName = "point";
     String variableType = "double[]";
     String actual = "0.0";
 
     VariableInfo probeVariable = new VariableInfo(
-            locateMethod,
+            locateClass,
             variableName,
             false,
-            false,
+            true,
             true,
             0,
             actual,
@@ -42,32 +42,42 @@ class ProbeExTest {
     );
 
     FailedAssertInfo fai = new FailedAssertEqualInfo(
-            testMethod,
+            testMethodName,
             actual,
             probeVariable);
 
 
     @Test
-    void searchNextProbeTargetTest() {
+    void runTest() {
         ProbeEx prbEx = new ProbeEx(fai);
-        ProbeResult pr = prbEx.run(3000);
-
-        List<VariableInfo> vis = prbEx.searchNextProbeTargets(pr);
-        for(VariableInfo vi : vis){
-            System.out.println(vi.getVariableName(true, true) + ": " + vi.getActualValue());
-        }
+        ProbeResult pr = prbEx.run(4000);
     }
 
     @Test
-    void test(){
-        String src = "                coefficients[i] =\n" +
-                "                    (basicRow == null ? 0 : getEntry(basicRow, getRhsOffset())) -\n" +
-                "                    (restrictToNonNegative ? 0 : mostNegative);";
+    void debug(){
+        String locate = "org.apache.commons.math.optimization.linear.AbstractLinearOptimizer";
+        String variableName = "restrictToNonNegative";
+        String actual = "false";
 
-        Statement stmt = StaticJavaParser.parseStatement(src);
-        List<SimpleName> variableNames = stmt.findAll(SimpleName.class);
-        for(SimpleName s : variableNames){
-            System.out.println(s);
-        }
+        VariableInfo probeVariable = new VariableInfo(
+                locate,
+                variableName,
+                true,
+                true,
+                false,
+                -1,
+                actual,
+                null
+        );
+
+        FailedAssertInfo fai = new FailedAssertEqualInfo(
+                testMethodName,
+                actual,
+                probeVariable);
+
+    ProbeEx prbEx = new ProbeEx(fai);
+    ProbeResult pr = prbEx.run(4000);
     }
 }
+
+

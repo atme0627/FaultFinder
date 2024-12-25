@@ -1,5 +1,7 @@
 package jisd.fl.probe;
 
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.VMDisconnectedException;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
@@ -49,7 +51,28 @@ public abstract class AbstractProbe {
         this.testSif = new StaticInfoFactory(testSrcDir, testBinDir);
     }
 
-    public abstract ProbeResult run(int sleepTime) throws IOException;
+    //一回のprobeを行う
+    //条件を満たす行の情報を返す
+    protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
+        ProbeInfoCollection watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
+        List<Integer> assignLines = null;
+        try {
+            assignLines = StaticAnalyzer.getAssignLine(
+                    variableInfo.getLocateClass(),
+                    variableInfo.getVariableName(true, false));
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<ProbeInfo> watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
+        //printWatchedValues(watchedValueCollection, variableInfo, assignLines);
+        ProbeResult result = searchProbeLine(watchedValues, assignLines, variableInfo.getActualValue());
+
+
+        result.setVariableInfo(variableInfo);
+        if(!result.isArgument()) result.setValuesInLine(watchedValueCollection.getvaluesFromLines(result.getProbeLines()));
+        return result;
+    }
 
     public List<Integer> getCanSetLine(VariableInfo variableInfo) {
         List<Integer> canSetLines = new ArrayList<>();
@@ -60,18 +83,21 @@ public abstract class AbstractProbe {
             for (List<Integer> lineWithVar : canSet.values()) {
                 canSetLines.addAll(lineWithVar);
             }
-            return canSetLines;
         }
         else {
-            MethodInfo mi = ci.method(variableInfo.getLocateMethod());
+            //TODO: ci.methodは引数に内部で定義されたクラスのインスタンスを含む場合、フルパスが必要
+            //TODO: ex.) SimplexTableau(org/apache/commons/math/optimization/linear/LinearObjectiveFunction, java.util.Collection, org/apache/commons/math/optimization/GoalType, boolean, double)
+            String fullMethodName = StaticAnalyzer.getFullNameOfMethod(variableInfo.getLocateMethod(), ci);
+            MethodInfo mi = ci.method(fullMethodName);
             LocalInfo li = mi.local(variableInfo.getVariableName());
-
-            return li.canSet();
+            canSetLines = li.canSet();
         }
+
+        return canSetLines;
     }
 
 
-    protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignedLine){
+    protected ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignedLine, String actual){
         System.out.println("    >> Probe Info: Searching probe line.");
         ProbeResult result = new ProbeResult();
 
@@ -91,34 +117,31 @@ public abstract class AbstractProbe {
         }
 
         //新しいものから探して最初にexecutedAssignedLines内の値に一致したものがobjective
+        boolean isFound = false;
         int probeLine = 0;
         String locationClass = null;
-        if(afterAssignedLines.isEmpty()) {
-            //ここに来た時点で、値はこのメソッド内で変更されていない
-            //渡された値がそもそも間違い
-            //引数のパターンしかない(?)
-            probeLine = watchedValues.get(0).loc.getLineNumber();
-            locationClass = watchedValues.get(0).loc.getClassName();
-            String probeMethod = null;
-            try {
-                probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-
-            result.setProbeMethod(probeMethod);
-            result.setArgument(true);
-            return result;
-        }
-        else {
+        if(!afterAssignedLines.isEmpty()) {
             watchedValues.sort(Comparator.reverseOrder());
             //watchedValuesの最後の要素がassignLineになることはない(はず)
             for(int i = 0; i < watchedValues.size() - 1; i++){
                 ProbeInfo pi = watchedValues.get(i);
+                //probe対象変数がactualの値を取らなくなった場合、直後のpiが正解の行
+                if(!pi.value.equals(actual)) {
+                    if(i == 0) {
+                    //TODO: 値が全然違う時がある。観測値が実行毎に変わる場合あり?
+                        disableStdOut("    >> Probe Info: failed to watch value. ");
+                    }
+                    pi = watchedValues.get(i - 1);
+                    isFound = true;
+                    probeLine = pi.loc.getLineNumber();
+                    locationClass = pi.loc.getClassName();
+                    break;
+                };
                 //piがafterAssignedLineだった場合
                 if(afterAssignedLines.contains(pi.loc.getLineNumber())){
                     //その直前のProbeInfoが正解の行
                     pi = watchedValues.get(i + 1);
+                    isFound = true;
                     probeLine = pi.loc.getLineNumber();
                     locationClass = pi.loc.getClassName();
                     break;
@@ -126,15 +149,79 @@ public abstract class AbstractProbe {
             }
         }
 
+        if(!isFound) {
+            //ここに来た時点で、値はこのメソッド内で変更されていない
+            //初期化時の値か渡された値がそもそも間違い
+
+            //前の行にするのは、宣言されている行がそこにあるから
+            // ex) 10: int a = 1;
+            //     11: b = a + 1; <-- watchedLineにある最後の行
+
+            probeLine = watchedValues.get(0).loc.getLineNumber() - 1;
+            locationClass = watchedValues.get(0).loc.getClassName();
+
+
+        }
+
         //実行しているメソッドを取得
         String probeMethod = null;
         Pair<Integer, Integer> probeLines = null;
         try {
             probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
-            probeLines = StaticAnalyzer.getRangeOfStatement(locationClass).get(probeLine);
+            probeLines = StaticAnalyzer.getRangeOfAllStatements(locationClass).get(probeLine);
+
+            //Argumentかどうか判定
+            //(probeMethodがnull つまり probeLineがmethodの外) or methodの中かつblockStmtの外のとき変数は引数由来
+            // <- 元のprobeLine
+            // public void sample(int a) { <-ここが呼び出されたメソッド
+            // ... <- 新しいprobeLine
+            // (getCallerMethodではprobeLineを見てブレイクボイントをつけるため、メソッド内にいる必要がある)
+            boolean isThereVariableDeclaration = false;
+            String variableName = watchedValues.get(0).variableName;
+
+            if(probeMethod != null){
+                BlockStmt bs = StaticAnalyzer.bodyOfMethod(probeMethod);
+                List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
+                for(VariableDeclarator vd : vds){
+                    if(vd.getNameAsString().equals(variableName) &&
+                            vd.getBegin().get().line <= probeLine && probeLine <= vd.getEnd().get().line){
+                        isThereVariableDeclaration = true;
+                    }
+                }
+            }
+
+            //probeLineがmethodBodyの範囲内で、かつprobeLineでvariableの宣言が行われていない場合、その変数はargument
+            if(!isThereVariableDeclaration && !isFound){
+                probeLine = watchedValues.get(0).loc.getLineNumber();
+                result.setArgument(true);
+            }
+
+            //probeMethodがnull つまり probeLineがmethodの外にある場合、必ずargument
+            if(probeMethod == null) {
+                probeLine = watchedValues.get(0).loc.getLineNumber();
+                probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
+                result.setArgument(true);
+            }
+
+            //probeLinesがnull -> probeLineがstatementでない時、probeLineはfor文の始まりなど
+            if(probeLines == null) {
+                probeLines = Pair.of(probeLine, probeLine);
+            }
+
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
+
+        //Argumentかどうか判定
+        //probeMethodの1行目がprobeLineの時、probe対象の変数は引数由来
+//        int methodBeginLine;
+//        try {
+//            Map<String, Pair<Integer, Integer>> rangeOfMethods = StaticAnalyzer.getRangeOfAllMethods(locationClass);
+//            methodBeginLine = rangeOfMethods.get(probeMethod).getLeft();
+//            if(methodBeginLine == probeLine)    result.setArgument(true);
+//        } catch (NoSuchFileException e) {
+//            throw new RuntimeException(e);
+//        }
 
         //シグニチャも含める
         result.setLines(probeLines);
@@ -153,28 +240,6 @@ public abstract class AbstractProbe {
             stmt.append("\n");
         }
         return stmt.toString();
-    }
-
-    //一回のprobeを行う
-    //条件を満たす行の情報を返す
-    protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
-        ProbeInfoCollection watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
-        List<Integer> assignLines = null;
-        try {
-            assignLines = StaticAnalyzer.getAssignLine(
-                    variableInfo.getLocateClass(),
-                    variableInfo.getVariableName(true, false));
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-        printWatchedValues(watchedValueCollection, variableInfo, assignLines);
-        List<ProbeInfo> watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
-        ProbeResult result = searchProbeLine(watchedValues, assignLines);
-        if(!result.isArgument()) printProbeStatement(result);
-
-        result.setVariableInfo(variableInfo);
-        result.setValuesInLine(watchedValueCollection.getvaluesFromLines(result.getProbeLines()));
-        return result;
     }
 
     //primitive型の値のみを取得
@@ -206,8 +271,8 @@ public abstract class AbstractProbe {
                         value = getPrimitiveInfoFromReferenceType(vi, variableInfo).getValue();
                         pis.add(new ProbeInfo(createdAt, loc, variableName, value));
                     }
-                    //viがプリミティブ型の配列
-                    else if(vi.getName().contains("[")) {
+                    //viがプリミティブ型の一次元配列
+                    else if(vi.getValue().contains("[") && !vi.getValue().contains("][")) {
                         List<PrimitiveInfo> piList = getPrimitiveInfoFromArrayType(vi);
                         for(int i = 0; i < piList.size(); i++){
                             value = piList.get(i).getValue();
@@ -321,18 +386,18 @@ public abstract class AbstractProbe {
         //プリミティブ型の配列のとき
         if(primitiveType.contains(valueType.substring(0, valueType.indexOf("[")))){
             ArrayList<PrimitiveInfo> pis = new ArrayList<>();
-            vi.ch().forEach(e -> pis.add((PrimitiveInfo) e));
+            vi.ch().forEach(e -> pis.add(getPrimitiveInfoFromPrimitiveType(e)));
             return pis;
         }
         throw new RuntimeException(vi.getName() + "is not array.");
     }
 
     protected ProbeInfoCollection extractInfoFromDebugger(VariableInfo variableInfo, int sleepTime){
-        disableStdOut("    >> Probe Info: Running debugger.");
+        disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
         List<Integer> canSetLines = getCanSetLine(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
         List<Optional<Point>> watchPoints = new ArrayList<>();
-
+        dbg = createDebugger();
         //set watchPoint
         dbg.setMain(dbgMain);
         for (int line : canSetLines) {
@@ -390,23 +455,27 @@ public abstract class AbstractProbe {
     }
 
     protected void printWatchedValues(ProbeInfoCollection watchedValues, VariableInfo variableInfo, List<Integer> assignLine){
-        System.out.println("    >> ---------------------------------");
-        System.out.println("    >> [field name] "
-                + variableInfo.getVariableName(true, false));
         System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
-        //watchedValues.print(variableInfo.getVariableName(true));
+        //watchedValues.print(variableInfo.getVariableName(true, true));
         watchedValues.printAll();
     }
 
     protected void printProbeStatement(ProbeResult result){
-        System.out.println("    >> [probe Statement]");
-        Pair<Integer, Integer> probeLines = result.getProbeLines();
-        String[] src = result.getSrc().split("\n");
-        int l = 0;
-        for(int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
-            System.out.println("    >> " + i + ": " + src[l++]);
+        System.out.println("    >> [PROBE LINES]");
+        if(result.isArgument()) {
+            System.out.println("    >> Variable defect is derived from caller method. ");
+            if(result.getCallerMethod() != null) {
+                System.out.println("    >> [CALLER] " + result.getCallerMethod().getRight());
+                System.out.println("    >> [LINE] " + result.getCallerMethod().getLeft());
+            }
+        } else {
+            Pair<Integer, Integer> probeLines = result.getProbeLines();
+            String[] src = result.getSrc().split("\n");
+            int l = 0;
+            for (int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
+                System.out.println("    >> " + i + ": " + src[l++]);
+            }
         }
-        System.out.println("    >> ---------------------------------");
     }
 
     protected Debugger createDebugger(){
@@ -414,7 +483,7 @@ public abstract class AbstractProbe {
     }
 
     //動的解析
-    //テストケース実行時の実際に呼び出されているメソット群を返す
+    //メソッド実行時の実際に呼び出されているメソット群を返す
     //locateMethodはフルネーム、シグニチャあり
     MethodCollection getCalleeMethods(String testMethod,
                                  String locateMethod){
@@ -452,7 +521,7 @@ public abstract class AbstractProbe {
                 int probingLine = methodCallingLines.get(i);
                 st = getStackTrace(dbg);
                 dbg.stepOut();
-                Pair<Integer, String> e = st.getMethodAndCallLocation(0);
+                Pair<Integer, String> e = st.getCalleeMethodAndCallLocation(0);
                 //ここで外部APIのメソッドは弾かれる
                 if(e != null) calleeMethods.addElement(e);
 
@@ -463,6 +532,7 @@ public abstract class AbstractProbe {
                 dbg.step();
                 st = getStackTrace(dbg);
                 if (st.getMethod(0).equals(locateMethod.substring(0, locateMethod.lastIndexOf("(")))
+                        || st.getMethod(0).equals(locateMethod.substring(0, locateMethod.lastIndexOf("#") + 1) + "<init>")
                         || st.getMethod(0).equals(callerMethod)) {
                     break;
                 }
@@ -493,14 +563,17 @@ public abstract class AbstractProbe {
     Pair<Integer, String> getCallerMethod(Pair<Integer, Integer> probeLines, String locateClass) {
         dbg = createDebugger();
         dbg.setMain(locateClass);
-        disableStdOut("    >> Probe Info: Running debugger.");
+        disableStdOut("    >> Probe Info: Search caller method.");
         dbg.stopAt(probeLines.getLeft());
         dbg.run(2000);
         enableStdOut();
         StackTrace st = getStackTrace(dbg);
 
         //callerMethodをシグニチャ付きで取得する
-        return st.getMethodAndCallLocation(1);
+        Pair<Integer, String> caller = st.getCallerMethodAndCallLocation(1);
+        //callerがnullの場合、callerMethodがtargetSrcDir内にない。（テストメソッドに戻った場合など）
+        if(caller == null) System.out.println("    >> Probe Info: caller method is not found in Target Src: " + st.getMethod(1));
+        return caller;
     }
 
     protected static class ProbeInfo implements Comparable<ProbeInfo>{

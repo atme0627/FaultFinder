@@ -13,7 +13,7 @@ public class VariableInfo {
 
     //locateはローカル変数の場合はメソッド名まで(フルネーム、シグニチャあり)
     //フィールドの場合はクラス名まで
-    public VariableInfo(String locate,
+    public VariableInfo(String locateMethod,
                         String variableName,
                         boolean isPrimitive,
                         boolean isField,
@@ -22,18 +22,11 @@ public class VariableInfo {
                         String actualValue,
                         VariableInfo targetField){
 
-
-        if(isField) {
-            this.locateClass = locate;
-            this.locateMethod = null;
-        }
-        else {
-            this.locateClass = locate.split("#")[0];
-            this.locateMethod = locate;
-        }
+        this.locateClass = locateMethod.split("#")[0];
+        this.locateMethod = locateMethod;
 
         this.variableName = variableName;
-        this.isPrimitive =isPrimitive;
+        this.isPrimitive = isPrimitive;
         this.isField = isField;
         this.arrayNth = arrayNth;
         this.isArray = isArray;
@@ -82,7 +75,11 @@ public class VariableInfo {
             return locateMethod;
         }
         else {
-            return locateMethod.split("#")[1];
+            if(locateMethod.contains("#")) {
+                return locateMethod.split("#")[1];
+            } else {
+                return locateMethod;
+            }
         }
     }
 

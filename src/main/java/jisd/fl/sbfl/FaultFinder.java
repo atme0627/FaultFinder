@@ -121,7 +121,7 @@ public class FaultFinder {
         double siblingFactor = 0.0;
         double preScore;
         String probeMethod = probeResult.getProbeMethod();
-        String callerMethod = probeResult.getCallerMethod();
+        String callerMethod = probeResult.getCallerMethod().getRight();
         callerFactor = probeC2 * sbflResult.getSuspicious(callerMethod);
         for(String siblingMethod : probeResult.getSiblingMethods()){
             if (probeMethod.equals(siblingMethod)) continue;

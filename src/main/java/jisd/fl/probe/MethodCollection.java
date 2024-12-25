@@ -21,11 +21,12 @@ public class MethodCollection {
         return mc.get(index).getRight();
     }
 
-    public String searchMethodFromLine(int line){
+    public Set<String> searchMethodsFromLine(int line){
+        Set<String> methods = new HashSet<>();
         for(Pair<Integer, String> e : mc){
-            if(e.getLeft() == line) return e.getRight();
+            if(e.getLeft() == line) methods.add(e.getRight());
         }
-        throw new NoSuchElementException();
+        return methods;
     }
 
     public Pair<Integer, String> getElement(int index){

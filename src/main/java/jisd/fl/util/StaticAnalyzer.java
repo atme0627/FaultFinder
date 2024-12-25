@@ -6,7 +6,9 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import jisd.info.ClassInfo;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -100,32 +102,68 @@ public class StaticAnalyzer {
     }
 
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
-    public static Map<String, Pair<Integer, Integer>> getRangeOfMethods(String targetClassName) throws NoSuchFileException {
-        Map<String, Pair<Integer, Integer>> rangeOfMethod = new HashMap<>();
+    public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(String targetClassName) throws NoSuchFileException {
+        Map<String, Pair<Integer, Integer>> rangeOfMethods = new HashMap<>();
         CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
 
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
-                rangeOfMethod.put(targetClassName.replace("/", ".")  + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
+                rangeOfMethods.put(targetClassName.replace("/", ".")  + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
                 super.visit(n, arg);
             }
 
             @Override
             public void visit(ConstructorDeclaration n, String arg) {
-                rangeOfMethod.put(targetClassName.replace("/", ".")  + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
+                rangeOfMethods.put(targetClassName.replace("/", ".")  + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
                 super.visit(n, arg);
             }
         }
         unit.accept(new MethodVisitor(), "");
-        return rangeOfMethod;
+        return rangeOfMethods;
+    }
+
+    //メソッドの範囲を調べる。シグにチャを含む
+    public static Pair<Integer, Integer> rangeOfMethod(String targetMethodName){
+        int begin = 0;
+        int end = 0;
+
+        try {
+            MethodDeclaration md = JavaParserUtil.parseMethod(targetMethodName);
+            begin = md.getBegin().get().line;
+            end = md.getEnd().get().line;
+        }
+        catch (NoSuchFileException e){
+            try {
+                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(targetMethodName);
+                begin = cd.getBegin().get().line;
+                end = cd.getEnd().get().line;
+            }
+            catch (NoSuchFileException ex){
+                throw new RuntimeException();
+            }
+        }
+
+        return Pair.of(begin, end);
+    }
+
+
+    //メソッドbodyの範囲を調べる。シグにチャを含まない
+    public static Pair<Integer, Integer> rangeOfMethodBody(String targetMethodName){
+        BlockStmt bs = bodyOfMethod(targetMethodName);
+        return Pair.of(bs.getBegin().get().line, bs.getEnd().get().line);
     }
 
 
     //返り値はmap ex.) Integer --> Pair(start, end)
-    public static Map<Integer, Pair<Integer, Integer>> getRangeOfStatement(String targetClassName) throws NoSuchFileException {
-        Map<Integer, Pair<Integer, Integer>> rangeOfStatement = new HashMap<>();
-        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
+    public static Map<Integer, Pair<Integer, Integer>> getRangeOfAllStatements(String targetClassName) {
+        Map<Integer, Pair<Integer, Integer>> rangeOfStatement = new TreeMap<>();
+        CompilationUnit unit = null;
+        try {
+            unit = JavaParserUtil.parseClass(targetClassName);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
 
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
@@ -141,8 +179,6 @@ public class StaticAnalyzer {
         unit.accept(new MethodVisitor(), "");
         return rangeOfStatement;
     }
-
-
 
     public static MethodCallGraph getMethodCallGraph(String targetSrcPath) throws NoSuchFileException {
         Set<String> targetClassNames = getClassNames(targetSrcPath);
@@ -239,7 +275,7 @@ public class StaticAnalyzer {
     }
 
     public static String getMethodNameFormLine(String targetClassName, int line) throws NoSuchFileException {
-        Map<String, Pair<Integer, Integer>> ranges = getRangeOfMethods(targetClassName);
+        Map<String, Pair<Integer, Integer>> ranges = getRangeOfAllMethods(targetClassName);
         String[] method = new String[1];
         ranges.forEach((m, pair) -> {
             if(pair.getLeft() <= line && line <= pair.getRight()) {
@@ -301,10 +337,63 @@ public class StaticAnalyzer {
             }
         }
 
-        MethodDeclaration md = JavaParserUtil.parseMethod(methodName);
-        md.accept(new MethodVisitor(), "");
+        BlockStmt bs = bodyOfMethod(methodName);
+        bs.accept(new MethodVisitor(), "");
         methodCallingLine.sort(Comparator.naturalOrder());
         return methodCallingLine;
+    }
+
+
+    //フルパスの引数を含んだ状態で保持されているClassInfoに対応するためのメソッド
+    public static String getFullNameOfMethod(String shortMethodName, ClassInfo ci){
+        List<String> fullNameMethods = ci.methodNames();
+        for(String fullName : fullNameMethods){
+            if(shortMethodName.equals(shortMethodName(fullName))) return fullName;
+        }
+        throw new RuntimeException(shortMethodName + " is not found.");
+    }
+
+    private static String shortMethodName(String fullMethodName){
+        String name = fullMethodName.split("\\(")[0];
+        String args = fullMethodName.substring(fullMethodName.indexOf("(")+1, fullMethodName.indexOf(")"));
+        List<String> argList = new ArrayList<>(List.of(args.split(", ")));
+        List<String> shortArgList = new ArrayList<>();
+        for(String arg : argList){
+            if(arg.contains(".") || arg.contains("/")) {
+                String[] splitArgs = arg.split("[./]");
+                shortArgList.add(splitArgs[splitArgs.length - 1]);
+            }
+            else {
+                shortArgList.add(arg);
+            }
+        }
+
+        StringBuilder shortMethod = new StringBuilder(name + "(");
+        for(int i = 0; i < shortArgList.size(); i++){
+            String shortArg = shortArgList.get(i);
+            shortMethod.append(shortArg);
+            if (i != shortArgList.size() - 1) shortMethod.append(", ");
+        }
+        shortMethod.append(")");
+        return shortMethod.toString();
+    }
+
+    public static BlockStmt bodyOfMethod(String targetMethod){
+        BlockStmt bs = null;
+        try {
+            MethodDeclaration md = JavaParserUtil.parseMethod(targetMethod);
+            bs = md.getBody().get();
+        }
+        catch (NoSuchFileException e){
+            try {
+                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(targetMethod);
+                bs = cd.getBody();
+            }
+            catch (NoSuchFileException ex){
+                throw new RuntimeException();
+            }
+        }
+        return bs;
     }
 }
 

@@ -39,7 +39,7 @@ public class CoverageOfTarget implements Serializable {
         }
 
         //method coverage
-        Map<String, Pair<Integer, Integer>> rangeOfMethod = StaticAnalyzer.getRangeOfMethods(targetClassName);
+        Map<String, Pair<Integer, Integer>> rangeOfMethod = StaticAnalyzer.getRangeOfAllMethods(targetClassName);
         for(String targetMethodName : targetMethodNames){
             Pair<Integer, Integer> range = rangeOfMethod.get(targetMethodName);
             putCoverageStatus(targetMethodName, getMethodSbflStatus(cc, range, isTestPassed), Granularity.METHOD);

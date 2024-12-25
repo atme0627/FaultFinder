@@ -4,7 +4,6 @@ import jisd.fl.util.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.file.NoSuchFileException;
-import java.util.Map;
 
 public class StackTrace {
     MethodCollection st = new MethodCollection();
@@ -25,7 +24,15 @@ public class StackTrace {
     private Pair<Integer, String> normalizeElement(String e){
         StringBuilder sb = new StringBuilder(e);
         sb.setCharAt(sb.lastIndexOf("."), '#');
-        String method = sb.substring(sb.indexOf("]") + 2, sb.lastIndexOf("(") - 1);
+        //TODO: breakPointで止まらなかったとき、 >> Debugger not suspended now. のような文字列が入るため、用対処
+        String method = null;
+        try {
+            method = sb.substring(sb.indexOf("]") + 2, sb.lastIndexOf("(") - 1);
+        }
+        catch (StringIndexOutOfBoundsException ex){
+            throw new RuntimeException("normalize failed: " + e);
+        }
+
         int line = Integer.parseInt(e.substring(e.indexOf("(") + 1, e.length() - 1).substring(6));
         return Pair.of(line, method);
     }
@@ -38,14 +45,30 @@ public class StackTrace {
         return st.getMethod(depth);
     }
 
+    //TODO: locationだけ返すようにリファクタリング
     //methodはシグニチャつき
-    public Pair<Integer, String> getMethodAndCallLocation(int depth){
+    //depthにあるメソッドが呼び出された場所とdepthにあるメソッド名を返す
+    public Pair<Integer, String> getCalleeMethodAndCallLocation(int depth){
         int callLocation = st.getLine(depth + 1);
         int methodLocation = st.getLine(depth);
         String targetClass = st.getMethod(depth).split("#")[0];
         String method = null;
         try {
             method = StaticAnalyzer.getMethodNameFormLine(targetClass, methodLocation);
+        } catch (NoSuchFileException e) {
+            return null;
+        }
+        return Pair.of(callLocation, method);
+    }
+
+    //methodはシグニチャつき
+    //depthにあるメソッドが呼び出した場所とdepthにあるメソッド名を返す
+    public Pair<Integer, String> getCallerMethodAndCallLocation(int depth){
+        int callLocation = st.getLine(depth);
+        String targetClass = st.getMethod(depth).split("#")[0];
+        String method = null;
+        try {
+            method = StaticAnalyzer.getMethodNameFormLine(targetClass, callLocation);
         } catch (NoSuchFileException e) {
             return null;
         }
