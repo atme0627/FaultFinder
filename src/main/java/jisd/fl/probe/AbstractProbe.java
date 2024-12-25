@@ -21,7 +21,6 @@ import jisd.info.StaticInfoFactory;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.NoSuchFileException;
@@ -45,7 +44,7 @@ public abstract class AbstractProbe {
         String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
 
         this.assertInfo = assertInfo;
-        this.dbg = createDebugger();
+        this.dbg = createDebugger(500);
 
         this.targetSif = new StaticInfoFactory(targetSrcDir, targetBinDir);
         this.testSif = new StaticInfoFactory(testSrcDir, testBinDir);
@@ -397,7 +396,7 @@ public abstract class AbstractProbe {
         List<Integer> canSetLines = getCanSetLine(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
         List<Optional<Point>> watchPoints = new ArrayList<>();
-        dbg = createDebugger();
+        dbg = createDebugger(500);
         //set watchPoint
         dbg.setMain(dbgMain);
         for (int line : canSetLines) {
@@ -441,6 +440,7 @@ public abstract class AbstractProbe {
     }
 
     protected void disableStdOut(String msg){
+        enableStdOut();
         if(!msg.isEmpty()) System.out.println(msg);
         PrintStream nop = new PrintStream(new OutputStream() {
             public void write(int b) { /* noop */ }
@@ -478,7 +478,12 @@ public abstract class AbstractProbe {
         }
     }
 
-    protected Debugger createDebugger(){
+    protected Debugger createDebugger(int sleepTime){
+        try {
+            Thread.sleep(sleepTime);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         return TestUtil.testDebuggerFactory(assertInfo.getTestMethodName());
     }
 
@@ -561,7 +566,7 @@ public abstract class AbstractProbe {
     }
 
     Pair<Integer, String> getCallerMethod(Pair<Integer, Integer> probeLines, String locateClass) {
-        dbg = createDebugger();
+        dbg = createDebugger(500);
         dbg.setMain(locateClass);
         disableStdOut("    >> Probe Info: Search caller method.");
         dbg.stopAt(probeLines.getLeft());

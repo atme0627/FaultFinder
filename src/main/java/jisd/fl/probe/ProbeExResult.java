@@ -40,7 +40,18 @@ public class ProbeExResult {
         return suspScore;
     }
 
-    static class Element {
+    public void sort(){
+        per.sort(Element::compareTo);
+    }
+
+    public void print(){
+        sort();
+        for(Element e : per){
+            System.out.println(e);
+        }
+    }
+
+    static class Element implements Comparable<Element>{
         String methodName;
         int depth;
         //同じprobeLine中で出現したメソッドの数
@@ -52,7 +63,24 @@ public class ProbeExResult {
             this.depth = depth;
             this.countInLine = countInLine;
         }
+
+        @Override
+        public int compareTo(Element o) {
+            int c = this.methodName.compareTo(o.methodName);
+            if(c != 0) return c;
+            c = this.depth - o.depth;
+            if(c != 0) return c;
+            return this.countInLine - o.countInLine;
+        }
+
+        @Override
+        public String toString(){
+            return "[METHOD] " + methodName + "   [DEPTH] " + depth + "  [COUNT] " + countInLine;
+        }
+
+
     }
+
 
 
 

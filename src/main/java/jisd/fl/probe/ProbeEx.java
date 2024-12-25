@@ -48,12 +48,6 @@ public class ProbeEx extends AbstractProbe {
         while(!probingTargets.isEmpty()) {
             if(!isArgument) depth += 1;
             for (VariableInfo target : probingTargets) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
                 printProbeExInfoHeader(target, depth);
 
                 ProbeResult pr = probing(sleepTime, target);
@@ -69,7 +63,7 @@ public class ProbeEx extends AbstractProbe {
             probingTargets = nextTargets;
             nextTargets = new ArrayList<>();
         }
-        return null;
+        return result;
     }
     //probeLine内で呼び出されたメソッド群を返す
     public List<String> searchMarkingMethods(ProbeResult pr, String testMethod){

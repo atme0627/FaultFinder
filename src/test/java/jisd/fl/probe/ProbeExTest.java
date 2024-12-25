@@ -50,7 +50,8 @@ class ProbeExTest {
     @Test
     void runTest() {
         ProbeEx prbEx = new ProbeEx(fai);
-        ProbeResult pr = prbEx.run(4000);
+        ProbeExResult pr = prbEx.run(3000);
+        pr.print();
     }
 
     @Test
@@ -76,7 +77,7 @@ class ProbeExTest {
                 probeVariable);
 
     ProbeEx prbEx = new ProbeEx(fai);
-    ProbeResult pr = prbEx.run(4000);
+    ProbeExResult pr = prbEx.run(4000);
     }
 }
 
