@@ -17,6 +17,7 @@ import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
+import jisd.info.ClassInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.file.NoSuchFileException;
@@ -25,16 +26,8 @@ import java.util.*;
 //値のStringを比較して一致かどうかを判定
 //理想的には、"==" と同じ方法で判定したいが、型の問題で難しそう
 public class ProbeEx extends AbstractProbe {
-    static String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-    static Set<String> allMethods;
-
     public ProbeEx(FailedAssertInfo assertInfo) {
         super(assertInfo);
-        try {
-            allMethods = StaticAnalyzer.getAllMethods(targetSrcDir, false, false);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public ProbeExResult run(int sleepTime) {
@@ -213,12 +206,9 @@ public class ProbeEx extends AbstractProbe {
             }
 
             //親クラスを探す
-            String shortClassName = className.substring(className.lastIndexOf(".") + 1);
-            ClassOrInterfaceDeclaration coid =
-                    unit.getClassByName(shortClassName).get();
-            List<ClassOrInterfaceType> extendedList = coid.getExtendedTypes();
-            if(extendedList.isEmpty()) break;
-            className = StaticAnalyzer.getClassNameWithPackage(targetSrcDir, extendedList.get(0).getNameAsString());
+            ClassInfo ci = targetSif.createClass(className);
+            className = ci.superName();
+            if(className.isEmpty()) break;
             System.out.println("parent: " + className);
         }
 
