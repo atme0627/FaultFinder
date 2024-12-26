@@ -86,7 +86,7 @@ public abstract class AbstractProbe {
         else {
             //TODO: ci.methodは引数に内部で定義されたクラスのインスタンスを含む場合、フルパスが必要
             //TODO: ex.) SimplexTableau(org/apache/commons/math/optimization/linear/LinearObjectiveFunction, java.util.Collection, org/apache/commons/math/optimization/GoalType, boolean, double)
-            String fullMethodName = StaticAnalyzer.getFullNameOfMethod(variableInfo.getLocateMethod(), ci);
+            String fullMethodName = StaticAnalyzer.fullNameOfMethod(variableInfo.getLocateMethod(), ci);
             MethodInfo mi = ci.method(fullMethodName);
             LocalInfo li = mi.local(variableInfo.getVariableName());
             canSetLines = li.canSet();

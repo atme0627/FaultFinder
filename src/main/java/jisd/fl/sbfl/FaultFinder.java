@@ -16,7 +16,6 @@ public class FaultFinder {
     String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
     String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
     String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-    MethodCallGraph callGraph;
     SbflResult sbflResult;
 
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
@@ -30,11 +29,10 @@ public class FaultFinder {
 
     final Granularity granularity;
 
-    public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) throws IOException {
+    public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
         this.granularity = granularity;
         sbflResult = new SbflResult();
         calcSuspiciousness(covForTestSuite, granularity, f);
-        callGraph = StaticAnalyzer.getMethodCallGraph(targetSrcDir);
     }
 
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){

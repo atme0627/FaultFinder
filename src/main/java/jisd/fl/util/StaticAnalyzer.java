@@ -59,6 +59,14 @@ public class StaticAnalyzer {
         return classNames;
     }
 
+    public static Set<String> getAllMethods(String targetSrcDir, boolean withPackage, boolean withSignature) throws NoSuchFileException {
+        Set<String> allClasses = getClassNames(targetSrcDir);
+        Set<String> allMethods = new HashSet<>();
+        for(String className : allClasses){
+            allMethods.addAll(getMethodNames(className, false, withPackage, withSignature));
+        }
+        return allMethods;
+    }
 
     //targetSrcPathは最後"/"なし
     //targetClassNameはdemo.SortTestのように記述
@@ -92,15 +100,6 @@ public class StaticAnalyzer {
         return methodNames;
     }
 
-    public static Set<String> getAllMethods(String targetSrcDir, boolean withPackage, boolean withSignature) throws NoSuchFileException {
-        Set<String> allClasses = getClassNames(targetSrcDir);
-        Set<String> allMethods = new HashSet<>();
-        for(String className : allClasses){
-            allMethods.addAll(getMethodNames(className, false, withPackage, withSignature));
-        }
-        return allMethods;
-    }
-
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
     public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(String targetClassName) throws NoSuchFileException {
         Map<String, Pair<Integer, Integer>> rangeOfMethods = new HashMap<>();
@@ -122,38 +121,6 @@ public class StaticAnalyzer {
         unit.accept(new MethodVisitor(), "");
         return rangeOfMethods;
     }
-
-    //メソッドの範囲を調べる。シグにチャを含む
-    public static Pair<Integer, Integer> rangeOfMethod(String targetMethodName){
-        int begin = 0;
-        int end = 0;
-
-        try {
-            MethodDeclaration md = JavaParserUtil.parseMethod(targetMethodName);
-            begin = md.getBegin().get().line;
-            end = md.getEnd().get().line;
-        }
-        catch (NoSuchFileException e){
-            try {
-                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(targetMethodName);
-                begin = cd.getBegin().get().line;
-                end = cd.getEnd().get().line;
-            }
-            catch (NoSuchFileException ex){
-                throw new RuntimeException();
-            }
-        }
-
-        return Pair.of(begin, end);
-    }
-
-
-    //メソッドbodyの範囲を調べる。シグにチャを含まない
-    public static Pair<Integer, Integer> rangeOfMethodBody(String targetMethodName){
-        BlockStmt bs = bodyOfMethod(targetMethodName);
-        return Pair.of(bs.getBegin().get().line, bs.getEnd().get().line);
-    }
-
 
     //返り値はmap ex.) Integer --> Pair(start, end)
     public static Map<Integer, Pair<Integer, Integer>> getRangeOfAllStatements(String targetClassName) {
@@ -178,88 +145,6 @@ public class StaticAnalyzer {
 
         unit.accept(new MethodVisitor(), "");
         return rangeOfStatement;
-    }
-
-    public static MethodCallGraph getMethodCallGraph(String targetSrcPath) throws NoSuchFileException {
-        Set<String> targetClassNames = getClassNames(targetSrcPath);
-        Set<String> targetMethodNames = new HashSet<>();
-        MethodCallGraph mcg = new MethodCallGraph();
-
-        for(String targetClassName : targetClassNames) {
-            targetMethodNames.addAll(getMethodNames(targetClassName, false, false, true));
-        }
-
-        for(String targetClassName : targetClassNames){
-            getCalledMethodsForClass(targetClassName, targetMethodNames, mcg);
-        }
-
-        return mcg;
-    }
-
-
-    //直接的な呼び出し関係しか取れてない
-    //ex.) NormalDistributionImpl#getInitialDomainはオーバライドメソッドであり
-    //その抽象クラス内で呼び出されているが、この呼び出し関係は取れていない。
-    private static void getCalledMethodsForClass(String targetClassName, Set<String> targetMethodNames, MethodCallGraph mcg) throws NoSuchFileException {
-        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
-
-        class MethodVisitor extends VoidVisitorAdapter<String>{
-            @Override
-            public void visit(MethodCallExpr n, String arg) {
-                Optional<MethodDeclaration> callerMethodOptional = n.findAncestor(MethodDeclaration.class);
-
-                //メソッド呼び出しがメソッド内で行われていない場合(ex. フィールドの定義)
-                if(callerMethodOptional.isEmpty()){
-                    return;
-                }
-
-                MethodDeclaration callerMethod = callerMethodOptional.get();
-                String callerMethodName = targetClassName + "#" + callerMethod.getNameAsString();
-                String calleeMethodName = "fail";
-                for(String targetMethodName : targetMethodNames){
-                    if(getMethodNameWithoutPackageAndSig(targetMethodName).equals(n.getNameAsString())){
-                        calleeMethodName = targetMethodName;
-                        break;
-                    }
-                }
-
-                //呼び出されているメソッドが、外部のものでないことを確認
-                if(!targetMethodNames.contains(calleeMethodName)){
-                    return;
-                }
-
-                //System.out.println("caller: " + callerMethodName +  " callee: " + calleeMethodName);
-
-                mcg.setElement(callerMethodName, calleeMethodName);
-                super.visit(n, arg);
-            }
-        }
-        unit.accept(new MethodVisitor(), "");
-    }
-
-    public static Set<String> getCalledMethodsForMethod(String callerMethodName,  Set<String> targetMethodNames) throws NoSuchFileException {
-        Set<String> calleeMethods = new HashSet<>();
-        MethodDeclaration callerMethod = JavaParserUtil.parseMethod(callerMethodName);
-
-        class MethodVisitor extends VoidVisitorAdapter<String>{
-            @Override
-            public void visit(MethodCallExpr n, String arg) {
-                for(String targetMethodName : targetMethodNames) {
-                    if (getMethodNameWithoutPackageAndSig(targetMethodName).equals(n.getNameAsString())) {
-                        calleeMethods.add(targetMethodName);
-                        break;
-                    }
-                }
-                super.visit(n, arg);
-            }
-        }
-
-        callerMethod.accept(new MethodVisitor(), "");
-        return calleeMethods;
-    }
-
-    private static String getMethodNameWithoutPackageAndSig(String methodName){
-        return methodName.split("#")[1].split("\\(")[0];
     }
 
     public static String getClassNameWithPackage(String targetSrcDir, String className) {
@@ -321,7 +206,7 @@ public class StaticAnalyzer {
         return assignLine;
     }
 
-    //(メソッド, 対象の変数) --> メソッドが呼ばれている行
+    //メソッド --> メソッドが呼ばれている行
     //methodNameはクラス、シグニチャを含む
     public static List<Integer> getMethodCallingLine(String methodName) throws NoSuchFileException {
         List<Integer> methodCallingLine = new ArrayList<>();
@@ -345,7 +230,7 @@ public class StaticAnalyzer {
 
 
     //フルパスの引数を含んだ状態で保持されているClassInfoに対応するためのメソッド
-    public static String getFullNameOfMethod(String shortMethodName, ClassInfo ci){
+    public static String fullNameOfMethod(String shortMethodName, ClassInfo ci){
         List<String> fullNameMethods = ci.methodNames();
         for(String fullName : fullNameMethods){
             if(shortMethodName.equals(shortMethodName(fullName))) return fullName;

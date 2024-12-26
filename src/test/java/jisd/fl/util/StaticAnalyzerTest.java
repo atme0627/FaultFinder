@@ -38,17 +38,6 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void getCalleeMethodsForMethodsTest() throws NoSuchFileException {
-        String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true);
-        String callerMethodName = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
-        Set<String> calleeMethods = StaticAnalyzer.getCalledMethodsForMethod(callerMethodName, methodNames);
-        for(String methodName : calleeMethods){
-            System.out.println(methodName);
-        }
-    }
-
-    @Test
     void getMethodNameFormLineTest() throws NoSuchFileException {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
         int line = 343;
