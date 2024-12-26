@@ -44,7 +44,7 @@ public class JacocoUtil {
     }
 
     public static class MemoryClassLoader extends ClassLoader {
-        private final Map<String, byte[]> definitions = new HashMap<String, byte[]>();
+        private final Map<String, byte[]> definitions = new HashMap<>();
         public void addDefinition(final String name, final byte[] bytes) {
             definitions.put(name, bytes);
         }
@@ -76,10 +76,10 @@ public class JacocoUtil {
         final RuntimeData data = new RuntimeData();
         runtime.startup(data);
 
-        MemoryClassLoader classLoader = new MemoryClassLoader();
+        final MemoryClassLoader classLoader = new MemoryClassLoader();
         classLoader.addDefinition(testLauncherName, instrumentedTestLauncher);
-        Class<?> testLauncher = classLoader.loadClass(testLauncherName);
-        BooleanSupplier testLauncherInstance = (BooleanSupplier) testLauncher.getConstructor(String.class).newInstance(testMethodName);
+        final Class<?> testLauncher = classLoader.loadClass(testLauncherName);
+        final BooleanSupplier testLauncherInstance = (BooleanSupplier) testLauncher.getConstructor(String.class).newInstance(testMethodName);
         boolean isTestPassed = testLauncherInstance.getAsBoolean();
 
         final ExecutionDataStore executionData = new ExecutionDataStore();

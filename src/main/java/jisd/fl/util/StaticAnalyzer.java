@@ -63,7 +63,7 @@ public class StaticAnalyzer {
         Set<String> allClasses = getClassNames(targetSrcDir);
         Set<String> allMethods = new HashSet<>();
         for(String className : allClasses){
-            allMethods.addAll(getMethodNames(className, false, withPackage, withSignature));
+            allMethods.addAll(getMethodNames(className, false, false, withPackage, withSignature));
         }
         return allMethods;
     }
@@ -73,9 +73,9 @@ public class StaticAnalyzer {
     //返り値は demo.SortTest#test1(int a)の形式
     //publicメソッド以外は取得しない
     //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
-    public static Set<String> getMethodNames(String targetClassName, boolean publicOnly, boolean withPackage, boolean withSignature) throws NoSuchFileException {
+    public static Set<String> getMethodNames(String targetClassName, boolean isTest, boolean publicOnly, boolean withPackage, boolean withSignature) throws NoSuchFileException {
         Set<String> methodNames = new LinkedHashSet<>();
-        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
+        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName, isTest);
         Function<CallableDeclaration<?>, String> methodNameBuilder = (n) -> (
                 ((withPackage) ? targetClassName.replace("/", ".") + "#" : "")
                 + ((withSignature) ? n.getSignature() : n.getNameAsString()));
@@ -103,7 +103,7 @@ public class StaticAnalyzer {
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
     public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(String targetClassName) throws NoSuchFileException {
         Map<String, Pair<Integer, Integer>> rangeOfMethods = new HashMap<>();
-        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName);
+        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName, false);
 
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
@@ -127,7 +127,7 @@ public class StaticAnalyzer {
         Map<Integer, Pair<Integer, Integer>> rangeOfStatement = new TreeMap<>();
         CompilationUnit unit = null;
         try {
-            unit = JavaParserUtil.parseClass(targetClassName);
+            unit = JavaParserUtil.parseClass(targetClassName, false);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -200,7 +200,7 @@ public class StaticAnalyzer {
             }
         }
 
-        CompilationUnit unit = JavaParserUtil.parseClass(className);
+        CompilationUnit unit = JavaParserUtil.parseClass(className, false);
         unit.accept(new MethodVisitor(), variable);
         assignLine.sort(Comparator.naturalOrder());
         return assignLine;

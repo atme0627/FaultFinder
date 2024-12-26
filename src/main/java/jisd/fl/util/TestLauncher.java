@@ -6,6 +6,9 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 
+import java.io.PrintWriter;
+
+import static java.lang.System.exit;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
 //junit platform launcherを用いてテストケースを実行
@@ -23,10 +26,11 @@ public class TestLauncher {
     public static void main(String[] args) {
         String testMethodName = args[0];
         TestLauncher tl = new TestLauncher(testMethodName);
-        tl.run();
+        boolean isTestPassed = tl.runTest();
+        exit(isTestPassed ? 0 : 1);
     }
 
-    public boolean run() {
+    public boolean runTest() {
         TestUtil.compileTestClass(testClassName);
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(
@@ -37,11 +41,13 @@ public class TestLauncher {
         SummaryGeneratingListener listener = new SummaryGeneratingListener();
         launcher.registerTestExecutionListeners(listener);
 
+        System.out.println("EXEC: " + testMethodName);
         launcher.execute(request);
-        //listener.getSummary().printFailuresTo(new PrintWriter(System.out));
-        //listener.getSummary().printTo(new PrintWriter(System.out));
+        listener.getSummary().printFailuresTo(new PrintWriter(System.out));
+        listener.getSummary().printTo(new PrintWriter(System.out));
         boolean isTestPassed = listener.getSummary().getTotalFailureCount() == 0;
-        //System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));
+
+        System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));
         return isTestPassed;
     }
 }

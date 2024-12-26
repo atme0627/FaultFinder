@@ -9,7 +9,6 @@ import jisd.fl.probe.assertinfo.VariableInfo;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 class FaultFinderTest {
     CoverageAnalyzer ca = new CoverageAnalyzer();
@@ -52,7 +51,7 @@ class FaultFinderTest {
 
 
     @Test
-    void printFLResultsTest() throws IOException, InterruptedException{
+    void printFLResultsTest() throws Exception {
         CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         SbflResult result = ff.getFLResults();
@@ -60,29 +59,29 @@ class FaultFinderTest {
     }
 
     @Test
-    void removeTest() throws IOException, InterruptedException {
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+    void removeTest() throws Exception {
+        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.remove(1);
     }
 
     @Test
-    void suspTest() throws IOException, InterruptedException {
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+    void suspTest() throws Exception {
+        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.susp(2);
     }
 
     @Test
-    void probeTest() throws IOException, InterruptedException {
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+    void probeTest() throws Exception {
+        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probe(fai);
     }
 
     @Test
     void debugTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probe(fai);
         ff.susp(1);

@@ -45,6 +45,9 @@ public  class TestUtil {
                 " -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" + testBinDir + ":" +
                 compiledWithJunitFilePath + junitTestSelectOption;
 
+//        String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
+//                " -cp " + "./build/classes/java/main" + ":./.probe_test_classes" + ":" + targetBinDir + ":" + testBinDir + ":" + junitClassPath + " jisd.fl.util.TestLauncher " + testMethodName;
+
         //Junit Console Launcherの終了ステータスは、
         // 1: コンテナやテストが失敗
         // 2: テストが見つからないかつ--fail-if-no-testsが指定されている

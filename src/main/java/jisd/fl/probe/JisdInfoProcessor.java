@@ -30,7 +30,7 @@ public class JisdInfoProcessor {
         }
 
         if (watchedValues.isEmpty()) {
-            throw new RuntimeException("Probe#run\n" +
+            throw new RuntimeException("Probe#runTest\n" +
                     "there is not target value in watch point.");
         }
         return watchedValues;

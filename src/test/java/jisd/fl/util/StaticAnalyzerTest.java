@@ -22,7 +22,7 @@ class StaticAnalyzerTest {
     @Test
     void getMethodNameTest() throws NoSuchFileException {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true);
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, false, true);
         for(String methodName : methodNames){
             System.out.println(methodName);
         }

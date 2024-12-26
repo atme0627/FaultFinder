@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 #junit standaloneの通常起動
-java -jar ./locallib/junit-platform-console-standalone-1.10.0.jar -cp ./.probe_test_classes:/Users/ezaki/Desktop/tools/defects4j/tmp/math87_buggy/target/classes --select-method=org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint
+#java -jar ./locallib/junit-platform-console-standalone-1.10.0.jar -cp ./.probe_test_classes:/Users/ezaki/Desktop/tools/defects4j/tmp/math87_buggy/target/classes --select-method=org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint
 
 #junit standalone に jacocoagentをつけて起動
 #java    -jar /Users/ezaki/Desktop/tmp/junit-platform-console-standalone-1.10.0.jar -cp /Users/ezaki/IdeaProjects/proj4test/build/classes/java/main:/Users/ezaki/IdeaProjects/MyFaultFinder/.probe_test_classes --scan-classpath
@@ -12,3 +12,5 @@ java -jar ./locallib/junit-platform-console-standalone-1.10.0.jar -cp ./.probe_t
 
 #junit standalone でdefects4jのテストメソッドを実行
 #java -cp build/classes/java/main -jar ./locallib/junit-platform-console-standalone-1.10.0.jar -cp .probe_test_classes:/Users/ezaki/Desktop/tools/defects4j/tmp/math87_buggy/target/classes --select-method=org.apache.commons.math.optimization.linear.SimplexSolverTest#
+
+java -javaagent:./locallib/jacocoagent.jar=destfile=./.jacoco_exec_data/test.exec -cp /Users/ezaki/IdeaProjects/proj4test/build/classes/java/main:./.probe_test_classes --select-method demo.SortTest#test1

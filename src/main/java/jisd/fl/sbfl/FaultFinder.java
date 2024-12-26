@@ -13,9 +13,6 @@ import java.util.*;
 
 
 public class FaultFinder {
-    String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
-    String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
-    String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
     SbflResult sbflResult;
 
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
@@ -63,7 +60,7 @@ public class FaultFinder {
         System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true);
+        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, false, true);
         for(String contextMethod : contexts) {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
@@ -85,7 +82,7 @@ public class FaultFinder {
         System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true);
+        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, false, true);
         for(String contextMethod : contexts) {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
@@ -145,7 +142,6 @@ public class FaultFinder {
         sbflResult.printFLResults(10);
     }
 
-    //TODO: あるメソッドを呼び出したメソッドとそのメソッドが呼び出したメソッドをコールスタックから取得する
 
 
     private boolean validCheck(int rank){

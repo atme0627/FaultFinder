@@ -10,12 +10,10 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.JavaParserUtil;
-import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
 import jisd.info.ClassInfo;
 import org.apache.commons.lang3.tuple.Pair;
@@ -188,7 +186,7 @@ public class ProbeEx extends AbstractProbe {
         while(true) {
             CompilationUnit unit;
             try {
-                unit = JavaParserUtil.parseClass(className);
+                unit = JavaParserUtil.parseClass(className, false);
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }

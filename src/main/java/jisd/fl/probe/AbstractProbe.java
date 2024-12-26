@@ -64,7 +64,7 @@ public abstract class AbstractProbe {
 
 
         result.setVariableInfo(variableInfo);
-        if(!result.isArgument()) result.setValuesInLine(watchedValueCollection.getvaluesFromLines(result.getProbeLines()));
+        if(!result.isArgument()) result.setValuesInLine(watchedValueCollection.getValuesFromLines(result.getProbeLines()));
         return result;
     }
 
@@ -80,7 +80,7 @@ public abstract class AbstractProbe {
             watchPoints.add(dbg.watch(line));
         }
 
-        //run debugger
+        //runTest debugger
         try {
             dbg.run(sleepTime);
         } catch (VMDisconnectedException ignored) {
@@ -274,7 +274,7 @@ public abstract class AbstractProbe {
             System.out.println("    >> Variable defect is derived from caller method. ");
             if(result.getCallerMethod() != null) {
                 System.out.println("    >> [CALLER] " + result.getCallerMethod().getRight());
-                System.out.println("    >> [LINE] " + result.getCallerMethod().getLeft());
+                System.out.println("    >> [ LINE] " + result.getCallerMethod().getLeft());
             }
         } else {
             Pair<Integer, Integer> probeLines = result.getProbeLines();
@@ -449,7 +449,7 @@ public abstract class AbstractProbe {
             }
         }
 
-        public Map<String, String> getvaluesFromLines(Pair<Integer, Integer> lines){
+        public Map<String, String> getValuesFromLines(Pair<Integer, Integer> lines){
             Map<String, String> pis = new HashMap<>();
             for(List<ProbeInfo> l : piCollection.values()){
                 for(ProbeInfo pi : l){

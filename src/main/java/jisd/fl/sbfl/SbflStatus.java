@@ -3,10 +3,10 @@ package jisd.fl.sbfl;
 import java.io.Serializable;
 
 public class SbflStatus implements Serializable {
-    private int ep = 0;
-    private int ef = 0;
-    private int np = 0;
-    private int nf = 0;
+    public int ep = 0;
+    public int ef = 0;
+    public int np = 0;
+    public int nf = 0;
 
     public SbflStatus(boolean isExecuted, boolean isPassed){
         updateStatus(isExecuted, isPassed);

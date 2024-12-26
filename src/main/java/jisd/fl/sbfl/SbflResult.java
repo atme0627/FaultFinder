@@ -1,8 +1,10 @@
 package jisd.fl.sbfl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,10 +39,28 @@ public class SbflResult {
     }
 
     public void printFLResults(int top){
+        Pair<Integer, Integer> l = maxLengthOfName();
+        int classLength = l.getLeft();
+        int methodLength = l.getRight();
+
+        String header = "| RANK |" +
+                StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + " CLASS NAME " +
+                        "|" + StringUtils.repeat(' ', methodLength - "METHOD NAME".length()) + " METHOD NAME " +
+                "| SUSP SCORE |";
+        String partition = StringUtils.repeat('=', header.length());
+
+        System.out.println("[  SBFL RANKING  ]");
+        System.out.println(partition);
+        System.out.println(header);
+        System.out.println(partition);
         for(int i = 0; i < min(top, getSize()); i++){
             Pair<String, Double> element = result.get(i);
-            System.out.println((i+1) + ": " + element.getLeft() + "  susp: " + element.getRight());
+            System.out.println("| " + String.format("%3d ", i+1) + " | " +
+                    StringUtils.leftPad(element.getLeft().split("#")[0], classLength) + " | " +
+                    StringUtils.leftPad(element.getLeft().split("#")[1], methodLength) + " | " +
+                    String.format("  %.4f  ", element.getRight()) + " |");
         }
+        System.out.println(partition);
     }
 
     public String getMethodOfRank(int rank){
@@ -79,5 +99,17 @@ public class SbflResult {
             if(element.getLeft().equals(targetElementName)) return true;
         }
         return false;
+    }
+
+    private Pair<Integer, Integer> maxLengthOfName(){
+        int classLength = 0;
+        int methodLength = 0;
+
+        for(MutablePair<String, Double> e : result){
+            classLength = Math.max(classLength, e.getLeft().split("#")[0].length());
+            methodLength = Math.max(methodLength, e.getLeft().split("#")[1].length());
+        }
+
+        return Pair.of(classLength, methodLength);
     }
 }

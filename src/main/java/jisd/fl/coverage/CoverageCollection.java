@@ -28,6 +28,7 @@ public class CoverageCollection implements Serializable {
     }
 
     public void printCoverages(Granularity granularity){
+
         for(CoverageOfTarget cov : coverages.values()){
             cov.printCoverage(granularity);
         }

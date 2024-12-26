@@ -10,6 +10,6 @@ public class TestLauncherForJacocoAPI extends TestLauncher implements BooleanSup
 
     @Override
     public boolean getAsBoolean() {
-        return this.run();
+        return this.runTest();
     }
 }

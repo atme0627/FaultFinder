@@ -8,18 +8,24 @@ class CoverageAnalyzerTest {
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
     CoverageAnalyzer ca = new CoverageAnalyzer();
 
-    CoverageAnalyzerTest() throws IOException, InterruptedException {
+    CoverageAnalyzerTest() throws IOException {
     }
 
     @Test
-    void analyzeTestMETHOD() throws IOException, InterruptedException {
+    void analyzeTestCLASS() throws Exception {
+        CoverageCollection cov = ca.analyzeAll(testClassName);
+        cov.printCoverages(Granularity.CLASS);
+    }
+
+    @Test
+    void analyzeTestMETHOD() throws Exception {
         CoverageCollection cov = ca.analyzeAll(testClassName);
         cov.printCoverages(Granularity.METHOD);
     }
 
     @Test
-    void jacocoAPITest() throws Exception {
-        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
-        cov.printCoverages(Granularity.METHOD);
+    void analyzeTestLINE() throws Exception {
+        CoverageCollection cov = ca.analyzeAll(testClassName);
+        cov.printCoverages(Granularity.LINE);
     }
 }

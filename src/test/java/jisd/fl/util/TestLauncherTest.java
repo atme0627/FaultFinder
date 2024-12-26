@@ -1,14 +1,7 @@
 package jisd.fl.util;
 
-import com.sun.jdi.VMDisconnectedException;
-import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
-import jisd.debug.Point;
-import jisd.debug.value.ValueInfo;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.Optional;
 
 class TestLauncherTest {
 
@@ -17,7 +10,7 @@ class TestLauncherTest {
         String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
         //カッコつけたら動かない
         TestLauncher tl = new TestLauncher(testMethodName);
-        tl.run();
+        tl.runTest();
     }
 
     @Test

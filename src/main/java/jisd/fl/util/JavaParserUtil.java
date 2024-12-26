@@ -13,9 +13,10 @@ import java.util.Optional;
 
 public class JavaParserUtil {
     static String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
+    static String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
 
-    public static CompilationUnit parseClass(String className) throws NoSuchFileException {
-        Path p = Paths.get(getFullPath(className));
+    public static CompilationUnit parseClass(String className, boolean isTest) throws NoSuchFileException {
+        Path p = Paths.get(getFullPath(className, isTest));
         CompilationUnit unit = null;
         try {
             unit = StaticJavaParser.parse(p);
@@ -30,7 +31,7 @@ public class JavaParserUtil {
     //methodNameはクラス、シグニチャを含む
     public static MethodDeclaration parseMethod(String methodName) throws NoSuchFileException {
         String className = methodName.split("#")[0];
-        CompilationUnit unit = parseClass(className);
+        CompilationUnit unit = parseClass(className, false);
         Optional<MethodDeclaration> omd = unit.findFirst(MethodDeclaration.class,
                 (n)->n.getSignature().toString().equals(methodName.split("#")[1]));
 
@@ -40,7 +41,7 @@ public class JavaParserUtil {
 
     public static ConstructorDeclaration parseConstructor(String constructorName) throws NoSuchFileException {
         String className = constructorName.split("#")[0];
-        CompilationUnit unit = parseClass(className);
+        CompilationUnit unit = parseClass(className, false);
         Optional<ConstructorDeclaration> ocd = unit.findFirst(ConstructorDeclaration.class,
                 (n)->n.getSignature().toString().equals(constructorName.split("#")[1]));
 
@@ -50,8 +51,9 @@ public class JavaParserUtil {
 
 
 
-    private static String getFullPath(String className){
-        return targetSrcDir + "/" + className.replace(".", "/") + ".java";
+    private static String getFullPath(String className, boolean isTest){
+        return ((isTest) ? testSrcDir : targetSrcDir)
+                + "/" + className.replace(".", "/") + ".java";
     }
 
     public static boolean isConstructor(String methodName){

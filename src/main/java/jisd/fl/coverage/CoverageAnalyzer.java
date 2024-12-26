@@ -25,7 +25,7 @@ public class CoverageAnalyzer {
             return deserialize(testClassName);
         }
 
-        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true, false, true);
+        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true,true, true, false);
 
         //テストクラスをコンパイル
         TestUtil.compileTestClass(testClassName);
@@ -52,7 +52,7 @@ public class CoverageAnalyzer {
             return deserialize(testClassName);
         }
 
-        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true, false, true);
+        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true, true, true, false);
 
         //テストクラスをコンパイル
         TestUtil.compileTestClass(testClassName);
@@ -69,23 +69,23 @@ public class CoverageAnalyzer {
         }
 
         //TestLauncherをリロード
-        ClassLoader.getSystemClassLoader().loadClass(TestLauncher.class.getName());
+        //ClassLoader.getSystemClassLoader().loadClass(TestLauncher.class.getName());
         //シリアライズ処理
         serialize(cv.getCoverages());
         return cv.getCoverages();
     }
-
-    public CoverageCollection analyze(String testClassName, String testMethodName) throws IOException, InterruptedException{
-        //execファイルの生成
-        //テストケースをjacocoAgentつきで実行
-        MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
-        String jacocoExecName = testMethodName + ".jacocoexec";
-        boolean isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
-        cv.setTestsPassed(isTestPassed);
-        ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
-        JacocoUtil.analyzeWithJacoco(execData, cv);
-        return cv.getCoverages();
-    }
+//
+//    public CoverageCollection analyze(String testClassName, String testMethodName) throws IOException, InterruptedException{
+//        //execファイルの生成
+//        //テストケースをjacocoAgentつきで実行
+//        MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
+//        String jacocoExecName = testMethodName + ".jacocoexec";
+//        boolean isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
+//        cv.setTestsPassed(isTestPassed);
+//        ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
+//        JacocoUtil.analyzeWithJacoco(execData, cv);
+//        return cv.getCoverages();
+//    }
 
     private boolean isCovDataExist(String coverageCollectionName){
         String dirPath = "./.coverage_data";

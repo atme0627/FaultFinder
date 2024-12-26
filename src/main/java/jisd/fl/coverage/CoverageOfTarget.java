@@ -1,8 +1,8 @@
 package jisd.fl.coverage;
 
 import jisd.fl.sbfl.SbflStatus;
-import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
@@ -20,11 +20,10 @@ public class CoverageOfTarget implements Serializable {
     protected Map<String, SbflStatus> lineCoverage = new LinkedHashMap<>();
     protected Map<String, SbflStatus> methodCoverage = new LinkedHashMap<>();
     protected Map<String, SbflStatus> classCoverage = new LinkedHashMap<>();
-    protected final String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
 
     public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;
-        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true);
+        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true, true);
     }
 
     public void processCoverage(IClassCoverage cc, boolean isTestPassed) throws IOException {
@@ -97,29 +96,55 @@ public class CoverageOfTarget implements Serializable {
         Map<String, SbflStatus> cov = null;
         switch (granularity) {
             case LINE:
-                cov = lineCoverage;
                 break;
             case METHOD:
-                cov = methodCoverage;
+                printMethodCoverage();
                 break;
             case CLASS:
-                cov = classCoverage;
                 break;
         }
 
-        if(granularity != Granularity.CLASS) {
-            System.out.println("TargetClassName: " + targetClassName);
-            System.out.println("EP  EF  NP  NF");
-            System.out.println("--------------------------------------");
-        }
-        List<String> keys = getSortedKeys(cov.keySet(), granularity);
-        for(String key : keys){
-            System.out.println(key + ": " + cov.get(key));
-        }
-        if(granularity != Granularity.CLASS) {
-            System.out.println("--------------------------------------");
-            System.out.println();
-        }
+//        if(granularity != Granularity.CLASS) {
+//
+//            System.out.println("EP  EF  NP  NF");
+//            System.out.println("--------------------------------------");
+//        }
+//        List<String> keys = getSortedKeys(cov.keySet(), granularity);
+//        for(String key : keys){
+//            System.out.println(key + ": " + cov.get(key));
+//        }
+//        if(granularity != Granularity.CLASS) {
+//            System.out.println("--------------------------------------");
+//            System.out.println();
+//        }
+    }
+
+    void printClassCoverage(){
+    }
+
+    void printMethodCoverage(){
+        int nameLength = maxLengthOfName(methodCoverage, true);
+        System.out.println("[TARGET: " + targetClassName + "]");
+        String header = "| " + StringUtils.repeat(' ', nameLength - "METHOD NAME".length()) + " METHOD NAME " +
+                        "|" + "  EP  |  EF  |  NP  |  NF  |";
+        String partition = StringUtils.repeat('=', header.length());
+
+        System.out.println(partition);
+        System.out.println(header);
+        System.out.println(partition);
+        methodCoverage.forEach((name, s) -> {
+                    System.out.println("|  " + StringUtils.leftPad(name.split("#")[1], nameLength) +
+                                      " | " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
+                                      " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
+                                      " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
+                                      " | " + StringUtils.leftPad(String.valueOf(s.nf), 4) + " |");
+                });
+        System.out.println(partition);
+        System.out.println();
+    }
+
+    void printLineCoverage(){
+
     }
 
     void combineCoverages(CoverageOfTarget cov){
@@ -151,5 +176,14 @@ public class CoverageOfTarget implements Serializable {
             Collections.sort(keys);
         }
         return keys;
+    }
+
+    private int maxLengthOfName(Map<String, SbflStatus> cov, boolean isMethod){
+        int maxLength = 0;
+        for(String name : cov.keySet()){
+            int l = (isMethod) ? name.split("#")[1].length() : name.length();
+            maxLength = Math.max(maxLength, l);
+        }
+        return maxLength;
     }
 }
