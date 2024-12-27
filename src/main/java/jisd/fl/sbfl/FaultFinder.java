@@ -7,6 +7,8 @@ import jisd.fl.probe.ProbeResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.util.*;
@@ -54,55 +56,60 @@ public class FaultFinder {
 
     public void remove(int rank) throws IOException {
         if(!validCheck(rank)) return;
+        IblResult iblResult = new IblResult();
+
         String targetMethod = sbflResult.getMethodOfRank(rank);
         String contextClass = targetMethod.split("#")[0];
-        System.out.println("[remove] " + targetMethod);
-        System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
+        System.out.println("[  REMOVE  ] " + targetMethod);
+        iblResult.addElement(targetMethod, sbflResult.getSuspicious(targetMethod), 0.0);
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, false, true);
+        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true, true);
         for(String contextMethod : contexts) {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
             double preScore = sbflResult.getSuspicious(contextMethod);
             sbflResult.setSuspicious(contextMethod, preScore * removeConst);
-            System.out.println("    " + contextMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(contextMethod));
+            iblResult.addElement(contextMethod, preScore, sbflResult.getSuspicious(contextMethod));
         }
 
-        System.out.println();
+        iblResult.print();
+
         sbflResult.sort();
-        sbflResult.printFLResults(10);
+        sbflResult.printFLResults();
     }
 
     public void susp(int rank) throws IOException {
         if(!validCheck(rank)) return;
+        IblResult iblResult = new IblResult();
         String targetMethod = sbflResult.getMethodOfRank(rank);
-        System.out.println("[susp] " + targetMethod);
+        System.out.println("[  SUSP  ] " + targetMethod);
         String contextClass = targetMethod.split("#")[0];
-        System.out.println("    " + targetMethod + ": " + sbflResult.getSuspicious(targetMethod) + " --> 0.0");
+        iblResult.addElement(targetMethod, sbflResult.getSuspicious(targetMethod), 0.0);
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, false, true);
+        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true, true);
         for(String contextMethod : contexts) {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
             double preScore = sbflResult.getSuspicious(contextMethod);
             sbflResult.setSuspicious(contextMethod, preScore + suspConst);
-            System.out.println("    " + contextMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(contextMethod));
+            iblResult.addElement(contextMethod, preScore, sbflResult.getSuspicious(contextMethod));
         }
 
-        System.out.println();
+        iblResult.print();
         sbflResult.sort();
-        sbflResult.printFLResults(10);
+        sbflResult.printFLResults();
     }
 
-    public void probe(FailedAssertInfo fai){
+    public void probe(FailedAssertInfo fai, int sleepTime){
         VariableInfo variableInfo = fai.getVariableInfo();
-        System.out.println("[probe] " + fai.getTestMethodName() + ": " + variableInfo);
+        IblResult iblResult = new IblResult();
+        System.out.println("[  PROBE  ] " + fai.getTestMethodName() + ": " + variableInfo);
         Probe prb = new Probe(fai);
         ProbeResult probeResult = null;
         try {
-             probeResult = prb.run(2000);
+             probeResult = prb.run(sleepTime);
         } catch (RuntimeException e){
         //probeMethodsがメソッドを持っているかチェック
             throw new RuntimeException("FaultFinder#probe\n" +
@@ -126,20 +133,22 @@ public class FaultFinder {
         //set suspicious score
         preScore = sbflResult.getSuspicious(probeMethod);
         sbflResult.setSuspicious(probeMethod, preScore * (1 + probeC1) + callerFactor + siblingFactor);
-        System.out.println("    " + probeMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(probeMethod));
+        iblResult.addElement(probeMethod, preScore, sbflResult.getSuspicious(probeMethod));
+
         preScore = sbflResult.getSuspicious(callerMethod);
         sbflResult.setSuspicious(callerMethod, preScore + callerFactor + siblingFactor);
-        System.out.println("    " + callerMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(callerMethod));
+        iblResult.addElement(callerMethod, preScore, sbflResult.getSuspicious(callerMethod));
+
         for(String siblingMethod : probeResult.getSiblingMethods()){
             if (probeMethod.equals(siblingMethod)) continue;
             preScore = sbflResult.getSuspicious(siblingMethod);
             sbflResult.setSuspicious(siblingMethod, preScore + callerFactor + siblingFactor);
-            System.out.println("    " + siblingMethod + ": " + preScore + " --> " + sbflResult.getSuspicious(siblingMethod));
+            iblResult.addElement(siblingMethod, preScore, sbflResult.getSuspicious(siblingMethod));
         }
 
-        System.out.println();
+        iblResult.print();
         sbflResult.sort();
-        sbflResult.printFLResults(10);
+        sbflResult.printFLResults();
     }
 
 
@@ -152,6 +161,7 @@ public class FaultFinder {
         if(!sbflResult.rankValidCheck(rank)) return false;
         return true;
     }
+
 
     public double getRemoveConst() {
         return removeConst;
@@ -191,5 +201,60 @@ public class FaultFinder {
 
     public void setProbeC3(double probeC3) {
         this.probeC3 = probeC3;
+    }
+
+    static class IblResult {
+        List<Element> results = new ArrayList<>();
+
+        public void addElement(String method, Double preScore, Double newScore){
+            results.add(new Element(method, preScore,newScore));
+        }
+
+        public void print(){
+            Pair<Integer, Integer> l = maxLengthOfName();
+            int classLength = l.getLeft();
+            int methodLength = l.getRight();
+
+            String header =
+                    "| " + StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + "CLASS NAME"
+                    + " | " + StringUtils.repeat(' ', methodLength - "METHOD NAME".length()) + "METHOD NAME"
+                    + " |   OLD  ->   NEW  |";
+            String partition = StringUtils.repeat("=", header.length());
+
+            System.out.println(partition);
+            System.out.println(header);
+            System.out.println(partition);
+            for(Element e : results){
+                System.out.println("| " + StringUtils.leftPad(e.method.split("#")[0], classLength)
+                + " | " + StringUtils.leftPad(e.method.split("#")[1], methodLength)
+                + " | " + String.format("%.4f", e.oldScore) + " -> " + String.format("%.4f", e.newScore) + " |");
+            }
+            System.out.println(partition);
+            System.out.println();
+        }
+
+        private Pair<Integer, Integer> maxLengthOfName() {
+            int classLength = 0;
+            int methodLength = 0;
+
+            for (Element e : results) {
+                classLength = Math.max(classLength, e.method.split("#")[0].length());
+                methodLength = Math.max(methodLength, e.method.split("#")[1].length());
+            }
+
+            return Pair.of(classLength, methodLength);
+        }
+
+        static class Element {
+            String method;
+            Double oldScore;
+            Double newScore;
+
+             Element(String method, Double oldScore, Double newScore){
+                this.method = method;
+                this.oldScore = oldScore;
+                this.newScore = newScore;
+            }
+        }
     }
 }

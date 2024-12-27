@@ -14,10 +14,8 @@ class FaultFinderTest {
     CoverageAnalyzer ca = new CoverageAnalyzer();
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
     String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
-    String variableName = "solution";
     String variableType = "org.apache.commons.math.optimization.RealPointValuePair";
     String fieldName = "point";
-    String fieldType = "double[]";
     String actual = "0.0";
 
     VariableInfo field = new VariableInfo(
@@ -31,21 +29,10 @@ class FaultFinderTest {
             null
     );
 
-    VariableInfo probeVariable = new VariableInfo(
-            testMethodName,
-            variableName,
-            false,
-            false,
-            false,
-            -1,
-            actual,
-            field
-    );
-
     FailedAssertInfo fai = new FailedAssertEqualInfo(
             testMethodName,
             actual,
-            probeVariable);
+            field);
     FaultFinderTest() throws IOException {
     }
 
@@ -67,24 +54,24 @@ class FaultFinderTest {
 
     @Test
     void suspTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.susp(2);
     }
 
     @Test
     void probeTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.probe(fai);
+        ff.probe(fai, 3000);
     }
 
     @Test
     void debugTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.probe(fai);
+        ff.probe(fai, 3000);
+        ff.remove(1);
         ff.susp(1);
-        ff.getFLResults().printFLResults(20);
     }
 }

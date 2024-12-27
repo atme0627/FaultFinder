@@ -41,13 +41,13 @@ public class TestLauncher {
         SummaryGeneratingListener listener = new SummaryGeneratingListener();
         launcher.registerTestExecutionListeners(listener);
 
-        System.out.println("EXEC: " + testMethodName);
+        //System.out.println("EXEC: " + testMethodName);
         launcher.execute(request);
-        listener.getSummary().printFailuresTo(new PrintWriter(System.out));
-        listener.getSummary().printTo(new PrintWriter(System.out));
+        //listener.getSummary().printFailuresTo(new PrintWriter(System.out));
+        //listener.getSummary().printTo(new PrintWriter(System.out));
         boolean isTestPassed = listener.getSummary().getTotalFailureCount() == 0;
 
-        System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));
+        //System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));
         return isTestPassed;
     }
 }

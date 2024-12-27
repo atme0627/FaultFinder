@@ -13,7 +13,6 @@ class ProbeTest {
         String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint()";
         String locateClass = "org.apache.commons.math.optimization.RealPointValuePair";
         String variableName = "point";
-        String variableType = "double[]";
         String actual = "0.0";
 
         VariableInfo probeVariable = new VariableInfo(

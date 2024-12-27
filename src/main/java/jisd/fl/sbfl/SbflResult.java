@@ -61,6 +61,7 @@ public class SbflResult {
                     String.format("  %.4f  ", element.getRight()) + " |");
         }
         System.out.println(partition);
+        System.out.println();
     }
 
     public String getMethodOfRank(int rank){

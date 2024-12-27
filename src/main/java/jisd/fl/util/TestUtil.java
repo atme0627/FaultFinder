@@ -32,7 +32,7 @@ public  class TestUtil {
         }
     }
 
-    //junit console launcherにjacoco agentをつけて起動
+    //TestLauncherにjacoco agentをつけて起動
     //methodNameは次のように指定: org.example.order.OrderTests#test1(int a)
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
