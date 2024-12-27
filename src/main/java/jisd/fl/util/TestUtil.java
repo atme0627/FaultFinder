@@ -16,7 +16,7 @@ public  class TestUtil {
     private static final String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
     private static final String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
 
-    private static final String junitClassPath = PropertyLoader.getProperty("junit4");
+    private static final String junitClassPath = PropertyLoader.getJunitClassPaths();
 
     public static void compileTestClass(String testClassName) {
 
@@ -41,12 +41,12 @@ public  class TestUtil {
         String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
         String junitTestSelectOption =" --select-method " + testMethodName;
 
-        String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
-                " -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" + testBinDir + ":" +
-                compiledWithJunitFilePath + junitTestSelectOption;
-
 //        String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
-//                " -cp " + "./build/classes/java/main" + ":./.probe_test_classes" + ":" + targetBinDir + ":" + testBinDir + ":" + junitClassPath + " jisd.fl.util.TestLauncher " + testMethodName;
+//                " -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" + testBinDir + ":" +
+//                compiledWithJunitFilePath + junitTestSelectOption;
+
+        String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
+                " -cp " + "./build/classes/java/main" + ":./.probe_test_classes" + ":" + targetBinDir + ":" + testBinDir + ":" + junitClassPath + " jisd.fl.util.TestLauncher " + testMethodName;
 
         //Junit Console Launcherの終了ステータスは、
         // 1: コンテナやテストが失敗
@@ -69,9 +69,6 @@ public  class TestUtil {
     }
 
     public static Debugger testDebuggerFactory(String testMethodName) {
-        String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
-        String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
-        String junitClassPath = PropertyLoader.getJunitClassPaths();
 
         Debugger dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethodName,
                 "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
