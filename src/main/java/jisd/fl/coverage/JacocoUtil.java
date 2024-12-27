@@ -22,7 +22,7 @@ import java.util.function.BooleanSupplier;
 
 public class JacocoUtil {
     private static final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-    private static final String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
+    private static final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
 
     //junit console launcherにjacoco agentをつけて起動
     //methodNameは次のように指定: org.example.order.OrderTests#test1

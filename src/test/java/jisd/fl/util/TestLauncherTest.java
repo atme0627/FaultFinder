@@ -16,7 +16,7 @@ class TestLauncherTest {
     @Test
     void jisdtest1(){
         String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
-        String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
+        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
 
         Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
         dbg.setSrcDir(testSrcDir);

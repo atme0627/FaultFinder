@@ -8,8 +8,8 @@ import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 class StaticAnalyzerTest {
-    String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-    String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
+    String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+    String targetBinDir = PropertyLoader.getProperty("targetBinDir");
     @Test
     void getClassNameTest() {
         ArrayList<String> classNames = new ArrayList<>(StaticAnalyzer.getClassNames(targetSrcDir));

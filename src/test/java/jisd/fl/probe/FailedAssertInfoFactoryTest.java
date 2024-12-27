@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 
 class FailedAssertInfoFactoryTest {
     FailedAssertInfoFactory factory = new FailedAssertInfoFactory();
-    String srcDir = PropertyLoader.getProperty("d4jTestSrcDir");
-    String binDir = PropertyLoader.getProperty("d4jTestBinDir");
+    String srcDir = PropertyLoader.getProperty("testSrcDir");
+    String binDir = PropertyLoader.getProperty("testBinDir");
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
     String testMethodName = "testSingleVariableAndConstraint()";
 

@@ -12,8 +12,8 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 public class JavaParserUtil {
-    static String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-    static String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
+    static String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+    static String testSrcDir = PropertyLoader.getProperty("testSrcDir");
 
     public static CompilationUnit parseClass(String className, boolean isTest) throws NoSuchFileException {
         Path p = Paths.get(getFullPath(className, isTest));

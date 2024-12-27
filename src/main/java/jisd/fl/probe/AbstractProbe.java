@@ -35,8 +35,8 @@ public abstract class AbstractProbe {
 
 
     public AbstractProbe(FailedAssertInfo assertInfo) {
-        String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");
-        String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
+        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+        String targetBinDir = PropertyLoader.getProperty("targetBinDir");
 
         this.assertInfo = assertInfo;
         this.dbg = createDebugger(500);

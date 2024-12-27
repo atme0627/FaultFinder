@@ -10,8 +10,8 @@ import java.util.Set;
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
     final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-    final String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
-    final String targetSrcDir = PropertyLoader.getProperty("d4jTargetSrcDir");;
+    final String testSrcDir = PropertyLoader.getProperty("testSrcDir");
+    final String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");;
     Set<String> targetClassNames;
 
     public CoverageAnalyzer() throws IOException {

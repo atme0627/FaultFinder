@@ -12,9 +12,9 @@ public  class TestUtil {
     private static final String compiledWithJunitFilePath = PropertyLoader.getProperty("compiledWithJunitFilePath");
     private static final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
     private static final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-    private static final String targetBinDir = PropertyLoader.getProperty("d4jTargetBinDir");
-    private static final String testSrcDir = PropertyLoader.getProperty("d4jTestSrcDir");
-    private static final String testBinDir = PropertyLoader.getProperty("d4jTestBinDir");
+    private static final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
+    private static final String testSrcDir = PropertyLoader.getProperty("testSrcDir");
+    private static final String testBinDir = PropertyLoader.getProperty("testBinDir");
 
     private static final String junitClassPath = PropertyLoader.getJunitClassPaths();
 
