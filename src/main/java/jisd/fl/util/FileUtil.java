@@ -46,6 +46,16 @@ public class FileUtil {
         parentDir.delete();
     }
 
+    public static void initFile(String dir, String fileName){
+        Path p = Paths.get(dir, fileName);
+        try {
+            Files.deleteIfExists(p);
+            createFile(dir, fileName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
     public static void createFile(String dir, String fileName){
         Path p = Paths.get(dir, fileName);
         if(Files.exists(p)){

@@ -2,6 +2,7 @@ package experiment.coverage;
 
 import experiment.defect4j.Defects4jUtil;
 import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.StaticAnalyzer;
 import jisd.fl.util.TestLauncher;
 import jisd.fl.util.TestUtil;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.NoSuchFileException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,13 +40,14 @@ class CoverageGeneratorTest {
     @Test
     void debug() throws IOException, InterruptedException {
         String project = "Math";
-        int bugId = 1;
+        int bugId = 5;
         Defects4jUtil.changeTargetVersion(project, bugId);
         String targetBinDir = PropertyLoader.getProperty("targetBinDir");
         String testBinDir = PropertyLoader.getProperty("testBinDir");
 
         String junitClassPath = PropertyLoader.getJunitClassPaths();
-        String testMethodName = "org.apache.commons.math3.fraction.BigFractionTest#testDoubleValue";
+        List<String> testMethods = Defects4jUtil.getFailedTestMethods(project, bugId);
+        String testMethodName = testMethods.get(0).split("#")[0] + "#TestComplex";
 
         Defects4jUtil.CompileBuggySrc(project, bugId);
 
@@ -68,13 +71,28 @@ class CoverageGeneratorTest {
     }
 
     @Test
-    void debug2(){
+    void getTestNums() throws NoSuchFileException {
         String project = "Math";
-        int bugId = 87;
-        String testMethod = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testMath272";
+        int bugId = 5;
+
         Defects4jUtil.changeTargetVersion(project, bugId);
-        Defects4jUtil.CompileBuggySrc(project, bugId);
-        TestLauncher.main(new String[]{testMethod});
+        List<String> failed = Defects4jUtil.getFailedTestMethods(project, bugId);
+
+        Set<String> testClass = new HashSet<>();
+
+        System.out.println("[FAILED]");
+        for(String m : failed){
+            testClass.add(m.split("#")[0]);
+            System.out.println(m);
+        }
+
+        System.out.println();
+        System.out.println("[TEST NUMS]");
+        for(String t : testClass){
+            System.out.println(t);
+            Set<String> testMethods = StaticAnalyzer.getMethodNames(t, true, true, false, true);
+            System.out.println(testMethods.size());
+        }
 
     }
 }

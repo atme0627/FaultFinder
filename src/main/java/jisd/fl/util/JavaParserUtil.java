@@ -12,10 +12,10 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 public class JavaParserUtil {
-    static String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
-    static String testSrcDir = PropertyLoader.getProperty("testSrcDir");
 
     public static CompilationUnit parseClass(String className, boolean isTest) throws NoSuchFileException {
+
+
         Path p = Paths.get(getFullPath(className, isTest));
         CompilationUnit unit = null;
         try {
@@ -52,6 +52,8 @@ public class JavaParserUtil {
 
 
     private static String getFullPath(String className, boolean isTest){
+        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
         return ((isTest) ? testSrcDir : targetSrcDir)
                 + "/" + className.replace(".", "/") + ".java";
     }

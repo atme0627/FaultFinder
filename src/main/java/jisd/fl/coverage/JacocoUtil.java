@@ -21,8 +21,7 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 public class JacocoUtil {
-    private static final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-    private static final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
+
 
     //junit console launcherにjacoco agentをつけて起動
     //methodNameは次のように指定: org.example.order.OrderTests#test1
@@ -30,6 +29,7 @@ public class JacocoUtil {
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
 
     public static void analyzeWithJacoco(ExecutionDataStore executionData, ICoverageVisitor cv) throws IOException {
+        final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
         //jacocoによるテスト対象の解析
         final Analyzer analyzer = new Analyzer(executionData, cv);
         File classFilePath = new File(targetBinDir);
@@ -37,6 +37,7 @@ public class JacocoUtil {
     }
 
     public static ExecutionDataStore execFileLoader(String testMethodName) throws IOException {
+        final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
         File testDatafile = new File(jacocoExecFilePath + "/" + testMethodName);
         ExecFileLoader testFileLoader = new ExecFileLoader();
         testFileLoader.load(testDatafile);

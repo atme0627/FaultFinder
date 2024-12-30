@@ -1,0 +1,3 @@
+org.apache.commons.math.linear.EigenDecompositionImpl#processGeneralBlock(int)
+org.apache.commons.math.linear.EigenDecompositionImpl#computeShiftIncrement(int, int, int)
+org.apache.commons.math.linear.EigenDecompositionImpl#computeGershgorinCircles()

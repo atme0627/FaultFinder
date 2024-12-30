@@ -84,14 +84,21 @@ public class StaticAnalyzer {
             @Override
             public void visit(MethodDeclaration n, String arg) {
                 if(!publicOnly || n.isPublic()) {
-                    methodNames.add(methodNameBuilder.apply(n));
+                    if(!isTest || n.isAnnotationPresent("Test")){
+                        //testの場合@Testがないものは含まない
+                        methodNames.add(methodNameBuilder.apply(n));
+                    }
                     super.visit(n, arg);
                 }
             }
+
             @Override
             public void visit(ConstructorDeclaration n, String arg) {
                 if(!publicOnly || n.isPublic()) {
-                    methodNames.add(methodNameBuilder.apply(n));
+                    if(!isTest || n.isAnnotationPresent("Test")){
+                        //testの場合@Testがないものは含まない
+                        methodNames.add(methodNameBuilder.apply(n));
+                    }
                     super.visit(n, arg);
                 }
             }

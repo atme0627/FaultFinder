@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Set;
 
 public class Coverage {
-    public static void main(String[] args){
+    public static void main(String[] args) throws InterruptedException {
         String project = "Math";
         int number0fBugs = 106;
 
-        for(int bugId = 1; bugId <= number0fBugs; bugId++){
+        for(int bugId = 5; bugId <= number0fBugs; bugId++){
         System.out.println("Coverage measurement: [PROJECT] " + project + "  [BUG ID] " + bugId);
             Defects4jUtil.changeTargetVersion(project, bugId);
             Defects4jUtil.CompileBuggySrc(project, bugId);
@@ -29,5 +29,7 @@ public class Coverage {
                 cg.generate();
             }
         }
+
+        Thread.sleep(500);
     }
 }

@@ -4,22 +4,19 @@ import jisd.debug.Debugger;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 
 public  class TestUtil {
-    private static final String junitConsoleLauncherPath = PropertyLoader.getProperty("junitConsoleLauncherPath");
-    private static final String compiledWithJunitFilePath = PropertyLoader.getProperty("compiledWithJunitFilePath");
-    private static final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
-    private static final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-    private static final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
-    private static final String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-    private static final String testBinDir = PropertyLoader.getProperty("testBinDir");
-
-    private static final String junitClassPath = PropertyLoader.getJunitClassPaths();
-
     public static void compileTestClass(String testClassName) {
+        final String compiledWithJunitFilePath = PropertyLoader.getProperty("compiledWithJunitFilePath");
+        final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
+        final String testSrcDir = PropertyLoader.getProperty("testSrcDir");
+        final String testBinDir = PropertyLoader.getProperty("testBinDir");
+        final String junitClassPath = PropertyLoader.getJunitClassPaths();
 
         FileUtil.initDirectory(compiledWithJunitFilePath);
 
@@ -38,6 +35,12 @@ public  class TestUtil {
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
     public static boolean execTestCaseWithJacocoAgent(String testMethodNameWithSignature, String execFileName) throws IOException, InterruptedException {
+        final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
+        final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
+        final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
+        final String testBinDir = PropertyLoader.getProperty("testBinDir");
+        final String junitClassPath = PropertyLoader.getJunitClassPaths();
+
         String testMethodName = testMethodNameWithSignature.split("\\(")[0];
         String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
         String junitTestSelectOption =" --select-method " + testMethodName;
@@ -56,6 +59,17 @@ public  class TestUtil {
         Process proc = Runtime.getRuntime().exec(cmd);
         proc.waitFor();
 
+        //debug
+//        String line = null;
+//        System.out.println("STDOUT---------------");
+//        try ( var buf = new BufferedReader( new InputStreamReader( proc.getInputStream() ) ) ) {
+//            while( ( line = buf.readLine() ) != null ) System.out.println( line );
+//        }
+//        System.out.println("STDERR---------------");
+//        try ( var buf = new BufferedReader( new InputStreamReader( proc.getErrorStream() ) ) ) {
+//            while( ( line = buf.readLine() ) != null ) System.out.println( line );
+//        }
+
         //execファイルが生成されるまで待機
         while(true){
             File f = new File(generatedFilePath);
@@ -70,11 +84,13 @@ public  class TestUtil {
     }
 
     public static Debugger testDebuggerFactory(String testMethodName) {
+        final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
+        final String testBinDir = PropertyLoader.getProperty("testBinDir");
+        final String junitClassPath = PropertyLoader.getJunitClassPaths();
 
         Debugger dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethodName,
                 "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
 
         return dbg;
-
     }
 }

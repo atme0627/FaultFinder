@@ -1,19 +1,25 @@
 package experiment.coverage;
 
+import experiment.defect4j.Defects4jUtil;
 import jisd.fl.coverage.CoverageAnalyzer;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.util.FileUtil;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CoverageGenerator {
    String testClassName;
    String project;
    int bugId;
-   boolean isGenerated = false;
+   boolean isEmpty;
    String rootDir = "src/main/resources/coverages";
 
    public CoverageGenerator(String testClassName,
@@ -23,22 +29,21 @@ public class CoverageGenerator {
       this.bugId = bugId;
       this.testClassName = testClassName;
 
+      //すぐ消す
+       File f = new File(outputDir(), "class_coverage.txt");
+       if(f.length() == 0) isEmpty = true;
 
       FileUtil.createDirectory(outputDir());
 
-      if(FileUtil.isExist(outputDir(), "class_coverage.txt")){
-          isGenerated = true;
-      }
-      else {
-          FileUtil.createFile(outputDir(), "class_coverage.txt");
-          FileUtil.createFile(outputDir(), "method_coverage.txt");
-          FileUtil.createFile(outputDir(), "line_coverage.txt");
-      }
+      FileUtil.initFile(outputDir(), "class_coverage.txt");
+      FileUtil.initFile(outputDir(), "method_coverage.txt");
+      FileUtil.initFile(outputDir(), "line_coverage.txt");
    }
 
 
    public void generate(){
-      CoverageAnalyzer ca = new CoverageAnalyzer(outputDir());
+       Set<String> failedTests = new HashSet<>(Defects4jUtil.getFailedTestMethods(project, bugId));
+      CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(), failedTests);
       CoverageCollection cc;
        try {
            cc = ca.analyzeAll(testClassName);
@@ -53,7 +58,6 @@ public class CoverageGenerator {
    }
 
    private void exportCoverage(CoverageCollection cc){
-       if(isGenerated) return;
        try (
           PrintStream psClass = new PrintStream(outputDir() + "/class_coverage.txt");
           PrintStream psMethod = new PrintStream(outputDir() + "/method_coverage.txt");

@@ -1,7 +1,6 @@
 package jisd.fl.coverage;
 
 import jisd.fl.util.*;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
@@ -13,20 +12,26 @@ public class CoverageAnalyzer {
     final String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");;
     String outputDir;
     Set<String> targetClassNames;
+    Set<String> failedTests;
 
     public CoverageAnalyzer(){
-        this("./.coverage_data");
+        this("./.coverage_data", null);
     }
 
-    public CoverageAnalyzer(String outputDir) {
+    public CoverageAnalyzer(String outputDir, Set<String> failedTests) {
         this.outputDir = outputDir;
+        this.failedTests = failedTests;
         targetClassNames = StaticAnalyzer.getClassNames(targetSrcDir);
     }
 
-    public CoverageCollection analyzeAll(String testClassName) throws IOException, InterruptedException{
+    public CoverageCollection analyzeAll(String testClassName) throws IOException, InterruptedException {
+        return analyzeAll(testClassName, false);
+    }
+
+    public CoverageCollection analyzeAll(String testClassName, boolean cache) throws IOException, InterruptedException{
         String serializedFileName = testClassName;
         //デシリアライズ処理
-        if(isCovDataExist(serializedFileName)){
+        if(cache && isCovDataExist(serializedFileName)){
             return deserialize(serializedFileName);
         }
 
@@ -41,6 +46,15 @@ public class CoverageAnalyzer {
             //テストケースをjacocoAgentつきで実行
             String jacocoExecName = testMethodName + ".jacocoexec";
             boolean isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
+
+            //テストの成否が想定と一致しているか確認
+            if(failedTests != null){
+                if((isTestPassed && failedTests.contains(testMethodName))
+                || (!isTestPassed && !failedTests.contains(testMethodName))){
+                    throw new RuntimeException("Execution result is wrong. [testcase] " + testMethodName);
+                }
+            }
+
             cv.setTestsPassed(isTestPassed);
             ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
             JacocoUtil.analyzeWithJacoco(execData, cv);

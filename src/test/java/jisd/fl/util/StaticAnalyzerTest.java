@@ -28,6 +28,26 @@ class StaticAnalyzerTest {
         }
     }
 
+    //@Testのみとれているか確認
+    @Test
+    void getMethodNameTest2() throws NoSuchFileException {
+        String targetClassName = "org.apache.commons.math3.distribution.HypergeometricDistributionTest";
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, true, true, false, true);
+        for(String methodName : methodNames){
+            System.out.println(methodName);
+        }
+    }
+
+    //@Testのみとれているか確認
+    @Test
+    void getMethodNameTest3() throws NoSuchFileException {
+        String targetClassName = "org.apache.commons.math3.complex.ComplexTest";
+        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, true, true, false, true);
+        for(String methodName : methodNames){
+            System.out.println(methodName);
+        }
+    }
+
     @Test
     void getRangeOfAllStatementsTest() throws NoSuchFileException {
         String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";

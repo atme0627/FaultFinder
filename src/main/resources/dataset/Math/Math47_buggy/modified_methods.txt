@@ -1,0 +1,3 @@
+org.apache.commons.math.complex.Complex#Complex(double, double)
+org.apache.commons.math.complex.Complex#divide(Complex)
+org.apache.commons.math.complex.Complex#divide(double)

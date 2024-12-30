@@ -126,7 +126,8 @@ public class Defects4jUtil {
 
             for(int modifiedLine : modifiedLines){
                 try {
-                    modifiedMethods.add(StaticAnalyzer.getMethodNameFormLine(modifiedClass, modifiedLine));
+                    String m = StaticAnalyzer.getMethodNameFormLine(modifiedClass, modifiedLine);
+                    if(m != null) modifiedMethods.add(m);
                 } catch (NoSuchFileException e) {
                     throw new RuntimeException(e);
                 }
