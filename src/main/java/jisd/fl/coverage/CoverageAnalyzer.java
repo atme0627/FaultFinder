@@ -9,20 +9,25 @@ import java.util.Set;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
-    final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-    final String testSrcDir = PropertyLoader.getProperty("testSrcDir");
+    String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
     final String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");;
+    String outputDir;
     Set<String> targetClassNames;
 
-    public CoverageAnalyzer() throws IOException {
-        FileUtil.initDirectory(jacocoExecFilePath);
+    public CoverageAnalyzer(){
+        this("./.coverage_data");
+    }
+
+    public CoverageAnalyzer(String outputDir) {
+        this.outputDir = outputDir;
         targetClassNames = StaticAnalyzer.getClassNames(targetSrcDir);
     }
 
     public CoverageCollection analyzeAll(String testClassName) throws IOException, InterruptedException{
+        String serializedFileName = testClassName;
         //デシリアライズ処理
-        if(isCovDataExist(testClassName)){
-            return deserialize(testClassName);
+        if(isCovDataExist(serializedFileName)){
+            return deserialize(serializedFileName);
         }
 
         Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true,true, true, false);
@@ -40,40 +45,40 @@ public class CoverageAnalyzer {
             ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
             JacocoUtil.analyzeWithJacoco(execData, cv);
         }
-
+        FileUtil.initDirectory(jacocoExecFilePath);
         //シリアライズ処理
-        serialize(cv.getCoverages());
+        serialize(cv.getCoverages(), serializedFileName);
         return cv.getCoverages();
     }
 
-    public CoverageCollection analyzeAllWithAPI(String testClassName) throws Exception {
-        //デシリアライズ処理
-        if(isCovDataExist(testClassName)){
-            return deserialize(testClassName);
-        }
-
-        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true, true, true, false);
-
-        //テストクラスをコンパイル
-        TestUtil.compileTestClass(testClassName);
-        MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
-
-        JacocoUtil jacocoUtil= new JacocoUtil();
-        for(String testMethodName : testMethodNames){
-            Pair<Boolean, ExecutionDataStore> execWithAPI = jacocoUtil.execTestCaseWithJacocoAPI(testMethodName);
-            boolean isTestPassed = execWithAPI.getLeft();
-            ExecutionDataStore execData = execWithAPI.getRight();
-
-            cv.setTestsPassed(isTestPassed);
-            JacocoUtil.analyzeWithJacoco(execData, cv);
-        }
-
-        //TestLauncherをリロード
-        //ClassLoader.getSystemClassLoader().loadClass(TestLauncher.class.getName());
-        //シリアライズ処理
-        serialize(cv.getCoverages());
-        return cv.getCoverages();
-    }
+//    public CoverageCollection analyzeAllWithAPI(String testClassName) throws Exception {
+//        //デシリアライズ処理
+//        if(isCovDataExist(testClassName)){
+//            return deserialize(testClassName);
+//        }
+//
+//        Set<String> testMethodNames = StaticAnalyzer.getMethodNames(testClassName, true, true, true, false);
+//
+//        //テストクラスをコンパイル
+//        TestUtil.compileTestClass(testClassName);
+//        MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
+//
+//        JacocoUtil jacocoUtil= new JacocoUtil();
+//        for(String testMethodName : testMethodNames){
+//            Pair<Boolean, ExecutionDataStore> execWithAPI = jacocoUtil.execTestCaseWithJacocoAPI(testMethodName);
+//            boolean isTestPassed = execWithAPI.getLeft();
+//            ExecutionDataStore execData = execWithAPI.getRight();
+//
+//            cv.setTestsPassed(isTestPassed);
+//            JacocoUtil.analyzeWithJacoco(execData, cv);
+//        }
+//
+//        //TestLauncherをリロード
+//        //ClassLoader.getSystemClassLoader().loadClass(TestLauncher.class.getName());
+//        //シリアライズ処理
+//        serialize(cv.getCoverages(), "");
+//        return cv.getCoverages();
+//    }
 //
 //    public CoverageCollection analyze(String testClassName, String testMethodName) throws IOException, InterruptedException{
 //        //execファイルの生成
@@ -88,16 +93,14 @@ public class CoverageAnalyzer {
 //    }
 
     private boolean isCovDataExist(String coverageCollectionName){
-        String dirPath = "./.coverage_data";
-        String covFileName = dirPath + "/" + coverageCollectionName + ".cov";
+        String covFileName = outputDir + "/" + coverageCollectionName + ".cov";
         File data = new File(covFileName);
         return data.exists();
     }
 
-    private void serialize(CoverageCollection cc){
-        String dirPath = "./.coverage_data";
-        String covFileName = dirPath + "/" + cc.coverageCollectionName + ".cov";
-        FileUtil.createDirectory(dirPath);
+    private void serialize(CoverageCollection cc, String serializedFileName){
+        String covFileName = outputDir + "/" + serializedFileName + ".cov";
+        FileUtil.createDirectory(outputDir);
         File data = new File(covFileName);
 
         try {
@@ -113,8 +116,7 @@ public class CoverageAnalyzer {
     }
 
     private CoverageCollection deserialize(String coverageCollectionName){
-        String dirPath = "./.coverage_data";
-        String covFileName = dirPath + "/" + coverageCollectionName + ".cov";
+        String covFileName = outputDir + "/" + coverageCollectionName + ".cov";
 
         try {
             FileInputStream fileInputStream = new FileInputStream(covFileName);

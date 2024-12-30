@@ -2,6 +2,8 @@ package jisd.fl.coverage;
 
 import jisd.fl.sbfl.SbflStatus;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.*;
 
@@ -28,9 +30,12 @@ public class CoverageCollection implements Serializable {
     }
 
     public void printCoverages(Granularity granularity){
+        printCoverages(System.out, granularity);
+    }
 
+    public void printCoverages(PrintStream out, Granularity granularity){
         for(CoverageOfTarget cov : coverages.values()){
-            cov.printCoverage(granularity);
+            cov.printCoverage(out, granularity);
         }
     }
 

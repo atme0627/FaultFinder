@@ -8,6 +8,7 @@ import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.*;
 
@@ -17,13 +18,17 @@ public class CoverageOfTarget implements Serializable {
 
 
     //各行のカバレッジ情報 (行番号, メソッド名, クラス名) --> lineCoverage status
-    protected Map<String, SbflStatus> lineCoverage = new LinkedHashMap<>();
-    protected Map<String, SbflStatus> methodCoverage = new LinkedHashMap<>();
-    protected Map<String, SbflStatus> classCoverage = new LinkedHashMap<>();
+    protected Map<String, SbflStatus> lineCoverage;
+    protected Map<String, SbflStatus> methodCoverage;
+    protected Map<String, SbflStatus> classCoverage;
 
     public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;
         this.targetMethodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true, true);
+
+        lineCoverage = new TreeMap<>();
+        classCoverage = new TreeMap<>();
+        methodCoverage = new TreeMap<>();
     }
 
     public void processCoverage(IClassCoverage cc, boolean isTestPassed) throws IOException {
@@ -45,7 +50,7 @@ public class CoverageOfTarget implements Serializable {
         }
 
         //class coverage
-        putCoverageStatus(targetClassName, new SbflStatus(true, isTestPassed), Granularity.CLASS);
+        putCoverageStatus(targetClassName, getClassSbflStatus(cc, isTestPassed), Granularity.CLASS);
     }
 
     protected void putCoverageStatus(String element, SbflStatus status, Granularity granularity){
@@ -76,6 +81,21 @@ public class CoverageOfTarget implements Serializable {
         return new SbflStatus(isTestExecuted, isTestPassed);
     }
 
+    protected SbflStatus getClassSbflStatus(IClassCoverage cc, boolean isTestPassed){
+        int classBegin = cc.getFirstLine();
+        int classEnd = cc.getLastLine();
+        boolean isTestExecuted = false;
+        for(int i = classBegin; i <= classEnd; i++){
+            int status = cc.getLine(i).getStatus();
+            if(status == ICounter.PARTLY_COVERED || status == ICounter.FULLY_COVERED) {
+                isTestExecuted = true;
+                break;
+            }
+        }
+        return new SbflStatus(isTestExecuted, isTestPassed);
+    }
+
+
     public Map<String, SbflStatus> getCoverage(Granularity granularity){
         switch (granularity){
             case LINE:
@@ -92,59 +112,74 @@ public class CoverageOfTarget implements Serializable {
         return targetClassName;
     }
 
-    public void printCoverage(Granularity granularity) {
-        Map<String, SbflStatus> cov = null;
+    public void printCoverage(PrintStream out, Granularity granularity) {
         switch (granularity) {
-            case LINE:
+            case CLASS:
+                printClassCoverage(out);
                 break;
             case METHOD:
-                printMethodCoverage();
+                printMethodCoverage(out);
                 break;
-            case CLASS:
+            case LINE:
+                printLineCoverage(out);
                 break;
         }
-
-//        if(granularity != Granularity.CLASS) {
-//
-//            System.out.println("EP  EF  NP  NF");
-//            System.out.println("--------------------------------------");
-//        }
-//        List<String> keys = getSortedKeys(cov.keySet(), granularity);
-//        for(String key : keys){
-//            System.out.println(key + ": " + cov.get(key));
-//        }
-//        if(granularity != Granularity.CLASS) {
-//            System.out.println("--------------------------------------");
-//            System.out.println();
-//        }
     }
 
-    void printClassCoverage(){
+    private void printClassCoverage(PrintStream out){
+        classCoverage.forEach((name, s) -> {
+            out.println("|  " + StringUtils.leftPad(name, 100) +
+                    " | " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(s.nf), 4) + " |");
+        });
     }
 
-    void printMethodCoverage(){
+    private void printMethodCoverage(PrintStream out){
         int nameLength = maxLengthOfName(methodCoverage, true);
-        System.out.println("[TARGET: " + targetClassName + "]");
+        out.println("[TARGET: " + targetClassName + "]");
         String header = "| " + StringUtils.repeat(' ', nameLength - "METHOD NAME".length()) + " METHOD NAME " +
-                        "|" + "  EP  |  EF  |  NP  |  NF  |";
+                        "|  EP  |  EF  |  NP  |  NF  |";
         String partition = StringUtils.repeat('=', header.length());
 
-        System.out.println(partition);
-        System.out.println(header);
-        System.out.println(partition);
+        out.println(partition);
+        out.println(header);
+        out.println(partition);
         methodCoverage.forEach((name, s) -> {
-                    System.out.println("|  " + StringUtils.leftPad(name.split("#")[1], nameLength) +
+                    out.println("|  " + StringUtils.leftPad(name.split("#")[1], nameLength) +
                                       " | " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
                                       " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
                                       " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
                                       " | " + StringUtils.leftPad(String.valueOf(s.nf), 4) + " |");
                 });
-        System.out.println(partition);
-        System.out.println();
+        out.println(partition);
+        out.println();
     }
 
-    void printLineCoverage(){
+    private void printLineCoverage(PrintStream out){
+        out.println("[TARGET: " + targetClassName + "]");
+        String header = "| LINE ||  EP  |  EF  |  NP  |  NF  |";
+        String partition = StringUtils.repeat('=', header.length());
 
+        out.println(partition);
+        out.println(header);
+        out.println(partition);
+
+        List<String> keys = new ArrayList<>(lineCoverage.keySet());
+        keys.sort(Comparator.comparingInt(Integer::parseInt));
+        for(String line : keys){
+            SbflStatus s = lineCoverage.get(line);
+
+            out.println( String.format("| %4d |", Integer.parseInt(line))+
+                    "| " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(s.nf), 4) + " |");
+        }
+
+        out.println(partition);
+        out.println();
     }
 
     void combineCoverages(CoverageOfTarget cov){

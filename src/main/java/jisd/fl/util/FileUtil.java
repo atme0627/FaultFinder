@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FileUtil {
     public static void initDirectory(String dirPath){
@@ -12,7 +13,7 @@ public class FileUtil {
             deleteDirectory(parentDir);
         }
         try {
-            Files.createDirectory(Path.of(dirPath));
+            Files.createDirectories(Path.of(dirPath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -24,7 +25,7 @@ public class FileUtil {
             return;
         }
         try {
-            Files.createDirectory(Path.of(dirPath));
+            Files.createDirectories(Path.of(dirPath));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -45,4 +46,21 @@ public class FileUtil {
         parentDir.delete();
     }
 
+    public static void createFile(String dir, String fileName){
+        Path p = Paths.get(dir, fileName);
+        if(Files.exists(p)){
+            return;
+        }
+
+        try {
+            Files.createFile(p);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean isExist(String dir, String fileName){
+        Path p = Paths.get(dir, fileName);
+        return  Files.exists(p);
+    }
 }

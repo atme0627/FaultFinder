@@ -3,13 +3,14 @@ package jisd.fl.coverage;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 class CoverageAnalyzerTest {
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
     CoverageAnalyzer ca = new CoverageAnalyzer();
-
-    CoverageAnalyzerTest() throws IOException {
-    }
 
     @Test
     void analyzeTestCLASS() throws Exception {

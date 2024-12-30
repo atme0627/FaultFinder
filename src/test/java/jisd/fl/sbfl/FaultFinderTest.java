@@ -47,7 +47,7 @@ class FaultFinderTest {
 
     @Test
     void removeTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAllWithAPI(testClassName);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.remove(1);
     }

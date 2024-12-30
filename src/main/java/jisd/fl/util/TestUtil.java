@@ -6,6 +6,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 public  class TestUtil {
     private static final String junitConsoleLauncherPath = PropertyLoader.getProperty("junitConsoleLauncherPath");
