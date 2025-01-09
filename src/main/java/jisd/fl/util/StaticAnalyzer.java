@@ -6,6 +6,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import jisd.info.ClassInfo;
@@ -276,6 +277,8 @@ public class StaticAnalyzer {
         try {
             MethodDeclaration md = JavaParserUtil.parseMethod(targetMethod);
             bs = md.getBody().get();
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException(e);
         }
         catch (NoSuchFileException e){
             try {
@@ -287,6 +290,44 @@ public class StaticAnalyzer {
             }
         }
         return bs;
+    }
+
+    public static Set<Integer> canSetLineOfClass(String targetClass, String variable){
+        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+        Set<String> methods;
+        Set<Integer> canSet = new HashSet<>();
+        try {
+            methods = getMethodNames(targetClass, false, false, true, true);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+
+        for(String method: methods){
+            canSet.addAll(canSetLineOfMethod(method, variable));
+        }
+
+        return canSet;
+    }
+
+
+    public static Set<Integer> canSetLineOfMethod(String targetMethod, String variable){
+        Set<Integer> canSet = new HashSet<>();
+        BlockStmt bs = bodyOfMethod(targetMethod);
+
+        class SimpleNameVisitor extends VoidVisitorAdapter<String> {
+            @Override
+            public void visit(SimpleName n, String arg) {
+                if(n.getIdentifier().equals(variable)){
+                    canSet.add(n.getBegin().get().line);
+                    canSet.add(n.getBegin().get().line - 1);
+                    canSet.add(n.getBegin().get().line + 1);
+                }
+                super.visit(n, arg);
+            }
+        }
+
+        bs.accept(new SimpleNameVisitor(), "");
+        return canSet;
     }
 }
 

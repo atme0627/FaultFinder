@@ -15,12 +15,16 @@ class TestLauncherTest {
 
     @Test
     void jisdtest1(){
-        String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
+        String testMethodName = "org.apache.commons.math3.fitting.PolynomialFitterTest#testLargeSample";
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
+        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
 
         Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
-        dbg.setSrcDir(testSrcDir);
-        dbg.setMain("java.jisd.fl.util.TestLauncher");
-        dbg.run(1000);
+        dbg.setSrcDir(testSrcDir, targetSrcDir);
+
+        dbg.setMain("org.apache.commons.math3.linear.BlockRealMatrix");
+        dbg.stopAt(261);
+        dbg.run(5000);
+        dbg.locals();
     }
 }

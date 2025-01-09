@@ -13,21 +13,21 @@ import java.nio.file.Paths;
 
 class ProbeExTest {
     String project = "Math";
-    int bugId = 10;
+    int bugId = 16;
 
-    String testClassName = "org.apache.commons.math3.analysis.differentiation.DerivativeStructureTest";
-    String shortTestMethodName = "testAtan2SpecialCases";
+    String testClassName = "org.apache.commons.math3.util.FastMathTest";
+    String shortTestMethodName = "testMath905LargeNegative";
 
     String testMethodName = testClassName + "#" + shortTestMethodName + "()";
 
-    String variableName = "data";
+    String variableName = "maxErr";
     boolean isPrimitive = true;
-    boolean isField = true;
-    boolean isArray = true;
-    int arrayNth = 0;
-    String actual = "NaN";
+    boolean isField = false;
+    boolean isArray = false;
+    int arrayNth = -1;
+    String actual = "Infinity";
 
-    String locate = "org.apache.commons.math3.analysis.differentiation.DerivativeStructure";
+    String locate = "org.apache.commons.math3.util.FastMathTest#testMath905LargeNegative()";
 
 
     String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";

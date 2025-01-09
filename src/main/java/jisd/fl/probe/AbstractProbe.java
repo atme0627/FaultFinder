@@ -3,6 +3,7 @@ package jisd.fl.probe;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.VMDisconnectedException;
+import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.debug.Location;
 import jisd.debug.Point;
@@ -65,7 +66,8 @@ public abstract class AbstractProbe {
 
         ProbeInfoCollection watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
         List<ProbeInfo> watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
-        printWatchedValues(watchedValueCollection, null, assignLines);
+        //printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true) , assignLines);
+        //printWatchedValues(watchedValueCollection, null, assignLines);
         ProbeResult result = searchProbeLine(watchedValues, assignLines, variableInfo.getActualValue());
 
         int count = 0;
@@ -89,8 +91,9 @@ public abstract class AbstractProbe {
 
     protected ProbeInfoCollection extractInfoFromDebugger(VariableInfo variableInfo, int sleepTime){
         disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
-        List<Integer> canSetLines = getCanSetLine(variableInfo);
+        List<Integer> canSetLines = getCanSetLineByJP(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
+        disableStdOut("[canSetLines] " + Arrays.toString(canSetLines.toArray()));
         List<Optional<Point>> watchPoints = new ArrayList<>();
         dbg = createDebugger(500);
         //set watchPoint
@@ -103,7 +106,8 @@ public abstract class AbstractProbe {
         try {
 
             dbg.run(sleepTime);
-        } catch (VMDisconnectedException ignored) {
+        } catch (VMDisconnectedException e) {
+            System.err.println(e);
         }
         dbg.exit();
 
@@ -113,17 +117,17 @@ public abstract class AbstractProbe {
         return watchedValues;
     }
 
+    //JisdのcanSetは同じ名前のローカル変数が出てきたときに、前のやつが上書きされる。
     private List<Integer> getCanSetLine(VariableInfo variableInfo) {
-        List<Integer> canSetLines = new ArrayList<>();
+        Set<Integer> canSetSet = new HashSet<>();
+        List<Integer> canSetLines;
         ClassInfo ci = createClassInfo(variableInfo.getLocateClass());
 
         if(variableInfo.isField()) {
             Map<String, ArrayList<Integer>> canSet = ci.field(variableInfo.getVariableName()).canSet();
-            Set<Integer> canSetSet = new HashSet<>();
             for (List<Integer> lineWithVar : canSet.values()) {
                 canSetSet.addAll(lineWithVar);
             }
-            canSetLines.addAll(canSetSet);
         }
         else {
             //ci.methodは引数に内部で定義されたクラスのインスタンスを含む場合、フルパスが必要
@@ -133,13 +137,35 @@ public abstract class AbstractProbe {
             //throws で囲まれた行はブレークポイントが置けない。
             String fullMethodName = StaticAnalyzer.fullNameOfMethod(variableInfo.getLocateMethod(), ci);
             MethodInfo mi = ci.method(fullMethodName);
+//            for(String localName : mi.localNames()) {
+//                LocalInfo li = mi.local(localName);
+//                canSetSet.addAll(li.canSet());
+//            }
             LocalInfo li = mi.local(variableInfo.getVariableName());
-            canSetLines = li.canSet();
+            for(int canSet : li.canSet()){
+                canSetSet.add(canSet - 1);
+                canSetSet.add(canSet);
+                canSetSet.add(canSet + 1);
+            }
+        }
+        canSetLines = new ArrayList<>(canSetSet);
+        canSetLines.sort(Comparator.naturalOrder());
+        return canSetLines;
+    }
+
+    private List<Integer> getCanSetLineByJP(VariableInfo variableInfo) {
+        List<Integer> canSetLines;
+        if(variableInfo.isField()) {
+            canSetLines =  new ArrayList<>(StaticAnalyzer.canSetLineOfClass(variableInfo.getLocateClass(), variableInfo.getVariableName()));
+        }
+        else {
+            canSetLines =  new ArrayList<>(StaticAnalyzer.canSetLineOfMethod(variableInfo.getLocateMethod(true), variableInfo.getVariableName()));
         }
 
         canSetLines.sort(Comparator.naturalOrder());
         return canSetLines;
     }
+
 
     private ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignedLine, String actual){
         System.out.println("    >> Probe Info: Searching probe line.");
@@ -174,7 +200,8 @@ public abstract class AbstractProbe {
             for(int i = 1; i < watchedValues.size(); i++){
                 ProbeInfo pi = watchedValues.get(i);
                 //piがafterAssignedLineだった場合
-                if(afterAssignedLines.contains(pi.loc.getLineNumber()) && actual.equals(pi.value)){
+                //if(afterAssignedLines.contains(pi.loc.getLineNumber()) && actual.equals(pi.value)){
+                if(actual.equals(pi.value)){
                     //その直前のProbeInfoが正解の行
                     pi = watchedValues.get(i - 1);
                     isFound = true;
@@ -300,12 +327,10 @@ public abstract class AbstractProbe {
             public void write(int b) { /* noop */ }
         });
         System.setOut(nop);
-        System.setErr(nop);
     }
 
     protected void enableStdOut(){
         System.setOut(stdOut);
-        System.setErr(stdErr);
     }
 
     protected void printWatchedValues(ProbeInfoCollection watchedValues, String variableName, List<Integer> assignLine){
@@ -336,7 +361,7 @@ public abstract class AbstractProbe {
         }
     }
 
-    protected Debugger createDebugger(int sleepTime){
+    protected Debugger createDebugger(int sleepTime) {
         try {
             Thread.sleep(sleepTime);
         } catch (InterruptedException e) {
@@ -344,6 +369,7 @@ public abstract class AbstractProbe {
         }
         return TestUtil.testDebuggerFactory(assertInfo.getTestMethodName());
     }
+
 
     //動的解析
     //メソッド実行時の実際に呼び出されているメソット群を返す
@@ -372,10 +398,15 @@ public abstract class AbstractProbe {
         for(int l : methodCallingLines){
             dbg.stopAt(l);
         }
-
-        dbg.stopAt(860);
-        dbg.step();
-        dbg.run(2000);
+        try {
+            dbg.run(2000);
+        }
+        //メモリエラーなどでVMが止まる場合、calleeは取れない
+        catch (VMDisconnectedException e) {
+            System.err.println(e);
+            enableStdOut();
+            return calleeMethods;
+        }
         //callerMethodを取得
         st = getStackTrace(dbg);
         //>> Debugger Info: The target VM thread is not suspended now.の時　からのcalleeMethodsを返す

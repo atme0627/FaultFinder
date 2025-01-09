@@ -1,5 +1,6 @@
 package jisd.fl.util;
 
+import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 
 import javax.tools.JavaCompiler;
@@ -87,10 +88,15 @@ public  class TestUtil {
         final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
         final String testBinDir = PropertyLoader.getProperty("testBinDir");
         final String junitClassPath = PropertyLoader.getJunitClassPaths();
+        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
 
         Debugger dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethodName,
                 "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
 
+
+        dbg.setSrcDir(targetSrcDir, testSrcDir);
+        DebugResult.setDefaultMaxRecordNoOfValue(1000);
         return dbg;
     }
 }

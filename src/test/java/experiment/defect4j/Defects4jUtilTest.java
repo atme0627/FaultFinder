@@ -18,7 +18,7 @@ class Defects4jUtilTest {
 
     @Test
     void changeTargetVersionTest() {
-        Defects4jUtil.changeTargetVersion("Math", 1);
+        Defects4jUtil.changeTargetVersion("Math", 15);
         System.out.println(PropertyLoader.getProperty("targetSrcDir"));
         System.out.println(PropertyLoader.getProperty("junitConsoleLauncherPath"));
     }
