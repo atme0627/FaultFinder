@@ -11,12 +11,12 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 class FaultFinderTest {
-    CoverageAnalyzer ca = new CoverageAnalyzer();
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
     String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
     String variableType = "org.apache.commons.math.optimization.RealPointValuePair";
     String fieldName = "point";
     String actual = "0.0";
+    String rootDir = "src/main/resources/coverages";
 
     VariableInfo field = new VariableInfo(
             variableType,
@@ -36,10 +36,17 @@ class FaultFinderTest {
     FaultFinderTest() throws IOException {
     }
 
+    private String outputDir(String project, int bugId){
+        return rootDir + "/" + project + "/" + project + bugId + "_buggy/" + testClassName;
+    }
 
     @Test
     void printFLResultsTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        String project = "Math";
+        int bugId = 87;
+
+        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
+        CoverageCollection cov = ca.analyzeAll(testClassName, true);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         SbflResult result = ff.getFLResults();
         result.printFLResults();
@@ -47,28 +54,55 @@ class FaultFinderTest {
 
     @Test
     void removeTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        String project = "Math";
+        int bugId = 87;
+
+        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
+        CoverageCollection cov = ca.analyzeAll(testClassName, true);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.remove(1);
     }
 
     @Test
     void suspTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        String project = "Math";
+        int bugId = 87;
+
+        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
+        CoverageCollection cov = ca.analyzeAll(testClassName, true);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.susp(2);
     }
 
     @Test
     void probeTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        String project = "Math";
+        int bugId = 87;
+
+        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
+        CoverageCollection cov = ca.analyzeAll(testClassName, true);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probe(fai, 3000);
     }
 
     @Test
+    void probeExTest() throws Exception {
+        String project = "Math";
+        int bugId = 87;
+
+        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
+        CoverageCollection cov = ca.analyzeAll(testClassName, true);
+        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
+        ff.probeEx(fai, 3000);
+    }
+
+    @Test
     void debugTest() throws Exception {
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        String project = "Math";
+        int bugId = 87;
+
+        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
+        CoverageCollection cov = ca.analyzeAll(testClassName, true);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probe(fai, 3000);
         ff.remove(1);

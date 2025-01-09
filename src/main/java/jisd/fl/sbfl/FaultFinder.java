@@ -3,6 +3,8 @@ package jisd.fl.sbfl;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.Probe;
+import jisd.fl.probe.ProbeEx;
+import jisd.fl.probe.ProbeExResult;
 import jisd.fl.probe.ProbeResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
@@ -12,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.ToDoubleBiFunction;
 
 
 public class FaultFinder {
@@ -25,6 +28,13 @@ public class FaultFinder {
     private double probeC1 = 0.2;
     private double probeC2 = 0.1;
     private double probeC3 = 0.1;
+
+    //probeExの疑惑値計算に使用する変数
+    private double probeExC = 2.0;
+    private double probeExLambda = 0.8;
+
+    private ToDoubleBiFunction<Integer, Integer> probeExfunction
+            = (depth, countInLine) -> probeExC * (Math.pow(probeExLambda, depth - 1));
 
     final Granularity granularity;
 
@@ -151,7 +161,27 @@ public class FaultFinder {
         sbflResult.printFLResults();
     }
 
+    public void probeEx(FailedAssertInfo fai, int sleepTime){
+        VariableInfo variableInfo = fai.getVariableInfo();
+        IblResult iblResult = new IblResult();
+        System.out.println("[  PROBE EX  ] " + fai.getTestMethodName() + ": " + variableInfo);
+        ProbeEx prbEx = new ProbeEx(fai);
+        ProbeExResult probeExResult = null;
 
+        probeExResult = prbEx.run(sleepTime);
+
+        //set suspicious score
+        double preScore;
+        for(String markingMethod : probeExResult.markingMethods()){
+            preScore = sbflResult.getSuspicious(markingMethod);
+            sbflResult.setSuspicious(markingMethod, preScore * probeExResult.probeExSuspWeight(markingMethod, probeExfunction));
+            iblResult.addElement(markingMethod, preScore, sbflResult.getSuspicious(markingMethod));
+        }
+
+        iblResult.print();
+        sbflResult.sort();
+        sbflResult.printFLResults();
+    }
 
     private boolean validCheck(int rank){
         if(granularity != Granularity.METHOD){

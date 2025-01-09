@@ -24,8 +24,11 @@ import java.util.*;
 //値のStringを比較して一致かどうかを判定
 //理想的には、"==" と同じ方法で判定したいが、型の問題で難しそう
 public class ProbeEx extends AbstractProbe {
+    Set<Pair<String, String>> probedValue;
+
     public ProbeEx(FailedAssertInfo assertInfo) {
         super(assertInfo);
+        probedValue = new HashSet<>();
     }
 
     public ProbeExResult run(int sleepTime) {
@@ -36,9 +39,23 @@ public class ProbeEx extends AbstractProbe {
         List<VariableInfo> nextTargets = new ArrayList<>();
         probingTargets.add(firstTarget);
         boolean isArgument = false;
+
+        //初めのprobe対象変数がローカル変数の場合、変数が所属するmethodをdepth1でマーキングメソッドに含める。
+        if(!firstTarget.isField()){
+            System.out.println("    >> ============================================================================================================");
+            System.out.println("    >> Probe Ex     DEPTH: 1");
+            System.out.println("    >> [MARKING METHODS]");
+            System.out.println("    >> " + firstTarget.getLocateMethod(true));
+
+            result.addElement(firstTarget.getLocateMethod(true), 1, 1);
+        }
+
         while(!probingTargets.isEmpty()) {
             if(!isArgument) depth += 1;
             for (VariableInfo target : probingTargets) {
+                if(isProbed(target.getVariableName(), target.getActualValue())) continue;
+
+                addProbedValue(target.getVariableName(), target.getActualValue());
                 printProbeExInfoHeader(target, depth);
 
                 ProbeResult pr = probing(sleepTime, target);
@@ -86,6 +103,9 @@ public class ProbeEx extends AbstractProbe {
             pr.setCallerMethod(caller);
 
             String argVariable = getArgumentVariable(pr);
+            //argVariableが純粋な変数でない（関数呼び出しなどを行っている）場合、probeは行わない
+            if(!argVariable.matches("[A-Za-z0-9]+")) return vis;
+
             Pair<Boolean, String> isFieldVarInfo =  isFieldVariable(argVariable, pr.getCallerMethod().getRight());
             boolean isField = isFieldVarInfo.getLeft();
             String locateClass = (isField) ? isFieldVarInfo.getRight() : pr.getCallerMethod().getRight();
@@ -147,6 +167,17 @@ public class ProbeEx extends AbstractProbe {
             }
         }
         return vis;
+    }
+
+    private boolean isProbed(String variable, String actual){
+        for(Pair<String, String> e : probedValue){
+            if(e.getLeft().equals(variable) && e.getRight().equals(actual)) return true;
+        }
+        return false;
+    }
+
+    private void addProbedValue(String variable, String actual){
+        probedValue.add(Pair.of(variable, actual));
     }
 
     //fieldだった場合、所属するクラスを共に返す

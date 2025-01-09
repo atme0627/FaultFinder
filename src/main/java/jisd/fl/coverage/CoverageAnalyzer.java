@@ -15,7 +15,11 @@ public class CoverageAnalyzer {
     Set<String> failedTests;
 
     public CoverageAnalyzer(){
-        this("./.coverage_data", null);
+        this("./.coverage_data");
+    }
+
+    public CoverageAnalyzer(String outputDir){
+        this(outputDir, null);
     }
 
     public CoverageAnalyzer(String outputDir, Set<String> failedTests) {

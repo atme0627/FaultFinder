@@ -16,8 +16,12 @@ repositories {
 dependencies {
     implementation(fileTree(dir: 'locallib', include: ['jisd-0.2.5_bata.jar']))
     //defects4j
-    //runtimeOnly(files('/Users/ezaki/Desktop/tools/defects4j/tmp/math87_buggy/target/test-classes'))
-    //runtimeOnly(files('/Users/ezaki/Desktop/tools/defects4j/tmp/math87_buggy/target/classes'))
+    int i = 9
+    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/main/java'))
+    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test/java'))
+    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/classes'))
+    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/test-classes'))
+
 
     //junit4
     // https://mvnrepository.com/artifact/junit/junit

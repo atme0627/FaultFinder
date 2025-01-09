@@ -237,6 +237,7 @@ public class StaticAnalyzer {
 
 
     //フルパスの引数を含んだ状態で保持されているClassInfoに対応するためのメソッド
+    //methodNames()では、引数の型につく型パラメータは省略される。
     public static String fullNameOfMethod(String shortMethodName, ClassInfo ci){
         List<String> fullNameMethods = ci.methodNames();
         for(String fullName : fullNameMethods){

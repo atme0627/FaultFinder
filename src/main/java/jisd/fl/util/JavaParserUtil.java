@@ -21,7 +21,19 @@ public class JavaParserUtil {
         try {
             unit = StaticJavaParser.parse(p);
         } catch (NoSuchFileException e) {
-            throw new NoSuchFileException(className);
+            //mainでダメならtestを試す
+            if(isTest)  throw new NoSuchFileException(className);
+
+            p = Paths.get(getFullPath(className, true));
+            try {
+                unit = StaticJavaParser.parse(p);
+            } catch (NoSuchFileException ex) {
+                throw new NoSuchFileException(className);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+
+
         } catch (IOException e){
             throw new RuntimeException(e);
         }

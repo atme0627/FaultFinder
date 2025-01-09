@@ -7,6 +7,9 @@ import java.util.*;
 public class MethodCollection {
     List<Pair<Integer, String>> mc = new ArrayList<>();
 
+    public boolean isEmpty(){
+        return mc.isEmpty();
+    }
     public MethodCollection(){};
 
     public void addElement(Pair<Integer, String> e){

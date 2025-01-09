@@ -53,12 +53,28 @@ public class SbflResult {
         System.out.println(partition);
         System.out.println(header);
         System.out.println(partition);
+        int previousRank = 1;
         for(int i = 0; i < min(top, getSize()); i++){
             Pair<String, Double> element = result.get(i);
-            System.out.println("| " + String.format("%3d ", i+1) + " | " +
+            //同率を考慮する
+            int rank;
+            if(i == 0) {
+                rank = i+1;
+            }
+            else {
+                if(String.format("%.4f", element.getRight()).equals(String.format("%.4f", result.get(i-1).getRight()))){
+                    rank = previousRank;
+                }
+                else {
+                    rank = i+1;
+                }
+            }
+
+            System.out.println("| " + String.format("%3d ", rank) + " | " +
                     StringUtils.leftPad(element.getLeft().split("#")[0], classLength) + " | " +
                     StringUtils.leftPad(element.getLeft().split("#")[1], methodLength) + " | " +
                     String.format("  %.4f  ", element.getRight()) + " |");
+            previousRank = rank;
         }
         System.out.println(partition);
         System.out.println();

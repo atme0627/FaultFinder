@@ -11,7 +11,6 @@ import java.io.PrintWriter;
 import static java.lang.System.exit;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
-//junit platform launcherを用いてテストケースを実行
 public class TestLauncher {
     String testClassName;
     String testMethodName;
@@ -31,7 +30,7 @@ public class TestLauncher {
     }
 
     public boolean runTest() {
-        TestUtil.compileTestClass(testClassName);
+        //TestUtil.compileTestClass(testClassName);
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(
                         selectMethod(testMethodName)
@@ -43,8 +42,8 @@ public class TestLauncher {
 
         System.out.println("EXEC: " + testMethodName);
         launcher.execute(request);
-        listener.getSummary().printFailuresTo(new PrintWriter(System.out));
-        listener.getSummary().printTo(new PrintWriter(System.out));
+        //listener.getSummary().printFailuresTo(new PrintWriter(System.out));
+        //listener.getSummary().printTo(new PrintWriter(System.out));
         boolean isTestPassed = listener.getSummary().getTotalFailureCount() == 0;
 
         System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));

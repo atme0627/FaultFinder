@@ -23,13 +23,14 @@ public class JisdInfoProcessor {
             Point p;
             if (op.isEmpty()) continue;
             p = op.get();
-            Optional<DebugResult> od = p.getResults(varName);
+            //Optional<DebugResult> od = p.getResults(varName);
             HashMap<String, DebugResult> drs = p.getResults();
-            if (od.isEmpty()) continue;
+            //if (od.isEmpty()) continue;
             watchedValues.addElements(getValuesFromDebugResult(variableInfo, drs));
         }
 
         if (watchedValues.isEmpty()) {
+
             throw new RuntimeException("Probe#runTest\n" +
                     "there is not target value in watch point.");
         }
@@ -119,6 +120,11 @@ public class JisdInfoProcessor {
         }
         //参照型の場合
         else {
+            //actualがnullの場合
+            if(variableInfo.getActualValue().equals("null")){
+                //System.err.println(vi.ch().get(0).getValue());
+                return new PrimitiveInfo(vi.getName(), vi.getStratum(), vi.getCreatedAt(), vi.getValue());
+            }
             ArrayList<ValueInfo> fieldElements = vi.ch();
             boolean isFound = false;
             String fieldName = variableInfo.getTargetField().getVariableName();
