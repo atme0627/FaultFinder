@@ -20,11 +20,18 @@ public class ProbeExResult implements Serializable {
         per.add(new Element(methodName, depth, countInLine));
     }
 
+    private boolean exists(String method, int depth){
+        for(Element e : per){
+            if(e.methodName.equals(method) && e.depth == depth) return true;
+        }
+        return false;
+    }
+
     public void addAll(List<String> methods, int depth){
         if(methods.isEmpty()) return;
         int countInLine = methods.size();
         for(String m : methods){
-            addElement(m, depth, countInLine);
+            if(!exists(m, depth)) addElement(m, depth, countInLine);
         }
     }
 

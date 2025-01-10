@@ -101,8 +101,13 @@ public class JisdInfoProcessor {
         if (vi instanceof PrimitiveInfo) return true;
 
         String law = vi.getValue();
-        String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
-        return primitiveWrapper.contains(valueType);
+        if(law.contains("instance")) {
+            String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
+            return primitiveWrapper.contains(valueType);
+        }
+
+        //primitive型でもfieldの場合はObjectInfo型になるっぽい
+        return true;
     }
 
     //参照型の配列には未対応
@@ -186,13 +191,17 @@ public class JisdInfoProcessor {
 
         //ex) vi.getValue() --> instance of java.lang.Integer(id=2827)
         String law = vi.getValue();
-        String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
-
-        //プリミティブ型のラッパークラスのとき
-        if(primitiveWrapper.contains(valueType)) {
-            return (PrimitiveInfo) vi.ch().get(0);
+        if(law.contains("instance")) {
+            String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
+            //プリミティブ型のラッパークラスのとき
+            if(primitiveWrapper.contains(valueType)) {
+                return (PrimitiveInfo) vi.ch().get(0);
+            }
         }
 
-        throw new RuntimeException(vi.getName() + " is not primitive.");
+        //primitive型でもfieldの場合はObjectInfo型になるっぽい
+        return new PrimitiveInfo(vi.getName(), vi.getStratum(), vi.getCreatedAt(), vi.getValue());
+
+        //throw new RuntimeException(vi.getName() + " is not primitive.");
     }
 }

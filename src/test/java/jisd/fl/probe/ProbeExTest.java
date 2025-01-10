@@ -13,21 +13,21 @@ import java.nio.file.Paths;
 
 class ProbeExTest {
     String project = "Math";
-    int bugId = 16;
+    int bugId = 23;
 
-    String testClassName = "org.apache.commons.math3.util.FastMathTest";
-    String shortTestMethodName = "testMath905LargeNegative";
+    String testClassName = "org.apache.commons.math3.optimization.univariate.BrentOptimizerTest";
+    String shortTestMethodName = "testKeepInitIfBest";
 
     String testMethodName = testClassName + "#" + shortTestMethodName + "()";
 
-    String variableName = "maxErr";
+    String variableName = "point";
     boolean isPrimitive = true;
-    boolean isField = false;
+    boolean isField = true;
     boolean isArray = false;
     int arrayNth = -1;
-    String actual = "Infinity";
+    String actual = "4.7123889482608";
 
-    String locate = "org.apache.commons.math3.util.FastMathTest#testMath905LargeNegative()";
+    String locate = "org.apache.commons.math3.optimization.univariate.UnivariatePointValuePair";
 
 
     String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";

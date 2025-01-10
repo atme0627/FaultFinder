@@ -53,12 +53,25 @@ public class ProbeEx extends AbstractProbe {
         while(!probingTargets.isEmpty()) {
             if(!isArgument) depth += 1;
             for (VariableInfo target : probingTargets) {
-                if(isProbed(target.getVariableName(), target.getActualValue())) continue;
+                if(isProbed(target.getVariableName(true, true), target.getActualValue())) continue;
 
-                addProbedValue(target.getVariableName(), target.getActualValue());
+                addProbedValue(target.getVariableName(true, true), target.getActualValue());
                 printProbeExInfoHeader(target, depth);
 
                 ProbeResult pr = probing(sleepTime, target);
+
+                if(pr.isArgument()){
+                    //感染した変数が引数のものだった場合
+                    Pair<Integer, String> caller = getCallerMethod(pr.getProbeLines(), pr.getProbeMethod().split("#")[0]);
+                    if(caller != null)  {
+                        int probeLine = caller.getLeft();
+                        Pair<Integer, Integer> probeLines = Pair.of(probeLine, probeLine);
+                        pr.setCallerMethod(caller);
+                        pr.setLines(probeLines);
+                        pr.setSrc(getProbeStatement(caller.getRight().split("#")[0], probeLines));
+                    }
+                }
+
                 List<VariableInfo> newTargets = searchNextProbeTargets(pr);
                 List<String> markingMethods = searchMarkingMethods(pr, assertInfo.getTestMethodName());
                 result.addAll(markingMethods, depth);
@@ -85,6 +98,8 @@ public class ProbeEx extends AbstractProbe {
             return markingMethods;
         }
 
+        //probe lineが所属するmethodをmarking methodに追加
+        markingMethods.add(pr.getProbeMethod());
         MethodCollection calledMethods = getCalleeMethods(testMethod, pr.getProbeMethod());
         Pair<Integer, Integer> lines = pr.getProbeLines();
         for(int i = lines.getLeft(); i <= lines.getRight(); i++){
@@ -98,10 +113,7 @@ public class ProbeEx extends AbstractProbe {
         List<VariableInfo> vis = new ArrayList<>();
         //感染した変数が引数のものだった場合
         if(pr.isArgument()){
-            Pair<Integer, String> caller = getCallerMethod(pr.getProbeLines(), pr.getProbeMethod().split("#")[0]);
-            if(caller == null) return vis;
-            pr.setCallerMethod(caller);
-
+            if(pr.getCallerMethod() == null) return vis;
             String argVariable = getArgumentVariable(pr);
             //argVariableが純粋な変数でない（関数呼び出しなどを行っている）場合、probeは行わない
             if(!argVariable.matches("[A-Za-z0-9]+")) return vis;

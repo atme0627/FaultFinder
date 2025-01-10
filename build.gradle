@@ -16,7 +16,7 @@ repositories {
 dependencies {
     implementation(fileTree(dir: 'locallib', include: ['jisd-0.2.5_bata.jar']))
     //defects4j
-    int i = 16
+    int i = 23
     implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/main/java'))
     implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test/java'))
     implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/classes'))

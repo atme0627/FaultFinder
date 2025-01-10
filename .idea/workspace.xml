@@ -4,17 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6757f081-dac4-4109-934d-3412514b1ba5" name="変更" comment="impl program for experiments">
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+    <list default="true" id="6757f081-dac4-4109-934d-3412514b1ba5" name="変更" comment="save after revise canSetLine">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fl_properties/fl_config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/fl_properties/fl_config.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/JisdInfoProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/JisdInfoProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeExResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeExResult.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/experiment/defect4j/Defects4jUtilTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/experiment/defect4j/Defects4jUtilTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeExTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeExTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/util/TestLauncherTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/util/TestLauncherTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +92,7 @@
     "Gradle.MyFaultFinder [:jisd.fl.util.TestLauncher.main()].executor": "Run",
     "Gradle.MyFaultFinder [dependencies].executor": "Run",
     "Gradle.ProbeExTest.executor": "Run",
-    "Gradle.ProbeExTest.runTest.executor": "Run",
+    "Gradle.ProbeExTest.runTest.executor": "Debug",
     "Gradle.ProbeTest.runTest.executor": "Run",
     "Gradle.StaticAnalyzerTest.getMethodNameTest.executor": "Run",
     "Gradle.StaticAnalyzerTest.getMethodNameTest2.executor": "Run",
@@ -138,30 +137,6 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="CoverageGeneratorTest.getTestNums" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;experiment.coverage.CoverageGeneratorTest.getTestNums&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>true</RunAsTest>
-      <method v="2" />
-    </configuration>
     <configuration name="Defects4jUtilTest.changeTargetVersionTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -184,6 +159,28 @@
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
       <DebugAllEnabled>false</DebugAllEnabled>
       <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="MyFaultFinder [dependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="dependencies" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
     <configuration name="ProbeExTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
@@ -261,10 +258,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.ProbeExTest" />
-        <item itemvalue="Gradle.Defects4jUtilTest.changeTargetVersionTest" />
         <item itemvalue="Gradle.ProbeExTest.runTest" />
+        <item itemvalue="Gradle.MyFaultFinder [dependencies]" />
+        <item itemvalue="Gradle.Defects4jUtilTest.changeTargetVersionTest" />
         <item itemvalue="Gradle.TestLauncherTest.jisdtest1" />
-        <item itemvalue="Gradle.CoverageGeneratorTest.getTestNums" />
       </list>
     </recent_temporary>
   </component>
@@ -317,7 +314,15 @@
       <option name="project" value="LOCAL" />
       <updated>1735546080914</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="save after revise canSetLine">
+      <option name="closed" value="true" />
+      <created>1736415610930</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1736415610930</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -337,7 +342,8 @@
     <MESSAGE value="modify fault finder print format." />
     <MESSAGE value="delete property for sample" />
     <MESSAGE value="impl program for experiments" />
-    <option name="LAST_COMMIT_MESSAGE" value="impl program for experiments" />
+    <MESSAGE value="save after revise canSetLine" />
+    <option name="LAST_COMMIT_MESSAGE" value="save after revise canSetLine" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -351,16 +357,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/experiment/defect4j/Defects4jUtil.java</url>
           <line>131</line>
           <option name="timeStamp" value="23" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java</url>
-          <line>126</line>
-          <option name="timeStamp" value="33" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java</url>
-          <line>288</line>
-          <option name="timeStamp" value="44" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

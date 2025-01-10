@@ -3,7 +3,6 @@ package jisd.fl.probe;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.VMDisconnectedException;
-import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.debug.Location;
 import jisd.debug.Point;
@@ -54,21 +53,11 @@ public abstract class AbstractProbe {
     //一回のprobeを行う
     //条件を満たす行の情報を返す
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
-
-        List<Integer> assignLines = null;
-        try {
-            assignLines = StaticAnalyzer.getAssignLine(
-                    variableInfo.getLocateClass(),
-                    variableInfo.getVariableName(true, false));
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
         ProbeInfoCollection watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
         List<ProbeInfo> watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
-        //printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true) , assignLines);
-        //printWatchedValues(watchedValueCollection, null, assignLines);
-        ProbeResult result = searchProbeLine(watchedValues, assignLines, variableInfo.getActualValue());
+        printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true));
+        //printWatchedValues(watchedValueCollection, null);
+        ProbeResult result = searchProbeLine(watchedValues, variableInfo.getActualValue());
 
         int count = 0;
         //debugが値を取れなかった場合、やり直す
@@ -80,7 +69,7 @@ public abstract class AbstractProbe {
             sleepTime += 1000;
             watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
             watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
-            result = searchProbeLine(watchedValues, assignLines, variableInfo.getActualValue());
+            result = searchProbeLine(watchedValues, variableInfo.getActualValue());
             count += 1;
         }
 
@@ -167,149 +156,137 @@ public abstract class AbstractProbe {
     }
 
 
-    private ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, List<Integer> assignedLine, String actual){
+    private ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, String actual){
         System.out.println("    >> Probe Info: Searching probe line.");
-        ProbeResult result = new ProbeResult();
-
-        //assignLineが実行された直後のProbeInfoの行を集める
-        //watchedValuesの最後の要素がassignLineになることはない(はず)
-        List<Integer> afterAssignedLines = new ArrayList<>();
-        for(int i = 0; i < watchedValues.size() - 1; i++){
-            ProbeInfo pi = watchedValues.get(i);
-            for(int l : assignedLine){
-                //assignLine lが実行された場合
-                if(pi.loc.getLineNumber() == l) {
-                    //直後のProbeInfoの行を追加
-                    afterAssignedLines.add(watchedValues.get(i + 1).loc.getLineNumber());
-                    break;
-                }
-            }
-        }
-
-        //新しいものから探して最後にexecutedAssignedLines内の値に一致したものがobjective
-        // 変更: 古いものから調べて初めにexecutedAssignedLines内の値に一致したものがobjective
-        //最新の値がactualと一致しない場合もある。
-        //初めてactualと一致するまで遡る。
+        ProbeInfo pi;
         boolean isFound = false;
+
         int probeLine = 0;
         String locationClass = null;
-        if(!afterAssignedLines.isEmpty()) {
-            //watchedValues.sort(Comparator.reverseOrder());
-            //watchedValuesの最後の要素がassignLineになることはない(はず)
-            boolean matched = false;
-            for(int i = 1; i < watchedValues.size(); i++){
-                ProbeInfo pi = watchedValues.get(i);
-                //piがafterAssignedLineだった場合
-                //if(afterAssignedLines.contains(pi.loc.getLineNumber()) && actual.equals(pi.value)){
-                if(actual.equals(pi.value)){
-                    //その直前のProbeInfoが正解の行
+
+        //観測した値の中で、一番初めの時点でactualの値を取っているパターン
+        //1. 初期化の時点でその値が代入されている。
+        //2. その変数が引数由来で、かつメソッド内で上書きされていない。
+        //3. throw内などブレークポイントが置けない行で、代入が行われている。 --> 未想定
+        pi = watchedValues.get(0);
+        if (actual.equals(pi.value)) {
+            String variableName;
+            //暫定的にprobe lineを最初に値が観測された地点にする。
+            variableName = watchedValues.get(0).variableName;
+            probeLine = watchedValues.get(0).loc.getLineNumber();
+            locationClass = watchedValues.get(0).loc.getClassName();
+            return resultIfNotAssigned(probeLine, locationClass, variableName);
+        }
+
+        //観測した値の中で、途中からでactualの値を取るようになったパターン
+        //actualを取るようになった行が、methodの始まりの行の場合、
+        //一番初めの時点でactualの値を取っているパターンと同じ扱い。
+        //そうでない場合、値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
+        for (int i = 1; i < watchedValues.size(); i++) {
+            pi = watchedValues.get(i);
+            if (actual.equals(pi.value)) {
+                //methodの始まりの行か判定
+                boolean isBeginLine;
+                probeLine = pi.loc.getLineNumber();
+                locationClass = pi.loc.getClassName();
+                String probeMethod;
+                try {
+                    probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass, probeLine);
+                } catch (NoSuchFileException e) {
+                    throw new RuntimeException(e);
+                }
+                BlockStmt bs = StaticAnalyzer.bodyOfMethod(probeMethod);
+
+                isBeginLine = bs.getBegin().get().line == probeLine;
+                if(isBeginLine){
+                    String variableName = watchedValues.get(0).variableName;
+                    return resultIfNotAssigned(probeLine, locationClass, variableName);
+                }
+                else {
                     pi = watchedValues.get(i - 1);
-                    isFound = true;
                     probeLine = pi.loc.getLineNumber();
                     locationClass = pi.loc.getClassName();
-                    break;
+                    return resultIfAssigned(probeLine, locationClass);
                 }
-
-//                //probe対象変数がactualの値を取らなくなった場合、（時間的に）直後のpiが正解の行
-//                if(pi.value.equals(actual)) {
-//                    matched = true;
-//                }
-//                else {
-////                    if(i == 0) {
-////                    //TODO: 値が全然違う時がある。観測値が実行毎に変わる場合あり?
-////                        enableStdOut();
-////                        System.out.println("    >> Probe Info: failed to watch value. ");
-////                        return null;
-////                    }
-//                    if(matched) {
-//                        pi = watchedValues.get(i - 1);
-//                        isFound = true;
-//                        probeLine = pi.loc.getLineNumber();
-//                        locationClass = pi.loc.getClassName();
-//                        break;
-//                    }
-//                    else {
-//                        continue;
-//                    }
-//                }
             }
         }
 
-        if(!isFound) {
-            //ここに来た時点で、値はこのメソッド内で変更されていない
-            //初期化時の値か渡された値がそもそも間違い
+        throw new RuntimeException("There is no value which same to actual.");
+    }
 
-            //-->> ブレークポイントが置けない行(ex. throw内)で代入が行われている場合があるため、そうでもない
-
-            //前の行にするのは、宣言されている行がそこにあるから
-            // ex) 10: int a = 1;
-            //     11: b = a + 1; <-- watchedLineにある最後の行
-
-            probeLine = watchedValues.get(0).loc.getLineNumber() - 1;
-            locationClass = watchedValues.get(0).loc.getClassName();
-        }
-
-        //実行しているメソッドを取得
-        String probeMethod = null;
+    private ProbeResult resultIfAssigned(int probeLine, String locationClass){
+        //観測した値の中で、途中からでactualの値を取るようになったパターン
+        //actualを取るようになった行が、methodの始まりの行の場合、
+        //一番初めの時点でactualの値を取っているパターンと同じ扱い。
+        //そうでない場合、値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
+        ProbeResult result = new ProbeResult();
+        String probeMethod;
         Pair<Integer, Integer> probeLines = null;
+        Map<Integer, Pair<Integer, Integer>> rangeOfAllStmt;
+
         try {
-            probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
-            probeLines = StaticAnalyzer.getRangeOfAllStatements(locationClass).get(probeLine);
-
-            //Argumentかどうか判定
-            //(probeMethodがnull つまり probeLineがmethodの外) or methodの中かつblockStmtの外のとき変数は引数由来
-            // <- 元のprobeLine
-            // public void sample(int a) { <-ここが呼び出されたメソッド
-            // ... <- 新しいprobeLine
-            // (getCallerMethodではprobeLineを見てブレイクボイントをつけるため、メソッド内にいる必要がある)
-            boolean isThereVariableDeclaration = false;
-            String variableName = watchedValues.get(0).variableName;
-
-            if(probeMethod != null){
-                BlockStmt bs = StaticAnalyzer.bodyOfMethod(probeMethod);
-                List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
-                for(VariableDeclarator vd : vds){
-                    if(vd.getNameAsString().equals(variableName)
-                            //&& vd.getBegin().get().line <= probeLine && probeLine <= vd.getEnd().get().line
-                    ){
-                        isThereVariableDeclaration = true;
-                        //probeLineが必ずしも代入行にならない
-                        probeLine = vd.getBegin().get().line;
-                    }
-                }
-            }
-
-            //probeLineがmethodBodyの範囲内で、かつprobeLineでvariableの宣言が行われていない場合、その変数はargument
-            if(!isThereVariableDeclaration && !isFound){
-                probeLine = watchedValues.get(0).loc.getLineNumber();
-                result.setArgument(true);
-            }
-
-            //probeMethodがnull つまり probeLineがmethodの外にある場合、必ずargument
-            if(probeMethod == null) {
-                probeLine = watchedValues.get(0).loc.getLineNumber();
-                probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass ,probeLine);
-                result.setArgument(true);
-            }
-
-            //probeLinesがnull -> probeLineがstatementでない時、probeLineはfor文の始まりなど
-            if(probeLines == null) {
-                probeLines = Pair.of(probeLine, probeLine);
-            }
-
+            probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass, probeLine);
+            rangeOfAllStmt = StaticAnalyzer.getRangeOfAllStatements(locationClass);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
 
-        //シグニチャも含める
+        probeLines = rangeOfAllStmt.getOrDefault(probeLine, Pair.of(probeLine, probeLine));
+        result.setArgument(false);
         result.setLines(probeLines);
         result.setProbeMethod(probeMethod);
         result.setSrc(getProbeStatement(locationClass, probeLines));
         return result;
     }
 
+    private ProbeResult resultIfNotAssigned(int probeLine, String locationClass, String variableName){
+        //観測した値の中で、一番初めの時点でactualの値を取っているパターン
+        //1. 初期化の時点でその値が代入されている。
+        //2. その変数が引数由来で、かつメソッド内で上書きされていない。
+        //3. throw内などブレークポイントが置けない行で、代入が行われている。 --> 未想定
+        ProbeResult result = new ProbeResult();
+        String probeMethod;
+        Pair<Integer, Integer> probeLines = null;
+
+        //実行しているメソッドを取得
+        try {
+            probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass, probeLine);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+
+        //1. 初期化の時点でその値が代入されている。
+        //この場合、probeLineは必ずmethod内にいる。
+        boolean isThereVariableDeclaration = false;
+        BlockStmt bs = StaticAnalyzer.bodyOfMethod(probeMethod);
+        List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
+        for (VariableDeclarator vd : vds) {
+            if (vd.getNameAsString().equals(variableName)) {
+                isThereVariableDeclaration = true;
+                probeLines = Pair.of(vd.getBegin().get().line, vd.getEnd().get().line);
+                break;
+            }
+        }
+        if (isThereVariableDeclaration) {
+            result.setArgument(false);
+            result.setLines(probeLines);
+            result.setProbeMethod(probeMethod);
+            result.setSrc(getProbeStatement(locationClass, probeLines));
+            return result;
+        }
+
+        //2. その変数が引数由来で、かつメソッド内で上書きされていない。isArgument = true;
+        //probeLineでvariableの宣言が行われていない場合、その変数はargument
+        //暫定的にprobeLinesを設定
+        probeLines = Pair.of(probeLine, probeLine);
+        result.setArgument(true);
+        result.setLines(probeLines);
+        result.setProbeMethod(probeMethod);
+        return result;
+    }
+
     //Statementのソースコードを取得
-    private String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines){
+    protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines){
         ClassInfo ci = createClassInfo(locationClass);
         String[] src = ci.src().split("\n");
         StringBuilder stmt = new StringBuilder();
@@ -333,8 +310,8 @@ public abstract class AbstractProbe {
         System.setOut(stdOut);
     }
 
-    protected void printWatchedValues(ProbeInfoCollection watchedValues, String variableName, List<Integer> assignLine){
-        System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
+    protected void printWatchedValues(ProbeInfoCollection watchedValues, String variableName){
+        //System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
         if(variableName != null) {
             watchedValues.print(variableName);
         }
@@ -349,15 +326,14 @@ public abstract class AbstractProbe {
             System.out.println("    >> Variable defect is derived from caller method. ");
             if(result.getCallerMethod() != null) {
                 System.out.println("    >> [CALLER] " + result.getCallerMethod().getRight());
-                System.out.println("    >> [ LINE] " + result.getCallerMethod().getLeft());
             }
-        } else {
-            Pair<Integer, Integer> probeLines = result.getProbeLines();
-            String[] src = result.getSrc().split("\n");
-            int l = 0;
-            for (int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
-                System.out.println("    >> " + i + ": " + src[l++]);
-            }
+        }
+
+        Pair<Integer, Integer> probeLines = result.getProbeLines();
+        String[] src = result.getSrc().split("\n");
+        int l = 0;
+        for (int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
+            System.out.println("    >> " + i + ": " + src[l++]);
         }
     }
 
