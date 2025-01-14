@@ -3,6 +3,7 @@ package jisd.fl.probe;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,6 +19,9 @@ public class ProbeResult {
     private VariableInfo vi;
     //probeLineで観測された変数の値のペア
     private Map<String, String> valuesInLine;
+    private LocalDateTime createAt;
+    //実際にactualとなっていたことが観測された行
+    private int watchedAt;
 
     public ProbeResult(){
     }
@@ -84,5 +88,21 @@ public class ProbeResult {
 
     public void setValuesInLine(Map<String, String> valuesInLine) {
         this.valuesInLine = valuesInLine;
+    }
+
+    public LocalDateTime getCreateAt() {
+        return createAt;
+    }
+
+    public void setCreateAt(LocalDateTime createAt) {
+        this.createAt = createAt;
+    }
+
+    public int getWatchedAt() {
+        return watchedAt;
+    }
+
+    public void setWatchedAt(int watchedAt) {
+        this.watchedAt = watchedAt;
     }
 }

@@ -91,12 +91,23 @@ public  class TestUtil {
         String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
 
-        Debugger dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethodName,
-                "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
-
+        Debugger dbg;
+        while(true) {
+            try {
+                dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethodName,
+                        " -cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
+                break;
+            } catch (RuntimeException ignored) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
 
         dbg.setSrcDir(targetSrcDir, testSrcDir);
-        DebugResult.setDefaultMaxRecordNoOfValue(3000);
+        DebugResult.setDefaultMaxRecordNoOfValue(200);
         return dbg;
     }
 }

@@ -98,7 +98,8 @@ public class ProbeExResult implements Serializable {
     }
 
     public static ProbeExResult load(String dir, String fileName){
-        String covFileName = dir + "/" + fileName + ".probeEx";
+        //fileNameはprobeExで終わる
+        String covFileName = dir + "/" + fileName;
 
         try {
             FileInputStream fileInputStream = new FileInputStream(covFileName);

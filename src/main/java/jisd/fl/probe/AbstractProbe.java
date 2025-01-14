@@ -1,13 +1,18 @@
 package jisd.fl.probe;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.VMDisconnectedException;
+import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.debug.Location;
 import jisd.debug.Point;
+import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.util.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
 import jisd.fl.util.TestUtil;
@@ -57,24 +62,42 @@ public abstract class AbstractProbe {
         List<ProbeInfo> watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
         printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true));
         //printWatchedValues(watchedValueCollection, null);
-        ProbeResult result = searchProbeLine(watchedValues, variableInfo.getActualValue());
+        ProbeResult result = null;
+        try {
+            result = searchProbeLine(watchedValues, variableInfo.getActualValue());
+        }
+        catch (RuntimeException e){
+            System.out.println(e);
+        }
 
         int count = 0;
-        //debugが値を取れなかった場合、やり直す
+        //debugで値を取れなかった場合、やり直す
         while(result == null){
 
-            if(count > 1) throw new RuntimeException("FAILED");
+            if(count > 2) break;
             disableStdOut("Retrying to run debugger");
             dbg.exit();
             sleepTime += 1000;
             watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
             watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
-            result = searchProbeLine(watchedValues, variableInfo.getActualValue());
+            printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true));
+            try {
+                result = searchProbeLine(watchedValues, variableInfo.getActualValue());
+            }
+            catch (RuntimeException e){
+                System.out.println(e);
+                count += 1;
+                if(count > 2) break;
+                continue;
+            }
             count += 1;
         }
 
+        if(result == null) return null;
+
         result.setVariableInfo(variableInfo);
-        if(!result.isArgument()) result.setValuesInLine(watchedValueCollection.getValuesFromLines(result.getProbeLines()));
+        //if(!result.isArgument()) result.setValuesInLine(watchedValueCollection.getValuesFromLines(result.getProbeLines()));
+        if(!result.isArgument()) result.setValuesInLine(watchedValueCollection.getValuesAtSameTime(result.getCreateAt()));
         return result;
     }
 
@@ -84,7 +107,7 @@ public abstract class AbstractProbe {
         String dbgMain = variableInfo.getLocateClass();
         disableStdOut("[canSetLines] " + Arrays.toString(canSetLines.toArray()));
         List<Optional<Point>> watchPoints = new ArrayList<>();
-        dbg = createDebugger(500);
+        dbg = createDebugger(1000);
         //set watchPoint
         dbg.setMain(dbgMain);
         for (int line : canSetLines) {
@@ -99,9 +122,9 @@ public abstract class AbstractProbe {
             System.err.println(e);
         }
         dbg.exit();
-
         enableStdOut();
         ProbeInfoCollection watchedValues = jiProcessor.getInfoFromWatchPoints(watchPoints, variableInfo);
+        watchedValues.considerNotDefinedVariable();
         watchedValues.sort();
         return watchedValues;
     }
@@ -175,12 +198,12 @@ public abstract class AbstractProbe {
             variableName = watchedValues.get(0).variableName;
             probeLine = watchedValues.get(0).loc.getLineNumber();
             locationClass = watchedValues.get(0).loc.getClassName();
-            return resultIfNotAssigned(probeLine, locationClass, variableName);
+            return resultIfNotAssigned(probeLine, locationClass, variableName, pi.createAt, probeLine);
         }
 
         //観測した値の中で、途中からでactualの値を取るようになったパターン
-        //actualを取るようになった行が、methodの始まりの行の場合、
-        //一番初めの時点でactualの値を取っているパターンと同じ扱い。
+        //次の場合は一番初めの時点でactualの値を取っているパターンと同じ扱い。
+        //probe lineがmethodの初めの行
         //そうでない場合、値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
         for (int i = 1; i < watchedValues.size(); i++) {
             pi = watchedValues.get(i);
@@ -197,16 +220,16 @@ public abstract class AbstractProbe {
                 }
                 BlockStmt bs = StaticAnalyzer.bodyOfMethod(probeMethod);
 
-                isBeginLine = bs.getBegin().get().line == probeLine;
+                isBeginLine = bs.getBegin().get().line - 1 <= probeLine && probeLine <= bs.getBegin().get().line + 1 ;
                 if(isBeginLine){
                     String variableName = watchedValues.get(0).variableName;
-                    return resultIfNotAssigned(probeLine, locationClass, variableName);
+                    return resultIfNotAssigned(probeLine, locationClass, variableName, pi.createAt, pi.loc.getLineNumber());
                 }
                 else {
                     pi = watchedValues.get(i - 1);
                     probeLine = pi.loc.getLineNumber();
                     locationClass = pi.loc.getClassName();
-                    return resultIfAssigned(probeLine, locationClass);
+                    return resultIfAssigned(probeLine, locationClass, watchedValues.get(i).createAt, watchedValues.get(i).loc.getLineNumber());
                 }
             }
         }
@@ -214,7 +237,7 @@ public abstract class AbstractProbe {
         throw new RuntimeException("There is no value which same to actual.");
     }
 
-    private ProbeResult resultIfAssigned(int probeLine, String locationClass){
+    private ProbeResult resultIfAssigned(int probeLine, String locationClass, LocalDateTime createAt, int watchedAt){
         //観測した値の中で、途中からでactualの値を取るようになったパターン
         //actualを取るようになった行が、methodの始まりの行の場合、
         //一番初めの時点でactualの値を取っているパターンと同じ扱い。
@@ -236,10 +259,12 @@ public abstract class AbstractProbe {
         result.setLines(probeLines);
         result.setProbeMethod(probeMethod);
         result.setSrc(getProbeStatement(locationClass, probeLines));
+        result.setCreateAt(createAt);
+        result.setWatchedAt(watchedAt);
         return result;
     }
 
-    private ProbeResult resultIfNotAssigned(int probeLine, String locationClass, String variableName){
+    private ProbeResult resultIfNotAssigned(int probeLine, String locationClass, String variableName, LocalDateTime createAt, int watchedAt){
         //観測した値の中で、一番初めの時点でactualの値を取っているパターン
         //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
@@ -272,16 +297,18 @@ public abstract class AbstractProbe {
             result.setLines(probeLines);
             result.setProbeMethod(probeMethod);
             result.setSrc(getProbeStatement(locationClass, probeLines));
+            result.setCreateAt(createAt);
+            result.setWatchedAt(watchedAt);
             return result;
         }
 
-        //2. その変数が引数由来で、かつメソッド内で上書きされていない。isArgument = true;
-        //probeLineでvariableの宣言が行われていない場合、その変数はargument
+        //2. その変数が引数orフィールド由来で、かつメソッド内で上書きされていない
         //暫定的にprobeLinesを設定
         probeLines = Pair.of(probeLine, probeLine);
-        result.setArgument(true);
         result.setLines(probeLines);
         result.setProbeMethod(probeMethod);
+        result.setWatchedAt(watchedAt);
+        result.setArgument(true);
         return result;
     }
 
@@ -324,20 +351,20 @@ public abstract class AbstractProbe {
         System.out.println("    >> [PROBE LINES]");
         if(result.isArgument()) {
             System.out.println("    >> Variable defect is derived from caller method. ");
-            if(result.getCallerMethod() != null) {
-                System.out.println("    >> [CALLER] " + result.getCallerMethod().getRight());
-            }
         }
 
         Pair<Integer, Integer> probeLines = result.getProbeLines();
-        String[] src = result.getSrc().split("\n");
-        int l = 0;
-        for (int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
-            System.out.println("    >> " + i + ": " + src[l++]);
+        if(result.getSrc() != null) {
+            String[] src = result.getSrc().split("\n");
+            int l = 0;
+            for (int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
+                System.out.println("    >> " + i + ": " + src[l++]);
+            }
         }
     }
 
     protected Debugger createDebugger(int sleepTime) {
+        if(dbg != null) dbg.exit();
         try {
             Thread.sleep(sleepTime);
         } catch (InterruptedException e) {
@@ -404,8 +431,8 @@ public abstract class AbstractProbe {
                 if(e != null) calleeMethods.addElement(e);
 
                 //終了判定
-                //stepOutで次の行に移った場合終了
-                if(dbg.loc().getLineNumber() != probingLine) break;
+                //dbgがbreak pointで止まらないかstepOutで次の行に移った場合終了
+                if(dbg.loc() == null || dbg.loc().getLineNumber() != probingLine) break;
                 //stepOutで元の行に戻った場合、ステップして新しいメソッド呼び出しが行われなければ終了
                 dbg.step();
                 st = getStackTrace(dbg);
@@ -415,6 +442,8 @@ public abstract class AbstractProbe {
                     break;
                 }
             }
+            //debugがbreakpointに達しなかった場合は終了
+            if(dbg.loc() == null) break;
             //すでにbreakpointにいる場合はスキップしない
             if(!methodCallingLines.contains(dbg.loc().getLineNumber())) {
                 dbg.cont(2000);
@@ -425,19 +454,36 @@ public abstract class AbstractProbe {
         return calleeMethods;
     }
 
-    protected Pair<Integer, String> getCallerMethod(Pair<Integer, Integer> probeLines, String locateClass) {
+    protected Pair<Integer, String> getCallerMethod(int watchedAt, VariableInfo vi) {
         dbg = createDebugger(500);
-        dbg.setMain(locateClass);
+        dbg.setMain(vi.getLocateClass());
         disableStdOut("    >> Probe Info: Search caller method.");
-        dbg.stopAt(probeLines.getLeft());
+        Optional<Point> p = dbg.stopAt(watchedAt);
         dbg.run(2000);
+        // probe対象がactualの値を取っているか確認
+        if(p.isPresent() && p.get().getResults(vi.getVariableName(true, false)).isPresent()){
+            DebugResult dr = p.get().getResults(vi.getVariableName(true, false)).get();
+            List<ProbeInfo> pis = jiProcessor.getValuesFromDebugResult(vi, dr);
+            int index = 0;
+            if(vi.isArray()) index = vi.getArrayNth();
+            if (!pis.get(index).value.equals(vi.getActualValue())) dbg.cont(1000);
+        }
+        else {
+            throw new RuntimeException("Cannot watch Probe target.");
+        }
         enableStdOut();
         StackTrace st = getStackTrace(dbg);
-
         //callerMethodをシグニチャ付きで取得する
         Pair<Integer, String> caller = st.getCallerMethodAndCallLocation(1);
         //callerがnullの場合、callerMethodがtargetSrcDir内にない。（テストメソッドに戻った場合など）
         if(caller == null) System.out.println("    >> Probe Info: caller method is not found in Target Src: " + st.getMethod(1));
+        System.out.println("    >> [ CALLER METHOD ]");
+        if(caller != null) {
+            System.out.println("    >> " + caller.getRight());
+        }
+        else {
+            System.out.println("    >> " );
+        }
         return caller;
     }
 
@@ -513,6 +559,15 @@ public abstract class AbstractProbe {
         }
 
         public List<ProbeInfo> getPis(String key){
+            //配列の場合[0]がついていないものも一緒に返す
+            if(key.contains("[")){
+                List<ProbeInfo> pis = new ArrayList<>();
+                pis.addAll(piCollection.get(key));
+                List<ProbeInfo> tmp = piCollection.get(key.split("\\[")[0]);
+                if(tmp != null) pis.addAll(tmp);
+                pis.sort(ProbeInfo::compareTo);
+                return pis;
+            }
             return piCollection.get(key);
         }
 
@@ -524,6 +579,17 @@ public abstract class AbstractProbe {
             for(List<ProbeInfo> pis : piCollection.values()){
                 pis.sort(ProbeInfo::compareTo);
             }
+        }
+        public Map<String, String> getValuesAtSameTime(LocalDateTime createAt){
+            Map<String, String> pis = new HashMap<>();
+            for(List<ProbeInfo> l : piCollection.values()){
+                for(ProbeInfo pi : l){
+                    if(pi.createAt.equals(createAt)) {
+                        pis.put(pi.variableName, pi.value);
+                    }
+                }
+            }
+            return pis;
         }
 
         public Map<String, String> getValuesFromLines(Pair<Integer, Integer> lines){
@@ -540,8 +606,81 @@ public abstract class AbstractProbe {
             return pis;
         }
 
+        //値の宣言行など、実行はされているが値が定義されていない行も
+        //実行されていることを認識するために、定義されていない行の値は"not defined"として埋める。
+        private void considerNotDefinedVariable(){
+            Set<Pair<LocalDateTime, Integer>> executedLines = new HashSet<>();
+            for(List<ProbeInfo> pis : piCollection.values()){
+                for(ProbeInfo pi : pis){
+                    executedLines.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
+                }
+            }
+
+            for(List<ProbeInfo> pis : piCollection.values()){
+                String variableName = pis.get(0).variableName;
+                Set<Pair<LocalDateTime, Integer>> executedLinesInThisPis = new HashSet<>();
+                for(ProbeInfo pi : pis){
+                    executedLinesInThisPis.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
+                }
+
+                Set<Pair<LocalDateTime, Integer>> notExecutedLines = new HashSet<>();
+                //変数が配列で、[]あり、なしのどちらかが存在するときは含めない
+                //[]ありの場合
+                if(variableName.contains("[")){
+                   // continue;
+                    Set<Pair<LocalDateTime, Integer>> executedLinesOfWithoutBracket = new HashSet<>();
+                    if(getPis(variableName.split("\\[")[0]) != null) {
+                        for (ProbeInfo pi : getPis(variableName.split("\\[")[0])) {
+                            executedLinesOfWithoutBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
+                        }
+                    }
+
+                    for(Pair<LocalDateTime, Integer> execline : executedLines){
+                        if(!executedLinesInThisPis.contains(execline) &&
+                                !executedLinesOfWithoutBracket.contains(execline)) notExecutedLines.add(execline);
+                    }
+                }
+                //[]なしの場合
+                else {
+                    boolean isArray = false;
+                    for(String varName : piCollection.keySet()){
+                        if(varName.contains("[") && varName.split("\\[")[0].equals(variableName)){
+                            isArray = true;
+                        }
+                    }
+                    if (isArray){
+                       // continue;
+                        Set<Pair<LocalDateTime, Integer>> executedLinesOfWithBracket = new HashSet<>();
+                        if(getPis(variableName + "[0]") != null) {
+                            for (ProbeInfo pi : getPis(variableName + "[0]")) {
+                                executedLinesOfWithBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
+                            }
+                        }
+
+                        for(Pair<LocalDateTime, Integer> execline : executedLines){
+                            if(!executedLinesInThisPis.contains(execline) &&
+                                    !executedLinesOfWithBracket.contains(execline)) notExecutedLines.add(execline);
+                        }
+                    }
+                    else {
+                        //配列でない場合
+                        for (Pair<LocalDateTime, Integer> execline : executedLines) {
+                            if (!executedLinesInThisPis.contains(execline)) notExecutedLines.add(execline);
+                        }
+                    }
+                }
+
+                for(Pair<LocalDateTime, Integer> notExecline : notExecutedLines){
+                    LocalDateTime createAt = notExecline.getLeft();
+                    Location pisLoc = pis.get(0).loc;
+                    Location loc = new Location(pisLoc.getClassName(), pisLoc.getMethodName(), notExecline.getRight(), "No defined");
+                    pis.add(new ProbeInfo(createAt, loc, variableName, "Not defined"));
+                }
+            }
+        }
+
         public void print(String key){
-            for(ProbeInfo pi : piCollection.get(key)) {
+            for(ProbeInfo pi : getPis(key)) {
                 System.out.println("    >> " + pi);
             }
         }

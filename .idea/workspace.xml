@@ -4,14 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6757f081-dac4-4109-934d-3412514b1ba5" name="変更" comment="save after revise canSetLine">
+    <list default="true" id="6757f081-dac4-4109-934d-3412514b1ba5" name="変更" comment="refactor searchProbeLine">
+      <change afterPath="$PROJECT_DIR$/locallib/jisd-0.3.0_bata.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeExResultTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fl_properties/fl_config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/fl_properties/fl_config.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/JisdInfoProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/JisdInfoProcessor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/Probe.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/Probe.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeExResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeExResult.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeResult.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/StackTrace.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/StackTrace.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/assertinfo/VariableInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/assertinfo/VariableInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/FileUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/FileUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestUtil.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeExTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeExTest.java" afterDir="false" />
     </list>
@@ -39,8 +47,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="JUnit5 Test Class" />
         <option value="Class" />
+        <option value="JUnit5 Test Class" />
       </list>
     </option>
   </component>
@@ -91,7 +99,11 @@
     "Gradle.MyFaultFinder [:experiment.main.Defects4j.main()].executor": "Run",
     "Gradle.MyFaultFinder [:jisd.fl.util.TestLauncher.main()].executor": "Run",
     "Gradle.MyFaultFinder [dependencies].executor": "Run",
+    "Gradle.ProbeExResultTest.loadAllTest.executor": "Run",
+    "Gradle.ProbeExResultTest.loadTest.executor": "Run",
+    "Gradle.ProbeExTest (1).executor": "Run",
     "Gradle.ProbeExTest.executor": "Run",
+    "Gradle.ProbeExTest.runTest (1).executor": "Run",
     "Gradle.ProbeExTest.runTest.executor": "Debug",
     "Gradle.ProbeTest.runTest.executor": "Run",
     "Gradle.StaticAnalyzerTest.getMethodNameTest.executor": "Run",
@@ -103,26 +115,32 @@
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
     "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/ezaki/IdeaProjects/MyFaultFinder",
+    "last_opened_file_path": "/Users/ezaki/IdeaProjects/MyFaultFinder/locallib/jdiscript",
     "project.structure.last.edited": "モジュール",
     "project.structure.proportion": "0.24414062",
-    "project.structure.side.proportion": "0.2"
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "project.propCompiler"
   }
 }]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/locallib/jdiscript" />
+    </key>
     <key name="CreateTestDialog.Recents.Supers">
       <recent name="" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/locallib" />
       <recent name="$PROJECT_DIR$/src/main/java/experiment/defect4j" />
       <recent name="$PROJECT_DIR$/fl_properties" />
     </key>
     <key name="CreateTestDialog.RecentsKey">
+      <recent name="jisd.fl.probe" />
       <recent name="experiment.defect4j" />
       <recent name="experiment.coverage" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.ProbeExTest">
+  <component name="RunManager" selected="Gradle.ProbeExTest (1)">
     <configuration name="TestLauncher" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="jisd.fl.util.TestLauncher" />
       <module name="MyFaultFinder.main" />
@@ -136,30 +154,6 @@
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
-    </configuration>
-    <configuration name="Defects4jUtilTest.changeTargetVersionTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;experiment.defect4j.Defects4jUtilTest.changeTargetVersionTest&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>true</RunAsTest>
-      <method v="2" />
     </configuration>
     <configuration name="MyFaultFinder [dependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
@@ -183,7 +177,55 @@
       <RunAsTest>false</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="ProbeExTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="ProbeExResultTest.loadAllTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;jisd.fl.probe.ProbeExResultTest.loadAllTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ProbeExResultTest.loadTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;jisd.fl.probe.ProbeExResultTest.loadTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="ProbeExTest (1)" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -199,7 +241,7 @@
             <option value="&quot;jisd.fl.probe.ProbeExTest&quot;" />
           </list>
         </option>
-        <option name="vmOptions" />
+        <option name="vmOptions" value="-Xmx2048m" />
       </ExternalSystemSettings>
       <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
       <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
@@ -207,7 +249,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="ProbeExTest.runTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="ProbeExTest.runTest (1)" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -231,37 +273,13 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="TestLauncherTest.jisdtest1" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;jisd.fl.util.TestLauncherTest.jisdtest1&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>true</RunAsTest>
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.ProbeExTest" />
-        <item itemvalue="Gradle.ProbeExTest.runTest" />
+        <item itemvalue="Gradle.ProbeExTest (1)" />
+        <item itemvalue="Gradle.ProbeExTest.runTest (1)" />
+        <item itemvalue="Gradle.ProbeExResultTest.loadAllTest" />
+        <item itemvalue="Gradle.ProbeExResultTest.loadTest" />
         <item itemvalue="Gradle.MyFaultFinder [dependencies]" />
-        <item itemvalue="Gradle.Defects4jUtilTest.changeTargetVersionTest" />
-        <item itemvalue="Gradle.TestLauncherTest.jisdtest1" />
       </list>
     </recent_temporary>
   </component>
@@ -322,7 +340,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736415610930</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="refactor searchProbeLine">
+      <option name="closed" value="true" />
+      <created>1736487051911</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1736487051911</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -343,20 +369,36 @@
     <MESSAGE value="delete property for sample" />
     <MESSAGE value="impl program for experiments" />
     <MESSAGE value="save after revise canSetLine" />
-    <option name="LAST_COMMIT_MESSAGE" value="save after revise canSetLine" />
+    <MESSAGE value="refactor searchProbeLine" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor searchProbeLine" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/Probe.java</url>
-          <line>20</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/experiment/defect4j/Defects4jUtil.java</url>
           <line>131</line>
           <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
+          <line>231</line>
+          <option name="timeStamp" value="91" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
+          <line>99</line>
+          <option name="timeStamp" value="92" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
+          <line>591</line>
+          <option name="timeStamp" value="93" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
+          <line>342</line>
+          <option name="timeStamp" value="100" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

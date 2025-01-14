@@ -25,8 +25,7 @@ public class Probe extends AbstractProbe{
 
         //メソッドを呼び出したメソッドをコールスタックから取得
         System.out.println("    >> Probe Info: Searching caller method from call stack.");
-        Pair<Integer, Integer> probeLines = result.getProbeLines();
-        Pair<Integer, String> callerMethod = getCallerMethod(probeLines, variableInfo.getLocateClass());
+        Pair<Integer, String> callerMethod = getCallerMethod(result.getWatchedAt(), variableInfo);
         result.setCallerMethod(callerMethod);
 
         //callerメソッドが呼び出したメソッドをカバレッジから取得
@@ -46,5 +45,4 @@ public class Probe extends AbstractProbe{
         siblings.remove(probeMethod);
         return siblings;
     }
-
 }

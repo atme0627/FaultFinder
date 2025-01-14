@@ -9,6 +9,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
@@ -24,7 +25,7 @@ import java.util.*;
 //値のStringを比較して一致かどうかを判定
 //理想的には、"==" と同じ方法で判定したいが、型の問題で難しそう
 public class ProbeEx extends AbstractProbe {
-    Set<Pair<String, String>> probedValue;
+    Set<VariableInfo> probedValue;
 
     public ProbeEx(FailedAssertInfo assertInfo) {
         super(assertInfo);
@@ -51,18 +52,19 @@ public class ProbeEx extends AbstractProbe {
         }
 
         while(!probingTargets.isEmpty()) {
+            //深さ10で終了
+            if(depth > 10) break;
             if(!isArgument) depth += 1;
             for (VariableInfo target : probingTargets) {
-                if(isProbed(target.getVariableName(true, true), target.getActualValue())) continue;
+                if(isProbed(target))continue;
+                addProbedValue(target);
 
-                addProbedValue(target.getVariableName(true, true), target.getActualValue());
                 printProbeExInfoHeader(target, depth);
-
                 ProbeResult pr = probing(sleepTime, target);
-
+                if(pr == null) continue;
                 if(pr.isArgument()){
                     //感染した変数が引数のものだった場合
-                    Pair<Integer, String> caller = getCallerMethod(pr.getProbeLines(), pr.getProbeMethod().split("#")[0]);
+                    Pair<Integer, String> caller = getCallerMethod(pr.getWatchedAt(), target);
                     if(caller != null)  {
                         int probeLine = caller.getLeft();
                         Pair<Integer, Integer> probeLines = Pair.of(probeLine, probeLine);
@@ -115,8 +117,9 @@ public class ProbeEx extends AbstractProbe {
         if(pr.isArgument()){
             if(pr.getCallerMethod() == null) return vis;
             String argVariable = getArgumentVariable(pr);
+            if(argVariable == null) return vis;
             //argVariableが純粋な変数でない（関数呼び出しなどを行っている）場合、probeは行わない
-            if(!argVariable.matches("[A-Za-z0-9]+")) return vis;
+            if(!argVariable.matches("[A-Za-z][A-Za-z0-9]*")) return vis;
 
             Pair<Boolean, String> isFieldVarInfo =  isFieldVariable(argVariable, pr.getCallerMethod().getRight());
             boolean isField = isFieldVarInfo.getLeft();
@@ -152,6 +155,8 @@ public class ProbeEx extends AbstractProbe {
                     variableName = variableName.split("\\[")[0];
                     arrayNth = Integer.parseInt(n.substring(n.indexOf("[") + 1, n.indexOf("]")));
                     isArray = true;
+                    //配列のindexが4以上のものはスキップ
+                    if(arrayNth >= 2) continue;
                 }
                 else {
                     arrayNth = -1;
@@ -165,10 +170,16 @@ public class ProbeEx extends AbstractProbe {
                     continue;
                 }
 
+                //次のターゲットがprimitiveでない場合スキップ
+                if(!isArray && pr.getValuesInLine().get(n).contains("instance")) continue;
+
+                //値がNot definedの場合はスキップ
+                if(pr.getValuesInLine().get(n).equals("Not defined")) continue;
+
                 VariableInfo vi = new VariableInfo(
                         pr.getProbeMethod(),
                         variableName,
-                        true,
+                        pr.getVariableInfo().isPrimitive(),
                         isField,
                         isArray,
                         arrayNth,
@@ -181,32 +192,35 @@ public class ProbeEx extends AbstractProbe {
         return vis;
     }
 
-    private boolean isProbed(String variable, String actual){
-        for(Pair<String, String> e : probedValue){
-            if(e.getLeft().equals(variable) && e.getRight().equals(actual)) return true;
+    private boolean isProbed(VariableInfo vi){
+        for(VariableInfo e : probedValue){
+            if(vi.equals(e)) return true;
         }
         return false;
     }
 
-    private void addProbedValue(String variable, String actual){
-        probedValue.add(Pair.of(variable, actual));
+    private void addProbedValue(VariableInfo vi){
+        probedValue.add(vi);
     }
 
     //fieldだった場合、所属するクラスを共に返す
     private Pair<Boolean, String> isFieldVariable(String variable, String targetMethod){
         String targetClass = targetMethod.split("#")[0];
         BlockStmt bs;
+        List<Parameter> prms;
         String fieldLocateClass = null;
 
 
         try {
             MethodDeclaration md = JavaParserUtil.parseMethod(targetMethod);
             bs = md.getBody().get();
+            prms = md.getParameters();
         } catch (NoSuchFileException e) {
             //メソッドがコンストラクタの場合
             try{
                 ConstructorDeclaration cd = JavaParserUtil.parseConstructor(targetMethod);
                 bs = cd.getBody();
+                prms = cd.getParameters();
             }
             catch (NoSuchFileException ex){
                 throw new RuntimeException(e);
@@ -218,6 +232,13 @@ public class ProbeEx extends AbstractProbe {
         List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
         for(VariableDeclarator vd : vds){
             if(vd.getName().toString().equals(variable)){
+                return Pair.of(false, null);
+            }
+        }
+
+        //methodの引数由来の場合
+        for(Parameter prm : prms){
+            if(prm.getName().toString().equals(variable)){
                 return Pair.of(false, null);
             }
         }
@@ -289,51 +310,6 @@ public class ProbeEx extends AbstractProbe {
         return neighbor;
     }
 
-    //メソッド呼び出しで使われた変数名を返す
-    private String getArgumentVariable(ProbeResult pr){
-        Pair<Integer, String> callerNameAndCallLocation = pr.getCallerMethod();
-        int index = getIndexOfArgument(pr);
-        int line = callerNameAndCallLocation.getLeft();
-        String locateMethod = callerNameAndCallLocation.getRight();
-        Map<Integer, Pair<Integer, Integer>> rangeOfStatements
-                = StaticAnalyzer.getRangeOfAllStatements(locateMethod.split("#")[0]);
-        Pair<Integer, Integer> lines = rangeOfStatements.getOrDefault(line, Pair.of(line, line));
-
-        class BlockStmtVisitor extends GenericVisitorAdapter<String, Integer> {
-            @Override
-            public String visit(final MethodCallExpr n, final Integer line) {
-                if (!(n.getEnd().get().line < lines.getLeft() || lines.getRight() < n.getBegin().get().line)) {
-                    return n.getArgument(index).toString();
-                }
-                return super.visit(n, line);
-            }
-
-            @Override
-            public String visit(final ObjectCreationExpr n, final Integer line) {
-                if (!(n.getEnd().get().line < lines.getLeft() || lines.getRight() < n.getBegin().get().line)) {
-                        return n.getArgument(index).toString();
-                }
-                return super.visit(n, line);
-            }
-        }
-
-        BlockStmt bs;
-        try {
-            MethodDeclaration md = JavaParserUtil.parseMethod(locateMethod);
-            bs = md.getBody().get();
-        } catch (NoSuchFileException e) {
-            //targetMethodがコンストラクタの場合
-            try {
-                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(locateMethod);
-                bs = cd.getBody();
-            } catch (NoSuchFileException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        return bs.accept(new BlockStmtVisitor(), line);
-    }
-
     private void printProbeExInfoHeader(VariableInfo variableInfo, int depth){
         System.out.println("    >> ============================================================================================================");
         System.out.println("    >> Probe Ex     DEPTH: " + depth
@@ -357,6 +333,74 @@ public class ProbeEx extends AbstractProbe {
         for(VariableInfo vi : nextTarget){
             System.out.println("    >> [VARIABLE] " + vi.getVariableName(true, true) + "    [ACTUAL] " + vi.getActualValue());
         }
+    }
+
+    //メソッド呼び出しで使われた変数名を返す
+    protected String getArgumentVariable(ProbeResult pr){
+        Pair<Integer, String> callerNameAndCallLocation = pr.getCallerMethod();
+        int index = 0;
+        try {
+            index = getIndexOfArgument(pr);
+        }
+        catch (RuntimeException e){
+            System.out.println(e);
+            System.out.println("    >> Probe Info:     " + pr.getVariableInfo().getVariableName() + " is probably declared in field.");
+            return null;
+        }
+        int line = callerNameAndCallLocation.getLeft();
+        String locateMethod = callerNameAndCallLocation.getRight();
+        Map<Integer, Pair<Integer, Integer>> rangeOfStatements
+                = StaticAnalyzer.getRangeOfAllStatements(locateMethod.split("#")[0]);
+        Pair<Integer, Integer> lines = rangeOfStatements.getOrDefault(line, Pair.of(line, line));
+
+        int finalIndex = index;
+        class BlockStmtVisitor extends GenericVisitorAdapter<String, Integer> {
+            @Override
+            public String visit(final MethodCallExpr n, final Integer line) {
+                if (!(n.getEnd().get().line < lines.getLeft() || lines.getRight() < n.getBegin().get().line)) {
+                    if(n.getArguments().size() > finalIndex) {
+                        return n.getArgument(finalIndex).toString();
+                    }
+                }
+                return super.visit(n, line);
+            }
+
+            @Override
+            public String visit(final ObjectCreationExpr n, final Integer line) {
+                if (!(n.getEnd().get().line < lines.getLeft() || lines.getRight() < n.getBegin().get().line)) {
+                    if(n.getArguments().size() > finalIndex) {
+                        return n.getArgument(finalIndex).toString();
+                    }
+                }
+                return super.visit(n, line);
+            }
+
+            @Override
+            public String visit(final ExplicitConstructorInvocationStmt n, final Integer line) {
+                if (!(n.getEnd().get().line < lines.getLeft() || lines.getRight() < n.getBegin().get().line)) {
+                    if(n.getArguments().size() > finalIndex) {
+                        return n.getArgument(finalIndex).toString();
+                    }
+                }
+                return super.visit(n, line);
+            }
+        }
+
+        BlockStmt bs;
+        try {
+            MethodDeclaration md = JavaParserUtil.parseMethod(locateMethod);
+            bs = md.getBody().get();
+        } catch (NoSuchFileException e) {
+            //targetMethodがコンストラクタの場合
+            try {
+                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(locateMethod);
+                bs = cd.getBody();
+            } catch (NoSuchFileException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        return bs.accept(new BlockStmtVisitor(), line);
     }
 
     private int getIndexOfArgument(ProbeResult pr){

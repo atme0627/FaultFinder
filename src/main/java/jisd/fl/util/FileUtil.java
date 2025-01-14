@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class FileUtil {
     public static void initDirectory(String dirPath){
@@ -67,6 +71,11 @@ public class FileUtil {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Set<String> getFileNames(String dir, String suffix){
+        File f = new File(dir);
+        return new HashSet<>(List.of(Objects.requireNonNull(f.list((d, name) -> name.endsWith(suffix)))));
     }
 
     public static boolean isExist(String dir, String fileName){

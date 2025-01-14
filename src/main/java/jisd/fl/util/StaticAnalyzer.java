@@ -278,7 +278,7 @@ public class StaticAnalyzer {
             MethodDeclaration md = JavaParserUtil.parseMethod(targetMethod);
             bs = md.getBody().get();
         } catch (NoSuchElementException e) {
-            throw new RuntimeException(e);
+            return null;
         }
         catch (NoSuchFileException e){
             try {
@@ -286,7 +286,7 @@ public class StaticAnalyzer {
                 bs = cd.getBody();
             }
             catch (NoSuchFileException ex){
-                throw new RuntimeException();
+                return null;
             }
         }
         return bs;
@@ -305,22 +305,27 @@ public class StaticAnalyzer {
         for(String method: methods){
             canSet.addAll(canSetLineOfMethod(method, variable));
         }
-
         return canSet;
     }
 
 
     public static Set<Integer> canSetLineOfMethod(String targetMethod, String variable){
         Set<Integer> canSet = new HashSet<>();
-        BlockStmt bs = bodyOfMethod(targetMethod);
+        BlockStmt bs;
+        bs = bodyOfMethod(targetMethod);
+        //bodyが空の場合がある。
+        if(bs == null) return canSet;
 
         class SimpleNameVisitor extends VoidVisitorAdapter<String> {
             @Override
             public void visit(SimpleName n, String arg) {
                 if(n.getIdentifier().equals(variable)){
-                    canSet.add(n.getBegin().get().line);
-                    canSet.add(n.getBegin().get().line - 1);
-                    canSet.add(n.getBegin().get().line + 1);
+                    for(int i = -2; i <= 2; i++) {
+                        if (bs.getBegin().get().line < n.getBegin().get().line + i
+                                && n.getBegin().get().line + i <= bs.getEnd().get().line) {
+                            canSet.add(n.getBegin().get().line + i);
+                        }
+                    }
                 }
                 super.visit(n, arg);
             }

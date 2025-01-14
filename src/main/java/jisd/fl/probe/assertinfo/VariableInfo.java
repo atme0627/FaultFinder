@@ -88,6 +88,24 @@ public class VariableInfo {
         return this.variableName + ((this.targetField != null) ? "." + this.targetField.variableName : "");
     }
 
+    @Override
+    public boolean equals(Object obj){
+        if(obj == null) return false;
+        if(!(obj instanceof VariableInfo)) return false;
+        VariableInfo vi = (VariableInfo) obj;
+
+        return
+            this.locateClass.equals(vi.locateClass) &&
+            this.locateMethod.equals(vi.locateMethod) &&
+            this.variableName.equals(vi.variableName) &&
+            this.isPrimitive == vi.isPrimitive &&
+            this.isField == vi.isField &&
+            this.arrayNth == vi.arrayNth &&
+            this.isArray == vi.isArray &&
+            ((this.targetField == null && vi.targetField == null) || this.targetField.equals(vi.targetField)) &&
+            this.actualValue.equals(vi.actualValue);
+    }
+
     public String getActualValue() {
         return actualValue;
     }

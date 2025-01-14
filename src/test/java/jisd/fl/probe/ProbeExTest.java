@@ -13,10 +13,10 @@ import java.nio.file.Paths;
 
 class ProbeExTest {
     String project = "Math";
-    int bugId = 23;
+    int bugId = 62;
 
-    String testClassName = "org.apache.commons.math3.optimization.univariate.BrentOptimizerTest";
-    String shortTestMethodName = "testKeepInitIfBest";
+    String testClassName = "org.apache.commons.math.optimization.univariate.MultiStartUnivariateRealOptimizerTest";
+    String shortTestMethodName = "testQuinticMin";
 
     String testMethodName = testClassName + "#" + shortTestMethodName + "()";
 
@@ -25,9 +25,9 @@ class ProbeExTest {
     boolean isField = true;
     boolean isArray = false;
     int arrayNth = -1;
-    String actual = "4.7123889482608";
+    String actual = "-0.2719561278056452";
 
-    String locate = "org.apache.commons.math3.optimization.univariate.UnivariatePointValuePair";
+    String locate = "org.apache.commons.math.optimization.univariate.UnivariateRealPointValuePair";
 
 
     String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";
@@ -54,7 +54,7 @@ class ProbeExTest {
     void runTest() {
         Defects4jUtil.changeTargetVersion(project, bugId);
         ProbeEx prbEx = new ProbeEx(fai);
-        ProbeExResult pr = prbEx.run(5000);
+        ProbeExResult pr = prbEx.run(10000);
         pr.print();
 
         pr.save(dir, fileName);

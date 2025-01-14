@@ -23,68 +23,81 @@ public class JisdInfoProcessor {
             Point p;
             if (op.isEmpty()) continue;
             p = op.get();
-            //Optional<DebugResult> od = p.getResults(varName);
             HashMap<String, DebugResult> drs = p.getResults();
-            //if (od.isEmpty()) continue;
-            watchedValues.addElements(getValuesFromDebugResult(variableInfo, drs));
+            watchedValues.addElements(getValuesFromDebugResults(variableInfo, drs));
         }
 
-        if (watchedValues.isEmpty()) {
 
-            throw new RuntimeException("Probe#runTest\n" +
-                    "there is not target value in watch point.");
+        if (watchedValues.isEmpty()) {
+            throw new RuntimeException("there is not target value in watch point.");
         }
         return watchedValues;
     }
 
     //primitive型の値のみを取得
     //variableInfoが参照型の場合、fieldを取得してその中から目的のprimitive型の値を探す
-    private List<AbstractProbe.ProbeInfo> getValuesFromDebugResult(VariableInfo targetInfo, HashMap<String, DebugResult> drs){
+    public List<AbstractProbe.ProbeInfo> getValuesFromDebugResults(VariableInfo targetInfo, HashMap<String, DebugResult> drs){
         List<AbstractProbe.ProbeInfo> pis = new ArrayList<>();
         drs.forEach((variable, dr) -> {
-            List<ValueInfo> vis = null;
-            try {
-                vis = new ArrayList<>(dr.getValues());
-            } catch (RuntimeException e) {
-                return;
-            }
-
             VariableInfo variableInfo = variable.equals(targetInfo.getVariableName(true, false)) ? targetInfo : null;
-
-            for (ValueInfo vi : vis) {
-                LocalDateTime createdAt = vi.getCreatedAt();
-                Location loc = dr.getLocation();
-                String variableName = (variableInfo == null) ? vi.getName() : variableInfo.getVariableName(true, true);
-                String value;
-                //対象の変数がnullの場合
-                if (vi.getValue().isEmpty()) {
-                    value = "null";
-                    pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName, value));
-                } else {
-                    //viがprobe対象
-                    if(variableInfo != null){
-                        value = getPrimitiveInfoFromReferenceType(vi, variableInfo).getValue();
-                        pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName, value));
-                    }
-                    //viがプリミティブ型の一次元配列
-                    else if(vi.getValue().contains("[") && !vi.getValue().contains("][")) {
-                        List<PrimitiveInfo> piList = getPrimitiveInfoFromArrayType(vi);
-                        for(int i = 0; i < piList.size(); i++){
-                            value = piList.get(i).getValue();
-                            pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName + "[" + i + "]", value));
-                        }
-                    }
-
-                    //viがプリミティブ型かそのラッパー
-                    else if(isPrimitive(vi)) {
-                        value = getPrimitiveInfoFromPrimitiveType(vi).getValue();
-                        pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName, value));
-                    }
-                }
-            }
+            pis.addAll(getValuesFromDebugResult(variableInfo, dr));
         });
         return pis;
     }
+
+    public List<AbstractProbe.ProbeInfo> getValuesFromDebugResult(VariableInfo variableInfo, DebugResult dr) {
+        List<ValueInfo> vis = null;
+        List<AbstractProbe.ProbeInfo> pis = new ArrayList<>();
+        try {
+            vis = new ArrayList<>(dr.getValues());
+        } catch (RuntimeException e) {
+            return null;
+        }
+
+        for (ValueInfo vi : vis) {
+            LocalDateTime createdAt = vi.getCreatedAt();
+            Location loc = dr.getLocation();
+            String variableName = (variableInfo == null) ? vi.getName() : variableInfo.getVariableName(true, false);
+            String value;
+            //対象の変数がnullの場合
+            if (vi.getValue().isEmpty()) {
+                value = "null";
+                pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName, value));
+            } else {
+                //viがprobe対象
+                if(variableInfo != null && variableInfo.getTargetField() != null){
+                    value = getPrimitiveInfoFromReferenceType(vi, variableInfo).getValue();
+                    pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName, value));
+                }
+                //viがプリミティブ型の一次元配列
+                else if(vi.getValue().contains("[") && !vi.getValue().contains("][")) {
+                    List<PrimitiveInfo> piList = getPrimitiveInfoFromArrayType(vi);
+                    for(int i = 0; i < piList.size(); i++){
+                        value = piList.get(i).getValue();
+                        pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName + "[" + i + "]", value));
+                    }
+                }
+
+                //viがプリミティブ型かそのラッパー
+                else if(isPrimitive(vi)) {
+                    value = getPrimitiveInfoFromPrimitiveType(vi).getValue();
+                    pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName, value));
+                }
+
+                else {
+                    //viが参照型
+                    //actualがnullかinstance ofの場合;
+                    value = vi.getValue();
+                    if (value.contains("(id")) {
+                        value = value.split("\\(")[0];
+                    }
+                    pis.add(new AbstractProbe.ProbeInfo(vi.getCreatedAt(), loc, vi.getName(), value));
+                }
+            }
+        }
+        return pis;
+    }
+
 
     private boolean isPrimitive(ValueInfo vi){
         Set<String> primitiveWrapper = new HashSet<>(List.of(
@@ -104,6 +117,7 @@ public class JisdInfoProcessor {
         if(law.contains("instance")) {
             String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
             return primitiveWrapper.contains(valueType);
+
         }
 
         //primitive型でもfieldの場合はObjectInfo型になるっぽい
@@ -125,11 +139,6 @@ public class JisdInfoProcessor {
         }
         //参照型の場合
         else {
-            //actualがnullの場合
-            if(variableInfo.getActualValue().equals("null")){
-                //System.err.println(vi.ch().get(0).getValue());
-                return new PrimitiveInfo(vi.getName(), vi.getStratum(), vi.getCreatedAt(), vi.getValue());
-            }
             ArrayList<ValueInfo> fieldElements = vi.ch();
             boolean isFound = false;
             String fieldName = variableInfo.getTargetField().getVariableName();
@@ -142,6 +151,7 @@ public class JisdInfoProcessor {
             }
             if(!isFound) throw new NoSuchElementException(fieldName + " is not found in fields of" + variableInfo.getVariableName(false, false));
         }
+
         throw new RuntimeException();
     }
 

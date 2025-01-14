@@ -57,6 +57,7 @@ public class StackTrace {
     //methodはシグニチャつき
     //depthにあるメソッドが呼び出された場所とdepthにあるメソッド名を返す
     public Pair<Integer, String> getCalleeMethodAndCallLocation(int depth){
+        if(st.isEmpty()) return null;
         int callLocation = st.getLine(depth + 1);
         int methodLocation = st.getLine(depth);
         String targetClass = st.getMethod(depth).split("#")[0];
@@ -80,6 +81,7 @@ public class StackTrace {
         } catch (NoSuchFileException e) {
             return null;
         }
+        if(method == null) return null;
         return Pair.of(callLocation, method);
     }
 }
