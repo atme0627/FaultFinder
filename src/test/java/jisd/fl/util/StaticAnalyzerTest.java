@@ -1,5 +1,10 @@
 package jisd.fl.util;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import experiment.defect4j.Defects4jUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
@@ -100,5 +105,15 @@ class StaticAnalyzerTest {
         String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
         List<Integer> result = StaticAnalyzer.getMethodCallingLine(locateMethod);
         System.out.println(Arrays.toString(result.toArray()));
+    }
+
+    @Test
+    void debug() {
+        Defects4jUtil.changeTargetVersion("Math", 98);
+        String testClass = "org.apache.commons.math.linear.BigMatrixImplTest";
+        Set<String> testMethods = TestUtil.getTestMethods(testClass);
+        for(String m : testMethods){
+            System.out.println(m);
+        }
     }
 }

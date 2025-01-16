@@ -1,5 +1,9 @@
 package jisd.fl.probe;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.util.FileUtil;
 
@@ -11,7 +15,7 @@ import java.util.Set;
 import java.util.function.ToDoubleBiFunction;
 
 public class ProbeExResult implements Serializable {
-    List<Element> per;
+    public List<Element> per;
     public ProbeExResult(){
         per = new ArrayList<>();
     }
@@ -52,7 +56,7 @@ public class ProbeExResult implements Serializable {
         return marking;
     }
 
-    public double probeExSuspWeight(String methodName, ToDoubleBiFunction<Integer, Integer> f){
+    public double probeExSuspScore(String methodName, ToDoubleBiFunction<Integer, Integer> f){
         double suspScore = 0;
         List<Element> elements = searchElementByMethod(methodName);
         for(Element e : elements){
@@ -76,48 +80,43 @@ public class ProbeExResult implements Serializable {
         }
     }
 
-    public void save(String dir, String fileName){
-        String covFileName = dir + "/" + fileName + ".probeEx";
-        FileUtil.createDirectory(dir);
+    public void generateJson(String dir, String fileName){
+        String outputFileName = fileName + "_probeEx.json";
+        FileUtil.initDirectory(dir);
         FileUtil.initFile(dir, fileName + ".txt");
+        FileUtil.initFile(dir, outputFileName);
 
-        File data = new File(covFileName);
-
-        try (PrintStream resultOut = new PrintStream(dir + "/" + fileName + ".txt")) {
-            data.createNewFile();
-            FileOutputStream fileOutputStream = new FileOutputStream(covFileName);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(this);
-            objectOutputStream.flush();
-            objectOutputStream.close();
-
-            print(resultOut);
+        try (PrintStream textOut = new PrintStream(dir + "/" + fileName + ".txt");
+             PrintStream jsonOut = new PrintStream(dir + "/" + outputFileName);
+             ) {
+            print(textOut);
+            DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
+            printer.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
+            jsonOut.println(new ObjectMapper().writer(printer).writeValueAsString(this));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static ProbeExResult load(String dir, String fileName){
-        //fileNameはprobeExで終わる
-        String covFileName = dir + "/" + fileName;
-
+    public static ProbeExResult loadJson(String dir){
+        File f = new File(dir);
         try {
-            FileInputStream fileInputStream = new FileInputStream(covFileName);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            ProbeExResult per = (ProbeExResult) objectInputStream.readObject();
-            objectInputStream.close();
-            return per;
-        } catch (IOException | ClassNotFoundException e) {
+            return new ObjectMapper().readValue(f, ProbeExResult.class);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    static class Element implements Comparable<Element>, Serializable{
-        String methodName;
-        int depth;
+    public static class Element implements Comparable<Element>, Serializable{
+        public String methodName;
+        public int depth;
         //同じprobeLine中で出現したメソッドの数
         //(同時に多く出現するほど疑いが弱くなるという仮定)
-        int countInLine;
+        public int countInLine;
+
+        @JsonCreator
+        public Element(){
+        }
 
         public Element(String methodName, int depth, int countInLine){
             this.methodName = methodName;

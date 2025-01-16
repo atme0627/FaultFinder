@@ -16,9 +16,13 @@ repositories {
 dependencies {
     implementation(fileTree(dir: 'locallib', include: ['jisd-0.3.0_bata.jar']))
     //defects4j
-    int i = 62
+    int i = 1
     implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/main/java'))
     implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test/java'))
+
+    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/java'))
+    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test'))
+
     implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/classes'))
     implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/test-classes'))
 
@@ -48,6 +52,8 @@ dependencies {
 
     //utility
     implementation "org.apache.commons:commons-lang3:3.10"
+    implementation("com.fasterxml.jackson.core:jackson-core:2.18.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
 
     //for test
     testImplementation platform('org.junit:junit-bom:5.10.0')

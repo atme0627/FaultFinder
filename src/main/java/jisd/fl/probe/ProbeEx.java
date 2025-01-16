@@ -52,8 +52,7 @@ public class ProbeEx extends AbstractProbe {
         }
 
         while(!probingTargets.isEmpty()) {
-            //深さ10で終了
-            if(depth > 10) break;
+            if(depth > 9) break;
             if(!isArgument) depth += 1;
             for (VariableInfo target : probingTargets) {
                 if(isProbed(target))continue;
@@ -119,7 +118,7 @@ public class ProbeEx extends AbstractProbe {
             String argVariable = getArgumentVariable(pr);
             if(argVariable == null) return vis;
             //argVariableが純粋な変数でない（関数呼び出しなどを行っている）場合、probeは行わない
-            if(!argVariable.matches("[A-Za-z][A-Za-z0-9]*")) return vis;
+            if(!argVariable.matches("[A-Za-z][A-Za-z0-9]*") || argVariable.equals("null")) return vis;
 
             Pair<Boolean, String> isFieldVarInfo =  isFieldVariable(argVariable, pr.getCallerMethod().getRight());
             boolean isField = isFieldVarInfo.getLeft();
@@ -140,7 +139,6 @@ public class ProbeEx extends AbstractProbe {
         else {
             Set<String> neighborVariables = getNeighborVariables(pr);
             for(String n : neighborVariables){
-
                 String variableName = n;
                 boolean isArray;
                 boolean isField = false;
@@ -149,14 +147,16 @@ public class ProbeEx extends AbstractProbe {
                 if(n.contains("this.")){
                     isField = true;
                     variableName = n.substring("this.".length());
+                    //thisなしのものが観測されている場合はスキップ
+                    if(neighborVariables.contains(variableName)) continue;
                 }
                 //配列かどうか判定
                 if(n.contains("[")){
                     variableName = variableName.split("\\[")[0];
                     arrayNth = Integer.parseInt(n.substring(n.indexOf("[") + 1, n.indexOf("]")));
                     isArray = true;
-                    //配列のindexが4以上のものはスキップ
-                    if(arrayNth >= 2) continue;
+                    //配列のindexが3以上のものはスキップ
+                    if(arrayNth >= 3) continue;
                 }
                 else {
                     arrayNth = -1;
@@ -263,12 +263,12 @@ public class ProbeEx extends AbstractProbe {
 
             for (VariableDeclarator vd : vds) {
                 if (vd.getName().toString().equals(variable)) {
-                    return Pair.of(true, className);
+                    return Pair.of(true, targetClass);
                 }
             }
 
             //親クラスを探す
-            ClassInfo ci = targetSif.createClass(className);
+            ClassInfo ci = createClassInfo(className);
             className = ci.superName();
             if(className.isEmpty()) break;
             System.out.println("parent: " + className);

@@ -38,6 +38,6 @@ public class probeEx {
         Defects4jUtil.changeTargetVersion(project, bugId);
         ProbeEx prbEx = new ProbeEx(fai);
         ProbeExResult per = prbEx.run(3000);
-        per.save(dir, fileName);
+        per.generateJson(dir, fileName);
     }
 }

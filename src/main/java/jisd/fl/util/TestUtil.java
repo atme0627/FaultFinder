@@ -1,5 +1,14 @@
 package jisd.fl.util;
 
+import com.github.javaparser.ast.AccessSpecifier;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 
@@ -9,7 +18,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
+import java.nio.file.NoSuchFileException;
+import java.util.*;
+import java.util.function.Function;
 
 public  class TestUtil {
     public static void compileTestClass(String testClassName) {
@@ -60,7 +71,7 @@ public  class TestUtil {
         Process proc = Runtime.getRuntime().exec(cmd);
         proc.waitFor();
 
-        //debug
+//        //debug
 //        String line = null;
 //        System.out.println("STDOUT---------------");
 //        try ( var buf = new BufferedReader( new InputStreamReader( proc.getInputStream() ) ) ) {
@@ -107,7 +118,74 @@ public  class TestUtil {
         }
 
         dbg.setSrcDir(targetSrcDir, testSrcDir);
-        DebugResult.setDefaultMaxRecordNoOfValue(200);
+        DebugResult.setDefaultMaxRecordNoOfValue(100);
         return dbg;
+    }
+
+    //targetSrcPathは最後"/"なし
+    //targetClassNameはdemo.SortTestのように記述
+    //返り値は demo.SortTest#test1(int a)の形式
+    //publicメソッド以外は取得しない
+    //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
+    public static Set<String> getTestMethods(String targetClassName)  {
+        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
+        Set<String> methodNames = new LinkedHashSet<>();
+        Function<CallableDeclaration<?>, String> methodNameBuilder = (n) -> (
+                targetClassName.replace("/", ".") + "#" + n.getNameAsString());
+
+        CompilationUnit unit;
+        try {
+            unit = JavaParserUtil.parseClass(targetClassName, true);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+        String shortName = targetClassName.substring(targetClassName.lastIndexOf(".") + 1);
+        ClassOrInterfaceDeclaration coid = unit.getClassByName(shortName).get();
+
+        //テストクラスがjunit4スタイルのものか判定
+        boolean junit4Style = false;
+        List<ImportDeclaration> ids = unit.findAll(ImportDeclaration.class);
+        for(ImportDeclaration id : ids){
+            if(id.getName().toString().equals("org.junit.Test")) junit4Style = true;
+        }
+
+        //親クラスがいる場合、そっちのテストクラスも探す
+        for(ClassOrInterfaceType parent : coid.getExtendedTypes()){
+            if(parent.getName().toString().equals(shortName)) continue;
+            if(parent.getName().toString().equals("TestCase")) continue;
+
+            String fullName = StaticAnalyzer.getClassNameWithPackage(testSrcDir, parent.getNameAsString());
+            methodNames.addAll(getTestMethods(fullName));
+        }
+
+        if(!junit4Style) {
+            List<ClassOrInterfaceDeclaration> childlen = coid.findAll(ClassOrInterfaceDeclaration.class);
+            for (ClassOrInterfaceDeclaration child : childlen) {
+                if (child.equals(coid)) continue;
+                coid.remove(child);
+            }
+            List<MethodDeclaration> mds = coid.findAll(MethodDeclaration.class);
+            for (MethodDeclaration md : mds) {
+                if(md.isPublic()
+                    && md.getAccessSpecifier() == AccessSpecifier.PUBLIC
+                    && md.getType().isVoidType()
+                    && md.getParameters().isEmpty()
+                    && md.getAnnotations().isEmpty()
+                    && md.findAncestor(MethodDeclaration.class).isEmpty()
+                    && !md.getNameAsString().equals("setUp")){
+                    methodNames.add(methodNameBuilder.apply(md));
+                }
+            }
+        }
+        else {
+            List<MethodDeclaration> mds = coid.findAll(MethodDeclaration.class);
+            for (MethodDeclaration md : mds) {
+                if(md.isAnnotationPresent("Test")){
+                    methodNames.add(methodNameBuilder.apply(md));
+                }
+            }
+        }
+
+        return methodNames;
     }
 }

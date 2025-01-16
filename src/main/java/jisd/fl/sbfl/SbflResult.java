@@ -4,14 +4,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.text.Format;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.lang.Math.min;
 
 public class SbflResult {
     List<MutablePair<String, Double>> result;
+    private Set<String> highlightMethods = new HashSet<>();
 
     public SbflResult(){
         result = new ArrayList<>();
@@ -43,7 +45,7 @@ public class SbflResult {
         int classLength = l.getLeft();
         int methodLength = l.getRight();
 
-        String header = "| RANK |" +
+        String header = "|      | RANK |" +
                 StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + " CLASS NAME " +
                         "|" + StringUtils.repeat(' ', methodLength - "METHOD NAME".length()) + " METHOD NAME " +
                 "| SUSP SCORE |";
@@ -55,14 +57,14 @@ public class SbflResult {
         System.out.println(partition);
         int previousRank = 1;
         for(int i = 0; i < min(top, getSize()); i++){
-            Pair<String, Double> element = result.get(i);
+            MutablePair<String, Double> element = result.get(i);
             //同率を考慮する
-            int rank;
+            int rank = 0;
             if(i == 0) {
                 rank = i+1;
             }
             else {
-                if(String.format("%.4f", element.getRight()).equals(String.format("%.4f", result.get(i-1).getRight()))){
+                if(isSameScore(element, result.get(i-1))){
                     rank = previousRank;
                 }
                 else {
@@ -70,19 +72,56 @@ public class SbflResult {
                 }
             }
 
-            System.out.println("| " + String.format("%3d ", rank) + " | " +
+            String colorBegin = "";
+            String coloerEnd = "";
+            if(highlightMethods.contains(element.getLeft())){
+                colorBegin = "\u001b[00;41m";
+                coloerEnd = "\u001b[00m";
+            }
+            System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
                     StringUtils.leftPad(element.getLeft().split("#")[0], classLength) + " | " +
                     StringUtils.leftPad(element.getLeft().split("#")[1], methodLength) + " | " +
-                    String.format("  %.4f  ", element.getRight()) + " |");
+                    String.format("  %.4f  ", element.getRight()) + " |" + coloerEnd);
             previousRank = rank;
         }
         System.out.println(partition);
         System.out.println();
     }
 
-    public String getMethodOfRank(int rank){
-        if(!rankValidCheck(rank)) return "";
-        return result.get(rank - 1).getLeft();
+    public String getElementAtPlace(int place){
+        if(!rankValidCheck(place)) return "";
+        return result.get(place - 1).getLeft();
+    }
+
+    //同率も考慮した絶対順位
+    public double getRankOfElement(String elementName){
+        if(!isElementExist(elementName)) {
+            System.err.println(elementName + " is not exist.");
+            return -1;
+        }
+
+        int rankTieIgnored = 0;
+        MutablePair<String, Double> target = searchElement(elementName);
+        for(int i = 0; i < getSize(); i++){
+            if(compare(target, result.get(i)) > 0) {
+                rankTieIgnored++;
+            }
+            else {
+                break;
+            }
+        }
+
+        int numOfTie = getNumOfTie(elementName);
+        return rankTieIgnored + (double) (numOfTie + 1) / 2;
+    }
+
+    public int getNumOfTie(String elementName){
+        MutablePair<String, Double> target = searchElement(elementName);
+        int numOfTie = 0;
+        for(int i = 0; i < getSize(); i++){
+            if(compare(target, result.get(i)) == 0) numOfTie++;
+        }
+        return numOfTie;
     }
 
     public boolean rankValidCheck(int rank){
@@ -94,11 +133,19 @@ public class SbflResult {
     }
 
     public double getSuspicious(String targetElementName){
+        if(!isElementExist(targetElementName)) {
+            System.err.println(targetElementName + " is not exist.");
+            return -1.0;
+        }
         MutablePair<String, Double> element = searchElement(targetElementName);
         return element.getRight();
     }
 
     public void setSuspicious(String targetElementName, double suspicious){
+        if(!isElementExist(targetElementName)) {
+            System.err.println(targetElementName + " is not exist.");
+            return;
+        }
         MutablePair<String, Double> element = searchElement(targetElementName);
         element.setValue(suspicious);
     }
@@ -118,6 +165,11 @@ public class SbflResult {
         return false;
     }
 
+    public boolean isTop(String targetElementName){
+        MutablePair<String, Double> e = searchElement(targetElementName);
+        return isSameScore(e, result.get(0));
+    }
+
     private Pair<Integer, Integer> maxLengthOfName(){
         int classLength = 0;
         int methodLength = 0;
@@ -128,5 +180,23 @@ public class SbflResult {
         }
 
         return Pair.of(classLength, methodLength);
+    }
+
+    //小数点以下4桁までで比較
+    private boolean isSameScore(MutablePair<String, Double> e1, MutablePair<String, Double> e2){
+        return String.format("%.4f", e1.getRight()).equals(String.format("%.4f", e2.getRight()));
+    }
+
+    private int compare(MutablePair<String, Double> e1, MutablePair<String, Double> e2){
+        if(isSameScore(e1, e2)) return 0;
+        return e1.getRight().compareTo(e2.getRight());
+    }
+
+    public Set<String> getHighlightMethods() {
+        return highlightMethods;
+    }
+
+    public void setHighlightMethods(Set<String> highlightMethods) {
+        this.highlightMethods = highlightMethods;
     }
 }

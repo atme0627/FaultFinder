@@ -42,8 +42,8 @@ public class TestLauncher {
 
         System.out.println("EXEC: " + testMethodName);
         launcher.execute(request);
-        //listener.getSummary().printFailuresTo(new PrintWriter(System.out));
-        //listener.getSummary().printTo(new PrintWriter(System.out));
+//        listener.getSummary().printFailuresTo(new PrintWriter(System.out));
+//        listener.getSummary().printTo(new PrintWriter(System.out));
         boolean isTestPassed = listener.getSummary().getTotalFailureCount() == 0;
 
         System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));

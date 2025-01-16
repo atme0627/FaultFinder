@@ -1,8 +1,8 @@
 package jisd.fl.sbfl;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class SbflStatus implements Serializable {
+public class SbflStatus {
     public int ep = 0;
     public int ef = 0;
     public int np = 0;
@@ -49,6 +49,7 @@ public class SbflStatus implements Serializable {
         return formula.calc(this);
     }
 
+    @JsonIgnore
     public boolean isElementExecuted(){
      return (ep != 0) || (ef != 0);
     }

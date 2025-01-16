@@ -116,13 +116,17 @@ public class StaticAnalyzer {
         class MethodVisitor extends VoidVisitorAdapter<String>{
             @Override
             public void visit(MethodDeclaration n, String arg) {
-                rangeOfMethods.put(targetClassName.replace("/", ".")  + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
+                if(!rangeOfMethods.containsKey(targetClassName.replace("/", ".")  + "#" + n.getSignature())) {
+                    rangeOfMethods.put(targetClassName.replace("/", ".") + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
+                }
                 super.visit(n, arg);
             }
 
             @Override
             public void visit(ConstructorDeclaration n, String arg) {
-                rangeOfMethods.put(targetClassName.replace("/", ".")  + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
+                if(!rangeOfMethods.containsKey(targetClassName.replace("/", ".")  + "#" + n.getSignature())) {
+                    rangeOfMethods.put(targetClassName.replace("/", ".") + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
+                }
                 super.visit(n, arg);
             }
         }
