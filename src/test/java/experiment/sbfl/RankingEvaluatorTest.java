@@ -33,7 +33,6 @@ class RankingEvaluatorTest {
         Defects4jUtil.changeTargetVersion(project, bugId);
         Set<String> bugMethods = RankingEvaluator.loadBugMethods(project, bugId);
 
-        CoverageAnalyzer ca = new CoverageAnalyzer();
         CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
         RankingEvaluator re = new RankingEvaluator(cov, Granularity.METHOD, Formula.OCHIAI);
         re.ff.setHighlightMethods(bugMethods);

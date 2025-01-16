@@ -2,6 +2,7 @@ package experiment.main;
 
 import experiment.coverage.CoverageGenerator;
 import experiment.defect4j.Defects4jUtil;
+import jisd.fl.coverage.CoverageCollection;
 
 import java.util.HashSet;
 import java.util.List;
@@ -12,8 +13,17 @@ public class Coverage {
         String project = "Math";
         int number0fBugs = 106;
 
-        for(int bugId = 5; bugId <= number0fBugs; bugId++){
+        for(int bugId = 102; bugId <= number0fBugs; bugId++){
         System.out.println("Coverage measurement: [PROJECT] " + project + "  [BUG ID] " + bugId);
+//            try{
+//                CoverageCollection cc = CoverageGenerator.loadAll(project, bugId);
+//                System.out.println("Already generated.");
+//                continue;
+//            }
+//            catch (RuntimeException e){
+//                System.out.println(e);
+//            }
+
             Defects4jUtil.changeTargetVersion(project, bugId);
             Defects4jUtil.CompileBuggySrc(project, bugId);
             List<String> testMethods = Defects4jUtil.getFailedTestMethods(project, bugId);

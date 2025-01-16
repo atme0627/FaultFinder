@@ -1,5 +1,6 @@
 package jisd.fl.coverage;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.util.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
@@ -12,15 +13,18 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.*;
 
-public class CoverageOfTarget implements Serializable {
-    protected String targetClassName;
-    protected Set<String> targetMethodNames;
-
+public class CoverageOfTarget {
+    public String targetClassName;
+    public Set<String> targetMethodNames;
 
     //各行のカバレッジ情報 (行番号, メソッド名, クラス名) --> lineCoverage status
-    protected Map<String, SbflStatus> lineCoverage;
-    protected Map<String, SbflStatus> methodCoverage;
-    protected Map<String, SbflStatus> classCoverage;
+    public Map<String, SbflStatus> lineCoverage;
+    public Map<String, SbflStatus> methodCoverage;
+    public Map<String, SbflStatus> classCoverage;
+
+    @JsonCreator
+    public CoverageOfTarget(){
+    }
 
     public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;

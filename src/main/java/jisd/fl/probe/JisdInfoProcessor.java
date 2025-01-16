@@ -158,8 +158,17 @@ public class JisdInfoProcessor {
 
     private ArrayList<PrimitiveInfo> getPrimitiveInfoFromArrayType(ValueInfo vi) {
         //    vi.getValue() --> instance of double[1] (id=2814)
+        ArrayList<PrimitiveInfo> pis = new ArrayList<>();
         String law = vi.getValue();
-        String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
+        String valueType;
+        try {
+            valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
+        }
+        catch(StringIndexOutOfBoundsException e){
+            System.err.println(e);
+            System.err.println("value: " + law);
+            return pis;
+        }
 
         Set<String> primitiveType = new HashSet<>(List.of(
                 "boolean",
@@ -174,11 +183,11 @@ public class JisdInfoProcessor {
 
         //プリミティブ型の配列のとき
         if(primitiveType.contains(valueType.substring(0, valueType.indexOf("[")))){
-            ArrayList<PrimitiveInfo> pis = new ArrayList<>();
             vi.ch().forEach(e -> pis.add(getPrimitiveInfoFromPrimitiveType(e)));
             return pis;
         }
-        throw new RuntimeException(vi.getName() + "is not array.");
+        System.err.println(vi.getName() + " is not primitive array.");
+        return pis;
     }
 
 

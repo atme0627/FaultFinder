@@ -73,6 +73,11 @@ public class FileUtil {
         }
     }
 
+    public static Set<String> getFileNames(String dir){
+        File f = new File(dir);
+        return new HashSet<>(List.of(Objects.requireNonNull(f.list())));
+    }
+
     public static Set<String> getFileNames(String dir, String suffix){
         File f = new File(dir);
         return new HashSet<>(List.of(Objects.requireNonNull(f.list((d, name) -> name.endsWith(suffix)))));

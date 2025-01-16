@@ -12,13 +12,14 @@ import jisd.fl.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.function.ToDoubleBiFunction;
 
 
 public class FaultFinder {
     SbflResult sbflResult;
+    private Set<String> highlightMethods = new HashSet<>();
 
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
     private double removeConst = 0.8;
@@ -30,12 +31,10 @@ public class FaultFinder {
     private double probeC3 = 0.1;
 
     //probeExの疑惑値計算に使用する変数
-    private double probeExC = 2.0;
     private double probeExLambda = 0.8;
 
-    private ToDoubleBiFunction<Integer, Integer> probeExfunction
-            = (depth, countInLine) -> probeExC * (Math.pow(probeExLambda, depth - 1));
-
+    //probeExの疑惑値計算に使用する変数
+    private int rankingSize = 20;
     final Granularity granularity;
 
     public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
@@ -64,17 +63,22 @@ public class FaultFinder {
         return sbflResult;
     }
 
-    public void remove(int rank) throws IOException {
+    public void remove(int rank) {
         if(!validCheck(rank)) return;
         IblResult iblResult = new IblResult();
 
-        String targetMethod = sbflResult.getMethodOfRank(rank);
+        String targetMethod = sbflResult.getElementAtPlace(rank);
         String contextClass = targetMethod.split("#")[0];
         System.out.println("[  REMOVE  ] " + targetMethod);
         iblResult.addElement(targetMethod, sbflResult.getSuspicious(targetMethod), 0.0);
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true, true);
+        Set<String> contexts = null;
+        try {
+            contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true, true);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         for(String contextMethod : contexts) {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
@@ -86,19 +90,24 @@ public class FaultFinder {
         iblResult.print();
 
         sbflResult.sort();
-        sbflResult.printFLResults();
+        sbflResult.printFLResults(rankingSize);
     }
 
-    public void susp(int rank) throws IOException {
+    public void susp(int rank) {
         if(!validCheck(rank)) return;
         IblResult iblResult = new IblResult();
-        String targetMethod = sbflResult.getMethodOfRank(rank);
+        String targetMethod = sbflResult.getElementAtPlace(rank);
         System.out.println("[  SUSP  ] " + targetMethod);
         String contextClass = targetMethod.split("#")[0];
         iblResult.addElement(targetMethod, sbflResult.getSuspicious(targetMethod), 0.0);
         sbflResult.setSuspicious(targetMethod, 0);
 
-        Set<String> contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true, true);
+        Set<String> contexts = null;
+        try {
+            contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true, true);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         for(String contextMethod : contexts) {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
@@ -109,12 +118,11 @@ public class FaultFinder {
 
         iblResult.print();
         sbflResult.sort();
-        sbflResult.printFLResults();
+        sbflResult.printFLResults(rankingSize);
     }
 
     public void probe(FailedAssertInfo fai, int sleepTime){
         VariableInfo variableInfo = fai.getVariableInfo();
-        IblResult iblResult = new IblResult();
         System.out.println("[  PROBE  ] " + fai.getTestMethodName() + ": " + variableInfo);
         Probe prb = new Probe(fai);
         ProbeResult probeResult = null;
@@ -125,9 +133,12 @@ public class FaultFinder {
             throw new RuntimeException("FaultFinder#probe\n" +
                     "probeLine does not have methods.");
         }
+        probe(probeResult);
+    }
 
+    public void probe(ProbeResult probeResult){
+        IblResult iblResult = new IblResult();
         System.out.println("probe method: " + probeResult.getProbeMethod());
-
         //calc suspicious score
         double callerFactor = 0.0;
         double siblingFactor = 0.0;
@@ -158,29 +169,40 @@ public class FaultFinder {
 
         iblResult.print();
         sbflResult.sort();
-        sbflResult.printFLResults();
+        sbflResult.printFLResults(rankingSize);
     }
+
+
 
     public void probeEx(FailedAssertInfo fai, int sleepTime){
         VariableInfo variableInfo = fai.getVariableInfo();
-        IblResult iblResult = new IblResult();
         System.out.println("[  PROBE EX  ] " + fai.getTestMethodName() + ": " + variableInfo);
         ProbeEx prbEx = new ProbeEx(fai);
         ProbeExResult probeExResult = null;
 
         probeExResult = prbEx.run(sleepTime);
+        probeEx(probeExResult);
+    }
 
+    public void probeEx(ProbeExResult probeExResult){
         //set suspicious score
+        IblResult iblResult = new IblResult();
         double preScore;
         for(String markingMethod : probeExResult.markingMethods()){
+            if(!sbflResult.isElementExist(markingMethod)) continue;
             preScore = sbflResult.getSuspicious(markingMethod);
-            sbflResult.setSuspicious(markingMethod, preScore * probeExResult.probeExSuspWeight(markingMethod, probeExfunction));
+
+            double finalPreScore = preScore;
+            ToDoubleBiFunction<Integer, Integer> probeExfunction
+                    = (depth, countInLine) -> finalPreScore * (Math.pow(getProbeExLambda(), depth));
+
+            sbflResult.setSuspicious(markingMethod, probeExResult.probeExSuspScore(markingMethod, probeExfunction));
             iblResult.addElement(markingMethod, preScore, sbflResult.getSuspicious(markingMethod));
         }
 
         iblResult.print();
         sbflResult.sort();
-        sbflResult.printFLResults();
+        sbflResult.printFLResults(rankingSize);
     }
 
     private boolean validCheck(int rank){
@@ -231,6 +253,31 @@ public class FaultFinder {
 
     public void setProbeC3(double probeC3) {
         this.probeC3 = probeC3;
+    }
+
+    public double getProbeExLambda() {
+        return probeExLambda;
+    }
+
+    public void setProbeExLambda(double probeExLambda) {
+        this.probeExLambda = probeExLambda;
+    }
+
+    public int getRankingSize() {
+        return rankingSize;
+    }
+
+    public void setRankingSize(int rankingSize) {
+        this.rankingSize = rankingSize;
+    }
+
+    public Set<String> getHighlightMethods() {
+        return highlightMethods;
+    }
+
+    public void setHighlightMethods(Set<String> highlightMethods) {
+        this.highlightMethods = highlightMethods;
+        this.sbflResult.setHighlightMethods(highlightMethods);
     }
 
     static class IblResult {

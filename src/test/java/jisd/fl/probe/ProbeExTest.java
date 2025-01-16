@@ -12,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 class ProbeExTest {
     String project = "Math";
     int bugId = 1;
@@ -59,7 +61,7 @@ class ProbeExTest {
         Path target = Paths.get(dir + "/" + fileName + ".java_data");
         FileUtil.initFile(dir, fileName + ".java_data");
         try {
-            Files.copy(src, target);
+            Files.copy(src, target, REPLACE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -23,6 +23,8 @@ public class ProbeResult {
     //実際にactualとなっていたことが観測された行
     private int watchedAt;
 
+    //probeLineの特定ができなかったかどうか
+    private boolean notFound = false;
     public ProbeResult(){
     }
 
@@ -104,5 +106,13 @@ public class ProbeResult {
 
     public void setWatchedAt(int watchedAt) {
         this.watchedAt = watchedAt;
+    }
+
+    public boolean isNotFound() {
+        return notFound;
+    }
+
+    public void setNotFound(boolean notFound) {
+        this.notFound = notFound;
     }
 }

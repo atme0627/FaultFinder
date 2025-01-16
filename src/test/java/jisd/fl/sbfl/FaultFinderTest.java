@@ -46,7 +46,7 @@ class FaultFinderTest {
         int bugId = 87;
 
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName, true);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         SbflResult result = ff.getFLResults();
         result.printFLResults();
@@ -58,7 +58,7 @@ class FaultFinderTest {
         int bugId = 87;
 
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName, true);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.remove(1);
     }
@@ -69,7 +69,7 @@ class FaultFinderTest {
         int bugId = 87;
 
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName, true);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.susp(2);
     }
@@ -80,7 +80,7 @@ class FaultFinderTest {
         int bugId = 87;
 
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName, true);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probe(fai, 3000);
     }
@@ -91,7 +91,7 @@ class FaultFinderTest {
         int bugId = 87;
 
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName, true);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probeEx(fai, 3000);
     }
@@ -102,7 +102,7 @@ class FaultFinderTest {
         int bugId = 87;
 
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName, true);
+        CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probe(fai, 3000);
         ff.remove(1);

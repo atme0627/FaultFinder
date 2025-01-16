@@ -52,7 +52,7 @@ public class ProbeEx extends AbstractProbe {
         }
 
         while(!probingTargets.isEmpty()) {
-            if(depth > 9) break;
+            //if(depth > 9) break;
             if(!isArgument) depth += 1;
             for (VariableInfo target : probingTargets) {
                 if(isProbed(target))continue;
