@@ -1,5 +1,6 @@
 package jisd.fl.util;
 
+import com.sun.jdi.*;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import org.junit.jupiter.api.Test;
@@ -18,23 +19,32 @@ class TestLauncherTest {
 
     @Test
     void jisdtest1(){
-        String testMethodName = "org.apache.commons.math.stat.regression.SimpleRegressionTest#testSSENonNegative()";
+        String testMethodName = "org.apache.commons.math3.fraction.BigFractionTest#testDigitLimitConstructor()";
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
         String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
 
         Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
         dbg.setSrcDir(testSrcDir, targetSrcDir);
 
-        dbg.setMain("org.apache.commons.math.stat.regression.SimpleRegressionTest");
-        dbg.stopAt(275);
-        dbg.run(5000);
-        dbg.step(2);
-        dbg.locals();
-        List<DebugResult> drs = dbg.getResults();
-
-        for(DebugResult dr : drs){
-            System.out.println(dr.getLocation().getVarName() + ": " + dr.lv());
+        dbg.setMain("org.apache.commons.math3.fraction.BigFraction");
+        dbg.stopAt(274);
+        dbg.stopAt(283);
+        dbg.stopAt(284);
+        dbg.stopAt(300);
+        dbg.run(3000);
+        ThreadReference th = dbg.thread();
+        for(int i = 0; i < 4; i++) {
+            dbg.step();
+            try {
+                List<StackFrame> st = th.frames();
+                Location loc = st.get(0).location();
+                System.out.println(loc.method().toString());
+            } catch (IncompatibleThreadStateException e) {
+                throw new RuntimeException(e);
+            }
+            dbg.cont(10);
         }
+
 
     }
 }

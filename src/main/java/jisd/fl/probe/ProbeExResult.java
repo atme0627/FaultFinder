@@ -80,9 +80,12 @@ public class ProbeExResult implements Serializable {
         }
     }
 
+    public void save(String dir, String fileName){
+        generateJson(dir, fileName);
+    }
+
     public void generateJson(String dir, String fileName){
         String outputFileName = fileName + "_probeEx.json";
-        FileUtil.initDirectory(dir);
         FileUtil.initFile(dir, fileName + ".txt");
         FileUtil.initFile(dir, outputFileName);
 

@@ -4,7 +4,6 @@ import experiment.defect4j.Defects4jUtil;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.util.FileUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,16 +15,21 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class ProbeExTest {
     String project = "Math";
-    int bugId = 1;
+    int bugId = 5;
 
-    String testMethodName = "org.apache.commons.math3.fraction.BigFractionTest#testDigitLimitConstructor()";
-    String locate = "org.apache.commons.math3.fraction.BigFraction#BigFraction(double, double, int, int)";
-    String variableName = "p2";
+    String testClassName = "org.apache.commons.math3.complex.ComplexTest";
+    String shortTestMethodName = "testReciprocalZero";
+
+    String testMethodName = testClassName + "#" + shortTestMethodName + "()";
+
+    String variableName = "real";
     boolean isPrimitive = true;
-    boolean isField = false;
+    boolean isField = true;
     boolean isArray = false;
     int arrayNth = -1;
-    String actual = "2499999794";
+    String actual = "0.0";
+
+    String locate = "org.apache.commons.math3.complex.Complex#reciprocal()";
 
 
     String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";
@@ -55,11 +59,11 @@ class ProbeExTest {
         ProbeExResult pr = prbEx.run(5000);
         pr.print();
 
-        pr.generateJson(dir, fileName);
+        pr.save(dir, fileName);
+
 
         Path src = Paths.get("src/test/java/jisd/fl/probe/ProbeExTest.java");
         Path target = Paths.get(dir + "/" + fileName + ".java_data");
-        FileUtil.initFile(dir, fileName + ".java_data");
         try {
             Files.copy(src, target, REPLACE_EXISTING);
         } catch (IOException e) {
@@ -68,3 +72,5 @@ class ProbeExTest {
 
     }
 }
+
+

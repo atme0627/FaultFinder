@@ -5,10 +5,6 @@ import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
-
-import java.io.PrintWriter;
-
-import static java.lang.System.exit;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
 public class TestLauncher {
@@ -26,7 +22,7 @@ public class TestLauncher {
         String testMethodName = args[0];
         TestLauncher tl = new TestLauncher(testMethodName);
         boolean isTestPassed = tl.runTest();
-        exit(isTestPassed ? 0 : 1);
+        System.exit(isTestPassed ? 0 : 1);
     }
 
     public boolean runTest() {

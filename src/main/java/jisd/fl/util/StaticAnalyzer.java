@@ -251,7 +251,7 @@ public class StaticAnalyzer {
         throw new RuntimeException(shortMethodName + " is not found.");
     }
 
-    private static String shortMethodName(String fullMethodName){
+    public static String shortMethodName(String fullMethodName){
         String name = fullMethodName.split("\\(")[0];
         String args = fullMethodName.substring(fullMethodName.indexOf("(")+1, fullMethodName.indexOf(")"));
         List<String> argList = new ArrayList<>(List.of(args.split(", ")));

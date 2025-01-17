@@ -72,15 +72,15 @@ public  class TestUtil {
         proc.waitFor();
 
 //        //debug
-//        String line = null;
+        String line = null;
 //        System.out.println("STDOUT---------------");
 //        try ( var buf = new BufferedReader( new InputStreamReader( proc.getInputStream() ) ) ) {
 //            while( ( line = buf.readLine() ) != null ) System.out.println( line );
 //        }
-//        System.out.println("STDERR---------------");
-//        try ( var buf = new BufferedReader( new InputStreamReader( proc.getErrorStream() ) ) ) {
-//            while( ( line = buf.readLine() ) != null ) System.out.println( line );
-//        }
+        System.out.println("STDERR---------------");
+        try ( var buf = new BufferedReader( new InputStreamReader( proc.getErrorStream() ) ) ) {
+            while( ( line = buf.readLine() ) != null ) System.err.println( line );
+        }
 
         //execファイルが生成されるまで待機
         while(true){
@@ -101,12 +101,11 @@ public  class TestUtil {
         final String junitClassPath = PropertyLoader.getJunitClassPaths();
         String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-
         Debugger dbg;
         while(true) {
             try {
                 dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethodName,
-                        " -cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
+                        "-Xmx2048m -cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
                 break;
             } catch (RuntimeException ignored) {
                 try {
@@ -118,7 +117,7 @@ public  class TestUtil {
         }
 
         dbg.setSrcDir(targetSrcDir, testSrcDir);
-        DebugResult.setDefaultMaxRecordNoOfValue(100);
+        DebugResult.setDefaultMaxRecordNoOfValue(1000);
         return dbg;
     }
 

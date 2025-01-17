@@ -5,9 +5,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.ObjectCreationExpr;
-import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
 import com.github.javaparser.ast.stmt.Statement;
@@ -15,6 +13,7 @@ import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.JavaParserUtil;
+import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.StaticAnalyzer;
 import jisd.info.ClassInfo;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,10 +25,13 @@ import java.util.*;
 //理想的には、"==" と同じ方法で判定したいが、型の問題で難しそう
 public class ProbeEx extends AbstractProbe {
     Set<VariableInfo> probedValue;
+    Set<String> targetClasses;
 
     public ProbeEx(FailedAssertInfo assertInfo) {
         super(assertInfo);
         probedValue = new HashSet<>();
+        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+        targetClasses = StaticAnalyzer.getClassNames(targetSrcDir);
     }
 
     public ProbeExResult run(int sleepTime) {
@@ -64,7 +66,7 @@ public class ProbeEx extends AbstractProbe {
                 if(pr.isArgument()){
                     //感染した変数が引数のものだった場合
                     Pair<Integer, String> caller = getCallerMethod(pr.getWatchedAt(), target);
-                    if(caller != null)  {
+                    if(targetClasses.contains(caller.getRight().split("#")[0]))  {
                         int probeLine = caller.getLeft();
                         Pair<Integer, Integer> probeLines = Pair.of(probeLine, probeLine);
                         pr.setCallerMethod(caller);
@@ -100,11 +102,14 @@ public class ProbeEx extends AbstractProbe {
         }
 
         //probe lineが所属するmethodをmarking methodに追加
-        markingMethods.add(pr.getProbeMethod());
-        MethodCollection calledMethods = getCalleeMethods(testMethod, pr.getProbeMethod());
+        if(targetClasses.contains(pr.getProbeMethod().split("#")[0])) {
+            markingMethods.add(pr.getProbeMethod());
+        }
+
         Pair<Integer, Integer> lines = pr.getProbeLines();
-        for(int i = lines.getLeft(); i <= lines.getRight(); i++){
-            markingMethods.addAll(calledMethods.searchMethodsFromLine(i));
+        Set<String> calledMethods = getCalleeMethods(testMethod, pr.getProbeMethod(), lines);
+        for(String called : calledMethods){
+            if(targetClasses.contains(called.split("#")[0])) markingMethods.add(called);
         }
         return markingMethods;
     }
@@ -352,14 +357,25 @@ public class ProbeEx extends AbstractProbe {
         Map<Integer, Pair<Integer, Integer>> rangeOfStatements
                 = StaticAnalyzer.getRangeOfAllStatements(locateMethod.split("#")[0]);
         Pair<Integer, Integer> lines = rangeOfStatements.getOrDefault(line, Pair.of(line, line));
+        String calledMethod = pr.getProbeMethod();
+        calledMethod = calledMethod.substring(calledMethod.indexOf("#")+1, calledMethod.indexOf("("));
 
         int finalIndex = index;
+        String finalCalledMethod = calledMethod;
         class BlockStmtVisitor extends GenericVisitorAdapter<String, Integer> {
             @Override
             public String visit(final MethodCallExpr n, final Integer line) {
                 if (!(n.getEnd().get().line < lines.getLeft() || lines.getRight() < n.getBegin().get().line)) {
-                    if(n.getArguments().size() > finalIndex) {
-                        return n.getArgument(finalIndex).toString();
+                    if (n.getNameAsString().equals(finalCalledMethod)) {
+                        if (n.getArguments().size() > finalIndex) {
+                            Expression expr = n.getArgument(finalIndex);
+                            if (expr.isCastExpr()) {
+                                expr = expr.asCastExpr().getExpression();
+                            }
+
+                            if (expr.isNameExpr()) return expr.asNameExpr().getNameAsString();
+                            return null;
+                        }
                     }
                 }
                 return super.visit(n, line);
@@ -368,8 +384,16 @@ public class ProbeEx extends AbstractProbe {
             @Override
             public String visit(final ObjectCreationExpr n, final Integer line) {
                 if (!(n.getEnd().get().line < lines.getLeft() || lines.getRight() < n.getBegin().get().line)) {
-                    if(n.getArguments().size() > finalIndex) {
-                        return n.getArgument(finalIndex).toString();
+                    if (n.getType().getName().toString().equals(finalCalledMethod)){
+                        if (n.getArguments().size() > finalIndex) {
+                            Expression expr = n.getArgument(finalIndex);
+                            if(expr.isCastExpr()) {
+                                expr = expr.asCastExpr().getExpression();
+                            }
+
+                            if(expr.isNameExpr()) return expr.asNameExpr().getNameAsString();
+                            return null;
+                        }
                     }
                 }
                 return super.visit(n, line);

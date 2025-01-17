@@ -41,7 +41,7 @@ public class Probe extends AbstractProbe{
     }
 
     Set<String> getSiblingMethods(String testMethod, String callerMethod, String probeMethod) {
-        Set<String> siblings =  this.getCalleeMethods(testMethod, callerMethod).getAllMethods();
+        Set<String> siblings =  this.getAllCalleeMethods(testMethod, callerMethod);
         siblings.remove(probeMethod);
         return siblings;
     }

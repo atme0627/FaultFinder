@@ -1,17 +1,19 @@
 package jisd.fl.probe;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.StackFrame;
+import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.debug.Location;
 import jisd.debug.Point;
-import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.JavaParserUtil;
@@ -25,7 +27,6 @@ import jisd.info.StaticInfoFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.NoSuchFileException;
@@ -50,7 +51,7 @@ public abstract class AbstractProbe {
         String testBinDir = PropertyLoader.getProperty("testBinDir");
 
         this.assertInfo = assertInfo;
-        this.dbg = createDebugger(500);
+        this.dbg = createDebugger();
         this.jiProcessor = new JisdInfoProcessor();
 
         this.targetSif = new StaticInfoFactory(targetSrcDir, targetBinDir);
@@ -74,12 +75,11 @@ public abstract class AbstractProbe {
 
         int count = 0;
         //debugで値を取れなかった場合、やり直す
-        while(result == null){
+        while(result == null || result.isNotFound()){
 
-            if(count > 2) break;
+            if(count >= 5) break;
             disableStdOut("Retrying to run debugger");
-            dbg.exit();
-            sleepTime += 1000;
+            sleepTime += 3000;
             watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
             watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
             printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true));
@@ -89,17 +89,21 @@ public abstract class AbstractProbe {
             catch (RuntimeException e){
                 System.out.println(e);
                 count += 1;
-                if(count > 2) break;
+                if(count >= 5) break;
                 continue;
             }
             count += 1;
         }
 
-        if(result == null) return null;
+        //probe lineが特定できなかった場合
+        if(result == null || result.isNotFound()) return null;
 
         result.setVariableInfo(variableInfo);
         //if(!result.isArgument()) result.setValuesInLine(watchedValueCollection.getValuesFromLines(result.getProbeLines()));
         if(!result.isArgument()) result.setValuesInLine(watchedValueCollection.getValuesAtSameTime(result.getCreateAt()));
+
+        //free memory
+        watchedValueCollection.clear();
         return result;
     }
 
@@ -109,7 +113,7 @@ public abstract class AbstractProbe {
         String dbgMain = variableInfo.getLocateClass();
         disableStdOut("[canSetLines] " + Arrays.toString(canSetLines.toArray()));
         List<Optional<Point>> watchPoints = new ArrayList<>();
-        dbg = createDebugger(1000);
+        dbg = createDebugger();
         //set watchPoint
         dbg.setMain(dbgMain);
         for (int line : canSetLines) {
@@ -118,14 +122,18 @@ public abstract class AbstractProbe {
 
         //run Test debugger
         try {
-
             dbg.run(sleepTime);
         } catch (VMDisconnectedException e) {
+            //throw new RuntimeException(e);
             System.err.println(e);
         }
-        dbg.exit();
+        catch (NullPointerException ignored){
+        }
+
         enableStdOut();
         ProbeInfoCollection watchedValues = jiProcessor.getInfoFromWatchPoints(watchPoints, variableInfo);
+        dbg.exit();
+        dbg.clearResults();
         watchedValues.considerNotDefinedVariable();
         watchedValues.sort();
         return watchedValues;
@@ -184,10 +192,6 @@ public abstract class AbstractProbe {
     private ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, String actual, VariableInfo vi){
         System.out.println("    >> Probe Info: Searching probe line.");
         ProbeInfo pi;
-        boolean isFound = false;
-
-        int probeLine = 0;
-        String locationClass = null;
 
         //代入行の特定
         Set<Integer> assignedLine = new HashSet<>();
@@ -207,61 +211,55 @@ public abstract class AbstractProbe {
         for(AssignExpr ae : aes){
             List<SimpleName> sns = ae.getTarget().findAll(SimpleName.class);
             for(SimpleName sn : sns){
-                if(sn.toString().equals(vi.getVariableName())) assignedLine.add(sn.getBegin().get().line);
+                if(sn.toString().equals(vi.getVariableName())) {
+                    if(vi.isField() || sn.findAncestor(FieldAccessExpr.class).isEmpty())
+                    assignedLine.add(sn.getBegin().get().line);
+                }
             }
         }
-        //観測した値の中で、一番初めの時点でactualの値を取っているパターン
-        //1. 初期化の時点でその値が代入されている。
-        //2. その変数が引数由来で、かつメソッド内で上書きされていない。
-        //3. throw内などブレークポイントが置けない行で、代入が行われている。 --> 未想定
-        pi = watchedValues.get(0);
-        if (actual.equals(pi.value)) {
-            String variableName;
-            //暫定的にprobe lineを最初に値が観測された地点にする。
-            variableName = watchedValues.get(0).variableName;
-            probeLine = watchedValues.get(0).loc.getLineNumber();
-            locationClass = watchedValues.get(0).loc.getClassName();
-            return resultIfNotAssigned(probeLine, locationClass, variableName, pi.createAt, probeLine);
+
+        //代入後にactualの値に変化している行の特定
+        List<ProbeInfo> changeToActualLines = new ArrayList<>();
+        for(int i = 0; i < watchedValues.size() - 1; i++){
+            ProbeInfo watchingLine = watchedValues.get(i);
+            if(!assignedLine.contains(watchingLine.loc.getLineNumber())) continue;
+            ProbeInfo afterAssignLine = watchedValues.get(i+1);
+            if(!afterAssignLine.value.equals(vi.getActualValue())) continue;
+            changeToActualLines.add(watchingLine);
         }
 
-        //観測した値の中で、途中からでactualの値を取るようになったパターン
-        //次の場合は一番初めの時点でactualの値を取っているパターンと同じ扱い。
-        //probe対象がローカル変数かつprobe lineがmethodの初めの行
-        //そうでない場合、値がactualになった行の前に観測した行で代入が行われていれば実際に値を変更した行(probe line)
-        //そうでない場合、一番初めの時点でactualの値を取っているパターンと同じ扱い。
-        for (int i = 1; i < watchedValues.size(); i++) {
+        //実行された代入行が存在するパターン -->その中でさいごに実行された行がprobe line
+        if(!changeToActualLines.isEmpty()) {
+            changeToActualLines.sort(ProbeInfo::compareTo);
+            ProbeInfo probeLineInfo = changeToActualLines.get(changeToActualLines.size() - 1);
+            ProbeInfo afterAssignLine = watchedValues.get(watchedValues.indexOf(probeLineInfo));
+
+            return resultIfAssigned(
+                    probeLineInfo.loc.getLineNumber(),
+                    vi.getLocateClass(),
+                    probeLineInfo.createAt,
+                    afterAssignLine.loc.getLineNumber());
+        }
+
+        //fieldは代入以外での値の変更を特定できない
+        if(vi.isField()){
+            System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getVariableName());
+            ProbeResult result = new ProbeResult();
+            result.setNotFound(true);
+            return result;
+        }
+
+        //実行された代入行がないパターン
+        //初めて値がactualと一致した行を暫定的にprobe lineとする。
+        for (int i = 0; i < watchedValues.size(); i++) {
             pi = watchedValues.get(i);
             if (actual.equals(pi.value)) {
-                //methodの始まりの行か判定
-                boolean isBeginLine;
-                probeLine = pi.loc.getLineNumber();
-                locationClass = pi.loc.getClassName();
-                String probeMethod;
-                try {
-                    probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass, probeLine);
-                } catch (NoSuchFileException e) {
-                    throw new RuntimeException(e);
-                }
-                BlockStmt bs = StaticAnalyzer.bodyOfMethod(probeMethod);
-
-                isBeginLine = bs.getBegin().get().line - 1 <= probeLine && probeLine <= bs.getBegin().get().line + 1 ;
-                if(!pi.variableName.contains("this.") && isBeginLine){
-                    String variableName = watchedValues.get(0).variableName;
-                    return resultIfNotAssigned(probeLine, locationClass, variableName, pi.createAt, pi.loc.getLineNumber());
-                }
-                else {
-                    pi = watchedValues.get(i - 1);
-                    if(assignedLine.contains(pi.loc.getLineNumber())) {
-                        probeLine = pi.loc.getLineNumber();
-                        locationClass = pi.loc.getClassName();
-                        return resultIfAssigned(probeLine, locationClass, watchedValues.get(i).createAt, watchedValues.get(i).loc.getLineNumber());
-                    }
-                    else {
-                        pi = watchedValues.get(i);
-                        String variableName = watchedValues.get(0).variableName;
-                        return resultIfNotAssigned(probeLine, locationClass, variableName, pi.createAt, pi.loc.getLineNumber());
-                    }
-                }
+                return resultIfNotAssigned(
+                        pi.loc.getLineNumber(),
+                        vi.getLocateClass(),
+                        vi.getVariableName(false, false),
+                        pi.createAt,
+                        pi.loc.getLineNumber());
             }
         }
 
@@ -269,10 +267,8 @@ public abstract class AbstractProbe {
     }
 
     private ProbeResult resultIfAssigned(int probeLine, String locationClass, LocalDateTime createAt, int watchedAt){
-        //観測した値の中で、途中からでactualの値を取るようになったパターン
-        //actualを取るようになった行が、methodの始まりの行の場合、
-        //一番初めの時点でactualの値を取っているパターンと同じ扱い。
-        //そうでない場合、値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
+        //代入によって変数がactualの値を取るようになったパターン
+        //値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
         ProbeResult result = new ProbeResult();
         String probeMethod;
         Pair<Integer, Integer> probeLines = null;
@@ -296,7 +292,7 @@ public abstract class AbstractProbe {
     }
 
     private ProbeResult resultIfNotAssigned(int probeLine, String locationClass, String variableName, LocalDateTime createAt, int watchedAt){
-        //観測した値の中で、一番初めの時点でactualの値を取っているパターン
+        //代入以外の要因で変数がactualの値をとるようになったパターン
         //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
         //3. throw内などブレークポイントが置けない行で、代入が行われている。 --> 未想定
@@ -333,7 +329,7 @@ public abstract class AbstractProbe {
             return result;
         }
 
-        //2. その変数が引数orフィールド由来で、かつメソッド内で上書きされていない
+        //2. その変数が引数由来で、かつメソッド内で上書きされていない
         //暫定的にprobeLinesを設定
         probeLines = Pair.of(probeLine, probeLine);
         result.setLines(probeLines);
@@ -394,14 +390,36 @@ public abstract class AbstractProbe {
         }
     }
 
-    protected Debugger createDebugger(int sleepTime) {
-        if(dbg != null) dbg.exit();
+
+
+    protected Debugger createDebugger() {
+        return createDebugger(assertInfo.getTestMethodName());
+    }
+
+    protected  Debugger createDebugger(String targetMethod){
+        //使い終わったTestLauncherのプロセスが生き残り続ける問題の対策
+        if(dbg != null){
+            ThreadReference tr = null;
+            try {
+                tr = dbg.thread();
+            } catch(VMDisconnectedException ignored) {
+            }
+
+            try {
+                if( tr != null && tr.isAtBreakpoint() ){
+                    dbg.cont();
+                }
+            } catch(VMDisconnectedException ignored) {
+            }
+        dbg.exit();
+        }
+
         try {
-            Thread.sleep(sleepTime);
+            Thread.sleep(10);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return TestUtil.testDebuggerFactory(assertInfo.getTestMethodName());
+        return TestUtil.testDebuggerFactory(targetMethod);
     }
 
 
@@ -409,12 +427,12 @@ public abstract class AbstractProbe {
     //メソッド実行時の実際に呼び出されているメソット群を返す
     //locateMethodはフルネーム、シグニチャあり
     //Assert文はなぜかミスる -> とりあえずはコメントアウトで対応
-    protected MethodCollection getCalleeMethods(String testMethod,
-                                 String locateMethod){
-        System.out.println("    >> Probe Info: Collecting callee methods.");
+    protected Set<String> getAllCalleeMethods(String testMethod, String locateMethod){
+        System.out.println("    >> Probe Info: Collecting all callee methods.");
         System.out.println("    >> Probe Info: Target method --> " + locateMethod);
+        disableStdOut("");
 
-        MethodCollection calleeMethods = new MethodCollection();
+        Set<String> calleeMethods = new HashSet<>();
         String locateClass = locateMethod.split("#")[0];
         List<Integer> methodCallingLines = null;
         try {
@@ -423,12 +441,8 @@ public abstract class AbstractProbe {
             throw new RuntimeException(e);
         }
 
-        Debugger dbg = TestUtil.testDebuggerFactory(testMethod);
+        Debugger dbg = createDebugger(testMethod);
         dbg.setMain(locateClass);
-
-        disableStdOut("");
-        StackTrace st;
-
         for(int l : methodCallingLines){
             dbg.stopAt(l);
         }
@@ -441,47 +455,33 @@ public abstract class AbstractProbe {
             enableStdOut();
             return calleeMethods;
         }
+
         //callerMethodを取得
-        st = getStackTrace(dbg);
-        //>> Debugger Info: The target VM thread is not suspended now.の時　からのcalleeMethodsを返す
-        if(st.isEmpty()) {
+        String calleeMethod;
+        //>> Debugger Info: The target VM thread is not suspended now.の時　空のcalleeMethodsを返す
+        if(dbg.loc() == null) {
             enableStdOut();
             return calleeMethods;
         }
-        String callerMethod = st.getMethod(1);
 
         for(int i = 0; i < methodCallingLines.size(); i++) {
-            //TODO: メソッド呼び出しが行われるまで
             if(dbg.loc() == null) break;
-            int probingLine = dbg.loc().getLineNumber();
-            dbg.step();
             while (true) {
-                //int probingLine = methodCallingLines.get(i);
-                st = getStackTrace(dbg);
-                Pair<Integer, String> e = st.getCalleeMethodAndCallLocation(0);
+                dbg.step();
+                calleeMethod = getMethodFromStackFrame(getStackFrame(dbg, 0));
                 dbg.stepOut();
-                //ここで外部APIのメソッドは弾かれる
-                if(e != null) calleeMethods.addElement(e);
+                calleeMethods.add(calleeMethod);
 
                 //終了判定
-                //dbgがbreak pointで止まらないかstepOutで次の行に移った場合終了
-                st = getStackTrace(dbg);
-                e = st.getCalleeMethodAndCallLocation(0);
-                if(dbg.loc() == null || e == null ||(e.getRight().equals(locateMethod) &&  dbg.loc().getLineNumber() != probingLine)) break;
-                //stepOutで元の行に戻った場合、ステップして新しいメソッド呼び出しが行われなければ終了
-                dbg.step();
-                st = getStackTrace(dbg);
-                if (st.getMethod(0).equals(locateMethod.substring(0, locateMethod.lastIndexOf("(")))
-                        || st.getMethod(0).equals(locateMethod.substring(0, locateMethod.lastIndexOf("#") + 1) + "<init>")
-                        || st.getMethod(0).equals(callerMethod)) {
-                    break;
-                }
+                //ステップして新しいメソッド呼び出しが行われなければ終了
+                String nowLocateMethod = getMethodFromStackFrame(getStackFrame(dbg, 0));
+                if(nowLocateMethod.equals(locateMethod)) break;
             }
             //debugがbreakpointに達しなかった場合は終了
             if(dbg.loc() == null) break;
             //すでにbreakpointにいる場合はスキップしない
             if(!methodCallingLines.contains(dbg.loc().getLineNumber())) {
-                dbg.cont(2000);
+                dbg.cont(50);
             }
         }
 
@@ -489,8 +489,75 @@ public abstract class AbstractProbe {
         return calleeMethods;
     }
 
+    //動的解析
+    //メソッド実行時の実際に特定の行で呼び出されているメソット群を返す
+    //locateMethodはフルネーム、シグニチャあり
+    //Assert文はなぜかミスる -> とりあえずはコメントアウトで対応
+    protected Set<String> getCalleeMethods(String testMethod, String locateMethod, Pair<Integer, Integer> lines){
+        System.out.println("    >> Probe Info: Collecting callee methods.");
+        System.out.println("    >> Probe Info: Target method --> " + locateMethod);
+        disableStdOut("");
+
+        Set<String> calleeMethods = new HashSet<>();
+        String locateClass = locateMethod.split("#")[0];
+        Set<Integer> linesStopAt = new HashSet<>();
+        for(int i = lines.getLeft(); i <= lines.getRight(); i++){
+            linesStopAt.add(i);
+        }
+
+        Debugger dbg = createDebugger(testMethod);
+        dbg.setMain(locateClass);
+        for(int l : linesStopAt){
+            dbg.stopAt(l);
+        }
+        try {
+            dbg.run(2000);
+        }
+        //メモリエラーなどでVMが止まる場合、calleeは取れない
+        catch (VMDisconnectedException e) {
+            System.err.println(e);
+            enableStdOut();
+            return calleeMethods;
+        }
+        //callerMethodを取得
+        String calleeMethod;
+        StackFrame sf;
+        //>> Debugger Info: The target VM thread is not suspended now.の時　空のcalleeMethodsを返す
+        if(dbg.loc() == null) {
+            enableStdOut();
+            return calleeMethods;
+        }
+        for(int i = 0; i < linesStopAt.size(); i++) {
+            while (true) {
+                //終了判定
+                //stepで元の行に戻った場合、ステップして新しいメソッド呼び出しが行われなければ終了
+                dbg.step();
+                if(dbg.loc() == null) break;
+                String nowLocateMethod = getMethodFromStackFrame(getStackFrame(dbg, 0));
+                if(nowLocateMethod.equals(locateMethod)) break;
+
+                calleeMethod = getMethodFromStackFrame(getStackFrame(dbg, 0));
+                dbg.stepOut();
+                calleeMethods.add(calleeMethod);
+
+            }
+            //debugがbreakpointに達しなかった場合は終了
+            if(dbg.loc() == null) break;
+            //すでにbreakpointにいる場合はスキップしない
+            if(!linesStopAt.contains(dbg.loc().getLineNumber())) {
+                dbg.cont(50);
+            }
+        }
+
+        dbg.cont(10);
+        dbg.exit();
+        enableStdOut();
+        return calleeMethods;
+    }
+
+
     protected Pair<Integer, String> getCallerMethod(int watchedAt, VariableInfo vi) {
-        dbg = createDebugger(500);
+        dbg = createDebugger();
         dbg.setMain(vi.getLocateClass());
         disableStdOut("    >> Probe Info: Search caller method.");
         Optional<Point> p = dbg.stopAt(watchedAt);
@@ -507,38 +574,54 @@ public abstract class AbstractProbe {
                 }
                 else {
                     p.get().clearDebugResults();
-                    dbg.cont(1000);
+                    dbg.cont(50);
                 }
             } else {
                 throw new RuntimeException("Cannot watch Probe target.");
             }
         }
-        enableStdOut();
-        StackTrace st = getStackTrace(dbg);
-        //callerMethodをシグニチャ付きで取得する
-        Pair<Integer, String> caller = st.getCallerMethodAndCallLocation(1);
+//        //callerMethodをシグニチャ付きで取得する
+        StackFrame sf = getStackFrame(dbg, 1);
+        int callLine = sf.location().lineNumber();
+        String callerMethod = getMethodFromStackFrame(sf);
+        Pair<Integer, String> caller
+                = Pair.of(callLine, callerMethod);
         //callerがnullの場合、callerMethodがtargetSrcDir内にない。（テストメソッドに戻った場合など）
-        if(caller == null) System.out.println("    >> Probe Info: caller method is not found in Target Src: " + st.getMethod(1));
         System.out.println("    >> [ CALLER METHOD ]");
-        if(caller != null) {
-            System.out.println("    >> " + caller.getRight());
-        }
-        else {
-            System.out.println("    >> " );
-        }
+        System.out.println("    >> " + caller.getRight());
+
+        dbg.cont(10);
+        dbg.exit();
+        enableStdOut();
         return caller;
     }
 
-    private StackTrace getStackTrace(Debugger dbg){
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(bos);
-        PrintStream out = System.out;
-        System.setOut(ps);
-        bos.reset();
-        dbg.where();
-        System.setOut(out);
+    private StackFrame getStackFrame(Debugger dbg, int depth){
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            return dbg.thread().frame(depth);
+        } catch (IncompatibleThreadStateException e) {
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-        return new StackTrace(bos.toString(), "");
+    private String getMethodFromStackFrame(StackFrame sf){
+        String methodName = sf.location().method().toString();
+        if(methodName.contains("<init>")){
+            String shortName = methodName.substring(0, methodName.lastIndexOf("."));
+            shortName = shortName.substring(shortName.lastIndexOf(".") + 1);
+            methodName =  methodName.replace("<init>", shortName);
+        }
+        methodName = StaticAnalyzer.shortMethodName(methodName);
+        StringBuilder sb = new StringBuilder(methodName);
+        sb.setCharAt(sb.lastIndexOf("."), '#');
+        return sb.toString();
     }
 
     protected ClassInfo createClassInfo(String className){
@@ -586,7 +669,6 @@ public abstract class AbstractProbe {
 
     public static class ProbeInfoCollection {
         Map<String, List<ProbeInfo>> piCollection = new HashMap<>();
-
         public void addElements(List<ProbeInfo> pis){
             for(ProbeInfo pi : pis){
                 if(piCollection.containsKey(pi.variableName)){
@@ -732,6 +814,12 @@ public abstract class AbstractProbe {
         public void printAll(){
             for(String key : piCollection.keySet()){
                 print(key);
+            }
+        }
+
+        public void clear(){
+            for(List<AbstractProbe. ProbeInfo> l : piCollection.values()){
+                l = null;
             }
         }
     }
