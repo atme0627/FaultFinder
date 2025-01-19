@@ -117,7 +117,7 @@ public  class TestUtil {
         }
 
         dbg.setSrcDir(targetSrcDir, testSrcDir);
-        DebugResult.setDefaultMaxRecordNoOfValue(1000);
+        DebugResult.setDefaultMaxRecordNoOfValue(500);
         return dbg;
     }
 

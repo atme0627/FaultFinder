@@ -4,24 +4,380 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6757f081-dac4-4109-934d-3412514b1ba5" name="変更" comment="refactor searchProbeLine">
-      <change afterPath="$PROJECT_DIR$/locallib/jisd-0.3.0_bata.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeExResultTest.java" afterDir="false" />
+    <list default="true" id="6757f081-dac4-4109-934d-3412514b1ba5" name="変更" comment="modify searchProbeLine">
+      <change afterPath="$PROJECT_DIR$/src/main/resources/probeExResult/Math/Math18_buggy/型パラメータ関連でバグが起きるため手動で結果を修正" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fl_properties/fl_config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/fl_properties/fl_config.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/experiment/defect4j/modified_method.sh" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/experiment/defect4j/modified_method.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/JisdInfoProcessor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/JisdInfoProcessor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/Probe.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/Probe.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeExResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeExResult.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeResult.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeResult.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/StackTrace.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/StackTrace.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/assertinfo/VariableInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/assertinfo/VariableInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/FileUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/FileUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/StaticAnalyzer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/TestUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math100_buggy/org.apache.commons.math.estimation.GaussNewtonEstimatorTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math100_buggy/org.apache.commons.math.estimation.GaussNewtonEstimatorTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math100_buggy/org.apache.commons.math.estimation.GaussNewtonEstimatorTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math100_buggy/org.apache.commons.math.estimation.GaussNewtonEstimatorTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math100_buggy/org.apache.commons.math.estimation.GaussNewtonEstimatorTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math100_buggy/org.apache.commons.math.estimation.GaussNewtonEstimatorTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math100_buggy/org.apache.commons.math.estimation.GaussNewtonEstimatorTest/org.apache.commons.math.estimation.GaussNewtonEstimatorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.ComplexFormatTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.ComplexFormatTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.ComplexFormatTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.ComplexFormatTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.ComplexFormatTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.ComplexFormatTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.ComplexFormatTest/org.apache.commons.math.complex.ComplexFormatTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.FrenchComplexFormatTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.FrenchComplexFormatTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.FrenchComplexFormatTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.FrenchComplexFormatTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.FrenchComplexFormatTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.FrenchComplexFormatTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math101_buggy/org.apache.commons.math.complex.FrenchComplexFormatTest/org.apache.commons.math.complex.FrenchComplexFormatTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareFactoryTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareFactoryTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareFactoryTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareFactoryTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareFactoryTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareFactoryTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareFactoryTest/org.apache.commons.math.stat.inference.ChiSquareFactoryTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareTestTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareTestTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareTestTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareTestTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareTestTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareTestTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.ChiSquareTestTest/org.apache.commons.math.stat.inference.ChiSquareTestTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.TestUtilsTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.TestUtilsTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.TestUtilsTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.TestUtilsTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.TestUtilsTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.TestUtilsTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math102_buggy/org.apache.commons.math.stat.inference.TestUtilsTest/org.apache.commons.math.stat.inference.TestUtilsTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math103_buggy/org.apache.commons.math.distribution.NormalDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math103_buggy/org.apache.commons.math.distribution.NormalDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math103_buggy/org.apache.commons.math.distribution.NormalDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math103_buggy/org.apache.commons.math.distribution.NormalDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math103_buggy/org.apache.commons.math.distribution.NormalDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math103_buggy/org.apache.commons.math.distribution.NormalDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math103_buggy/org.apache.commons.math.distribution.NormalDistributionTest/org.apache.commons.math.distribution.NormalDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math104_buggy/org.apache.commons.math.special.GammaTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math104_buggy/org.apache.commons.math.special.GammaTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math104_buggy/org.apache.commons.math.special.GammaTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math104_buggy/org.apache.commons.math.special.GammaTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math104_buggy/org.apache.commons.math.special.GammaTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math104_buggy/org.apache.commons.math.special.GammaTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math104_buggy/org.apache.commons.math.special.GammaTest/org.apache.commons.math.special.GammaTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math105_buggy/org.apache.commons.math.stat.regression.SimpleRegressionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math105_buggy/org.apache.commons.math.stat.regression.SimpleRegressionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math105_buggy/org.apache.commons.math.stat.regression.SimpleRegressionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math105_buggy/org.apache.commons.math.stat.regression.SimpleRegressionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math105_buggy/org.apache.commons.math.stat.regression.SimpleRegressionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math105_buggy/org.apache.commons.math.stat.regression.SimpleRegressionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math105_buggy/org.apache.commons.math.stat.regression.SimpleRegressionTest/org.apache.commons.math.stat.regression.SimpleRegressionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math106_buggy/org.apache.commons.math.fraction.FractionFormatTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math106_buggy/org.apache.commons.math.fraction.FractionFormatTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math106_buggy/org.apache.commons.math.fraction.FractionFormatTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math106_buggy/org.apache.commons.math.fraction.FractionFormatTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math106_buggy/org.apache.commons.math.fraction.FractionFormatTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math106_buggy/org.apache.commons.math.fraction.FractionFormatTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math106_buggy/org.apache.commons.math.fraction.FractionFormatTest/org.apache.commons.math.fraction.FractionFormatTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math10_buggy/org.apache.commons.math3.analysis.differentiation.DerivativeStructureTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math10_buggy/org.apache.commons.math3.analysis.differentiation.DerivativeStructureTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math10_buggy/org.apache.commons.math3.analysis.differentiation.DerivativeStructureTest/org.apache.commons.math3.analysis.differentiation.DerivativeStructureTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math11_buggy/org.apache.commons.math3.distribution.MultivariateNormalDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math11_buggy/org.apache.commons.math3.distribution.MultivariateNormalDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math11_buggy/org.apache.commons.math3.distribution.MultivariateNormalDistributionTest/org.apache.commons.math3.distribution.MultivariateNormalDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.GammaDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.GammaDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.GammaDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.GammaDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.GammaDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.GammaDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.GammaDistributionTest/org.apache.commons.math3.distribution.GammaDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.LogNormalDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.LogNormalDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.LogNormalDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.LogNormalDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.LogNormalDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.LogNormalDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.LogNormalDistributionTest/org.apache.commons.math3.distribution.LogNormalDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.NormalDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.NormalDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.NormalDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.NormalDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.NormalDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.NormalDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math12_buggy/org.apache.commons.math3.distribution.NormalDistributionTest/org.apache.commons.math3.distribution.NormalDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math13_buggy/org.apache.commons.math3.optimization.fitting.PolynomialFitterTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math13_buggy/org.apache.commons.math3.optimization.fitting.PolynomialFitterTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math13_buggy/org.apache.commons.math3.optimization.fitting.PolynomialFitterTest/org.apache.commons.math3.optimization.fitting.PolynomialFitterTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math14_buggy/org.apache.commons.math3.fitting.PolynomialFitterTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math14_buggy/org.apache.commons.math3.fitting.PolynomialFitterTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math14_buggy/org.apache.commons.math3.fitting.PolynomialFitterTest/org.apache.commons.math3.fitting.PolynomialFitterTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math15_buggy/org.apache.commons.math3.util.FastMathTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math15_buggy/org.apache.commons.math3.util.FastMathTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math15_buggy/org.apache.commons.math3.util.FastMathTest/org.apache.commons.math3.util.FastMathTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math16_buggy/org.apache.commons.math3.util.FastMathTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math16_buggy/org.apache.commons.math3.util.FastMathTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math16_buggy/org.apache.commons.math3.util.FastMathTest/org.apache.commons.math3.util.FastMathTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math17_buggy/org.apache.commons.math3.dfp.DfpTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math17_buggy/org.apache.commons.math3.dfp.DfpTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math17_buggy/org.apache.commons.math3.dfp.DfpTest/org.apache.commons.math3.dfp.DfpTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math18_buggy/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math18_buggy/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math18_buggy/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math19_buggy/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math19_buggy/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math19_buggy/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.BigFractionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.BigFractionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.BigFractionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.BigFractionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.BigFractionTest/org.apache.commons.math3.fraction.BigFractionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.FractionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.FractionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.FractionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.FractionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math1_buggy/org.apache.commons.math3.fraction.FractionTest/org.apache.commons.math3.fraction.FractionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math20_buggy/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math20_buggy/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math20_buggy/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest/org.apache.commons.math3.optimization.direct.CMAESOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math21_buggy/org.apache.commons.math3.linear.RectangularCholeskyDecompositionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math21_buggy/org.apache.commons.math3.linear.RectangularCholeskyDecompositionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math21_buggy/org.apache.commons.math3.linear.RectangularCholeskyDecompositionTest/org.apache.commons.math3.linear.RectangularCholeskyDecompositionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.FDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.FDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.FDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.FDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.FDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.FDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.FDistributionTest/org.apache.commons.math3.distribution.FDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.UniformRealDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.UniformRealDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.UniformRealDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.UniformRealDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.UniformRealDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.UniformRealDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math22_buggy/org.apache.commons.math3.distribution.UniformRealDistributionTest/org.apache.commons.math3.distribution.UniformRealDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math23_buggy/org.apache.commons.math3.optimization.univariate.BrentOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math23_buggy/org.apache.commons.math3.optimization.univariate.BrentOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math23_buggy/org.apache.commons.math3.optimization.univariate.BrentOptimizerTest/org.apache.commons.math3.optimization.univariate.BrentOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math24_buggy/org.apache.commons.math3.optimization.univariate.BrentOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math24_buggy/org.apache.commons.math3.optimization.univariate.BrentOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math24_buggy/org.apache.commons.math3.optimization.univariate.BrentOptimizerTest/org.apache.commons.math3.optimization.univariate.BrentOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math25_buggy/org.apache.commons.math3.optimization.fitting.HarmonicFitterTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math25_buggy/org.apache.commons.math3.optimization.fitting.HarmonicFitterTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math25_buggy/org.apache.commons.math3.optimization.fitting.HarmonicFitterTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math25_buggy/org.apache.commons.math3.optimization.fitting.HarmonicFitterTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math25_buggy/org.apache.commons.math3.optimization.fitting.HarmonicFitterTest/org.apache.commons.math3.optimization.fitting.HarmonicFitterTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math26_buggy/org.apache.commons.math3.fraction.FractionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math26_buggy/org.apache.commons.math3.fraction.FractionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math26_buggy/org.apache.commons.math3.fraction.FractionTest/org.apache.commons.math3.fraction.FractionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math27_buggy/org.apache.commons.math3.fraction.FractionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math27_buggy/org.apache.commons.math3.fraction.FractionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math27_buggy/org.apache.commons.math3.fraction.FractionTest/org.apache.commons.math3.fraction.FractionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math28_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math28_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math28_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math28_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math28_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/org.apache.commons.math3.optimization.linear.SimplexSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math29_buggy/org.apache.commons.math3.linear.SparseRealVectorTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math29_buggy/org.apache.commons.math3.linear.SparseRealVectorTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math29_buggy/org.apache.commons.math3.linear.SparseRealVectorTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math29_buggy/org.apache.commons.math3.linear.SparseRealVectorTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math29_buggy/org.apache.commons.math3.linear.SparseRealVectorTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math29_buggy/org.apache.commons.math3.linear.SparseRealVectorTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math29_buggy/org.apache.commons.math3.linear.SparseRealVectorTest/org.apache.commons.math3.linear.SparseRealVectorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math2_buggy/org.apache.commons.math3.distribution.HypergeometricDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math2_buggy/org.apache.commons.math3.distribution.HypergeometricDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math2_buggy/org.apache.commons.math3.distribution.HypergeometricDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math2_buggy/org.apache.commons.math3.distribution.HypergeometricDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math2_buggy/org.apache.commons.math3.distribution.HypergeometricDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math2_buggy/org.apache.commons.math3.distribution.HypergeometricDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math2_buggy/org.apache.commons.math3.distribution.HypergeometricDistributionTest/org.apache.commons.math3.distribution.HypergeometricDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math30_buggy/org.apache.commons.math3.stat.inference.MannWhitneyUTestTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math30_buggy/org.apache.commons.math3.stat.inference.MannWhitneyUTestTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math30_buggy/org.apache.commons.math3.stat.inference.MannWhitneyUTestTest/org.apache.commons.math3.stat.inference.MannWhitneyUTestTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.BinomialDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.BinomialDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.BinomialDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.BinomialDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.BinomialDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.BinomialDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.BinomialDistributionTest/org.apache.commons.math3.distribution.BinomialDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.FDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.FDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.FDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.FDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.FDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.FDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math31_buggy/org.apache.commons.math3.distribution.FDistributionTest/org.apache.commons.math3.distribution.FDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math32_buggy/org.apache.commons.math3.geometry.euclidean.threed.PolyhedronsSetTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math32_buggy/org.apache.commons.math3.geometry.euclidean.threed.PolyhedronsSetTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math32_buggy/org.apache.commons.math3.geometry.euclidean.threed.PolyhedronsSetTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math32_buggy/org.apache.commons.math3.geometry.euclidean.threed.PolyhedronsSetTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math32_buggy/org.apache.commons.math3.geometry.euclidean.threed.PolyhedronsSetTest/org.apache.commons.math3.geometry.euclidean.threed.PolyhedronsSetTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math33_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math33_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math33_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math33_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math33_buggy/org.apache.commons.math3.optimization.linear.SimplexSolverTest/org.apache.commons.math3.optimization.linear.SimplexSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math34_buggy/org.apache.commons.math3.genetics.ListPopulationTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math34_buggy/org.apache.commons.math3.genetics.ListPopulationTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math34_buggy/org.apache.commons.math3.genetics.ListPopulationTest/org.apache.commons.math3.genetics.ListPopulationTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math35_buggy/org.apache.commons.math3.genetics.ElitisticListPopulationTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math35_buggy/org.apache.commons.math3.genetics.ElitisticListPopulationTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math35_buggy/org.apache.commons.math3.genetics.ElitisticListPopulationTest/org.apache.commons.math3.genetics.ElitisticListPopulationTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math36_buggy/org.apache.commons.math.fraction.BigFractionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math36_buggy/org.apache.commons.math.fraction.BigFractionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math36_buggy/org.apache.commons.math.fraction.BigFractionTest/org.apache.commons.math.fraction.BigFractionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math37_buggy/org.apache.commons.math.complex.ComplexTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math37_buggy/org.apache.commons.math.complex.ComplexTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math37_buggy/org.apache.commons.math.complex.ComplexTest/org.apache.commons.math.complex.ComplexTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math38_buggy/org.apache.commons.math.optimization.direct.BOBYQAOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math38_buggy/org.apache.commons.math.optimization.direct.BOBYQAOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math38_buggy/org.apache.commons.math.optimization.direct.BOBYQAOptimizerTest/org.apache.commons.math.optimization.direct.BOBYQAOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math39_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math39_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math39_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math3_buggy/org.apache.commons.math3.util.MathArraysTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math3_buggy/org.apache.commons.math3.util.MathArraysTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math3_buggy/org.apache.commons.math3.util.MathArraysTest/org.apache.commons.math3.util.MathArraysTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math40_buggy/org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolverTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math40_buggy/org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolverTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math40_buggy/org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math40_buggy/org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math40_buggy/org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math40_buggy/org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math40_buggy/org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolverTest/org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math41_buggy/org.apache.commons.math.stat.descriptive.moment.VarianceTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math41_buggy/org.apache.commons.math.stat.descriptive.moment.VarianceTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math41_buggy/org.apache.commons.math.stat.descriptive.moment.VarianceTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math41_buggy/org.apache.commons.math.stat.descriptive.moment.VarianceTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math41_buggy/org.apache.commons.math.stat.descriptive.moment.VarianceTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math41_buggy/org.apache.commons.math.stat.descriptive.moment.VarianceTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math41_buggy/org.apache.commons.math.stat.descriptive.moment.VarianceTest/org.apache.commons.math.stat.descriptive.moment.VarianceTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math42_buggy/org.apache.commons.math.optimization.linear.SimplexSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math42_buggy/org.apache.commons.math.optimization.linear.SimplexSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math42_buggy/org.apache.commons.math.optimization.linear.SimplexSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math42_buggy/org.apache.commons.math.optimization.linear.SimplexSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math42_buggy/org.apache.commons.math.optimization.linear.SimplexSolverTest/org.apache.commons.math.optimization.linear.SimplexSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SummaryStatisticsTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SummaryStatisticsTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SummaryStatisticsTest/org.apache.commons.math.stat.descriptive.SummaryStatisticsTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatisticsTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatisticsTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatisticsTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatisticsTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatisticsTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatisticsTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math43_buggy/org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatisticsTest/org.apache.commons.math.stat.descriptive.SynchronizedSummaryStatisticsTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math44_buggy/org.apache.commons.math.ode.events.EventStateTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math44_buggy/org.apache.commons.math.ode.events.EventStateTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math44_buggy/org.apache.commons.math.ode.events.EventStateTest/org.apache.commons.math.ode.events.EventStateTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math45_buggy/org.apache.commons.math.linear.OpenMapRealMatrixTest/org.apache.commons.math.linear.OpenMapRealMatrixTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math46_buggy/org.apache.commons.math.complex.ComplexTest/org.apache.commons.math.complex.ComplexTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math47_buggy/org.apache.commons.math.complex.ComplexTest/org.apache.commons.math.complex.ComplexTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math48_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math48_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math48_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math48_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math48_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math48_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math48_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math49_buggy/org.apache.commons.math.linear.SparseRealVectorTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math49_buggy/org.apache.commons.math.linear.SparseRealVectorTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math49_buggy/org.apache.commons.math.linear.SparseRealVectorTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math49_buggy/org.apache.commons.math.linear.SparseRealVectorTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math49_buggy/org.apache.commons.math.linear.SparseRealVectorTest/org.apache.commons.math.linear.SparseRealVectorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math4_buggy/org.apache.commons.math3.geometry.euclidean.threed.SubLineTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math4_buggy/org.apache.commons.math3.geometry.euclidean.threed.SubLineTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math4_buggy/org.apache.commons.math3.geometry.euclidean.threed.SubLineTest/org.apache.commons.math3.geometry.euclidean.threed.SubLineTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math4_buggy/org.apache.commons.math3.geometry.euclidean.twod.SubLineTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math4_buggy/org.apache.commons.math3.geometry.euclidean.twod.SubLineTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math4_buggy/org.apache.commons.math3.geometry.euclidean.twod.SubLineTest/org.apache.commons.math3.geometry.euclidean.twod.SubLineTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math50_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math50_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math50_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math50_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math50_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math50_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math50_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math51_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math51_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math51_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math51_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math51_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math51_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math51_buggy/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest/org.apache.commons.math.analysis.solvers.RegulaFalsiSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math52_buggy/org.apache.commons.math.geometry.euclidean.threed.RotationTest/org.apache.commons.math.geometry.euclidean.threed.RotationTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math53_buggy/org.apache.commons.math.complex.ComplexTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math53_buggy/org.apache.commons.math.complex.ComplexTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math53_buggy/org.apache.commons.math.complex.ComplexTest/org.apache.commons.math.complex.ComplexTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math54_buggy/org.apache.commons.math.dfp.DfpTest/org.apache.commons.math.dfp.DfpTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math55_buggy/org.apache.commons.math.geometry.Vector3DTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math55_buggy/org.apache.commons.math.geometry.Vector3DTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math55_buggy/org.apache.commons.math.geometry.Vector3DTest/org.apache.commons.math.geometry.Vector3DTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math56_buggy/org.apache.commons.math.util.MultidimensionalCounterTest/org.apache.commons.math.util.MultidimensionalCounterTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math57_buggy/org.apache.commons.math.stat.clustering.KMeansPlusPlusClustererTest/org.apache.commons.math.stat.clustering.KMeansPlusPlusClustererTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math58_buggy/org.apache.commons.math.optimization.fitting.GaussianFitterTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math58_buggy/org.apache.commons.math.optimization.fitting.GaussianFitterTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math58_buggy/org.apache.commons.math.optimization.fitting.GaussianFitterTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math58_buggy/org.apache.commons.math.optimization.fitting.GaussianFitterTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math58_buggy/org.apache.commons.math.optimization.fitting.GaussianFitterTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math58_buggy/org.apache.commons.math.optimization.fitting.GaussianFitterTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math58_buggy/org.apache.commons.math.optimization.fitting.GaussianFitterTest/org.apache.commons.math.optimization.fitting.GaussianFitterTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math59_buggy/org.apache.commons.math.util.FastMathTest/org.apache.commons.math.util.FastMathTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math5_buggy/org.apache.commons.math3.complex.ComplexTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math5_buggy/org.apache.commons.math3.complex.ComplexTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math5_buggy/org.apache.commons.math3.complex.ComplexTest/org.apache.commons.math3.complex.ComplexTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math60_buggy/org.apache.commons.math.distribution.NormalDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math60_buggy/org.apache.commons.math.distribution.NormalDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math60_buggy/org.apache.commons.math.distribution.NormalDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math60_buggy/org.apache.commons.math.distribution.NormalDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math60_buggy/org.apache.commons.math.distribution.NormalDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math60_buggy/org.apache.commons.math.distribution.NormalDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math60_buggy/org.apache.commons.math.distribution.NormalDistributionTest/org.apache.commons.math.distribution.NormalDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math61_buggy/org.apache.commons.math.distribution.PoissonDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math61_buggy/org.apache.commons.math.distribution.PoissonDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math61_buggy/org.apache.commons.math.distribution.PoissonDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math61_buggy/org.apache.commons.math.distribution.PoissonDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math61_buggy/org.apache.commons.math.distribution.PoissonDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math61_buggy/org.apache.commons.math.distribution.PoissonDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math61_buggy/org.apache.commons.math.distribution.PoissonDistributionTest/org.apache.commons.math.distribution.PoissonDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math62_buggy/org.apache.commons.math.optimization.univariate.MultiStartUnivariateRealOptimizerTest/org.apache.commons.math.optimization.univariate.MultiStartUnivariateRealOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math63_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math63_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math63_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math63_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math63_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math63_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math63_buggy/org.apache.commons.math.util.MathUtilsTest/org.apache.commons.math.util.MathUtilsTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math64_buggy/org.apache.commons.math.optimization.general.MinpackTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math64_buggy/org.apache.commons.math.optimization.general.MinpackTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math64_buggy/org.apache.commons.math.optimization.general.MinpackTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math64_buggy/org.apache.commons.math.optimization.general.MinpackTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math64_buggy/org.apache.commons.math.optimization.general.MinpackTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math64_buggy/org.apache.commons.math.optimization.general.MinpackTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math64_buggy/org.apache.commons.math.optimization.general.MinpackTest/org.apache.commons.math.optimization.general.MinpackTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math65_buggy/org.apache.commons.math.optimization.general.LevenbergMarquardtOptimizerTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math65_buggy/org.apache.commons.math.optimization.general.LevenbergMarquardtOptimizerTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math65_buggy/org.apache.commons.math.optimization.general.LevenbergMarquardtOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math65_buggy/org.apache.commons.math.optimization.general.LevenbergMarquardtOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math65_buggy/org.apache.commons.math.optimization.general.LevenbergMarquardtOptimizerTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math65_buggy/org.apache.commons.math.optimization.general.LevenbergMarquardtOptimizerTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math65_buggy/org.apache.commons.math.optimization.general.LevenbergMarquardtOptimizerTest/org.apache.commons.math.optimization.general.LevenbergMarquardtOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math66_buggy/org.apache.commons.math.optimization.MultiStartUnivariateRealOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math66_buggy/org.apache.commons.math.optimization.MultiStartUnivariateRealOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math66_buggy/org.apache.commons.math.optimization.MultiStartUnivariateRealOptimizerTest/org.apache.commons.math.optimization.MultiStartUnivariateRealOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math66_buggy/org.apache.commons.math.optimization.univariate.BrentOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math66_buggy/org.apache.commons.math.optimization.univariate.BrentOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math66_buggy/org.apache.commons.math.optimization.univariate.BrentOptimizerTest/org.apache.commons.math.optimization.univariate.BrentOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math67_buggy/org.apache.commons.math.optimization.MultiStartUnivariateRealOptimizerTest/org.apache.commons.math.optimization.MultiStartUnivariateRealOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math68_buggy/org.apache.commons.math.optimization.general.MinpackTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math68_buggy/org.apache.commons.math.optimization.general.MinpackTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math68_buggy/org.apache.commons.math.optimization.general.MinpackTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math68_buggy/org.apache.commons.math.optimization.general.MinpackTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math68_buggy/org.apache.commons.math.optimization.general.MinpackTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math68_buggy/org.apache.commons.math.optimization.general.MinpackTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math68_buggy/org.apache.commons.math.optimization.general.MinpackTest/org.apache.commons.math.optimization.general.MinpackTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.PearsonsCorrelationTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.PearsonsCorrelationTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.PearsonsCorrelationTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.PearsonsCorrelationTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.PearsonsCorrelationTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.PearsonsCorrelationTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.PearsonsCorrelationTest/org.apache.commons.math.stat.correlation.PearsonsCorrelationTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math69_buggy/org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest/org.apache.commons.math.stat.correlation.SpearmansRankCorrelationTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizerTest/org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizerTest/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.CMAESOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizerTest/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.PowellOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizerMultiDirectionalTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizerMultiDirectionalTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizerMultiDirectionalTest/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizerMultiDirectionalTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizerNelderMeadTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizerNelderMeadTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizerNelderMeadTest/org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizerNelderMeadTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.GaussNewtonOptimizerTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.GaussNewtonOptimizerTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.GaussNewtonOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.GaussNewtonOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.GaussNewtonOptimizerTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.GaussNewtonOptimizerTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.GaussNewtonOptimizerTest/org.apache.commons.math3.optim.nonlinear.vector.jacobian.GaussNewtonOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizerTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizerTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizerTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizerTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizerTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizerTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math6_buggy/org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizerTest/org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizerTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math70_buggy/org.apache.commons.math.analysis.solvers.BisectionSolverTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math70_buggy/org.apache.commons.math.analysis.solvers.BisectionSolverTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math70_buggy/org.apache.commons.math.analysis.solvers.BisectionSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math70_buggy/org.apache.commons.math.analysis.solvers.BisectionSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math70_buggy/org.apache.commons.math.analysis.solvers.BisectionSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math70_buggy/org.apache.commons.math.analysis.solvers.BisectionSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math70_buggy/org.apache.commons.math.analysis.solvers.BisectionSolverTest/org.apache.commons.math.analysis.solvers.BisectionSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegratorTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegratorTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegratorTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegratorTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegratorTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegratorTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegratorTest/org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegratorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math71_buggy/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest/org.apache.commons.math.ode.nonstiff.DormandPrince853IntegratorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math72_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math72_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math72_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math72_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math72_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math72_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math72_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/org.apache.commons.math.analysis.solvers.BrentSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math73_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math73_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math73_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math73_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math73_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math73_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math73_buggy/org.apache.commons.math.analysis.solvers.BrentSolverTest/org.apache.commons.math.analysis.solvers.BrentSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math74_buggy/org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest/org.apache.commons.math.ode.nonstiff.AdamsMoultonIntegratorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math75_buggy/org.apache.commons.math.stat.FrequencyTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math75_buggy/org.apache.commons.math.stat.FrequencyTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math75_buggy/org.apache.commons.math.stat.FrequencyTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math75_buggy/org.apache.commons.math.stat.FrequencyTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math75_buggy/org.apache.commons.math.stat.FrequencyTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math75_buggy/org.apache.commons.math.stat.FrequencyTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math75_buggy/org.apache.commons.math.stat.FrequencyTest/org.apache.commons.math.stat.FrequencyTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math76_buggy/org.apache.commons.math.linear.SingularValueSolverTest/org.apache.commons.math.linear.SingularValueSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.ArrayRealVectorTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.ArrayRealVectorTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.ArrayRealVectorTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.ArrayRealVectorTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.ArrayRealVectorTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.ArrayRealVectorTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.ArrayRealVectorTest/org.apache.commons.math.linear.ArrayRealVectorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.SparseRealVectorTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.SparseRealVectorTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.SparseRealVectorTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.SparseRealVectorTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.SparseRealVectorTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.SparseRealVectorTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math77_buggy/org.apache.commons.math.linear.SparseRealVectorTest/org.apache.commons.math.linear.SparseRealVectorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math78_buggy/org.apache.commons.math.ode.events.EventStateTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math78_buggy/org.apache.commons.math.ode.events.EventStateTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math78_buggy/org.apache.commons.math.ode.events.EventStateTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math78_buggy/org.apache.commons.math.ode.events.EventStateTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math78_buggy/org.apache.commons.math.ode.events.EventStateTest/org.apache.commons.math.ode.events.EventStateTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math79_buggy/org.apache.commons.math.stat.clustering.KMeansPlusPlusClustererTest/org.apache.commons.math.stat.clustering.KMeansPlusPlusClustererTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math7_buggy/org.apache.commons.math3.ode.nonstiff.DormandPrince853IntegratorTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math7_buggy/org.apache.commons.math3.ode.nonstiff.DormandPrince853IntegratorTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math7_buggy/org.apache.commons.math3.ode.nonstiff.DormandPrince853IntegratorTest/org.apache.commons.math3.ode.nonstiff.DormandPrince853IntegratorTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math80_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math80_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math80_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math80_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math80_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math80_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math80_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/org.apache.commons.math.linear.EigenDecompositionImplTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math81_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math81_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math81_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math81_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math81_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math81_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math81_buggy/org.apache.commons.math.linear.EigenDecompositionImplTest/org.apache.commons.math.linear.EigenDecompositionImplTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math82_buggy/org.apache.commons.math.optimization.linear.SimplexSolverTest/org.apache.commons.math.optimization.linear.SimplexSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math83_buggy/org.apache.commons.math.optimization.linear.SimplexSolverTest/org.apache.commons.math.optimization.linear.SimplexSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math84_buggy/org.apache.commons.math.optimization.direct.MultiDirectionalTest/org.apache.commons.math.optimization.direct.MultiDirectionalTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math85_buggy/org.apache.commons.math.distribution.NormalDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math85_buggy/org.apache.commons.math.distribution.NormalDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math85_buggy/org.apache.commons.math.distribution.NormalDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math85_buggy/org.apache.commons.math.distribution.NormalDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math85_buggy/org.apache.commons.math.distribution.NormalDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math85_buggy/org.apache.commons.math.distribution.NormalDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math85_buggy/org.apache.commons.math.distribution.NormalDistributionTest/org.apache.commons.math.distribution.NormalDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math86_buggy/org.apache.commons.math.linear.CholeskyDecompositionImplTest/org.apache.commons.math.linear.CholeskyDecompositionImplTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math87_buggy/org.apache.commons.math.optimization.linear.SimplexSolverTest/org.apache.commons.math.optimization.linear.SimplexSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math88_buggy/org.apache.commons.math.optimization.linear.SimplexSolverTest/org.apache.commons.math.optimization.linear.SimplexSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math89_buggy/org.apache.commons.math.stat.FrequencyTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math89_buggy/org.apache.commons.math.stat.FrequencyTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math89_buggy/org.apache.commons.math.stat.FrequencyTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math89_buggy/org.apache.commons.math.stat.FrequencyTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math89_buggy/org.apache.commons.math.stat.FrequencyTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math89_buggy/org.apache.commons.math.stat.FrequencyTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math89_buggy/org.apache.commons.math.stat.FrequencyTest/org.apache.commons.math.stat.FrequencyTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math8_buggy/org.apache.commons.math3.distribution.DiscreteRealDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math8_buggy/org.apache.commons.math3.distribution.DiscreteRealDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math8_buggy/org.apache.commons.math3.distribution.DiscreteRealDistributionTest/org.apache.commons.math3.distribution.DiscreteRealDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math90_buggy/org.apache.commons.math.stat.FrequencyTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math90_buggy/org.apache.commons.math.stat.FrequencyTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math90_buggy/org.apache.commons.math.stat.FrequencyTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math90_buggy/org.apache.commons.math.stat.FrequencyTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math90_buggy/org.apache.commons.math.stat.FrequencyTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math90_buggy/org.apache.commons.math.stat.FrequencyTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math90_buggy/org.apache.commons.math.stat.FrequencyTest/org.apache.commons.math.stat.FrequencyTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math91_buggy/org.apache.commons.math.fraction.FractionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math91_buggy/org.apache.commons.math.fraction.FractionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math91_buggy/org.apache.commons.math.fraction.FractionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math91_buggy/org.apache.commons.math.fraction.FractionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math91_buggy/org.apache.commons.math.fraction.FractionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math91_buggy/org.apache.commons.math.fraction.FractionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math91_buggy/org.apache.commons.math.fraction.FractionTest/org.apache.commons.math.fraction.FractionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math92_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math92_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math92_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math92_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math92_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math92_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math92_buggy/org.apache.commons.math.util.MathUtilsTest/org.apache.commons.math.util.MathUtilsTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math93_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math93_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math93_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math93_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math93_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math93_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math93_buggy/org.apache.commons.math.util.MathUtilsTest/org.apache.commons.math.util.MathUtilsTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math94_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math94_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math94_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math94_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math94_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math94_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math94_buggy/org.apache.commons.math.util.MathUtilsTest/org.apache.commons.math.util.MathUtilsTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math95_buggy/org.apache.commons.math.distribution.FDistributionTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math95_buggy/org.apache.commons.math.distribution.FDistributionTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math95_buggy/org.apache.commons.math.distribution.FDistributionTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math95_buggy/org.apache.commons.math.distribution.FDistributionTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math95_buggy/org.apache.commons.math.distribution.FDistributionTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math95_buggy/org.apache.commons.math.distribution.FDistributionTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math95_buggy/org.apache.commons.math.distribution.FDistributionTest/org.apache.commons.math.distribution.FDistributionTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math96_buggy/org.apache.commons.math.complex.ComplexTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math96_buggy/org.apache.commons.math.complex.ComplexTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math96_buggy/org.apache.commons.math.complex.ComplexTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math96_buggy/org.apache.commons.math.complex.ComplexTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math96_buggy/org.apache.commons.math.complex.ComplexTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math96_buggy/org.apache.commons.math.complex.ComplexTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math96_buggy/org.apache.commons.math.complex.ComplexTest/org.apache.commons.math.complex.ComplexTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math97_buggy/org.apache.commons.math.analysis.BrentSolverTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math97_buggy/org.apache.commons.math.analysis.BrentSolverTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math97_buggy/org.apache.commons.math.analysis.BrentSolverTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math97_buggy/org.apache.commons.math.analysis.BrentSolverTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math97_buggy/org.apache.commons.math.analysis.BrentSolverTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math97_buggy/org.apache.commons.math.analysis.BrentSolverTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math97_buggy/org.apache.commons.math.analysis.BrentSolverTest/org.apache.commons.math.analysis.BrentSolverTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.BigMatrixImplTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.BigMatrixImplTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.BigMatrixImplTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.BigMatrixImplTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.BigMatrixImplTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.BigMatrixImplTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.BigMatrixImplTest/org.apache.commons.math.linear.BigMatrixImplTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.RealMatrixImplTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.RealMatrixImplTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.RealMatrixImplTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.RealMatrixImplTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.RealMatrixImplTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.RealMatrixImplTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math98_buggy/org.apache.commons.math.linear.RealMatrixImplTest/org.apache.commons.math.linear.RealMatrixImplTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math99_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math99_buggy/org.apache.commons.math.util.MathUtilsTest/class_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math99_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math99_buggy/org.apache.commons.math.util.MathUtilsTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math99_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math99_buggy/org.apache.commons.math.util.MathUtilsTest/method_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math99_buggy/org.apache.commons.math.util.MathUtilsTest/org.apache.commons.math.util.MathUtilsTest.cov" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math9_buggy/org.apache.commons.math3.geometry.euclidean.threed.LineTest/line_coverage.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math9_buggy/org.apache.commons.math3.geometry.euclidean.threed.LineTest/line_coverage.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/coverages/Math/Math9_buggy/org.apache.commons.math3.geometry.euclidean.threed.LineTest/org.apache.commons.math3.geometry.euclidean.threed.LineTest.cov" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeExTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeExTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/util/JavaParserUtilTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/util/JavaParserUtilTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,7 +396,33 @@
         <task path="$PROJECT_DIR$">
           <activation />
         </task>
-        <projects_view />
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MyFaultFinder" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MyFaultFinder" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MyFaultFinder" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="build" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="MyFaultFinder" type="f1a62948:ProjectNode" />
+                <item name="Dependencies" type="6de06a37:ExternalSystemViewDefaultContributor$MyDependenciesNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
       </state>
     </system>
   </component>
@@ -67,6 +449,9 @@
     &quot;accountId&quot;: &quot;0f137e7c-2ecc-4908-9bd2-22e34d31d10a&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/test/java/jisd/fl/probe/ProbeExTest.java" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
@@ -75,53 +460,62 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.CoverageAnalyzerTest.analyzeTestCLASS.executor": "Run",
-    "Gradle.CoverageAnalyzerTest.analyzeTestLINE.executor": "Run",
-    "Gradle.CoverageAnalyzerTest.analyzeTestMETHOD.executor": "Run",
-    "Gradle.CoverageAnalyzerTest.debug.executor": "Run",
-    "Gradle.CoverageGeneratorTest.debug.executor": "Run",
-    "Gradle.CoverageGeneratorTest.debug2.executor": "Run",
-    "Gradle.CoverageGeneratorTest.genTest.executor": "Run",
-    "Gradle.CoverageGeneratorTest.getTestNums.executor": "Run",
-    "Gradle.Defects4jUtilTest.changeTargetVersionTest.executor": "Run",
-    "Gradle.Defects4jUtilTest.executor": "Run",
-    "Gradle.Defects4jUtilTest.getAllModifiedMethodTest.executor": "Run",
-    "Gradle.Defects4jUtilTest.getModifiedMethod.executor": "Debug",
-    "Gradle.Defects4jUtilTest.getModifiedMethodTest.executor": "Run",
-    "Gradle.FaultFinderTest.debugTest.executor": "Run",
-    "Gradle.FaultFinderTest.printFLResultsTest.executor": "Run",
-    "Gradle.FaultFinderTest.probeTest.executor": "Run",
-    "Gradle.FaultFinderTest.removeTest.executor": "Run",
-    "Gradle.FaultFinderTest.suspTest.executor": "Run",
-    "Gradle.MyFaultFinder [:experiment.main.Coverage.main()].executor": "Run",
-    "Gradle.MyFaultFinder [:experiment.main.Defects4j.main()].executor": "Run",
-    "Gradle.MyFaultFinder [:jisd.fl.util.TestLauncher.main()].executor": "Run",
-    "Gradle.MyFaultFinder [dependencies].executor": "Run",
-    "Gradle.ProbeExResultTest.loadAllTest.executor": "Run",
-    "Gradle.ProbeExResultTest.loadTest.executor": "Run",
-    "Gradle.ProbeExTest (1).executor": "Run",
-    "Gradle.ProbeExTest.executor": "Run",
-    "Gradle.ProbeExTest.runTest (1).executor": "Run",
-    "Gradle.ProbeExTest.runTest.executor": "Debug",
-    "Gradle.ProbeTest.runTest.executor": "Run",
-    "Gradle.StaticAnalyzerTest.getMethodNameTest.executor": "Run",
-    "Gradle.StaticAnalyzerTest.getMethodNameTest2.executor": "Run",
-    "Gradle.StaticAnalyzerTest.getMethodNameTest3.executor": "Run",
-    "Gradle.TestLauncherTest.jisdtest1.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
-    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/ezaki/IdeaProjects/MyFaultFinder/locallib/jdiscript",
-    "project.structure.last.edited": "モジュール",
-    "project.structure.proportion": "0.24414062",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "project.propCompiler"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.CoverageAnalyzerTest.analyzeTestCLASS.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.CoverageAnalyzerTest.analyzeTestLINE.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.CoverageAnalyzerTest.analyzeTestMETHOD.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.CoverageAnalyzerTest.debug.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.CoverageGeneratorTest.debug.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.CoverageGeneratorTest.debug2.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.CoverageGeneratorTest.genTest.executor&quot;: &quot;Debug&quot;,
+    &quot;Gradle.CoverageGeneratorTest.getTestNums.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.CoverageGeneratorTest.loadTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Defects4jUtilTest.changeTargetVersionTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Defects4jUtilTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Defects4jUtilTest.getAllModifiedMethodTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Defects4jUtilTest.getModifiedMethod.executor&quot;: &quot;Debug&quot;,
+    &quot;Gradle.Defects4jUtilTest.getModifiedMethodTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.FaultFinderTest.debugTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.FaultFinderTest.printFLResultsTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.FaultFinderTest.probeTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.FaultFinderTest.removeTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.FaultFinderTest.suspTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.JavaParserUtilTest.debug.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.MyFaultFinder [:experiment.main.Coverage.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.MyFaultFinder [:experiment.main.Defects4j.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.MyFaultFinder [:jisd.fl.util.TestLauncher.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.MyFaultFinder [assemble].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.MyFaultFinder [dependencies].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.MyFaultFinder のビルド.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ProbeExResultTest.loadAllTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ProbeExResultTest.loadJsonTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ProbeExResultTest.loadTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ProbeExTest (1).executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ProbeExTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ProbeExTest.runTest (1).executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ProbeExTest.runTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.ProbeTest.runTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.RankingEvaluatorTest.calcMWETest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.RankingEvaluatorTest.loadProbeExTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.StaticAnalyzerTest.debug.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.StaticAnalyzerTest.getMethodNameTest.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.StaticAnalyzerTest.getMethodNameTest2.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.StaticAnalyzerTest.getMethodNameTest3.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestLauncherTest.jisdtest1.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary&quot;: &quot;JUnit5&quot;,
+    &quot;com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5&quot;: &quot;&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/ezaki/IdeaProjects/MyFaultFinder&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDK&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.24414062&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.startup.tasks&quot;,
+    &quot;settings.editor.splitter.proportion&quot;: &quot;0.24965894&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/locallib/jdiscript" />
@@ -135,6 +529,7 @@
       <recent name="$PROJECT_DIR$/fl_properties" />
     </key>
     <key name="CreateTestDialog.RecentsKey">
+      <recent name="experiment.sbfl" />
       <recent name="jisd.fl.probe" />
       <recent name="experiment.defect4j" />
       <recent name="experiment.coverage" />
@@ -155,29 +550,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="MyFaultFinder [dependencies]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="dependencies" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <method v="2" />
-    </configuration>
-    <configuration name="ProbeExResultTest.loadAllTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="JavaParserUtilTest.debug" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -190,7 +563,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.probe.ProbeExResultTest.loadAllTest&quot;" />
+            <option value="&quot;jisd.fl.util.JavaParserUtilTest.debug&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -201,7 +574,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="ProbeExResultTest.loadTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="ProbeExResultTest.loadJsonTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -214,7 +587,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;jisd.fl.probe.ProbeExResultTest.loadTest&quot;" />
+            <option value="&quot;jisd.fl.probe.ProbeExResultTest.loadJsonTest&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -249,7 +622,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="ProbeExTest.runTest (1)" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="ProbeExTest.runTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -273,13 +646,37 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
+    <configuration name="TestLauncherTest.jisdtest1" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;jisd.fl.util.TestLauncherTest.jisdtest1&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.ProbeExTest (1)" />
-        <item itemvalue="Gradle.ProbeExTest.runTest (1)" />
-        <item itemvalue="Gradle.ProbeExResultTest.loadAllTest" />
-        <item itemvalue="Gradle.ProbeExResultTest.loadTest" />
-        <item itemvalue="Gradle.MyFaultFinder [dependencies]" />
+        <item itemvalue="Gradle.ProbeExTest.runTest" />
+        <item itemvalue="Gradle.JavaParserUtilTest.debug" />
+        <item itemvalue="Gradle.TestLauncherTest.jisdtest1" />
+        <item itemvalue="Gradle.ProbeExResultTest.loadJsonTest" />
       </list>
     </recent_temporary>
   </component>
@@ -348,7 +745,39 @@
       <option name="project" value="LOCAL" />
       <updated>1736487051911</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="save">
+      <option name="closed" value="true" />
+      <created>1736843589890</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1736843589890</updated>
+    </task>
+    <task id="LOCAL-00009" summary="save before change searchProbeLine">
+      <option name="closed" value="true" />
+      <created>1737014587640</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1737014587640</updated>
+    </task>
+    <task id="LOCAL-00010" summary="save after change searchProbeLine">
+      <option name="closed" value="true" />
+      <created>1737020043678</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1737020043678</updated>
+    </task>
+    <task id="LOCAL-00011" summary="modify searchProbeLine">
+      <option name="closed" value="true" />
+      <created>1737092719505</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1737092719505</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -370,7 +799,11 @@
     <MESSAGE value="impl program for experiments" />
     <MESSAGE value="save after revise canSetLine" />
     <MESSAGE value="refactor searchProbeLine" />
-    <option name="LAST_COMMIT_MESSAGE" value="refactor searchProbeLine" />
+    <MESSAGE value="save" />
+    <MESSAGE value="save before change searchProbeLine" />
+    <MESSAGE value="save after change searchProbeLine" />
+    <MESSAGE value="modify searchProbeLine" />
+    <option name="LAST_COMMIT_MESSAGE" value="modify searchProbeLine" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -381,30 +814,52 @@
           <option name="timeStamp" value="23" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
-          <line>231</line>
-          <option name="timeStamp" value="91" />
+          <url>file://$PROJECT_DIR$/src/test/java/experiment/coverage/CoverageGeneratorTest.java</url>
+          <line>30</line>
+          <option name="timeStamp" value="140" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java</url>
+          <line>370</line>
+          <option name="timeStamp" value="152" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/util/FileUtil.java</url>
+          <line>58</line>
+          <option name="timeStamp" value="154" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/util/FileUtil.java</url>
+          <line>93</line>
+          <option name="timeStamp" value="158" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
-          <line>99</line>
-          <option name="timeStamp" value="92" />
+          <line>564</line>
+          <option name="timeStamp" value="173" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
-          <line>591</line>
-          <option name="timeStamp" value="93" />
+          <line>520</line>
+          <option name="timeStamp" value="175" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
-          <line>342</line>
-          <option name="timeStamp" value="100" />
+          <line>527</line>
+          <option name="timeStamp" value="176" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
+          <line>539</line>
+          <option name="timeStamp" value="179" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
+        <PinnedItemInfo parentTag="jisd.debug.Location" memberName="lineNumber" />
         <PinnedItemInfo parentTag="org.jacoco.core.internal.analysis.CounterImpl$Fix" memberName="missed" />
+        <PinnedItemInfo parentTag="jisd.fl.probe.AbstractProbe$ProbeInfo" memberName="createAt" />
       </pinned-members>
     </pin-to-top-manager>
   </component>

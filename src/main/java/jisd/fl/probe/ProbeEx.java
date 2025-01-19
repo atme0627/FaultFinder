@@ -54,8 +54,8 @@ public class ProbeEx extends AbstractProbe {
         }
 
         while(!probingTargets.isEmpty()) {
-            //if(depth > 9) break;
             if(!isArgument) depth += 1;
+            if(depth > 10) break;
             for (VariableInfo target : probingTargets) {
                 if(isProbed(target))continue;
                 addProbedValue(target);
@@ -66,13 +66,11 @@ public class ProbeEx extends AbstractProbe {
                 if(pr.isArgument()){
                     //感染した変数が引数のものだった場合
                     Pair<Integer, String> caller = getCallerMethod(pr.getWatchedAt(), target);
-                    if(targetClasses.contains(caller.getRight().split("#")[0]))  {
-                        int probeLine = caller.getLeft();
-                        Pair<Integer, Integer> probeLines = Pair.of(probeLine, probeLine);
-                        pr.setCallerMethod(caller);
-                        pr.setLines(probeLines);
-                        pr.setSrc(getProbeStatement(caller.getRight().split("#")[0], probeLines));
-                    }
+                    int probeLine = caller.getLeft();
+                    Pair<Integer, Integer> probeLines = Pair.of(probeLine, probeLine);
+                    pr.setCallerMethod(caller);
+                    pr.setLines(probeLines);
+                    pr.setSrc(getProbeStatement(caller.getRight().split("#")[0], probeLines));
                 }
 
                 List<VariableInfo> newTargets = searchNextProbeTargets(pr);
@@ -120,6 +118,7 @@ public class ProbeEx extends AbstractProbe {
         //感染した変数が引数のものだった場合
         if(pr.isArgument()){
             if(pr.getCallerMethod() == null) return vis;
+            if(!targetClasses.contains(pr.getCallerMethod().getRight().split("#")[0])) return vis;
             String argVariable = getArgumentVariable(pr);
             if(argVariable == null) return vis;
             //argVariableが純粋な変数でない（関数呼び出しなどを行っている）場合、probeは行わない
@@ -420,7 +419,8 @@ public class ProbeEx extends AbstractProbe {
                 ConstructorDeclaration cd = JavaParserUtil.parseConstructor(locateMethod);
                 bs = cd.getBody();
             } catch (NoSuchFileException ex) {
-                throw new RuntimeException(ex);
+                System.err.println(ex);
+                return null;
             }
         }
 

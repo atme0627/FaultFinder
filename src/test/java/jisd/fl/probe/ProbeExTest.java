@@ -4,6 +4,7 @@ import experiment.defect4j.Defects4jUtil;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.util.FileUtil;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -15,21 +16,22 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class ProbeExTest {
     String project = "Math";
-    int bugId = 5;
+    int bugId = 105;
 
-    String testClassName = "org.apache.commons.math3.complex.ComplexTest";
-    String shortTestMethodName = "testReciprocalZero";
+    String testClassName = "org.apache.commons.math.stat.regression.SimpleRegressionTest";
+    String shortTestMethodName = "testSSENonNegative";
 
     String testMethodName = testClassName + "#" + shortTestMethodName + "()";
 
-    String variableName = "real";
+    String variableName = "tmp";
     boolean isPrimitive = true;
-    boolean isField = true;
+    boolean isField = false;
     boolean isArray = false;
     int arrayNth = -1;
-    String actual = "0.0";
+    String actual = "-7.105427357601002E-15";
+    String locate ="org.apache.commons.math.stat.regression.SimpleRegression#getSumSquaredErrors()";
 
-    String locate = "org.apache.commons.math3.complex.Complex#reciprocal()";
+
 
 
     String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";
@@ -58,10 +60,12 @@ class ProbeExTest {
         ProbeEx prbEx = new ProbeEx(fai);
         ProbeExResult pr = prbEx.run(5000);
         pr.print();
+;
 
+        if(!FileUtil.isExist("src/main/resources/probeExResult/Math",  project + bugId + "_buggy")){
+            FileUtil.createDirectory("src/main/resources/probeExResult/Math/" +  project + bugId + "_buggy");
+        }
         pr.save(dir, fileName);
-
-
         Path src = Paths.get("src/test/java/jisd/fl/probe/ProbeExTest.java");
         Path target = Paths.get(dir + "/" + fileName + ".java_data");
         try {

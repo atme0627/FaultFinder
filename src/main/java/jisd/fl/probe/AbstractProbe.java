@@ -5,11 +5,9 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.StackFrame;
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.*;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.debug.Location;
@@ -79,7 +77,7 @@ public abstract class AbstractProbe {
 
             if(count >= 5) break;
             disableStdOut("Retrying to run debugger");
-            sleepTime += 3000;
+            sleepTime += 5000;
             watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
             watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
             printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true));
@@ -123,7 +121,7 @@ public abstract class AbstractProbe {
         //run Test debugger
         try {
             dbg.run(sleepTime);
-        } catch (VMDisconnectedException e) {
+        } catch (VMDisconnectedException | InvalidStackFrameException e) {
             //throw new RuntimeException(e);
             System.err.println(e);
         }
@@ -139,41 +137,41 @@ public abstract class AbstractProbe {
         return watchedValues;
     }
 
-    //JisdのcanSetは同じ名前のローカル変数が出てきたときに、前のやつが上書きされる。
-    private List<Integer> getCanSetLine(VariableInfo variableInfo) {
-        Set<Integer> canSetSet = new HashSet<>();
-        List<Integer> canSetLines;
-        ClassInfo ci = createClassInfo(variableInfo.getLocateClass());
-
-        if(variableInfo.isField()) {
-            Map<String, ArrayList<Integer>> canSet = ci.field(variableInfo.getVariableName()).canSet();
-            for (List<Integer> lineWithVar : canSet.values()) {
-                canSetSet.addAll(lineWithVar);
-            }
-        }
-        else {
-            //ci.methodは引数に内部で定義されたクラスのインスタンスを含む場合、フルパスが必要
-            //ex.) SimplexTableau(org/apache/commons/math/optimization/linear/LinearObjectiveFunction, java.util.Collection, org/apache/commons/math/optimization/GoalType, boolean, double)
-
-            //ブレークポイントが付けられるのに含まれてない行が発生。
-            //throws で囲まれた行はブレークポイントが置けない。
-            String fullMethodName = StaticAnalyzer.fullNameOfMethod(variableInfo.getLocateMethod(), ci);
-            MethodInfo mi = ci.method(fullMethodName);
-//            for(String localName : mi.localNames()) {
-//                LocalInfo li = mi.local(localName);
-//                canSetSet.addAll(li.canSet());
+//    //JisdのcanSetは同じ名前のローカル変数が出てきたときに、前のやつが上書きされる。
+//    private List<Integer> getCanSetLine(VariableInfo variableInfo) {
+//        Set<Integer> canSetSet = new HashSet<>();
+//        List<Integer> canSetLines;
+//        ClassInfo ci = createClassInfo(variableInfo.getLocateClass());
+//
+//        if(variableInfo.isField()) {
+//            Map<String, ArrayList<Integer>> canSet = ci.field(variableInfo.getVariableName()).canSet();
+//            for (List<Integer> lineWithVar : canSet.values()) {
+//                canSetSet.addAll(lineWithVar);
 //            }
-            LocalInfo li = mi.local(variableInfo.getVariableName());
-            for(int canSet : li.canSet()){
-                canSetSet.add(canSet - 1);
-                canSetSet.add(canSet);
-                canSetSet.add(canSet + 1);
-            }
-        }
-        canSetLines = new ArrayList<>(canSetSet);
-        canSetLines.sort(Comparator.naturalOrder());
-        return canSetLines;
-    }
+//        }
+//        else {
+//            //ci.methodは引数に内部で定義されたクラスのインスタンスを含む場合、フルパスが必要
+//            //ex.) SimplexTableau(org/apache/commons/math/optimization/linear/LinearObjectiveFunction, java.util.Collection, org/apache/commons/math/optimization/GoalType, boolean, double)
+//
+//            //ブレークポイントが付けられるのに含まれてない行が発生。
+//            //throws で囲まれた行はブレークポイントが置けない。
+//            String fullMethodName = StaticAnalyzer.fullNameOfMethod(variableInfo.getLocateMethod(), ci);
+//            MethodInfo mi = ci.method(fullMethodName);
+////            for(String localName : mi.localNames()) {
+////                LocalInfo li = mi.local(localName);
+////                canSetSet.addAll(li.canSet());
+////            }
+//            LocalInfo li = mi.local(variableInfo.getVariableName());
+//            for(int canSet : li.canSet()){
+//                canSetSet.add(canSet - 1);
+//                canSetSet.add(canSet);
+//                canSetSet.add(canSet + 1);
+//            }
+//        }
+//        canSetLines = new ArrayList<>(canSetSet);
+//        canSetLines.sort(Comparator.naturalOrder());
+//        return canSetLines;
+//    }
 
     private List<Integer> getCanSetLineByJP(VariableInfo variableInfo) {
         List<Integer> canSetLines;
@@ -194,12 +192,21 @@ public abstract class AbstractProbe {
         ProbeInfo pi;
 
         //代入行の特定
+        //unaryExpr(ex a++)も含める
         Set<Integer> assignedLine = new HashSet<>();
         List<AssignExpr> aes;
+        List<UnaryExpr> ues;
         if(vi.isField()) {
             try {
                 CompilationUnit unit = JavaParserUtil.parseClass(vi.getLocateClass(), false);
                 aes = unit.findAll(AssignExpr.class);
+                ues = unit.findAll(UnaryExpr.class, (n)-> {
+                    UnaryExpr.Operator ope = n.getOperator();
+                    return ope == UnaryExpr.Operator.POSTFIX_DECREMENT ||
+                            ope == UnaryExpr.Operator.POSTFIX_INCREMENT ||
+                            ope == UnaryExpr.Operator.PREFIX_DECREMENT ||
+                            ope == UnaryExpr.Operator.PREFIX_INCREMENT;
+                });
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }
@@ -207,6 +214,13 @@ public abstract class AbstractProbe {
         else {
             BlockStmt bs = StaticAnalyzer.bodyOfMethod(vi.getLocateMethod(true));
             aes = bs.findAll(AssignExpr.class);
+            ues = bs.findAll(UnaryExpr.class, (n)-> {
+                UnaryExpr.Operator ope = n.getOperator();
+                return ope == UnaryExpr.Operator.POSTFIX_DECREMENT ||
+                        ope == UnaryExpr.Operator.POSTFIX_INCREMENT ||
+                        ope == UnaryExpr.Operator.PREFIX_DECREMENT ||
+                        ope == UnaryExpr.Operator.PREFIX_INCREMENT;
+            });
         }
         for(AssignExpr ae : aes){
             List<SimpleName> sns = ae.getTarget().findAll(SimpleName.class);
@@ -214,6 +228,15 @@ public abstract class AbstractProbe {
                 if(sn.toString().equals(vi.getVariableName())) {
                     if(vi.isField() || sn.findAncestor(FieldAccessExpr.class).isEmpty())
                     assignedLine.add(sn.getBegin().get().line);
+                }
+            }
+        }
+        for(UnaryExpr ue : ues){
+            List<SimpleName> sns = ue.getExpression().findAll(SimpleName.class);
+            for(SimpleName sn : sns){
+                if(sn.toString().equals(vi.getVariableName())) {
+                    if(vi.isField() || sn.findAncestor(FieldAccessExpr.class).isEmpty())
+                        assignedLine.add(sn.getBegin().get().line);
                 }
             }
         }
@@ -250,12 +273,12 @@ public abstract class AbstractProbe {
         }
 
         //実行された代入行がないパターン
-        //初めて値がactualと一致した行を暫定的にprobe lineとする。
+        //初めて値がactualと一致した行の前に実行された行を暫定的にprobe lineとする。
         for (int i = 0; i < watchedValues.size(); i++) {
             pi = watchedValues.get(i);
             if (actual.equals(pi.value)) {
                 return resultIfNotAssigned(
-                        pi.loc.getLineNumber(),
+                        watchedValues.get(i == 0 ? i : i-1).loc.getLineNumber(),
                         vi.getLocateClass(),
                         vi.getVariableName(false, false),
                         pi.createAt,
@@ -313,7 +336,8 @@ public abstract class AbstractProbe {
         BlockStmt bs = StaticAnalyzer.bodyOfMethod(probeMethod);
         List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
         for (VariableDeclarator vd : vds) {
-            if (vd.getNameAsString().equals(variableName)) {
+            if (vd.getNameAsString().equals(variableName) &&
+            vd.getBegin().get().line <= probeLine && probeLine <= vd.getEnd().get().line) {
                 isThereVariableDeclaration = true;
                 probeLines = Pair.of(vd.getBegin().get().line, vd.getEnd().get().line);
                 break;
@@ -341,6 +365,7 @@ public abstract class AbstractProbe {
 
     //Statementのソースコードを取得
     protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines){
+        if(locationClass.contains("$")) locationClass = locationClass.split("\\$")[0];
         ClassInfo ci = createClassInfo(locationClass);
         String[] src = ci.src().split("\n");
         StringBuilder stmt = new StringBuilder();
@@ -528,7 +553,10 @@ public abstract class AbstractProbe {
             return calleeMethods;
         }
         for(int i = 0; i < linesStopAt.size(); i++) {
+            //最大で20まで
+            int j = 0;
             while (true) {
+                if(j >= 20) break;
                 //終了判定
                 //stepで元の行に戻った場合、ステップして新しいメソッド呼び出しが行われなければ終了
                 dbg.step();
@@ -539,7 +567,7 @@ public abstract class AbstractProbe {
                 calleeMethod = getMethodFromStackFrame(getStackFrame(dbg, 0));
                 dbg.stepOut();
                 calleeMethods.add(calleeMethod);
-
+                j += 1;
             }
             //debugがbreakpointに達しなかった場合は終了
             if(dbg.loc() == null) break;
@@ -549,7 +577,11 @@ public abstract class AbstractProbe {
             }
         }
 
-        dbg.cont(10);
+
+        try{
+            dbg.cont(10);
+        }
+        catch (InvalidStackFrameException ignored){}
         dbg.exit();
         enableStdOut();
         return calleeMethods;
@@ -577,7 +609,9 @@ public abstract class AbstractProbe {
                     dbg.cont(50);
                 }
             } else {
-                throw new RuntimeException("Cannot watch Probe target.");
+                //throw new RuntimeException("Cannot watch Probe target.");
+                System.err.println("Cannot watch Probe target.");
+                dbg.cont(50);
             }
         }
 //        //callerMethodをシグニチャ付きで取得する
@@ -586,7 +620,6 @@ public abstract class AbstractProbe {
         String callerMethod = getMethodFromStackFrame(sf);
         Pair<Integer, String> caller
                 = Pair.of(callLine, callerMethod);
-        //callerがnullの場合、callerMethodがtargetSrcDir内にない。（テストメソッドに戻った場合など）
         System.out.println("    >> [ CALLER METHOD ]");
         System.out.println("    >> " + caller.getRight());
 
@@ -614,7 +647,7 @@ public abstract class AbstractProbe {
     private String getMethodFromStackFrame(StackFrame sf){
         String methodName = sf.location().method().toString();
         if(methodName.contains("<init>")){
-            String shortName = methodName.substring(0, methodName.lastIndexOf("."));
+            String shortName = methodName.substring(0, methodName.lastIndexOf("<") - 1);
             shortName = shortName.substring(shortName.lastIndexOf(".") + 1);
             methodName =  methodName.replace("<init>", shortName);
         }
