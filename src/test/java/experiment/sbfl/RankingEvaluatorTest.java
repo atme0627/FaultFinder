@@ -31,7 +31,7 @@ class RankingEvaluatorTest {
     @Test
     void calcMWETest() throws NoSuchFileException {
         String project = "Math";
-        int bugId = 22;
+        int bugId = 2;
         Defects4jUtil.changeTargetVersion(project, bugId);
         Set<String> bugMethods = RankingEvaluator.loadBugMethods(project, bugId);
 
@@ -40,12 +40,12 @@ class RankingEvaluatorTest {
         RankingEvaluator re = new RankingEvaluator(cov, Granularity.METHOD, Formula.OCHIAI);
         re.ff.setHighlightMethods(bugMethods);
 
-        double sbfl = 100000000;
-        for(String bugMethod : re.loadBugMethods(project, bugId)) {
-            System.out.println(bugMethod + " " + re.ff.getFLResults().getRankOfElement(bugMethod));
-            sbfl = Math.min(sbfl, re.ff.getFLResults().getRankOfElement(bugMethod));
-        }
-        System.out.println("SBFL: " + sbfl);
+//        double sbfl = 100000000;
+//        for(String bugMethod : re.loadBugMethods(project, bugId)) {
+//            System.out.println(bugMethod + " " + re.ff.getFLResults().getRankOfElement(bugMethod));
+//            sbfl = Math.min(sbfl, re.ff.getFLResults().getRankOfElement(bugMethod));
+//        }
+//        System.out.println("SBFL: " + sbfl);
 
         double mweBefore = re.calcMWE(bugMethods);
 
