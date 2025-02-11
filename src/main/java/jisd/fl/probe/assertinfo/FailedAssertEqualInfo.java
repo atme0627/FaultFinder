@@ -8,11 +8,23 @@ public class FailedAssertEqualInfo extends FailedAssertInfo {
                                  String actual,
                                  VariableInfo variableInfo) {
 
+
         super(AssertType.EQUAL,
                 testMethodName,
                 variableInfo
         );
         this.actual = actual;
+    }
+
+    public FailedAssertEqualInfo(String testMethodName,
+                                 VariableInfo variableInfo) {
+
+
+        super(AssertType.EQUAL,
+                testMethodName,
+                variableInfo
+        );
+        this.actual = "";
     }
 
     @Override

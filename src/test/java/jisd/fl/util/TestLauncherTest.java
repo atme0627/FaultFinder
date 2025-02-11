@@ -1,6 +1,7 @@
 package jisd.fl.util;
 
 import com.sun.jdi.*;
+import experiment.defect4j.Defects4jUtil;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,17 @@ class TestLauncherTest {
             }
             dbg.cont(10);
         }
+    }
 
+    @Test
+    void launchTest2(){
+        String project = "Math";
+        int bugId = 22;
 
+        Defects4jUtil.changeTargetVersion(project, bugId);
+        String testMethodName = "org.apache.commons.math3.distribution.FDistributionTest#testIsSupportLowerBoundInclusive()";
+        //カッコつけたら動かない
+        TestLauncher tl = new TestLauncher(testMethodName);
+        tl.runTest();
     }
 }

@@ -1,43 +1,70 @@
-package experiment.main;
+package jisd.fl.probe;
 
 import experiment.defect4j.Defects4jUtil;
-import jisd.fl.probe.ProbeEx;
-import jisd.fl.probe.ProbeExResult;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.util.FileUtil;
+import org.junit.jupiter.api.Test;
 
-public class probeEx {
-    static String project = "Math";
-    static int bugId = 87;
-    static String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint()";
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-    static String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";
-    static String fileName = testMethodName.split("#")[1];
-    static String locateClass = "org.apache.commons.math.optimization.RealPointValuePair";
-    static String variableName = "point";
-    static String actual = "0.0";
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
-    static VariableInfo probeVariable = new VariableInfo(
-            locateClass,
+class ProbeExTest {
+    String project = "Math";
+    int bugId = 1;
+
+    String testMethodName = "org.apache.commons.math3.fraction.BigFractionTest#testDigitLimitConstructor()";
+    String locate = "org.apache.commons.math3.fraction.BigFraction#BigFraction(double, double, int, int)";
+    String variableName = "p2";
+    boolean isPrimitive = true;
+    boolean isField = false;
+    boolean isArray = false;
+    int arrayNth = -1;
+    String actual = "2499999794";
+
+
+    String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";
+    String fileName = testMethodName + "_" + variableName;
+
+    VariableInfo probeVariable = new VariableInfo(
+            locate,
             variableName,
-            false,
-            true,
-            true,
-            0,
+            isPrimitive,
+            isField,
+            isArray,
+            arrayNth,
             actual,
             null
     );
 
-    static FailedAssertInfo fai = new FailedAssertEqualInfo(
+    FailedAssertInfo fai = new FailedAssertEqualInfo(
             testMethodName,
             actual,
             probeVariable);
 
-    public static void main(String[] args){
+
+    @Test
+    void runTest() {
         Defects4jUtil.changeTargetVersion(project, bugId);
         ProbeEx prbEx = new ProbeEx(fai);
-        ProbeExResult per = prbEx.run(3000);
-        per.generateJson(dir, fileName);
+        ProbeExResult pr = prbEx.run(3000);
+        pr.print();
+
+        //pr.generateJson(dir, fileName);
+
+//        Path src = Paths.get("src/test/java/jisd/fl/probe/ProbeExTest.java");
+//        Path target = Paths.get(dir + "/" + fileName + ".java_data");
+//        FileUtil.initFile(dir, fileName + ".java_data");
+//        try {
+//            Files.copy(src, target, REPLACE_EXISTING);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+
     }
 }

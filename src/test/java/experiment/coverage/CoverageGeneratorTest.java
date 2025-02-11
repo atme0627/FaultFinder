@@ -1,17 +1,15 @@
 package experiment.coverage;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import experiment.defect4j.Defects4jUtil;
+import experiment.sbfl.RankingEvaluator;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.probe.ProbeExResult;
 import jisd.fl.util.StaticAnalyzer;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.NoSuchFileException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +18,7 @@ class CoverageGeneratorTest {
     @Test
     void genTest(){
         String project = "Math";
-        int bugId = 43;
+        int bugId = 6;
 
         Defects4jUtil.changeTargetVersion(project, bugId);
         Defects4jUtil.CompileBuggySrc(project, bugId);
@@ -67,7 +65,61 @@ class CoverageGeneratorTest {
     @Test
     void loadTest() {
         String project = "Math";
-        int bugId = 43;
+        int bugId = 46;
         CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
+        cov.printCoverages(Granularity.METHOD);
+
+    }
+
+    @Test
+    void countFindButDecrease() throws NoSuchFileException {
+        String project = "Math";
+//        Set<Integer> decreasedBugId =
+//                new HashSet<>(List.of(
+//                2, 6, 16, 28, 29,
+//                33, 41, 43, 46, 63,
+//                67, 76, 80, 84, 85,
+//                95, 96));
+
+//                Set<Integer> notChangedBugId =
+//                new HashSet<>(List.of(
+//                        3, 5, 9, 10, 11,
+//                        15, 17, 18, 22, 27,
+//                        36, 37, 39, 40, 47,
+//                        49, 53, 55, 57, 60,
+//                        65, 70, 72, 74, 75,
+//                        82, 91, 94, 98, 103));
+
+        Set<Integer> increasedBugId =
+                new HashSet<>(List.of(
+                        1, 4, 23, 24, 30,
+                        31, 42, 44, 51, 52,
+                        54, 56, 59, 61, 62,
+                        66, 69, 71, 77, 78,
+                        79, 81, 83, 87, 88,
+                        92, 93, 97, 100, 101,
+                        102, 105));
+
+        Set<Integer> found = new HashSet<>();
+
+        for(int id : increasedBugId){
+            List<ProbeExResult> results = RankingEvaluator.loadProbeEx(project, id);
+            Set<String> bugMethods = RankingEvaluator.loadBugMethods(project, id);
+
+            for(String bug : bugMethods){
+                boolean f = false;
+                for(ProbeExResult r : results){
+                    if(r.markingMethods().contains(bug)) {
+                        found.add(id);
+                        f = true;
+                        break;
+                    }
+                }
+                if(f) break;
+            }
+        }
+
+        increasedBugId.removeAll(found);
+        System.out.println(Arrays.toString((increasedBugId.stream().sorted().toArray())));
     }
 }

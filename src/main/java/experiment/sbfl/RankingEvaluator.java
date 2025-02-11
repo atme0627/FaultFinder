@@ -8,18 +8,17 @@ import jisd.fl.sbfl.Formula;
 import jisd.fl.util.FileUtil;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class RankingEvaluator {
-    FaultFinder ff;
+    public FaultFinder ff;
 
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
     private double removeConst = 0.8;
@@ -31,7 +30,7 @@ public class RankingEvaluator {
     private double probeC3 = 0.1;
 
     //probeExの疑惑値計算に使用する変数
-    private double probeExLambda = 0.8;
+    private double probeExLambda = 0.5;
 
     //表示するランキングの長さ
     private int rankingSize = 20;
@@ -47,7 +46,9 @@ public class RankingEvaluator {
     }
 
     public double calcMWE(String project, int bugId){
-        return calcMWE(loadBugMethods(project, bugId));
+        Set<String> bugMethods = loadBugMethods(project, bugId);
+        ff.setHighlightMethods(bugMethods);
+        return calcMWE(bugMethods);
     }
 
     public double calcMWE(Set<String> bugMethods){
@@ -65,7 +66,7 @@ public class RankingEvaluator {
                 break;
             }
         }
-        if(!isExist) throw new RuntimeException("bug methods are not in Ranking.");
+        if(!isExist) throw new NoSuchElementException("bug methods are not in Ranking.");
 
         Set<String> bugClasses = new HashSet<>();
         for(String bugMethod : bugMethods){
@@ -100,7 +101,7 @@ public class RankingEvaluator {
         }
     }
 
-    public void loadAndApplyProbeEx(String project, int bugId){
+    public void loadAndApplyProbeEx(String project, int bugId) throws NoSuchFileException {
         List<ProbeExResult> pers = loadProbeEx(project, bugId);
 
         for(ProbeExResult per : pers){
@@ -108,17 +109,18 @@ public class RankingEvaluator {
         }
     }
 
-    public static List<ProbeExResult> loadProbeEx(String project, int bugId){
-        String dir = "src/main/resources/probeExResult/" + project + "/Math" + bugId + "_buggy";
+    public static List<ProbeExResult> loadProbeEx(String project, int bugId) throws NoSuchFileException {
+        String dir = "src/main/resources/probeExResult/" + project + "/" + project + bugId + "_buggy";
+        if(!FileUtil.isExist(dir)) throw new NoSuchFileException(dir);
         return loadProbeEx(dir);
     }
 
     public static List<ProbeExResult> loadProbeEx(String dir){
         List<ProbeExResult> pers = new ArrayList<>();
-        Set<String> files = FileUtil.getFileNames(dir, "probeEx");
+        Set<String> files = FileUtil.getFileNames(dir, "json");
         for(String f : files){
             System.out.println("[LOAD] " + f);
-            pers.add(ProbeExResult.loadJson(dir));
+            pers.add(ProbeExResult.loadJson(dir + "/" + f));
         }
         return pers;
     }

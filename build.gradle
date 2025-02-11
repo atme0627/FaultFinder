@@ -14,18 +14,18 @@ repositories {
 }
 
 dependencies {
-    implementation(fileTree(dir: 'locallib', include: ['jisd-0.3.0_bata.jar']))
+    implementation(fileTree(dir: 'locallib', include: ['jisd-0.2.5_bata.jar']))
     //defects4j
+
     int i = 1
-    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/main/java'))
-    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test/java'))
+        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/main/java'))
+        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test/java'))
 
-    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/java'))
-    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test'))
+        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/java'))
+        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test'))
 
-    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/classes'))
-    implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/test-classes'))
-
+        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/classes'))
+        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/test-classes'))
 
     //junit4
     // https://mvnrepository.com/artifact/junit/junit

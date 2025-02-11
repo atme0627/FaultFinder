@@ -28,7 +28,8 @@ public enum Formula {
             double ef = status.getEf();
             double nf = status.getNf();
 
-            return ef / Math.sqrt((ef + nf) * (ef + ep));
+            double result = ef / Math.sqrt((ef + nf) * (ef + ep));
+            return Double.isNaN(result) ? 0 : result;
         }
     },
     JACCARD {

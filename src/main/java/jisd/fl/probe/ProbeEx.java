@@ -147,12 +147,16 @@ public class ProbeEx extends AbstractProbe {
                 boolean isArray;
                 boolean isField = false;
                 int arrayNth;
+                String locateClass = "";
                 //フィールドかどうか判定
                 if(n.contains("this.")){
                     isField = true;
                     variableName = n.substring("this.".length());
                     //thisなしのものが観測されている場合はスキップ
                     if(neighborVariables.contains(variableName)) continue;
+
+                    Pair<Boolean, String> isFieldVarInfo = isFieldVariable(variableName, pr.getProbeMethod());
+                    locateClass = isFieldVarInfo.getRight();
                 }
                 //配列かどうか判定
                 if(n.contains("[")){
@@ -181,7 +185,7 @@ public class ProbeEx extends AbstractProbe {
                 if(pr.getValuesInLine().get(n).equals("Not defined")) continue;
 
                 VariableInfo vi = new VariableInfo(
-                        pr.getProbeMethod(),
+                        isField ? locateClass : pr.getProbeMethod(),
                         variableName,
                         pr.getVariableInfo().isPrimitive(),
                         isField,
@@ -256,7 +260,7 @@ public class ProbeEx extends AbstractProbe {
             try {
                 unit = JavaParserUtil.parseClass(className, false);
             } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
+                break;
             }
 
             List<FieldDeclaration> fds = unit.findAll(FieldDeclaration.class);

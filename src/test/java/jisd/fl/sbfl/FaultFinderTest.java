@@ -1,5 +1,8 @@
 package jisd.fl.sbfl;
 
+import experiment.coverage.CoverageGenerator;
+import experiment.defect4j.Defects4jUtil;
+import experiment.sbfl.RankingEvaluator;
 import jisd.fl.coverage.CoverageAnalyzer;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
@@ -9,6 +12,7 @@ import jisd.fl.probe.assertinfo.VariableInfo;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 
 class FaultFinderTest {
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
@@ -40,17 +44,7 @@ class FaultFinderTest {
         return rootDir + "/" + project + "/" + project + bugId + "_buggy/" + testClassName;
     }
 
-    @Test
-    void printFLResultsTest() throws Exception {
-        String project = "Math";
-        int bugId = 87;
 
-        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName);
-        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        SbflResult result = ff.getFLResults();
-        result.printFLResults();
-    }
 
     @Test
     void removeTest() throws Exception {
@@ -86,10 +80,11 @@ class FaultFinderTest {
     }
 
     @Test
-    void probeExTest() throws Exception {
+    void probeExTest() {
         String project = "Math";
-        int bugId = 87;
+        int bugId = 1;
 
+        Defects4jUtil.changeTargetVersion(project, bugId);
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
         CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
@@ -97,15 +92,36 @@ class FaultFinderTest {
     }
 
     @Test
-    void debugTest() throws Exception {
+    void loadTest() throws NoSuchFileException {
         String project = "Math";
-        int bugId = 87;
+        int bugId = 47;
+        boolean probe = true;
 
-        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.probe(fai, 3000);
-        ff.remove(1);
-        ff.susp(1);
+
+        ff.setHighlightMethods(RankingEvaluator.loadBugMethods(project, bugId));
+        ff.getFLResults().printFLResults(50, cov);
+        System.out.println();
+        if(probe) {
+            RankingEvaluator re = new RankingEvaluator(ff);
+            re.loadAndApplyProbeEx(project, bugId);
+        }
+        ff.getFLResults().printFLResults(50, cov);
+        //System.out.println(ff.getFLResults().getNumOfTie(ff.getFLResults().getElementAtPlace(49)));
     }
+
+    @Test
+    void printFLResultsTest() {
+        String project = "Math";
+        int bugId = 42;
+        CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
+        FaultFinder ff = new FaultFinder(cov, Formula.OCHIAI);
+
+
+
+        ff.printRanking(20);
+    }
+
+
 }

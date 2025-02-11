@@ -1,5 +1,7 @@
 package jisd.fl.sbfl;
 
+import jisd.fl.coverage.CoverageCollection;
+import jisd.fl.coverage.Granularity;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -21,9 +23,9 @@ public class SbflResult {
 
     public void setElement(String element, SbflStatus status, Formula f){
         MutablePair<String, Double> p = MutablePair.of(element, status.getSuspiciousness(f));
-        if(!p.getRight().isNaN()){
+        //if(!p.getRight().isNaN()){
             result.add(p);
-        }
+        //}
     }
 
     public void sort(){
@@ -40,8 +42,65 @@ public class SbflResult {
         printFLResults(getSize());
     }
 
+    public void printFLResults(int top, CoverageCollection cc){
+        Pair<Integer, Integer> l = maxLengthOfName(top);
+        int classLength = l.getLeft();
+        int methodLength = l.getRight();
+
+        String header = "|      | RANK |" +
+                StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + " CLASS NAME " +
+                "|" + StringUtils.repeat(' ', methodLength - "METHOD NAME".length()) + " METHOD NAME " +
+                "| SUSP SCORE ||  EP  |  EF  |  NP  |  NF  |";
+        String partition = StringUtils.repeat('=', header.length());
+
+        System.out.println("[  SBFL RANKING  ]");
+        System.out.println(partition);
+        System.out.println(header);
+        System.out.println(partition);
+        int previousRank = 1;
+        for(int i = 0; i < min(top, getSize()); i++){
+            MutablePair<String, Double> element = result.get(i);
+            //同率を考慮する
+            int rank = 0;
+            if(i == 0) {
+                rank = i+1;
+            }
+            else {
+                if(isSameScore(element, result.get(i-1))){
+                    rank = previousRank;
+                }
+                else {
+                    rank = i+1;
+                }
+            }
+
+            String colorBegin = "";
+            String coloerEnd = "";
+            String className = element.getLeft().split("#")[0];
+            String methodName = element.getLeft();
+            SbflStatus stat = cc.getCoverageOfTarget(className, Granularity.METHOD).get(methodName);
+            if(highlightMethods.contains(element.getLeft())){
+                colorBegin = "\u001b[00;41m";
+                coloerEnd = "\u001b[00m";
+            }
+            System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
+                    StringUtils.leftPad(element.getLeft().split("#")[0], classLength) + " | " +
+                    StringUtils.leftPad(element.getLeft().split("#")[1], methodLength) + " | " +
+                    String.format("  %.4f  ", element.getRight()) +
+                    " || " + StringUtils.leftPad(String.valueOf(stat.ep), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(stat.ef), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(stat.np), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(stat.nf), 4) +
+                    " |" + coloerEnd);
+            previousRank = rank;
+        }
+        System.out.println(partition);
+        System.out.println();
+    }
+
+
     public void printFLResults(int top){
-        Pair<Integer, Integer> l = maxLengthOfName();
+        Pair<Integer, Integer> l = maxLengthOfName(top);
         int classLength = l.getLeft();
         int methodLength = l.getRight();
 
@@ -103,7 +162,7 @@ public class SbflResult {
         int rankTieIgnored = 0;
         MutablePair<String, Double> target = searchElement(elementName);
         for(int i = 0; i < getSize(); i++){
-            if(compare(target, result.get(i)) > 0) {
+            if(compare(target, result.get(i)) < 0) {
                 rankTieIgnored++;
             }
             else {
@@ -170,11 +229,13 @@ public class SbflResult {
         return isSameScore(e, result.get(0));
     }
 
-    private Pair<Integer, Integer> maxLengthOfName(){
+    private Pair<Integer, Integer> maxLengthOfName(int top){
         int classLength = 0;
         int methodLength = 0;
 
-        for(MutablePair<String, Double> e : result){
+
+        for(int i = 0; i < top; i++){
+            MutablePair<String, Double> e = result.get(i);
             classLength = Math.max(classLength, e.getLeft().split("#")[0].length());
             methodLength = Math.max(methodLength, e.getLeft().split("#")[1].length());
         }

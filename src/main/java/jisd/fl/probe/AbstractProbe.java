@@ -2,10 +2,7 @@ package jisd.fl.probe;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.FieldAccessExpr;
-import com.github.javaparser.ast.expr.SimpleName;
-import com.github.javaparser.ast.expr.UnaryExpr;
+import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.*;
 import jisd.debug.DebugResult;
@@ -61,7 +58,7 @@ public abstract class AbstractProbe {
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
         ProbeInfoCollection watchedValueCollection = extractInfoFromDebugger(variableInfo, sleepTime);
         List<ProbeInfo> watchedValues = watchedValueCollection.getPis(variableInfo.getVariableName(true, true));
-        printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true));
+        //printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true));
         //printWatchedValues(watchedValueCollection, null);
         ProbeResult result = null;
         try {
@@ -109,7 +106,7 @@ public abstract class AbstractProbe {
         disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
         List<Integer> canSetLines = getCanSetLineByJP(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
-        disableStdOut("[canSetLines] " + Arrays.toString(canSetLines.toArray()));
+        //disableStdOut("[canSetLines] " + Arrays.toString(canSetLines.toArray()));
         List<Optional<Point>> watchPoints = new ArrayList<>();
         dbg = createDebugger();
         //set watchPoint
@@ -223,21 +220,36 @@ public abstract class AbstractProbe {
             });
         }
         for(AssignExpr ae : aes){
-            List<SimpleName> sns = ae.getTarget().findAll(SimpleName.class);
-            for(SimpleName sn : sns){
-                if(sn.toString().equals(vi.getVariableName())) {
-                    if(vi.isField() || sn.findAncestor(FieldAccessExpr.class).isEmpty())
-                    assignedLine.add(sn.getBegin().get().line);
-                }
+            //対象の変数に代入されているか確認
+            Expression target = ae.getTarget();
+            String targetName;
+            if(target.isArrayAccessExpr()) {
+                targetName = target.asArrayAccessExpr().getName().toString();
+            }
+            else if(target.isFieldAccessExpr()){
+                targetName = target.asFieldAccessExpr().getName().toString();
+            }
+            else {
+                targetName = target.toString();
+            }
+
+            if(targetName.equals(vi.getVariableName())) {
+                if(vi.isField() == target.isFieldAccessExpr())
+                    for(int i = ae.getBegin().get().line; i <= ae.getEnd().get().line; i++) {
+                        assignedLine.add(i);
+                    }
             }
         }
         for(UnaryExpr ue : ues){
-            List<SimpleName> sns = ue.getExpression().findAll(SimpleName.class);
-            for(SimpleName sn : sns){
-                if(sn.toString().equals(vi.getVariableName())) {
-                    if(vi.isField() || sn.findAncestor(FieldAccessExpr.class).isEmpty())
-                        assignedLine.add(sn.getBegin().get().line);
-                }
+            //対象の変数に代入されているか確認
+            Expression target = ue.getExpression();
+            String targetName = target.toString();
+
+            if(targetName.equals(vi.getVariableName())) {
+                if(vi.isField() == target.isFieldAccessExpr())
+                    for(int i = ue.getBegin().get().line; i <= ue.getEnd().get().line; i++) {
+                        assignedLine.add(i);
+                    }
             }
         }
 
@@ -521,7 +533,7 @@ public abstract class AbstractProbe {
     protected Set<String> getCalleeMethods(String testMethod, String locateMethod, Pair<Integer, Integer> lines){
         System.out.println("    >> Probe Info: Collecting callee methods.");
         System.out.println("    >> Probe Info: Target method --> " + locateMethod);
-        disableStdOut("");
+        //disableStdOut("");
 
         Set<String> calleeMethods = new HashSet<>();
         String locateClass = locateMethod.split("#")[0];
@@ -574,6 +586,7 @@ public abstract class AbstractProbe {
             //すでにbreakpointにいる場合はスキップしない
             if(!linesStopAt.contains(dbg.loc().getLineNumber())) {
                 dbg.cont(50);
+                i++;
             }
         }
 

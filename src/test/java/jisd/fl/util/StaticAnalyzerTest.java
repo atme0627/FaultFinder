@@ -108,9 +108,9 @@ class StaticAnalyzerTest {
     }
 
     @Test
-    void debug() {
-        Defects4jUtil.changeTargetVersion("Math", 98);
-        String testClass = "org.apache.commons.math.linear.BigMatrixImplTest";
+    void getTestMethodsTest() {
+        Defects4jUtil.changeTargetVersion("Math", 6);
+        String testClass = "org.apache.commons.math3.optim.nonlinear.vector.jacobian.GaussNewtonOptimizerTest";
         Set<String> testMethods = TestUtil.getTestMethods(testClass);
         for(String m : testMethods){
             System.out.println(m);

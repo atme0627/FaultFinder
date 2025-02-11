@@ -13,7 +13,7 @@ public class Coverage {
         String project = "Math";
         int number0fBugs = 106;
 
-        for(int bugId = 102; bugId <= number0fBugs; bugId++){
+        for(int bugId = 6; bugId <= number0fBugs; bugId++){
         System.out.println("Coverage measurement: [PROJECT] " + project + "  [BUG ID] " + bugId);
 //            try{
 //                CoverageCollection cc = CoverageGenerator.loadAll(project, bugId);

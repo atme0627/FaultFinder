@@ -37,11 +37,21 @@ public class FaultFinder {
     private int rankingSize = 20;
     final Granularity granularity;
 
+    public FaultFinder(CoverageCollection covForTestSuite, Formula f) {
+        this.granularity = Granularity.METHOD;
+        sbflResult = new SbflResult();
+        calcSuspiciousness(covForTestSuite, granularity, f);
+    }
     public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
         this.granularity = granularity;
         sbflResult = new SbflResult();
         calcSuspiciousness(covForTestSuite, granularity, f);
     }
+
+    public void printRanking(int top){
+        this.getFLResults().printFLResults(top);
+    }
+
 
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
         Set<String> targetClassNames = covForTestSuite.getTargetClassNames();
@@ -185,6 +195,7 @@ public class FaultFinder {
     }
 
     public void probeEx(ProbeExResult probeExResult){
+        System.out.println("[  PROBE EX  ]");
         //set suspicious score
         IblResult iblResult = new IblResult();
         double preScore;
@@ -193,10 +204,10 @@ public class FaultFinder {
             preScore = sbflResult.getSuspicious(markingMethod);
 
             double finalPreScore = preScore;
-            ToDoubleBiFunction<Integer, Integer> probeExfunction
+            ToDoubleBiFunction<Integer, Integer> probeExFunction
                     = (depth, countInLine) -> finalPreScore * (Math.pow(getProbeExLambda(), depth));
 
-            sbflResult.setSuspicious(markingMethod, probeExResult.probeExSuspScore(markingMethod, probeExfunction));
+            sbflResult.setSuspicious(markingMethod, preScore + probeExResult.probeExSuspScore(markingMethod, probeExFunction));
             iblResult.addElement(markingMethod, preScore, sbflResult.getSuspicious(markingMethod));
         }
 

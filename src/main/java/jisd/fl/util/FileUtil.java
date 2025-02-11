@@ -87,4 +87,9 @@ public class FileUtil {
         Path p = Paths.get(dir, fileName);
         return  Files.exists(p);
     }
+
+    public static boolean isExist(String dir){
+        Path p = Paths.get(dir);
+        return  Files.exists(p);
+    }
 }

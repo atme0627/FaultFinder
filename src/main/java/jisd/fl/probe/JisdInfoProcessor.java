@@ -17,7 +17,6 @@ public class JisdInfoProcessor {
         //get Values from debugResult
         //実行されなかった行の情報は飛ばす。
         //実行されたがnullのものは含む。
-        String varName = variableInfo.getVariableName(true, false);
         ProbeInfoCollection watchedValues = new ProbeInfoCollection();
         for (Optional<Point> op : watchPoints) {
             Point p;

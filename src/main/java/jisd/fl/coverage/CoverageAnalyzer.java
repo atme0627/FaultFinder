@@ -4,7 +4,9 @@ import jisd.fl.util.*;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
@@ -30,13 +32,21 @@ public class CoverageAnalyzer {
 
     public CoverageCollection analyzeAll(String testClassName){
         FileUtil.createDirectory(jacocoExecFilePath);
+        Set<String> failedTestsInClass = new HashSet<>();
+        if(failedTests != null) {
+            failedTestsInClass = failedTests
+                    .stream()
+                    .filter((ft) -> ft.split("#")[0].equals(testClassName))
+                    .collect(Collectors.toSet());
+        }
+
         Set<String> testMethodNames = TestUtil.getTestMethods(testClassName);
         if(testMethodNames.isEmpty()) throw new RuntimeException("test method is not found. [CLASS] " + testMethodNames);
 
         //テストクラスをコンパイル
         TestUtil.compileTestClass(testClassName);
         MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
-
+        int failedCount = 0;
         for(String testMethodName : testMethodNames){
             //execファイルの生成
             //テストケースをjacocoAgentつきで実行
@@ -49,7 +59,9 @@ public class CoverageAnalyzer {
             }
 
             //テストの成否が想定と一致しているか確認
+
             if(failedTests != null){
+                if(!isTestPassed) failedCount++;
                 if((isTestPassed && failedTests.contains(testMethodName))
                 || (!isTestPassed && !failedTests.contains(testMethodName))){
                     throw new RuntimeException("Execution result is wrong. [testcase] " + testMethodName);
@@ -63,6 +75,10 @@ public class CoverageAnalyzer {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        if(failedTests != null){
+            if (failedTestsInClass.size() != failedCount) throw  new RuntimeException("failed test count is not correct.");
         }
         FileUtil.deleteDirectory(new File(jacocoExecFilePath));
         return cv.getCoverages();

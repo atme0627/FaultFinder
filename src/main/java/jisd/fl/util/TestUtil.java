@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public  class TestUtil {
     public static void compileTestClass(String testClassName) {
@@ -105,9 +106,10 @@ public  class TestUtil {
         while(true) {
             try {
                 dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethodName,
-                        "-Xmx2048m -cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
+                        "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
                 break;
             } catch (RuntimeException ignored) {
+                System.err.println(ignored);
                 try {
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
@@ -153,8 +155,13 @@ public  class TestUtil {
             if(parent.getName().toString().equals(shortName)) continue;
             if(parent.getName().toString().equals("TestCase")) continue;
 
-            String fullName = StaticAnalyzer.getClassNameWithPackage(testSrcDir, parent.getNameAsString());
-            methodNames.addAll(getTestMethods(fullName));
+            String fullName = StaticAnalyzer.getExtendedClassNameWithPackage(testSrcDir, parent.getNameAsString(), targetClassName);
+            Set<String> parentMethods = getTestMethods(fullName);
+            parentMethods = parentMethods
+                    .stream()
+                    .map((m)-> targetClassName + "#" + m.split("#")[1])
+                    .collect(Collectors.toSet());
+            methodNames.addAll(parentMethods);
         }
 
         if(!junit4Style) {
@@ -171,7 +178,8 @@ public  class TestUtil {
                     && md.getParameters().isEmpty()
                     && md.getAnnotations().isEmpty()
                     && md.findAncestor(MethodDeclaration.class).isEmpty()
-                    && !md.getNameAsString().equals("setUp")){
+                    && !md.getNameAsString().equals("setUp")
+                    && !md.getNameAsString().equals("tearDown")){
                     methodNames.add(methodNameBuilder.apply(md));
                 }
             }
