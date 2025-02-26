@@ -74,10 +74,10 @@ public  class TestUtil {
 
 //        //debug
         String line = null;
-//        System.out.println("STDOUT---------------");
-//        try ( var buf = new BufferedReader( new InputStreamReader( proc.getInputStream() ) ) ) {
-//            while( ( line = buf.readLine() ) != null ) System.out.println( line );
-//        }
+        System.out.println("STDOUT---------------");
+        try ( var buf = new BufferedReader( new InputStreamReader( proc.getInputStream() ) ) ) {
+            while( ( line = buf.readLine() ) != null ) System.out.println( line );
+        }
         System.out.println("STDERR---------------");
         try ( var buf = new BufferedReader( new InputStreamReader( proc.getErrorStream() ) ) ) {
             while( ( line = buf.readLine() ) != null ) System.err.println( line );

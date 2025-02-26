@@ -22,8 +22,7 @@ import jisd.info.StaticInfoFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONException;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.NoSuchFileException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -378,11 +377,23 @@ public abstract class AbstractProbe {
     //Statementのソースコードを取得
     protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines){
         if(locationClass.contains("$")) locationClass = locationClass.split("\\$")[0];
-        ClassInfo ci = createClassInfo(locationClass);
-        String[] src = ci.src().split("\n");
+        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+        String path = targetSrcDir + "/" + locationClass.replace('.', '/');
+        List<String> src = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+            String string = reader.readLine();
+            while (string != null){
+                src.add(string);
+                string = reader.readLine();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         StringBuilder stmt = new StringBuilder();
         for(int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
-            stmt.append(src[i - 1]);
+            stmt.append(src.get(i - 1));
             stmt.append("\n");
         }
         return stmt.toString();
