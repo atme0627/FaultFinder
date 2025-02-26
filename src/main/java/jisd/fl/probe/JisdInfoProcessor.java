@@ -213,7 +213,12 @@ public class JisdInfoProcessor {
             String valueType = law.substring("instance of".length(), law.indexOf("(")).trim();
             //プリミティブ型のラッパークラスのとき
             if(primitiveWrapper.contains(valueType)) {
-                return (PrimitiveInfo) vi.ch().get(0);
+                try {
+                    return (PrimitiveInfo) vi.ch().get(0);
+                }
+                catch (ClassCastException e){
+                    System.err.println(vi.ch().get(0).getName() + " " + vi.ch().get(0).getValue());
+                }
             }
         }
 
