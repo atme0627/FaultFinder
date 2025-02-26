@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.io.InputStream;
 
 public class PropertyLoader {
     private static final String[] CONF_FILES = new String[]{
@@ -24,8 +25,8 @@ public class PropertyLoader {
     static {
         properties = new Properties();
         for(String CONF_FILE : CONF_FILES) {
-            try {
-                properties.load(Files.newBufferedReader(Paths.get(CONF_FILE), StandardCharsets.UTF_8));
+            try (InputStream input = PropertyLoader.class.getClassLoader().getResourceAsStream(CONF_FILE)) {
+                properties.load(input);
             } catch (IOException e) {
                 // ファイル読み込みに失敗
                 System.out.printf("Failed to load fi_config file. :%s%n", CONF_FILE);

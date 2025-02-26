@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 apply plugin: 'application'
@@ -14,18 +15,18 @@ repositories {
 }
 
 dependencies {
-    implementation(fileTree(dir: 'locallib', include: ['jisd-0.2.5_bata.jar']))
+        implementation(fileTree(dir: 'locallib', include: ['jisd-0.3.0_bata.jar']))
     //defects4j
 
-    int i = 1
-        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/main/java'))
-        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test/java'))
-
-        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/java'))
-        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test'))
-
-        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/classes'))
-        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/test-classes'))
+//    int i = 1
+//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/main/java'))
+//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test/java'))
+//
+//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/java'))
+//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test'))
+//
+//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/classes'))
+//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/test-classes'))
 
     //junit4
     // https://mvnrepository.com/artifact/junit/junit
@@ -89,4 +90,15 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+jar {
+    archiveBaseName = 'jisd_faultfinder_fat'
+    exclude 'locallib/jisd-0.3.0_bata.jar'
+}
+
+shadowJar {
+    into('fl_properties'){
+        from 'fl_properties'
+    }
 }
