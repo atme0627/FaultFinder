@@ -31,6 +31,13 @@ public class PropertyLoader {
                 // ファイル読み込みに失敗
                 System.out.printf("Failed to load fi_config file. :%s%n", CONF_FILE);
             }
+            catch (NullPointerException e){
+                try {
+                    properties.load(Files.newBufferedReader(Paths.get(CONF_FILE), StandardCharsets.UTF_8));
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
         }
     }
 

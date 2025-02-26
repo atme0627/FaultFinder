@@ -82,7 +82,7 @@ class FaultFinderTest {
     @Test
     void probeExTest() {
         String project = "Math";
-        int bugId = 1;
+        int bugId = 87;
 
         Defects4jUtil.changeTargetVersion(project, bugId);
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));

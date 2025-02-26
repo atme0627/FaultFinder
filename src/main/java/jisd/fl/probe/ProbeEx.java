@@ -276,9 +276,10 @@ public class ProbeEx extends AbstractProbe {
             }
 
             //親クラスを探す
-            ClassInfo ci = createClassInfo(className);
-            className = ci.superName();
-            if(className.isEmpty()) break;
+
+            ClassOrInterfaceDeclaration classDecl = unit.findFirst(ClassOrInterfaceDeclaration.class).get();
+            if(classDecl.getExtendedTypes().isEmpty()) break;
+            className = classDecl.getExtendedTypes(0).getNameAsString();
             System.out.println("parent: " + className);
         }
 

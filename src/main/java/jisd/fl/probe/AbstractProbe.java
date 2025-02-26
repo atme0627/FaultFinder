@@ -378,7 +378,7 @@ public abstract class AbstractProbe {
     protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines){
         if(locationClass.contains("$")) locationClass = locationClass.split("\\$")[0];
         String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
-        String path = targetSrcDir + "/" + locationClass.replace('.', '/');
+        String path = targetSrcDir + "/" + locationClass.replace('.', '/') + ".java";
         List<String> src = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
@@ -544,7 +544,7 @@ public abstract class AbstractProbe {
     protected Set<String> getCalleeMethods(String testMethod, String locateMethod, Pair<Integer, Integer> lines){
         System.out.println("    >> Probe Info: Collecting callee methods.");
         System.out.println("    >> Probe Info: Target method --> " + locateMethod);
-        //disableStdOut("");
+        disableStdOut("");
 
         Set<String> calleeMethods = new HashSet<>();
         String locateClass = locateMethod.split("#")[0];

@@ -16,16 +16,22 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 class ProbeExTest {
     String project = "Math";
-    int bugId = 1;
+    int bugId = 87;
 
-    String testMethodName = "org.apache.commons.math3.fraction.BigFractionTest#testDigitLimitConstructor()";
-    String locate = "org.apache.commons.math3.fraction.BigFraction#BigFraction(double, double, int, int)";
-    String variableName = "p2";
+    String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
+    String shortTestMethodName = "testSingleVariableAndConstraint";
+
+    String testMethodName = testClassName + "#" + shortTestMethodName + "()";
+
+    String variableName = "point";
     boolean isPrimitive = true;
-    boolean isField = false;
-    boolean isArray = false;
-    int arrayNth = -1;
-    String actual = "2499999794";
+    boolean isField = true;
+    boolean isArray = true;
+    int arrayNth = 0;
+    String actual = "0.0";
+    String locate ="org.apache.commons.math.optimization.RealPointValuePair";
+
+
 
 
     String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";
@@ -52,19 +58,23 @@ class ProbeExTest {
     void runTest() {
         Defects4jUtil.changeTargetVersion(project, bugId);
         ProbeEx prbEx = new ProbeEx(fai);
-        ProbeExResult pr = prbEx.run(3000);
+        ProbeExResult pr = prbEx.run(5000);
         pr.print();
+        ;
 
-        //pr.generateJson(dir, fileName);
-
-//        Path src = Paths.get("src/test/java/jisd/fl/probe/ProbeExTest.java");
-//        Path target = Paths.get(dir + "/" + fileName + ".java_data");
-//        FileUtil.initFile(dir, fileName + ".java_data");
-//        try {
-//            Files.copy(src, target, REPLACE_EXISTING);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+        if(!FileUtil.isExist("src/main/resources/probeExResult/Math",  project + bugId + "_buggy")){
+            FileUtil.createDirectory("src/main/resources/probeExResult/Math/" +  project + bugId + "_buggy");
+        }
+        pr.save(dir, fileName);
+        Path src = Paths.get("src/test/java/jisd/fl/probe/ProbeExTest.java");
+        Path target = Paths.get(dir + "/" + fileName + ".java_data");
+        try {
+            Files.copy(src, target, REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 }
+
+
