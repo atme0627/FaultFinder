@@ -6,12 +6,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.nio.file.NoSuchFileException;
+import java.util.*;
 
 import static java.lang.Math.min;
+import static jisd.fl.util.StaticAnalyzer.getRangeOfAllMethods;
 
 public class SbflResult {
     List<MutablePair<String, Double>> result;
@@ -42,7 +41,7 @@ public class SbflResult {
         printFLResults(getSize());
     }
 
-    public void printFLResults(int top, CoverageCollection cc){
+    public void printFLResultsOld(int top, CoverageCollection cc){
         Pair<Integer, Integer> l = maxLengthOfName(top);
         int classLength = l.getLeft();
         int methodLength = l.getRight();
@@ -98,8 +97,97 @@ public class SbflResult {
         System.out.println();
     }
 
+    //ランキングの短縮版
+    public void printFLResults(int top, CoverageCollection cc){
+       List<String> shortClassNames = new ArrayList<>();
+       List<String> shortMethodNames = new ArrayList<>();
+       for(int i = 0; i < min(top, getSize()); i++){
+          String longClassName = result.get(i).getLeft().split("#")[0];
+          String longMethodName = result.get(i).getLeft();
 
-    public void printFLResults(int top){
+
+          StringBuilder shortClassName = new StringBuilder();
+          StringBuilder shortMethodName = new StringBuilder();
+
+          String[] packages = longClassName.split("\\.");
+          for(int j = 0; j < packages.length - 2; j++){
+              shortClassName.append(packages[j].charAt(0));
+              shortClassName.append(".");
+          }
+          shortClassName.append(packages[packages.length - 2]);
+          shortClassName.append(".");
+          shortClassName.append(packages[packages.length - 1]);
+
+           Map<String, Pair<Integer, Integer>> rangeOfMethods;
+           try {
+               rangeOfMethods = getRangeOfAllMethods(longClassName);
+           } catch (NoSuchFileException e) {
+               throw new RuntimeException(e);
+           }
+
+           int startLineOfMethod = rangeOfMethods.get(longMethodName).getLeft();
+            shortMethodName.append(longMethodName.split("#")[1].split("\\(")[0]);
+           shortMethodName.append("(...) line: ");
+           shortMethodName.append(String.format("%4d", startLineOfMethod));
+
+            shortClassNames.add(shortClassName.toString());
+            shortMethodNames.add(shortMethodName.toString());
+       }
+
+        int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
+        int methodLength = shortMethodNames.stream().map(String::length).max(Integer::compareTo).get();
+
+        String header = "|      | RANK |" +
+                StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + " CLASS NAME " +
+                "|" + StringUtils.repeat(' ', methodLength - "METHOD NAME".length()) + " METHOD NAME " +
+                "| SUSP SCORE ||  EP  |  EF  |  NP  |  NF  |";
+        String partition = StringUtils.repeat('=', header.length());
+
+        System.out.println("[  SBFL RANKING  ]");
+        System.out.println(partition);
+        System.out.println(header);
+        System.out.println(partition);
+        int previousRank = 1;
+        for(int i = 0; i < min(top, getSize()); i++){
+            MutablePair<String, Double> element = result.get(i);
+            //同率を考慮する
+            int rank = 0;
+            if(i == 0) {
+                rank = i+1;
+            }
+            else {
+                if(isSameScore(element, result.get(i-1))){
+                    rank = previousRank;
+                }
+                else {
+                    rank = i+1;
+                }
+            }
+
+            String colorBegin = "";
+            String coloerEnd = "";
+            String className = element.getLeft().split("#")[0];
+            String methodName = element.getLeft();
+            SbflStatus stat = cc.getCoverageOfTarget(className, Granularity.METHOD).get(methodName);
+            if(highlightMethods.contains(element.getLeft())){
+                colorBegin = "\u001b[00;41m";
+                coloerEnd = "\u001b[00m";
+            }
+            System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
+                    StringUtils.leftPad(shortClassNames.get(i), classLength) + " | " +
+                    StringUtils.leftPad(shortMethodNames.get(i), methodLength) + " | " +
+                    String.format("  %.4f  ", element.getRight()) +
+                    " || " + StringUtils.leftPad(String.valueOf(stat.ep), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(stat.ef), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(stat.np), 4) +
+                    " | " + StringUtils.leftPad(String.valueOf(stat.nf), 4) +
+                    " |" + coloerEnd);
+            previousRank = rank;
+        }
+        System.out.println(partition);
+        System.out.println();
+    }
+    public void printFLResultsOld(int top){
         Pair<Integer, Integer> l = maxLengthOfName(top);
         int classLength = l.getLeft();
         int methodLength = l.getRight();
@@ -140,6 +228,88 @@ public class SbflResult {
             System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
                     StringUtils.leftPad(element.getLeft().split("#")[0], classLength) + " | " +
                     StringUtils.leftPad(element.getLeft().split("#")[1], methodLength) + " | " +
+                    String.format("  %.4f  ", element.getRight()) + " |" + coloerEnd);
+            previousRank = rank;
+        }
+        System.out.println(partition);
+        System.out.println();
+    }
+
+    public void printFLResults(int top){
+        List<String> shortClassNames = new ArrayList<>();
+        List<String> shortMethodNames = new ArrayList<>();
+        for(int i = 0; i < min(top, getSize()); i++){
+            String longClassName = result.get(i).getLeft().split("#")[0];
+            String longMethodName = result.get(i).getLeft();
+
+
+            StringBuilder shortClassName = new StringBuilder();
+            StringBuilder shortMethodName = new StringBuilder();
+
+            String[] packages = longClassName.split("\\.");
+            for(int j = 0; j < packages.length - 2; j++){
+                shortClassName.append(packages[j].charAt(0));
+                shortClassName.append(".");
+            }
+            shortClassName.append(packages[packages.length - 2]);
+            shortClassName.append(".");
+            shortClassName.append(packages[packages.length - 1]);
+
+            Map<String, Pair<Integer, Integer>> rangeOfMethods;
+            try {
+                rangeOfMethods = getRangeOfAllMethods(longClassName);
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+
+            int startLineOfMethod = rangeOfMethods.get(longMethodName).getLeft();
+            shortMethodName.append(longMethodName.split("#")[1].split("\\(")[0]);
+            shortMethodName.append("(...) line: ");
+            shortMethodName.append(String.format("%4d", startLineOfMethod));
+
+            shortClassNames.add(shortClassName.toString());
+            shortMethodNames.add(shortMethodName.toString());
+        }
+
+        int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
+        int methodLength = shortMethodNames.stream().map(String::length).max(Integer::compareTo).get();
+
+        String header = "|      | RANK |" +
+                StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + " CLASS NAME " +
+                "|" + StringUtils.repeat(' ', methodLength - "METHOD NAME".length()) + " METHOD NAME " +
+                "| SUSP SCORE |";
+        String partition = StringUtils.repeat('=', header.length());
+
+        System.out.println("[  SBFL RANKING  ]");
+        System.out.println(partition);
+        System.out.println(header);
+        System.out.println(partition);
+        int previousRank = 1;
+        for(int i = 0; i < min(top, getSize()); i++){
+            MutablePair<String, Double> element = result.get(i);
+            //同率を考慮する
+            int rank = 0;
+            if(i == 0) {
+                rank = i+1;
+            }
+            else {
+                if(isSameScore(element, result.get(i-1))){
+                    rank = previousRank;
+                }
+                else {
+                    rank = i+1;
+                }
+            }
+
+            String colorBegin = "";
+            String coloerEnd = "";
+            if(highlightMethods.contains(element.getLeft())){
+                colorBegin = "\u001b[00;41m";
+                coloerEnd = "\u001b[00m";
+            }
+            System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
+                    StringUtils.leftPad(shortClassNames.get(i), classLength) + " | " +
+                    StringUtils.leftPad(shortMethodNames.get(i), methodLength) + " | " +
                     String.format("  %.4f  ", element.getRight()) + " |" + coloerEnd);
             previousRank = rank;
         }

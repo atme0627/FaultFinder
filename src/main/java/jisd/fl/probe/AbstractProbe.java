@@ -406,6 +406,7 @@ public abstract class AbstractProbe {
             public void write(int b) { /* noop */ }
         });
         System.setOut(nop);
+        System.setErr(nop);
     }
 
     protected void enableStdOut(){

@@ -114,7 +114,7 @@ class FaultFinderTest {
     @Test
     void printFLResultsTest() {
         String project = "Math";
-        int bugId = 42;
+        int bugId = 87;
         CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
         FaultFinder ff = new FaultFinder(cov, Formula.OCHIAI);
 

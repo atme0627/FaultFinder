@@ -16,6 +16,9 @@ import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.function.ToDoubleBiFunction;
 
+import static java.lang.Math.min;
+import static jisd.fl.util.StaticAnalyzer.getRangeOfAllMethods;
+
 
 public class FaultFinder {
     SbflResult sbflResult;
@@ -182,7 +185,9 @@ public class FaultFinder {
         sbflResult.printFLResults(rankingSize);
     }
 
-
+    public void probeEx(FailedAssertInfo fai){
+        probeEx(fai, 3000);
+    }
 
     public void probeEx(FailedAssertInfo fai, int sleepTime){
         VariableInfo variableInfo = fai.getVariableInfo();
@@ -299,9 +304,43 @@ public class FaultFinder {
         }
 
         public void print(){
-            Pair<Integer, Integer> l = maxLengthOfName();
-            int classLength = l.getLeft();
-            int methodLength = l.getRight();
+            List<String> shortClassNames = new ArrayList<>();
+            List<String> shortMethodNames = new ArrayList<>();
+            for(int i = 0; i < results.size(); i++){
+                String longClassName = results.get(i).method.split("#")[0];
+                String longMethodName = results.get(i).method;
+
+
+                StringBuilder shortClassName = new StringBuilder();
+                StringBuilder shortMethodName = new StringBuilder();
+
+                String[] packages = longClassName.split("\\.");
+                for(int j = 0; j < packages.length - 2; j++){
+                    shortClassName.append(packages[j].charAt(0));
+                    shortClassName.append(".");
+                }
+                shortClassName.append(packages[packages.length - 2]);
+                shortClassName.append(".");
+                shortClassName.append(packages[packages.length - 1]);
+
+                Map<String, Pair<Integer, Integer>> rangeOfMethods;
+                try {
+                    rangeOfMethods = getRangeOfAllMethods(longClassName);
+                } catch (NoSuchFileException e) {
+                    throw new RuntimeException(e);
+                }
+
+                int startLineOfMethod = rangeOfMethods.get(longMethodName).getLeft();
+                shortMethodName.append(longMethodName.split("#")[1].split("\\(")[0]);
+                shortMethodName.append("(...) line: ");
+                shortMethodName.append(String.format("%4d", startLineOfMethod));
+
+                shortClassNames.add(shortClassName.toString());
+                shortMethodNames.add(shortMethodName.toString());
+            }
+
+            int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
+            int methodLength = shortMethodNames.stream().map(String::length).max(Integer::compareTo).get();
 
             String header =
                     "| " + StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + "CLASS NAME"
@@ -312,9 +351,10 @@ public class FaultFinder {
             System.out.println(partition);
             System.out.println(header);
             System.out.println(partition);
-            for(Element e : results){
-                System.out.println("| " + StringUtils.leftPad(e.method.split("#")[0], classLength)
-                + " | " + StringUtils.leftPad(e.method.split("#")[1], methodLength)
+            for(int i = 0; i < results.size(); i++){
+                Element e = results.get(i);
+                System.out.println("| " + StringUtils.leftPad(shortClassNames.get(i), classLength)
+                + " | " + StringUtils.leftPad(shortMethodNames.get(i), methodLength)
                 + " | " + String.format("%.4f", e.oldScore) + " -> " + String.format("%.4f", e.newScore) + " |");
             }
             System.out.println(partition);

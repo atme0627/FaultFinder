@@ -74,21 +74,24 @@ class CoverageGeneratorTest {
     @Test
     void countFindButDecrease() throws NoSuchFileException {
         String project = "Math";
-//        Set<Integer> decreasedBugId =
-//                new HashSet<>(List.of(
-//                2, 6, 16, 28, 29,
-//                33, 41, 43, 46, 63,
-//                67, 76, 80, 84, 85,
-//                95, 96));
+        Set<Integer> decreasedBugId =
+                new HashSet<>(List.of(
+                2, 16, 28, 29, 33,
+                41, 43, 46, 63, 67,
+                76, 80, 84, 85, 95,
+                96));
 
-//                Set<Integer> notChangedBugId =
-//                new HashSet<>(List.of(
-//                        3, 5, 9, 10, 11,
-//                        15, 17, 18, 22, 27,
-//                        36, 37, 39, 40, 47,
-//                        49, 53, 55, 57, 60,
-//                        65, 70, 72, 74, 75,
-//                        82, 91, 94, 98, 103));
+        Set<Integer> stay1BugId =
+                new HashSet<>(List.of(
+                        3, 15, 27, 36, 53, 55, 91, 94));
+
+        Set<Integer> notChangedBugId =
+        new HashSet<>(List.of(
+                5, 6, 9, 10, 11,
+                17, 18, 22, 37, 39,
+                40, 47, 49, 57, 60,
+                65, 70, 72, 74, 75,
+                82, 98, 103));
 
         Set<Integer> increasedBugId =
                 new HashSet<>(List.of(
@@ -102,7 +105,9 @@ class CoverageGeneratorTest {
 
         Set<Integer> found = new HashSet<>();
 
-        for(int id : increasedBugId){
+
+        Set<Integer> target = notChangedBugId;
+        for(int id : target){
             List<ProbeExResult> results = RankingEvaluator.loadProbeEx(project, id);
             Set<String> bugMethods = RankingEvaluator.loadBugMethods(project, id);
 
@@ -119,7 +124,7 @@ class CoverageGeneratorTest {
             }
         }
 
-        increasedBugId.removeAll(found);
-        System.out.println(Arrays.toString((increasedBugId.stream().sorted().toArray())));
+        target.removeAll(found);
+        System.out.println(Arrays.toString((target.stream().sorted().toArray())));
     }
 }
