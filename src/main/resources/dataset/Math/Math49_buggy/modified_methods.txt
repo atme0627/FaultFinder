@@ -1,4 +1,0 @@
-org.apache.commons.math.linear.OpenMapRealVector#ebeDivide(RealVector)
-org.apache.commons.math.linear.OpenMapRealVector#ebeMultiply(RealVector)
-org.apache.commons.math.linear.OpenMapRealVector#ebeDivide(double[])
-org.apache.commons.math.linear.OpenMapRealVector#ebeMultiply(double[])

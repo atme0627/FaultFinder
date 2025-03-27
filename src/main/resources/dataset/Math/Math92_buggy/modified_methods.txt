@@ -1,3 +1,0 @@
-org.apache.commons.math.util.MathUtils#binomialCoefficientDouble(int, int)
-org.apache.commons.math.util.MathUtils#binomialCoefficientLog(int, int)
-org.apache.commons.math.util.MathUtils#binomialCoefficient(int, int)
