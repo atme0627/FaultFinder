@@ -6,6 +6,7 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
+import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import jisd.fl.util.JavaParserUtil;
@@ -21,6 +22,9 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
+
 public class StaticAnalyzer {
     public static Set<String> getClassNames(String targetSrcPath) {
         Set<String> classNames = new LinkedHashSet<>();
@@ -71,29 +75,18 @@ public class StaticAnalyzer {
     }
 
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
-    public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(String targetClassName) throws NoSuchFileException {
-        Map<String, Pair<Integer, Integer>> rangeOfMethods = new HashMap<>();
-        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName, false);
+    public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(CodeElement targetClass) throws NoSuchFileException {;
+        return JavaParserUtil
+                .extractCallableDeclaration(targetClass.getFullyQualifiedClassName())
+                .stream()
+                .collect(toMap(
+                    cd -> targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature(),
+                    StaticAnalyzer::getRangeOfNode
+                ));
+    }
 
-        class MethodVisitor extends VoidVisitorAdapter<String>{
-            @Override
-            public void visit(MethodDeclaration n, String arg) {
-                if(!rangeOfMethods.containsKey(targetClassName.replace("/", ".")  + "#" + n.getSignature())) {
-                    rangeOfMethods.put(targetClassName.replace("/", ".") + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
-                }
-                super.visit(n, arg);
-            }
-
-            @Override
-            public void visit(ConstructorDeclaration n, String arg) {
-                if(!rangeOfMethods.containsKey(targetClassName.replace("/", ".")  + "#" + n.getSignature())) {
-                    rangeOfMethods.put(targetClassName.replace("/", ".") + "#" + n.getSignature(), Pair.of(n.getBegin().get().line, n.getEnd().get().line));
-                }
-                super.visit(n, arg);
-            }
-        }
-        unit.accept(new MethodVisitor(), "");
-        return rangeOfMethods;
+    private static Pair<Integer, Integer> getRangeOfNode(NodeWithRange<?> node){
+        return Pair.of(node.getBegin().get().line, node.getEnd().get().line);
     }
 
 
@@ -156,7 +149,8 @@ public class StaticAnalyzer {
 
 
     public static String getMethodNameFormLine(String targetClassName, int line) throws NoSuchFileException {
-        Map<String, Pair<Integer, Integer>> ranges = getRangeOfAllMethods(targetClassName);
+        CodeElement targetClass = new CodeElement(targetClassName);
+        Map<String, Pair<Integer, Integer>> ranges = getRangeOfAllMethods(targetClass);
         String[] method = new String[1];
         ranges.forEach((m, pair) -> {
             if(pair.getLeft() <= line && line <= pair.getRight()) {

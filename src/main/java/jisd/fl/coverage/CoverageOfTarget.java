@@ -48,7 +48,8 @@ public class CoverageOfTarget {
         }
 
         //method coverage
-        Map<String, Pair<Integer, Integer>> rangeOfMethod = StaticAnalyzer.getRangeOfAllMethods(targetClassName);
+        CodeElement targetClass = new CodeElement(targetClassName);
+        Map<String, Pair<Integer, Integer>> rangeOfMethod = StaticAnalyzer.getRangeOfAllMethods(targetClass);
         for(String targetMethodName : targetMethodNames){
             Pair<Integer, Integer> range = rangeOfMethod.get(targetMethodName);
             putCoverageStatus(targetMethodName, getMethodSbflStatus(cc, range, isTestPassed), Granularity.METHOD);

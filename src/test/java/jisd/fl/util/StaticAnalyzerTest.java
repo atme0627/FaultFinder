@@ -4,6 +4,7 @@ import experiment.defect4j.Defects4jUtil;
 import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
@@ -56,6 +57,31 @@ class StaticAnalyzerTest {
                         "StaticAnalyzerTest.getMethodNamesTest.AbstractCase#abstractMethod1()",
                         "StaticAnalyzerTest.getMethodNamesTest.AbstractCase#abstractMethod2(int, int)"
                 ));
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Nested
+    class getRangeOfAllMethodsTest {
+        @BeforeEach
+        void initProperty(){
+            PropertyLoader.setTargetSrcDir("src/test/resources");
+        }
+
+        @Test
+        void simpleCase(){
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase");
+            try {
+                Map<String, Pair<Integer, Integer>> actual = StaticAnalyzer.getRangeOfAllMethods(targetClass);
+                assertThat(actual.entrySet(), hasSize(3));
+                assertThat(actual.entrySet(), hasItems(
+                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#SimpleCase()", Pair.of(8, 10)),
+                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#methodA()", Pair.of(12, 16)),
+                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#methodB()", Pair.of(18, 19))
+                ));
+
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }

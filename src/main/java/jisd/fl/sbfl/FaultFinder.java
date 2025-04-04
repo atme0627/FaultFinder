@@ -328,7 +328,8 @@ public class FaultFinder {
 
                 Map<String, Pair<Integer, Integer>> rangeOfMethods;
                 try {
-                    rangeOfMethods = getRangeOfAllMethods(longClassName);
+                    CodeElement longClass = new CodeElement(longClassName);
+                    rangeOfMethods = getRangeOfAllMethods(longClass);
                 } catch (NoSuchFileException e) {
                     throw new RuntimeException(e);
                 }
