@@ -14,8 +14,7 @@ import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.StaticAnalyzer;
-import jisd.info.ClassInfo;
+import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.file.NoSuchFileException;

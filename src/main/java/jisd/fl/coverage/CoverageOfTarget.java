@@ -2,7 +2,8 @@ package jisd.fl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jisd.fl.sbfl.SbflStatus;
-import jisd.fl.util.StaticAnalyzer;
+import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jacoco.core.analysis.IClassCoverage;
@@ -10,7 +11,6 @@ import org.jacoco.core.analysis.ICounter;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.util.*;
 
 public class CoverageOfTarget {
@@ -28,7 +28,8 @@ public class CoverageOfTarget {
 
     public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;
-        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, true, true);
+        CodeElement targetClass = new CodeElement(targetClassName);
+        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetClass);
 
         lineCoverage = new TreeMap<>();
         classCoverage = new TreeMap<>();

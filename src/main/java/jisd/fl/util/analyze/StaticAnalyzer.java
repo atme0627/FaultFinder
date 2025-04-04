@@ -1,6 +1,5 @@
-package jisd.fl.util;
+package jisd.fl.util.analyze;
 
-import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -9,6 +8,8 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import jisd.fl.util.JavaParserUtil;
+import jisd.fl.util.PropertyLoader;
 import jisd.info.ClassInfo;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.ast.CompilationUnit;
@@ -19,8 +20,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.function.Function;
-
+import java.util.stream.Collectors;
 public class StaticAnalyzer {
     public static Set<String> getClassNames(String targetSrcPath) {
         Set<String> classNames = new LinkedHashSet<>();
@@ -60,52 +60,14 @@ public class StaticAnalyzer {
         return classNames;
     }
 
-    public static Set<String> getAllMethods(String targetSrcDir, boolean withPackage, boolean withSignature) throws NoSuchFileException {
-        Set<String> allClasses = getClassNames(targetSrcDir);
-        Set<String> allMethods = new HashSet<>();
-        for(String className : allClasses){
-            allMethods.addAll(getMethodNames(className, false, false, withPackage, withSignature));
-        }
-        return allMethods;
-    }
-
-    //targetSrcPathは最後"/"なし
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
-    //publicメソッド以外は取得しない
-    //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
-    public static Set<String> getMethodNames(String targetClassName, boolean isTest, boolean publicOnly, boolean withPackage, boolean withSignature) throws NoSuchFileException {
-        Set<String> methodNames = new LinkedHashSet<>();
-        CompilationUnit unit = JavaParserUtil.parseClass(targetClassName, isTest);
-        Function<CallableDeclaration<?>, String> methodNameBuilder = (n) -> (
-                ((withPackage) ? targetClassName.replace("/", ".") + "#" : "")
-                + ((withSignature) ? n.getSignature() : n.getNameAsString()));
-
-        class MethodVisitor extends VoidVisitorAdapter<String>{
-            @Override
-            public void visit(MethodDeclaration n, String arg) {
-                if(!publicOnly || n.isPublic()) {
-                    if(!isTest || n.isAnnotationPresent("Test")){
-                        //testの場合@Testがないものは含まない
-                        methodNames.add(methodNameBuilder.apply(n));
-                    }
-                    super.visit(n, arg);
-                }
-            }
-
-            @Override
-            public void visit(ConstructorDeclaration n, String arg) {
-                if(!publicOnly || n.isPublic()) {
-                    if(!isTest || n.isAnnotationPresent("Test")){
-                        //testの場合@Testがないものは含まない
-                        methodNames.add(methodNameBuilder.apply(n));
-                    }
-                    super.visit(n, arg);
-                }
-            }
-        }
-        unit.accept(new MethodVisitor(), "");
-        return methodNames;
+    public static Set<String> getMethodNames(CodeElement targetClass) throws NoSuchFileException {
+        return JavaParserUtil
+                .extractCallableDeclaration(targetClass.getFullyQualifiedClassName())
+                .stream()
+                .map(cd -> (targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature()))
+                .collect(Collectors.toSet());
     }
 
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
@@ -133,6 +95,8 @@ public class StaticAnalyzer {
         unit.accept(new MethodVisitor(), "");
         return rangeOfMethods;
     }
+
+
 
     //返り値はmap ex.) Integer --> Pair(start, end)
     public static Map<Integer, Pair<Integer, Integer>> getRangeOfAllStatements(String targetClassName) {
@@ -316,12 +280,14 @@ public class StaticAnalyzer {
         return bs;
     }
 
-    public static Set<Integer> canSetLineOfClass(String targetClass, String variable){
+    public static Set<Integer> canSetLineOfClass(String targetClassName, String variable){
         String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
         Set<String> methods;
         Set<Integer> canSet = new HashSet<>();
+
+        CodeElement targetClass = new CodeElement(targetClassName);
         try {
-            methods = getMethodNames(targetClass, false, false, true, true);
+            methods = getMethodNames(targetClass);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }

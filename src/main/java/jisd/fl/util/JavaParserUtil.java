@@ -2,6 +2,7 @@ package jisd.fl.util;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 
@@ -9,13 +10,13 @@ import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class JavaParserUtil {
 
     public static CompilationUnit parseClass(String className, boolean isTest) throws NoSuchFileException {
-
-
         Path p = Paths.get(getFullPath(className, isTest));
         CompilationUnit unit = null;
         try {
@@ -32,8 +33,6 @@ public class JavaParserUtil {
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
-
-
         } catch (IOException e){
             throw new RuntimeException(e);
         }
@@ -59,6 +58,11 @@ public class JavaParserUtil {
 
         if(ocd.isEmpty()) throw new NoSuchFileException(constructorName + "is not found.");
         return ocd.get();
+    }
+
+    public static List<CallableDeclaration> extractCallableDeclaration(String targetClassName) throws NoSuchFileException {
+        return parseClass(targetClassName, false)
+                .findAll(CallableDeclaration.class);
     }
 
 

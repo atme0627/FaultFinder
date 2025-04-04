@@ -8,7 +8,8 @@ import jisd.fl.probe.ProbeExResult;
 import jisd.fl.probe.ProbeResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.util.*;
+import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -17,7 +18,7 @@ import java.util.*;
 import java.util.function.ToDoubleBiFunction;
 
 import static java.lang.Math.min;
-import static jisd.fl.util.StaticAnalyzer.getRangeOfAllMethods;
+import static jisd.fl.util.analyze.StaticAnalyzer.getRangeOfAllMethods;
 
 
 public class FaultFinder {
@@ -88,7 +89,8 @@ public class FaultFinder {
 
         Set<String> contexts = null;
         try {
-            contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true, true);
+            CodeElement context = new CodeElement(contextClass);
+            contexts = StaticAnalyzer.getMethodNames(context);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -117,7 +119,8 @@ public class FaultFinder {
 
         Set<String> contexts = null;
         try {
-            contexts = StaticAnalyzer.getMethodNames(contextClass, false, false, true, true);
+            CodeElement context = new CodeElement(contextClass);
+            contexts = StaticAnalyzer.getMethodNames(context);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }

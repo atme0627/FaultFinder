@@ -10,7 +10,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 import static java.lang.Math.min;
-import static jisd.fl.util.StaticAnalyzer.getRangeOfAllMethods;
+import static jisd.fl.util.analyze.StaticAnalyzer.getRangeOfAllMethods;
 
 public class SbflResult {
     List<MutablePair<String, Double>> result;

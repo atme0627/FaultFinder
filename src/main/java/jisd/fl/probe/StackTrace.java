@@ -1,6 +1,6 @@
 package jisd.fl.probe;
 
-import jisd.fl.util.StaticAnalyzer;
+import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.file.NoSuchFileException;

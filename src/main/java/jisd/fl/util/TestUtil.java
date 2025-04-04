@@ -5,12 +5,11 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
+import jisd.fl.util.analyze.StaticAnalyzer;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;

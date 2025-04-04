@@ -1,7 +1,7 @@
 package experiment.defect4j;
 
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.StaticAnalyzer;
+import jisd.fl.util.analyze.StaticAnalyzer;
 
 import java.io.BufferedReader;
 import java.io.File;

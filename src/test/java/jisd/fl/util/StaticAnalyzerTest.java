@@ -1,55 +1,64 @@
 package jisd.fl.util;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import experiment.defect4j.Defects4jUtil;
+import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 class StaticAnalyzerTest {
     String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
-    String targetBinDir = PropertyLoader.getProperty("targetBinDir");
-    @Test
-    void getClassNameTest() {
-        ArrayList<String> classNames = new ArrayList<>(StaticAnalyzer.getClassNames(targetSrcDir));
-        Collections.sort(classNames);
-        for(String className : classNames){
-            System.out.println(className);
-        }
-    }
 
-    @Test
-    void getMethodNameTest() throws NoSuchFileException {
-        String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, false, false, false, true);
-        for(String methodName : methodNames){
-            System.out.println(methodName);
+    @Nested
+    class getMethodNamesTest{
+        @BeforeEach
+        void initProperty(){
+            PropertyLoader.setTargetSrcDir("src/test/resources");
         }
-    }
 
-    //@Testのみとれているか確認
-    @Test
-    void getMethodNameTest2() throws NoSuchFileException {
-        String targetClassName = "org.apache.commons.math3.distribution.HypergeometricDistributionTest";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, true, true, false, true);
-        for(String methodName : methodNames){
-            System.out.println(methodName);
+        @Test
+        void SimpleCase() {
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNamesTest.SimpleCase");
+            try {
+                Set<String> actual =
+                        StaticAnalyzer.getMethodNames(targetClass);
+                assertThat(actual, hasSize(5));
+                assertThat(actual, hasItems(
+                        "StaticAnalyzerTest.getMethodNamesTest.SimpleCase#SimpleCase()",
+                        "StaticAnalyzerTest.getMethodNamesTest.SimpleCase#SimpleCase(int)",
+                        "StaticAnalyzerTest.getMethodNamesTest.SimpleCase#methodA()",
+                        "StaticAnalyzerTest.getMethodNamesTest.SimpleCase#methodB()",
+                        "StaticAnalyzerTest.getMethodNamesTest.SimpleCase#methodC()"));
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
         }
-    }
 
-    //@Testのみとれているか確認
-    @Test
-    void getMethodNameTest3() throws NoSuchFileException {
-        String targetClassName = "org.apache.commons.math3.complex.ComplexTest";
-        Set<String> methodNames = StaticAnalyzer.getMethodNames(targetClassName, true, true, false, true);
-        for(String methodName : methodNames){
-            System.out.println(methodName);
+        @Test
+        void AbstractCase() {
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNamesTest.AbstractCase");
+            try {
+                Set<String> actual =
+                        StaticAnalyzer.getMethodNames(targetClass);
+                assertThat(actual, hasSize(4));
+                assertThat(actual, hasItems(
+                        "StaticAnalyzerTest.getMethodNamesTest.AbstractCase#AbstractCase(int)",
+                        "StaticAnalyzerTest.getMethodNamesTest.AbstractCase#methodA()",
+                        "StaticAnalyzerTest.getMethodNamesTest.AbstractCase#abstractMethod1()",
+                        "StaticAnalyzerTest.getMethodNamesTest.AbstractCase#abstractMethod2(int, int)"
+                ));
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -89,14 +98,6 @@ class StaticAnalyzerTest {
             String locateMethod = "org.apache.commons.math.optimization.RealPointValuePair#RealPointValuePair(double[], double)";
             List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "this.point");
             System.out.println(Arrays.toString(result.toArray()));
-        }
-    }
-
-    @Test
-    void getAllMethodTest() throws NoSuchFileException {
-        Set<String> allMethods = StaticAnalyzer.getAllMethods(targetSrcDir, false, false);
-        for(String methodNames : allMethods){
-            System.out.println(methodNames);
         }
     }
 

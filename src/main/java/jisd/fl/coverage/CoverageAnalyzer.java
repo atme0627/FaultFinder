@@ -1,6 +1,7 @@
 package jisd.fl.coverage;
 
 import jisd.fl.util.*;
+import jisd.fl.util.analyze.StaticAnalyzer;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;

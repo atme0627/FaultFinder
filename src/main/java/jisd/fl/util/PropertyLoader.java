@@ -88,4 +88,20 @@ public class PropertyLoader {
             throw new RuntimeException(e);
         }
     }
+
+    public static  void setTargetSrcDir(String targetSrcDir){
+        setProperty("targetSrcDir", targetSrcDir);
+    }
+
+    public static  void setTargetBinDir(String targetBinDir){
+        setProperty("targetBinDir", targetBinDir);
+    }
+
+    public static  void setTestSrcDir(String testSrcDir){
+        setProperty("testSrcDir", testSrcDir);
+    }
+
+    public static  void setTestBinDir(String testBinDir){
+        setProperty("testBinDir", testBinDir);
+    }
 }

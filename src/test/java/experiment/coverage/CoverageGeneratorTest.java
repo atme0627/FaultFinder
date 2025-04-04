@@ -5,7 +5,7 @@ import experiment.sbfl.RankingEvaluator;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.ProbeExResult;
-import jisd.fl.util.StaticAnalyzer;
+import jisd.fl.util.TestUtil;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.NoSuchFileException;
@@ -56,7 +56,7 @@ class CoverageGeneratorTest {
         System.out.println("[TEST NUMS]");
         for(String t : testClass){
             System.out.println(t);
-            Set<String> testMethods = StaticAnalyzer.getMethodNames(t, true, true, false, true);
+            Set<String> testMethods = TestUtil.getTestMethods(t);
             System.out.println(testMethods.size());
         }
 
