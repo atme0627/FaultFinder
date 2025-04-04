@@ -344,7 +344,7 @@ public class ProbeEx extends AbstractProbe {
     }
 
     //メソッド呼び出しで使われた変数名を返す
-    protected String getArgumentVariable(ProbeResult pr){
+    protected String getArgumentVariable(ProbeResult pr) throws NoSuchFileException {
         Pair<Integer, String> callerNameAndCallLocation = pr.getCallerMethod();
         int index = 0;
         try {
