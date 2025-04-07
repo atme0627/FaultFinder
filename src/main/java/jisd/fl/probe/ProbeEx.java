@@ -239,11 +239,7 @@ public class ProbeEx extends AbstractProbe {
 
         CodeElement tmpCd = new CodeElement(targetMethod);
         bs = JavaParserUtil.extractBodyOfMethod(tmpCd);
-        try {
-            prms = JavaParserUtil.getCallableDeclarationByName(tmpCd).getParameters();
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
+        prms = JavaParserUtil.getCallableDeclarationByName(tmpCd).getParameters();
 
         //method内で定義されたローカル変数の場合
         List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
@@ -462,11 +458,7 @@ public class ProbeEx extends AbstractProbe {
 //        }
 
         CodeElement tmpCd = new CodeElement(targetMethod);
-        try {
-            prms = JavaParserUtil.getCallableDeclarationByName(tmpCd).getParameters();
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
+        prms = JavaParserUtil.getCallableDeclarationByName(tmpCd).getParameters();
 
         for(int i = 0; i < prms.size(); i++){
             Parameter prm = prms.get(i);

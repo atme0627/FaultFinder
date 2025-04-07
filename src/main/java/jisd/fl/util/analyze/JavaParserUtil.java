@@ -48,12 +48,16 @@ public class JavaParserUtil {
 
 
     //methodNameはクラス、シグニチャを含む
-    public static CallableDeclaration<?> getCallableDeclarationByName(CodeElement targetMethod) throws NoSuchFileException {
-        Optional<CallableDeclaration> omd = extractCallableDeclaration(targetMethod)
-                .stream()
-                .filter(cd -> cd.getSignature().toString().equals(targetMethod.methodSignature))
-                .findFirst();
-        return omd.orElseThrow(() -> new NoSuchFileException(targetMethod.methodSignature + "is not found."));
+    public static CallableDeclaration<?> getCallableDeclarationByName(CodeElement targetMethod) {
+        try {
+            Optional<CallableDeclaration> omd = extractCallableDeclaration(targetMethod)
+                    .stream()
+                    .filter(cd -> cd.getSignature().toString().equals(targetMethod.methodSignature))
+                    .findFirst();
+        return omd.orElseThrow(RuntimeException::new);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static List<CallableDeclaration> extractCallableDeclaration(CodeElement targetClass) throws NoSuchFileException {
@@ -87,24 +91,10 @@ public class JavaParserUtil {
     }
 
     public static BlockStmt extractBodyOfMethod(CodeElement targetMethod){
-        String strTargetMethod = targetMethod.getFullyQualifiedMethodName();
-        BlockStmt bs = null;
-        try {
-            MethodDeclaration md = getCallableDeclarationByName(targetMethod).asMethodDeclaration();
-            bs = md.getBody().get();
-        } catch (NoSuchElementException e) {
-            return null;
-        }
-        catch (NoSuchFileException e){
-            try {
-                ConstructorDeclaration cd = getCallableDeclarationByName(targetMethod).asConstructorDeclaration();
-                bs = cd.getBody();
-            }
-            catch (NoSuchFileException ex){
-                return null;
-            }
-        }
-        return bs;
+        CallableDeclaration<?> cd = getCallableDeclarationByName(targetMethod);
+        return cd.isMethodDeclaration() ?
+                cd.asMethodDeclaration().getBody().orElseThrow() :
+                cd.asConstructorDeclaration().getBody();
     }
 
     private static <T extends Node> List<T> extractNode(CodeElement targetClass, Class<T> nodeClass) throws NoSuchFileException {
