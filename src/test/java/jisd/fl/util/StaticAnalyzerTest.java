@@ -100,53 +100,37 @@ class StaticAnalyzerTest {
         @Test
         void simpleCase1(){
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
-            try {
-                Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 9);
-                assertTrue(actual.isPresent());
-                assertEquals(9, actual.get().begin.line);
-                assertEquals(9, actual.get().end.line);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
+            Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 9);
+            assertTrue(actual.isPresent());
+            assertEquals(9, actual.get().begin.line);
+            assertEquals(9, actual.get().end.line);
         }
 
         @Test
         void simpleCase2(){
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
-            try {
-                Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 14);
-                assertTrue(actual.isPresent());
-                assertEquals(14, actual.get().begin.line);
-                assertEquals(14, actual.get().end.line);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
+            Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 14);
+            assertTrue(actual.isPresent());
+            assertEquals(14, actual.get().begin.line);
+            assertEquals(14, actual.get().end.line);
         }
 
         @Test
         void simpleCase3(){
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
-            try {
-                Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 23);
-                assertTrue(actual.isPresent());
-                assertEquals(22, actual.get().begin.line);
-                assertEquals(24, actual.get().end.line);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
+            Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 23);
+            assertTrue(actual.isPresent());
+            assertEquals(22, actual.get().begin.line);
+            assertEquals(24, actual.get().end.line);
         }
 
         @Test
         void simpleCase4(){
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
-            try {
-                Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 27);
-                assertTrue(actual.isPresent());
-                assertEquals(26, actual.get().begin.line);
-                assertEquals(27, actual.get().end.line);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
+            Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 27);
+            assertTrue(actual.isPresent());
+            assertEquals(26, actual.get().begin.line);
+            assertEquals(27, actual.get().end.line);
         }
     }
 

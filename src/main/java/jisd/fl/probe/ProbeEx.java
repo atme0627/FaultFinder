@@ -1,6 +1,7 @@
 package jisd.fl.probe;
 
 import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
@@ -14,6 +15,7 @@ import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -357,14 +359,11 @@ public class ProbeEx extends AbstractProbe {
         }
         int line = callerNameAndCallLocation.getLeft();
         String locateMethod = callerNameAndCallLocation.getRight();
-        Map<Integer, Pair<Integer, Integer>> rangeOfStatements
-                = null;
-        try {
-            rangeOfStatements = StaticAnalyzer.getRangeOfAllStatements(locateMethod.split("#")[0]);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-        Pair<Integer, Integer> lines = rangeOfStatements.getOrDefault(line, Pair.of(line, line));
+
+//        Pair<Integer, Integer> lines = rangeOfStatements.getOrDefault(line, Pair.of(line, line));
+        CodeElement tmpCd = new CodeElement(locateMethod);
+        Range tmpRange = StaticAnalyzer.getRangeOfStatement(tmpCd, line).orElse(null);
+        Pair<Integer, Integer> lines = tmpRange != null ? Pair.of(tmpRange.begin.line, tmpRange.end.line) : Pair.of(line, line);
         String calledMethod = pr.getProbeMethod();
         calledMethod = calledMethod.substring(calledMethod.indexOf("#")+1, calledMethod.indexOf("("));
 
