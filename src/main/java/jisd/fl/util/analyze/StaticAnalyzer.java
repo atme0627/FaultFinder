@@ -2,21 +2,14 @@ package jisd.fl.util.analyze;
 
 import com.github.javaparser.Range;
 import com.github.javaparser.ast.body.CallableDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import jisd.fl.util.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
 import jisd.info.ClassInfo;
 import org.apache.commons.lang3.tuple.Pair;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 import java.io.IOException;
@@ -173,10 +166,16 @@ public class StaticAnalyzer {
             }
         }
 
-        BlockStmt bs = bodyOfMethod(methodName);
-        bs.accept(new MethodVisitor(), "");
-        methodCallingLine.sort(Comparator.naturalOrder());
-        return methodCallingLine;
+        CodeElement cd = new CodeElement(methodName);
+        BlockStmt bs = JavaParserUtil.extractBodyOfMethod(cd);
+
+        return bs.findAll(MethodCallExpr.class)
+                        .stream()
+                        .filter(exp -> exp.getBegin().isPresent())
+                        .map(exp -> exp.getBegin().get().line)
+                        .distinct()
+                        .sorted(Comparator.naturalOrder())
+                        .collect(Collectors.toList());
     }
 
 
@@ -215,26 +214,6 @@ public class StaticAnalyzer {
         return shortMethod.toString();
     }
 
-    public static BlockStmt bodyOfMethod(String targetMethod){
-        BlockStmt bs = null;
-        try {
-            MethodDeclaration md = JavaParserUtil.parseMethod(targetMethod);
-            bs = md.getBody().get();
-        } catch (NoSuchElementException e) {
-            return null;
-        }
-        catch (NoSuchFileException e){
-            try {
-                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(targetMethod);
-                bs = cd.getBody();
-            }
-            catch (NoSuchFileException ex){
-                return null;
-            }
-        }
-        return bs;
-    }
-
     public static Set<Integer> canSetLineOfClass(String targetClassName, String variable){
         String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
         Set<String> methods;
@@ -257,7 +236,7 @@ public class StaticAnalyzer {
     public static Set<Integer> canSetLineOfMethod(String targetMethod, String variable){
         Set<Integer> canSet = new HashSet<>();
         BlockStmt bs;
-        bs = bodyOfMethod(targetMethod);
+        bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
         //bodyが空の場合がある。
         if(bs == null) return canSet;
 

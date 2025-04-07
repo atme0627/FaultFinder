@@ -12,7 +12,7 @@ import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.util.JavaParserUtil;
+import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
@@ -208,7 +208,7 @@ public abstract class AbstractProbe {
             }
         }
         else {
-            BlockStmt bs = StaticAnalyzer.bodyOfMethod(vi.getLocateMethod(true));
+            BlockStmt bs = JavaParserUtil.extractBodyOfMethod(vi.getLocateMethod(true));
             aes = bs.findAll(AssignExpr.class);
             ues = bs.findAll(UnaryExpr.class, (n)-> {
                 UnaryExpr.Operator ope = n.getOperator();
@@ -344,7 +344,7 @@ public abstract class AbstractProbe {
         //1. 初期化の時点でその値が代入されている。
         //この場合、probeLineは必ずmethod内にいる。
         boolean isThereVariableDeclaration = false;
-        BlockStmt bs = StaticAnalyzer.bodyOfMethod(probeMethod);
+        BlockStmt bs = JavaParserUtil.extractBodyOfMethod(probeMethod);
         List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
         for (VariableDeclarator vd : vds) {
             if (vd.getNameAsString().equals(variableName) &&

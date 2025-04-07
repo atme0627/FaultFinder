@@ -25,7 +25,7 @@ public class CodeElement {
         //with method name
         if(fullyQualifiedName.contains("#")){
             fqClassName = fullyQualifiedName.split("#")[0];
-            methodSignature = fullyQualifiedName.split("#")[1].split("\\(")[0];
+            methodSignature = fullyQualifiedName.split("#")[1];
         }
         else {
             fqClassName = fullyQualifiedName;

@@ -9,6 +9,7 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
+import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.analyze.StaticAnalyzer;
 
 import javax.tools.JavaCompiler;

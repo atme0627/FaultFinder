@@ -2,10 +2,9 @@ package jisd.fl.util;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.stmt.Statement;
+import jisd.fl.util.analyze.JavaParserUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class JavaParserUtilTest {
 

@@ -1,20 +1,14 @@
-package jisd.fl.util;
+package jisd.fl.util.analyze;
 
-import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.CallableDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.PropertyLoader;
 
-import javax.swing.plaf.nimbus.State;
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -52,25 +46,36 @@ public class JavaParserUtil {
         return unit;
     }
 
-    //methodNameはクラス、シグニチャを含む
-    public static MethodDeclaration parseMethod(String methodName) throws NoSuchFileException {
-        String className = methodName.split("#")[0];
-        CompilationUnit unit = parseClass(className, false);
-        Optional<MethodDeclaration> omd = unit.findFirst(MethodDeclaration.class,
-                (n)->n.getSignature().toString().equals(methodName.split("#")[1]));
 
-        if(omd.isEmpty()) throw new NoSuchFileException(methodName + "is not found.");
-        return omd.get();
+    @Deprecated
+    public static MethodDeclaration getMethodDeclarationByName(String methodName) throws NoSuchFileException {
+        CodeElement cd = new CodeElement(methodName);
+        return getMethodDeclarationByName(cd);
+    }
+    //methodNameはクラス、シグニチャを含む
+    public static MethodDeclaration getMethodDeclarationByName(CodeElement targetMethod) throws NoSuchFileException {
+        Optional<MethodDeclaration> omd = extractCallableDeclaration(targetMethod)
+                .stream()
+                .filter(cd -> cd.getClass().equals(MethodDeclaration.class))
+                .map(CallableDeclaration::asMethodDeclaration)
+                .filter(cd -> cd.getSignature().toString().equals(targetMethod.methodSignature))
+                .findFirst();
+        return omd.orElseThrow(() -> new NoSuchFileException(targetMethod.methodSignature + "is not found."));
     }
 
-    public static ConstructorDeclaration parseConstructor(String constructorName) throws NoSuchFileException {
-        String className = constructorName.split("#")[0];
-        CompilationUnit unit = parseClass(className, false);
-        Optional<ConstructorDeclaration> ocd = unit.findFirst(ConstructorDeclaration.class,
-                (n)->n.getSignature().toString().equals(constructorName.split("#")[1]));
-
-        if(ocd.isEmpty()) throw new NoSuchFileException(constructorName + "is not found.");
-        return ocd.get();
+    @Deprecated
+    public static ConstructorDeclaration getConstructorDeclarationByName(String constructorName) throws NoSuchFileException {
+        CodeElement cd = new CodeElement(constructorName);
+        return getConstructorDeclarationByName(cd);
+    }
+    public static ConstructorDeclaration getConstructorDeclarationByName(CodeElement targetConstructor) throws NoSuchFileException {
+        Optional<ConstructorDeclaration> ocd = extractCallableDeclaration(targetConstructor)
+                .stream()
+                .filter(cd -> cd.getClass().equals(ConstructorDeclaration.class))
+                .map(CallableDeclaration::asConstructorDeclaration)
+                .filter(cd -> cd.getSignature().toString().equals(targetConstructor.methodSignature))
+                .findFirst();
+        return ocd.orElseThrow(() -> new NoSuchFileException(targetConstructor.methodSignature + "is not found."));
     }
 
 
@@ -96,6 +101,33 @@ public class JavaParserUtil {
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Deprecated
+    public static BlockStmt extractBodyOfMethod(String targetMethod){
+        CodeElement cd = new CodeElement(targetMethod);
+        return extractBodyOfMethod(cd);
+    }
+
+    public static BlockStmt extractBodyOfMethod(CodeElement targetMethod){
+        String strTargetMethod = targetMethod.getFullyQualifiedMethodName();
+        BlockStmt bs = null;
+        try {
+            MethodDeclaration md = getMethodDeclarationByName(targetMethod);
+            bs = md.getBody().get();
+        } catch (NoSuchElementException e) {
+            return null;
+        }
+        catch (NoSuchFileException e){
+            try {
+                ConstructorDeclaration cd = getConstructorDeclarationByName(targetMethod);
+                bs = cd.getBody();
+            }
+            catch (NoSuchFileException ex){
+                return null;
+            }
+        }
+        return bs;
     }
 
     private static <T extends Node> List<T> extractNode(CodeElement targetClass, Class<T> nodeClass) throws NoSuchFileException {
@@ -136,5 +168,6 @@ public class JavaParserUtil {
         String methodNameWithoutPackage = methodName.substring(0, methodName.indexOf("(")).split("#")[1];
         return classNameWithoutPackage.equals(methodNameWithoutPackage);
     }
+
 
 }

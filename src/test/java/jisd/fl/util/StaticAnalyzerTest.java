@@ -172,31 +172,53 @@ class StaticAnalyzerTest {
         }
 
         @Test
-        void test1() throws NoSuchFileException {
+        void d4jMath87_SimplexTableau1() {
             String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()";
-            List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "coefficients");
-            System.out.println(Arrays.toString(result.toArray()));
+            List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "coefficients");
+            assertThat(actual, hasSize(1));
+            assertThat(actual, hasItems(325));
         }
         @Test
-        void test2() throws NoSuchFileException {
+        void d4jMath87_SimplexTableau2() {
             String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()";
-            List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "basicRow");
-            System.out.println(Arrays.toString(result.toArray()));
+            List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "basicRow");
+            assertThat(actual, hasSize(2));
+            assertThat(actual, hasItems(327, 331));
         }
         @Test
-        void test3() throws NoSuchFileException {
-            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()";
-            List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "this.point");
-            System.out.println(Arrays.toString(result.toArray()));
+        void d4jMath87_SimplexTableau3() {
+            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()";
+            List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "this.numArtificialVariables");
+            assertThat(actual, hasSize(2));
+            assertThat(actual, hasItems(112, 303));
+        }
+
+        //フィールドでの宣言のみ
+        @Test
+        void d4jMath87_SimplexTableau4() {
+            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()";
+            List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "numArtificialVariables");
+            assertThat(actual, hasSize(1));
+            assertThat(actual, hasItems(87));
         }
     }
 
-    @Test
-    void getMethodCallingLineTest() throws NoSuchFileException {
-        String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
-        List<Integer> result = StaticAnalyzer.getMethodCallingLine(locateMethod);
-        System.out.println(Arrays.toString(result.toArray()));
+    @Nested
+    class getMethodCallingLineTest {
+        @BeforeEach
+        void initProperty() {
+            PropertyLoader.setTargetSrcDir("src/test/resources");
+        }
+
+        @Test
+        void d4jMath87_SimplexTableau() throws NoSuchFileException {
+            String locateMethod = "StaticAnalyzerTest.getMethodCallingLineTest.d4jMath87_SimplexTableau#getSolution()";
+            List<Integer> actual = StaticAnalyzer.getMethodCallingLine(locateMethod);
+            assertThat(actual, hasSize(8));
+            assertThat(actual, hasItems(325, 327, 328, 331, 332, 337, 339, 343));
+        }
     }
+
 
     @Test
     void getTestMethodsTest() {

@@ -13,7 +13,7 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.util.JavaParserUtil;
+import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
@@ -221,13 +221,13 @@ public class ProbeEx extends AbstractProbe {
 
 
         try {
-            MethodDeclaration md = JavaParserUtil.parseMethod(targetMethod);
+            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(targetMethod);
             bs = md.getBody().get();
             prms = md.getParameters();
         } catch (NoSuchFileException e) {
             //メソッドがコンストラクタの場合
             try{
-                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(targetMethod);
+                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(targetMethod);
                 bs = cd.getBody();
                 prms = cd.getParameters();
             }
@@ -419,12 +419,12 @@ public class ProbeEx extends AbstractProbe {
 
         BlockStmt bs;
         try {
-            MethodDeclaration md = JavaParserUtil.parseMethod(locateMethod);
+            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(locateMethod);
             bs = md.getBody().get();
         } catch (NoSuchFileException e) {
             //targetMethodがコンストラクタの場合
             try {
-                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(locateMethod);
+                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(locateMethod);
                 bs = cd.getBody();
             } catch (NoSuchFileException ex) {
                 System.err.println(ex);
@@ -441,12 +441,12 @@ public class ProbeEx extends AbstractProbe {
         int index = -1;
         NodeList<Parameter> prms;
         try {
-            MethodDeclaration md = JavaParserUtil.parseMethod(targetMethod);
+            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(targetMethod);
             prms = md.getParameters();
         } catch (NoSuchFileException e) {
             //targetMethodがコンストラクタの場合
             try {
-                ConstructorDeclaration cd = JavaParserUtil.parseConstructor(targetMethod);
+                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(targetMethod);
                 prms = cd.getParameters();
             } catch (NoSuchFileException ex) {
                 throw new RuntimeException(ex);
