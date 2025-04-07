@@ -165,7 +165,7 @@ class StaticAnalyzerTest {
     }
 
     @Nested
-    class getAssertLineTest {
+    class getAssignLineTest {
         @BeforeEach
         void initProperty(){
             PropertyLoader.setTargetSrcDir("src/test/resources");
@@ -173,21 +173,24 @@ class StaticAnalyzerTest {
 
         @Test
         void d4jMath87_SimplexTableau1() {
-            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()";
+            CodeElement locateMethod
+                    = new CodeElement("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()");
             List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "coefficients");
             assertThat(actual, hasSize(1));
             assertThat(actual, hasItems(325));
         }
         @Test
         void d4jMath87_SimplexTableau2() {
-            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()";
+            CodeElement locateMethod
+                    = new CodeElement("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()");
             List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "basicRow");
             assertThat(actual, hasSize(2));
             assertThat(actual, hasItems(327, 331));
         }
         @Test
         void d4jMath87_SimplexTableau3() {
-            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()";
+            CodeElement locateMethod
+                = new CodeElement("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()");
             List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "this.numArtificialVariables");
             assertThat(actual, hasSize(2));
             assertThat(actual, hasItems(112, 303));
@@ -196,7 +199,8 @@ class StaticAnalyzerTest {
         //フィールドでの宣言のみ
         @Test
         void d4jMath87_SimplexTableau4() {
-            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()";
+            CodeElement locateMethod
+                    = new CodeElement("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()");
             List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "numArtificialVariables");
             assertThat(actual, hasSize(1));
             assertThat(actual, hasItems(87));

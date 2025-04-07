@@ -125,8 +125,8 @@ public class StaticAnalyzer {
     }
 
     //(クラス, 対象の変数) --> 変数が代入されている行（初期化も含む）
-    public static List<Integer> getAssignLine(String className, String variable) {
-        CodeElement targetClass = new CodeElement(className);
+    public static List<Integer> getAssignLine(CodeElement targetClass, String variable) {
+        //CodeElement targetClass = new CodeElement(className);
         List<Integer> assignLines =
                 JavaParserUtil.extractAssignExpr(targetClass)
                         .stream()
