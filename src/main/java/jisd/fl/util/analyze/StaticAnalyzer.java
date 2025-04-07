@@ -9,7 +9,6 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.util.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
@@ -24,7 +23,6 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -90,39 +88,6 @@ public class StaticAnalyzer {
 
     private static Pair<Integer, Integer> getRangeOfNode(NodeWithRange<?> node){
         return Pair.of(node.getBegin().get().line, node.getEnd().get().line);
-    }
-
-    //返り値はmap ex.) Integer --> Pair(start, end)
-    public static Map<Integer, Pair<Integer, Integer>> getRangeOfAllStatements(String targetClassName) throws NoSuchFileException {
-        Map<Integer, Pair<Integer, Integer>> rangeOfStatement = new TreeMap<>();
-//        CompilationUnit unit = null;
-//        try {
-//            unit = JavaParserUtil.parseClass(targetClassName, false);
-//        } catch (NoSuchFileException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        class MethodVisitor extends VoidVisitorAdapter<String>{
-//            @Override
-//            public void visit(ExpressionStmt n, String arg) {
-//                Pair<Integer, Integer> range = Pair.of(n.getBegin().get().line, n.getEnd().get().line);
-//                for(int i = range.getLeft(); i <= range.getRight(); i++) {
-//                    rangeOfStatement.put(i, range);
-//                }
-//                super.visit(n, arg);
-//            }
-//        }
-//
-//        unit.accept(new MethodVisitor(), "");
-
-        List<Pair<Integer, Integer>> StmtRanges =
-                JavaParserUtil.extractStatement(targetClassName)
-                            .stream()
-                            .map(StaticAnalyzer::getRangeOfNode)
-                            .collect(Collectors.toList());
-
-        StmtRanges.forEach(r -> {for(int i = r.getLeft();  i <= r.getRight(); i++) rangeOfStatement.put(i, r);});
-        return rangeOfStatement;
     }
 
     public static Optional<Range> getRangeOfStatement(CodeElement targetClass, int line) {
