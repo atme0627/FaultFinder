@@ -47,37 +47,14 @@ public class JavaParserUtil {
     }
 
 
-    @Deprecated
-    public static MethodDeclaration getMethodDeclarationByName(String methodName) throws NoSuchFileException {
-        CodeElement cd = new CodeElement(methodName);
-        return getMethodDeclarationByName(cd);
-    }
     //methodNameはクラス、シグニチャを含む
-    public static MethodDeclaration getMethodDeclarationByName(CodeElement targetMethod) throws NoSuchFileException {
-        Optional<MethodDeclaration> omd = extractCallableDeclaration(targetMethod)
+    public static CallableDeclaration<?> getCallableDeclarationByName(CodeElement targetMethod) throws NoSuchFileException {
+        Optional<CallableDeclaration> omd = extractCallableDeclaration(targetMethod)
                 .stream()
-                .filter(cd -> cd.getClass().equals(MethodDeclaration.class))
-                .map(CallableDeclaration::asMethodDeclaration)
                 .filter(cd -> cd.getSignature().toString().equals(targetMethod.methodSignature))
                 .findFirst();
         return omd.orElseThrow(() -> new NoSuchFileException(targetMethod.methodSignature + "is not found."));
     }
-
-    @Deprecated
-    public static ConstructorDeclaration getConstructorDeclarationByName(String constructorName) throws NoSuchFileException {
-        CodeElement cd = new CodeElement(constructorName);
-        return getConstructorDeclarationByName(cd);
-    }
-    public static ConstructorDeclaration getConstructorDeclarationByName(CodeElement targetConstructor) throws NoSuchFileException {
-        Optional<ConstructorDeclaration> ocd = extractCallableDeclaration(targetConstructor)
-                .stream()
-                .filter(cd -> cd.getClass().equals(ConstructorDeclaration.class))
-                .map(CallableDeclaration::asConstructorDeclaration)
-                .filter(cd -> cd.getSignature().toString().equals(targetConstructor.methodSignature))
-                .findFirst();
-        return ocd.orElseThrow(() -> new NoSuchFileException(targetConstructor.methodSignature + "is not found."));
-    }
-
 
     public static List<CallableDeclaration> extractCallableDeclaration(CodeElement targetClass) throws NoSuchFileException {
         return extractNode(targetClass, CallableDeclaration.class);
@@ -113,14 +90,14 @@ public class JavaParserUtil {
         String strTargetMethod = targetMethod.getFullyQualifiedMethodName();
         BlockStmt bs = null;
         try {
-            MethodDeclaration md = getMethodDeclarationByName(targetMethod);
+            MethodDeclaration md = getCallableDeclarationByName(targetMethod).asMethodDeclaration();
             bs = md.getBody().get();
         } catch (NoSuchElementException e) {
             return null;
         }
         catch (NoSuchFileException e){
             try {
-                ConstructorDeclaration cd = getConstructorDeclarationByName(targetMethod);
+                ConstructorDeclaration cd = getCallableDeclarationByName(targetMethod).asConstructorDeclaration();
                 bs = cd.getBody();
             }
             catch (NoSuchFileException ex){

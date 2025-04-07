@@ -216,25 +216,33 @@ public class ProbeEx extends AbstractProbe {
     private Pair<Boolean, String> isFieldVariable(String variable, String targetMethod){
         String targetClass = targetMethod.split("#")[0];
         BlockStmt bs;
-        List<Parameter> prms;
+        NodeList<Parameter> prms;
         String fieldLocateClass = null;
 
 
-        try {
-            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(targetMethod);
-            bs = md.getBody().get();
-            prms = md.getParameters();
-        } catch (NoSuchFileException e) {
-            //メソッドがコンストラクタの場合
-            try{
-                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(targetMethod);
-                bs = cd.getBody();
-                prms = cd.getParameters();
-            }
-            catch (NoSuchFileException ex){
-                throw new RuntimeException(e);
+//        try {
+//            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(targetMethod);
+//            bs = md.getBody().get();
+//            prms = md.getParameters();
+//        } catch (NoSuchFileException e) {
+//            //メソッドがコンストラクタの場合
+//            try{
+//                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(targetMethod);
+//                bs = cd.getBody();
+//                prms = cd.getParameters();
+//            }
+//            catch (NoSuchFileException ex){
+//                throw new RuntimeException(e);
+//
+//            }
+//        }
 
-            }
+        CodeElement tmpCd = new CodeElement(targetMethod);
+        bs = JavaParserUtil.extractBodyOfMethod(tmpCd);
+        try {
+            prms = JavaParserUtil.getCallableDeclarationByName(tmpCd).getParameters();
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
         }
 
         //method内で定義されたローカル変数の場合
@@ -417,21 +425,21 @@ public class ProbeEx extends AbstractProbe {
             }
         }
 
-        BlockStmt bs;
-        try {
-            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(locateMethod);
-            bs = md.getBody().get();
-        } catch (NoSuchFileException e) {
-            //targetMethodがコンストラクタの場合
-            try {
-                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(locateMethod);
-                bs = cd.getBody();
-            } catch (NoSuchFileException ex) {
-                System.err.println(ex);
-                return null;
-            }
-        }
-
+        //        try {
+//            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(locateMethod);
+//            bs = md.getBody().get();
+//        } catch (NoSuchFileException e) {
+//            //targetMethodがコンストラクタの場合
+//            try {
+//                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(locateMethod);
+//                bs = cd.getBody();
+//            } catch (NoSuchFileException ex) {
+//                System.err.println(ex);
+//                return null;
+//            }
+//        }
+        CodeElement zzztmpCd = new CodeElement(locateMethod);
+        BlockStmt bs = JavaParserUtil.extractBodyOfMethod(zzztmpCd);
         return bs.accept(new BlockStmtVisitor(), line);
     }
 
@@ -440,17 +448,24 @@ public class ProbeEx extends AbstractProbe {
         String variable = pr.getVariableInfo().getVariableName();
         int index = -1;
         NodeList<Parameter> prms;
+//        try {
+//            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(targetMethod);
+//            prms = md.getParameters();
+//        } catch (NoSuchFileException e) {
+//            //targetMethodがコンストラクタの場合
+//            try {
+//                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(targetMethod);
+//                prms = cd.getParameters();
+//            } catch (NoSuchFileException ex) {
+//                throw new RuntimeException(ex);
+//            }
+//        }
+
+        CodeElement tmpCd = new CodeElement(targetMethod);
         try {
-            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(targetMethod);
-            prms = md.getParameters();
+            prms = JavaParserUtil.getCallableDeclarationByName(tmpCd).getParameters();
         } catch (NoSuchFileException e) {
-            //targetMethodがコンストラクタの場合
-            try {
-                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(targetMethod);
-                prms = cd.getParameters();
-            } catch (NoSuchFileException ex) {
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         }
 
         for(int i = 0; i < prms.size(); i++){
