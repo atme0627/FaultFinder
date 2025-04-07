@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import com.github.javaparser.Range;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
@@ -13,6 +14,7 @@ import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import jisd.fl.util.TestUtil;
 import jisd.info.ClassInfo;
@@ -304,16 +306,16 @@ public abstract class AbstractProbe {
         ProbeResult result = new ProbeResult();
         String probeMethod;
         Pair<Integer, Integer> probeLines = null;
-        Map<Integer, Pair<Integer, Integer>> rangeOfAllStmt;
 
         try {
             probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass, probeLine);
-            rangeOfAllStmt = StaticAnalyzer.getRangeOfAllStatements(locationClass);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
 
-        probeLines = rangeOfAllStmt.getOrDefault(probeLine, Pair.of(probeLine, probeLine));
+        CodeElement ce = new CodeElement(locationClass);
+        Range probeRange = StaticAnalyzer.getRangeOfStatement(ce, probeLine).orElse(null);
+        probeLines = probeRange != null ? Pair.of(probeRange.begin.line, probeRange.end.line) : Pair.of(probeLine, probeLine);
         result.setArgument(false);
         result.setLines(probeLines);
         result.setProbeMethod(probeMethod);

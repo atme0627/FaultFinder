@@ -1,5 +1,6 @@
 package jisd.fl.util;
 
+import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -7,11 +8,15 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.Statement;
 
+import javax.swing.plaf.nimbus.State;
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,8 +71,18 @@ public class JavaParserUtil {
         return extractNode(targetClassName, CallableDeclaration.class);
     }
 
-    public static List<ExpressionStmt> extractExpressionStmt(String targetClassName) throws NoSuchFileException {
-        return extractNode(targetClassName, ExpressionStmt.class);
+    public static List<Statement> extractStatement(String targetClassName) throws NoSuchFileException {
+        return extractNode(targetClassName, Statement.class);
+    }
+
+    //その行を含む最小範囲のStatementを返す
+    public static Optional<Statement> getStatementByLine(String targetClassName, int line) throws NoSuchFileException {
+        return extractStatement(targetClassName)
+                .stream()
+                .filter(stmt -> stmt.getRange().isPresent())
+                .filter(stmt -> (stmt.getBegin().get().line <= line))
+                .filter(stmt -> (stmt.getEnd().get().line >= line))
+                .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
     }
 
     private static <T extends Node> List<T> extractNode(String targetClassName, Class<T> nodeClass) throws NoSuchFileException {

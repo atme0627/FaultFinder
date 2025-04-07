@@ -1,5 +1,6 @@
 package jisd.fl.util;
 
+import com.github.javaparser.Range;
 import experiment.defect4j.Defects4jUtil;
 import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
@@ -15,6 +16,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StaticAnalyzerTest {
     String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
@@ -88,13 +90,64 @@ class StaticAnalyzerTest {
         }
     }
 
-    @Test
-    void getRangeOfAllStatementsTest() throws NoSuchFileException {
-        String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        Map<Integer, Pair<Integer, Integer>> methodNames = StaticAnalyzer.getRangeOfAllStatements(targetClassName);
-        methodNames.forEach((k, v)->{
-            System.out.println("line: " + k + ", start: " + v.getLeft() + ", end: " + v.getRight());
-        });
+    @Nested
+    class getRangeOfStatementTest {
+        @BeforeEach
+        void initProperty(){
+            PropertyLoader.setTargetSrcDir("src/test/resources");
+        }
+
+        @Test
+        void simpleCase1(){
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
+            try {
+                Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 9);
+                assertTrue(actual.isPresent());
+                assertEquals(9, actual.get().begin.line);
+                assertEquals(9, actual.get().end.line);
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Test
+        void simpleCase2(){
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
+            try {
+                Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 14);
+                assertTrue(actual.isPresent());
+                assertEquals(14, actual.get().begin.line);
+                assertEquals(14, actual.get().end.line);
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Test
+        void simpleCase3(){
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
+            try {
+                Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 23);
+                assertTrue(actual.isPresent());
+                assertEquals(22, actual.get().begin.line);
+                assertEquals(24, actual.get().end.line);
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Test
+        void simpleCase4(){
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
+            try {
+                Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 27);
+                assertTrue(actual.isPresent());
+                assertEquals(26, actual.get().begin.line);
+                assertEquals(27, actual.get().end.line);
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @Test

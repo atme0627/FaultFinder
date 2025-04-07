@@ -344,7 +344,7 @@ public class ProbeEx extends AbstractProbe {
     }
 
     //メソッド呼び出しで使われた変数名を返す
-    protected String getArgumentVariable(ProbeResult pr) throws NoSuchFileException {
+    protected String getArgumentVariable(ProbeResult pr) {
         Pair<Integer, String> callerNameAndCallLocation = pr.getCallerMethod();
         int index = 0;
         try {
@@ -358,7 +358,12 @@ public class ProbeEx extends AbstractProbe {
         int line = callerNameAndCallLocation.getLeft();
         String locateMethod = callerNameAndCallLocation.getRight();
         Map<Integer, Pair<Integer, Integer>> rangeOfStatements
-                = StaticAnalyzer.getRangeOfAllStatements(locateMethod.split("#")[0]);
+                = null;
+        try {
+            rangeOfStatements = StaticAnalyzer.getRangeOfAllStatements(locateMethod.split("#")[0]);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         Pair<Integer, Integer> lines = rangeOfStatements.getOrDefault(line, Pair.of(line, line));
         String calledMethod = pr.getProbeMethod();
         calledMethod = calledMethod.substring(calledMethod.indexOf("#")+1, calledMethod.indexOf("("));

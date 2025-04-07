@@ -1,5 +1,6 @@
 package jisd.fl.util.analyze;
 
+import com.github.javaparser.Range;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -9,6 +10,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.util.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
 import jisd.info.ClassInfo;
@@ -114,13 +116,22 @@ public class StaticAnalyzer {
 //        unit.accept(new MethodVisitor(), "");
 
         List<Pair<Integer, Integer>> StmtRanges =
-                JavaParserUtil.extractExpressionStmt(targetClassName)
+                JavaParserUtil.extractStatement(targetClassName)
                             .stream()
                             .map(StaticAnalyzer::getRangeOfNode)
                             .collect(Collectors.toList());
 
         StmtRanges.forEach(r -> {for(int i = r.getLeft();  i <= r.getRight(); i++) rangeOfStatement.put(i, r);});
         return rangeOfStatement;
+    }
+
+    public static Optional<Range> getRangeOfStatement(CodeElement targetClass, int line) {
+        try {
+            Optional<Statement> expStmt = JavaParserUtil.getStatementByLine(targetClass.getFullyQualifiedClassName(), line);
+            return (expStmt.isPresent()) ? expStmt.get().getRange() : Optional.empty();
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String getClassNameWithPackage(String targetSrcDir, String className) {
