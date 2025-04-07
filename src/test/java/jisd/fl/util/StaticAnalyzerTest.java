@@ -134,14 +134,6 @@ class StaticAnalyzerTest {
         }
     }
 
-    @Test
-    void getMethodNameFormLineTest() throws NoSuchFileException {
-        String targetClassName = "org.apache.commons.math.optimization.linear.SimplexTableau";
-        int line = 343;
-        String methodName = StaticAnalyzer.getMethodNameFormLine(targetClassName, line);
-        System.out.println(methodName);
-    }
-
     @Nested
     class getMethodNameFromLineTest {
         @BeforeEach
@@ -150,17 +142,22 @@ class StaticAnalyzerTest {
         }
 
         @Test
-        void simpleCase(){
-            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase");
+        void simpleCase1(){
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
             try {
-                Map<String, Pair<Integer, Integer>> actual = StaticAnalyzer.getRangeOfAllMethods(targetClass);
-                assertThat(actual.entrySet(), hasSize(3));
-                assertThat(actual.entrySet(), hasItems(
-                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#SimpleCase()", Pair.of(8, 10)),
-                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#methodA()", Pair.of(12, 16)),
-                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#methodB()", Pair.of(18, 19))
-                ));
+                String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 12);
+                assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodA(int)", actual);
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
+        @Test
+        void simpleCase2(){
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
+            try {
+                String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 21);
+                assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodB()", actual);
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }
@@ -169,21 +166,26 @@ class StaticAnalyzerTest {
 
     @Nested
     class getAssertLineTest {
+        @BeforeEach
+        void initProperty(){
+            PropertyLoader.setTargetSrcDir("src/test/resources");
+        }
+
         @Test
         void test1() throws NoSuchFileException {
-            String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
+            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()";
             List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "coefficients");
             System.out.println(Arrays.toString(result.toArray()));
         }
         @Test
         void test2() throws NoSuchFileException {
-            String locateMethod = "org.apache.commons.math.optimization.linear.SimplexTableau#getSolution()";
+            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()";
             List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "basicRow");
             System.out.println(Arrays.toString(result.toArray()));
         }
         @Test
         void test3() throws NoSuchFileException {
-            String locateMethod = "org.apache.commons.math.optimization.RealPointValuePair#RealPointValuePair(double[], double)";
+            String locateMethod = "StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()";
             List<Integer> result = StaticAnalyzer.getAssignLine(locateMethod, "this.point");
             System.out.println(Arrays.toString(result.toArray()));
         }

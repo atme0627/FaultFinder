@@ -10,7 +10,7 @@ public class CodeElement {
     final String packageName;
     @NotBlank
     final String className;
-    final String methodName;
+    final String methodSignature;
 
     //メソッド名はあってもなくても良い
     //ex1.) sample.demo
@@ -20,16 +20,16 @@ public class CodeElement {
         String fqClassName;
         final String packageName;
         final String className;
-        final String methodName;
+        final String methodSignature;
 
         //with method name
         if(fullyQualifiedName.contains("#")){
             fqClassName = fullyQualifiedName.split("#")[0];
-            methodName = fullyQualifiedName.split("#")[1].split("\\(")[0];
+            methodSignature = fullyQualifiedName.split("#")[1].split("\\(")[0];
         }
         else {
             fqClassName = fullyQualifiedName;
-            methodName = null;
+            methodSignature = null;
         }
 
         packageName = fqClassName.substring(0, fqClassName.lastIndexOf('.'));
@@ -37,23 +37,27 @@ public class CodeElement {
 
         this.packageName = packageName;
         this.className = className;
-        this.methodName = methodName;
+        this.methodSignature = methodSignature;
     }
 
     public CodeElement(String packageName, String className){
         this.packageName = packageName;
         this.className = className;
-        this.methodName = null;
+        this.methodSignature = null;
     }
 
-    public CodeElement(String packageName, String className, @NotBlank String methodName){
+    public CodeElement(String packageName, String className, @NotBlank String methodSignature){
         this.packageName = packageName;
         this.className = className;
-        this.methodName = methodName;
+        this.methodSignature = methodSignature;
     }
 
     public String getFullyQualifiedClassName(){
         return packageName + "." + className;
+    }
+
+    public String getFullyQualifiedMethodName(){
+        return packageName + "." + className + "#" + methodSignature;
     }
 
     public static CodeElement generateFullyQualifiedName(String className, String targetSrcDir){

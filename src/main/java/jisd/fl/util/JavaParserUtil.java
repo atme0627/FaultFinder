@@ -7,6 +7,8 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.util.analyze.CodeElement;
@@ -78,6 +80,22 @@ public class JavaParserUtil {
 
     public static List<Statement> extractStatement(CodeElement targetClass) throws NoSuchFileException {
         return extractNode(targetClass, Statement.class);
+    }
+
+    public static List<AssignExpr> extractAssignExpr(CodeElement targetClass) {
+        try {
+            return extractNode(targetClass, AssignExpr.class);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static List<VariableDeclarator> extractVariableDeclarator(CodeElement targetClass) {
+        try {
+            return extractNode(targetClass, VariableDeclarator.class);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static <T extends Node> List<T> extractNode(CodeElement targetClass, Class<T> nodeClass) throws NoSuchFileException {

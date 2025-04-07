@@ -24,6 +24,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -119,45 +120,41 @@ public class StaticAnalyzer {
                 "Cannot find class: " + className);
     }
 
-
+    @Deprecated
     public static String getMethodNameFormLine(String targetClassName, int line) throws NoSuchFileException {
         CodeElement targetClass = new CodeElement(targetClassName);
-        return JavaParserUtil.getCallableDeclarationByLine(targetClass, line).orElseThrow().getNameAsString();
+        return getMethodNameFormLine(targetClass, line);
+    }
+
+    public static String getMethodNameFormLine(CodeElement targetClass, int line) throws NoSuchFileException {
+        CallableDeclaration cd = JavaParserUtil.getCallableDeclarationByLine(targetClass, line).orElseThrow();
+        return targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature();
     }
 
     //(クラス, 対象の変数) --> 変数が代入されている行（初期化も含む）
-    public static List<Integer> getAssignLine(String className, String variable) throws NoSuchFileException {
-        List<Integer> assignLine = new ArrayList<>();
+    public static List<Integer> getAssignLine(String className, String variable) {
+        CodeElement targetClass = new CodeElement(className);
+        List<Integer> assignLines =
+                JavaParserUtil.extractAssignExpr(targetClass)
+                        .stream()
+                        .map(exp -> exp.isArrayAccessExpr() ? exp.asArrayAccessExpr().getName() : exp.getTarget())
+                        .filter(exp -> exp.toString().equals(variable))
+                        .filter(exp -> exp.getEnd().isPresent())
+                        .map(exp -> exp.getEnd().get().line)
+                        .collect(Collectors.toList());
 
-        class MethodVisitor extends VoidVisitorAdapter<String> {
-            @Override
-            public void visit(AssignExpr n, String variable) {
-                Expression targetExpr = n.getTarget();
+        List<Integer> declarationLines =
+                JavaParserUtil.extractVariableDeclarator(targetClass)
+                        .stream()
+                        .filter(exp -> exp.getName().toString().equals(variable))
+                        .filter(exp -> exp.getEnd().isPresent())
+                        .map(exp -> exp.getEnd().get().line)
+                        .collect(Collectors.toList());
 
-                //配列参照の場合
-                if(targetExpr.isArrayAccessExpr()){
-                    targetExpr = targetExpr.asArrayAccessExpr().getName();
-                }
-
-                if (targetExpr.toString().equals(variable)) {
-                    assignLine.add(n.getEnd().get().line);
-                }
-                super.visit(n, variable);
-            }
-
-            @Override
-            public void visit(VariableDeclarator n, String variable) {
-                if (n.getName().toString().equals(variable)) {
-                    assignLine.add(n.getEnd().get().line);
-                }
-                super.visit(n, variable);
-            }
-        }
-
-        CompilationUnit unit = JavaParserUtil.parseClass(className, false);
-        unit.accept(new MethodVisitor(), variable);
-        assignLine.sort(Comparator.naturalOrder());
-        return assignLine;
+        return Stream.of(assignLines, declarationLines)
+                        .flatMap(Collection::stream)
+                        .sorted(Comparator.naturalOrder())
+                        .collect(Collectors.toList());
     }
 
     //メソッド --> メソッドが呼ばれている行
