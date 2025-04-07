@@ -8,7 +8,6 @@ import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.util.PropertyLoader;
-import jisd.info.ClassInfo;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
@@ -161,17 +160,6 @@ public class StaticAnalyzer {
                         .distinct()
                         .sorted(Comparator.naturalOrder())
                         .collect(Collectors.toList());
-    }
-
-
-    //フルパスの引数を含んだ状態で保持されているClassInfoに対応するためのメソッド
-    //methodNames()では、引数の型につく型パラメータは省略される。
-    public static String fullNameOfMethod(String shortMethodName, ClassInfo ci){
-        List<String> fullNameMethods = ci.methodNames();
-        for(String fullName : fullNameMethods){
-            if(shortMethodName.equals(shortMethodName(fullName))) return fullName;
-        }
-        throw new RuntimeException(shortMethodName + " is not found.");
     }
 
     public static String shortMethodName(String fullMethodName){
