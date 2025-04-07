@@ -28,7 +28,7 @@ public class CoverageAnalyzer {
     public CoverageAnalyzer(String outputDir, Set<String> failedTests) {
         this.outputDir = outputDir;
         this.failedTests = failedTests;
-        targetClassNames = StaticAnalyzer.getClassNames(targetSrcDir);
+        targetClassNames = StaticAnalyzer.getClassNames();
     }
 
     public CoverageCollection analyzeAll(String testClassName){

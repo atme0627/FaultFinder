@@ -61,7 +61,7 @@ public class CodeElement {
     }
 
     public static CodeElement generateFullyQualifiedName(String className, String targetSrcDir){
-        Set<String> classNames = getClassNames(targetSrcDir);
+        Set<String> classNames = getClassNames();
         for (String n : classNames) {
             String[] ns = n.split("\\.");
             if (ns[ns.length - 1].equals(className)) {

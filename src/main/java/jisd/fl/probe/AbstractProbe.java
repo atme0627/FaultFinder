@@ -52,6 +52,30 @@ public abstract class AbstractProbe {
         this.testSif = new StaticInfoFactory(testSrcDir, testBinDir);
     }
 
+    public static String shortMethodName(String fullMethodName){
+        String name = fullMethodName.split("\\(")[0];
+        String args = fullMethodName.substring(fullMethodName.indexOf("(")+1, fullMethodName.indexOf(")"));
+        List<String> argList = new ArrayList<>(List.of(args.split(", ")));
+        List<String> shortArgList = new ArrayList<>();
+        for(String arg : argList){
+            if(arg.contains(".") || arg.contains("/")) {
+                String[] splitArgs = arg.split("[./]");
+                shortArgList.add(splitArgs[splitArgs.length - 1]);
+            }
+            else {
+                shortArgList.add(arg);
+            }
+        }
+        StringBuilder shortMethod = new StringBuilder(name + "(");
+        for(int i = 0; i < shortArgList.size(); i++){
+            String shortArg = shortArgList.get(i);
+            shortMethod.append(shortArg);
+            if (i != shortArgList.size() - 1) shortMethod.append(", ");
+        }
+        shortMethod.append(")");
+        return shortMethod.toString();
+    }
+
     //一回のprobeを行う
     //条件を満たす行の情報を返す
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
@@ -677,7 +701,7 @@ public abstract class AbstractProbe {
             shortName = shortName.substring(shortName.lastIndexOf(".") + 1);
             methodName =  methodName.replace("<init>", shortName);
         }
-        methodName = StaticAnalyzer.shortMethodName(methodName);
+        methodName = shortMethodName(methodName);
         StringBuilder sb = new StringBuilder(methodName);
         sb.setCharAt(sb.lastIndexOf("."), '#');
         return sb.toString();

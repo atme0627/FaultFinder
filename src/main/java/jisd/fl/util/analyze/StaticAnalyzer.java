@@ -21,43 +21,18 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toMap;
 
 public class StaticAnalyzer {
-    public static Set<String> getClassNames(String targetSrcPath) {
-        Set<String> classNames = new LinkedHashSet<>();
-        Path p = Paths.get(targetSrcPath);
-
-        class ClassExplorer implements FileVisitor<Path> {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                if(file.toString().endsWith(".java")){
-                    classNames.add(p.relativize(file).toString().split("\\.")[0].replace("/", "."));
-                }
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                System.out.println("failed: " + file.toString());
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-                return FileVisitResult.CONTINUE;
-            }
-        }
-
+    public static Set<String> getClassNames() {
+        Path p = Paths.get(PropertyLoader.getProperty("targetSrcPath"));
+        ClassExplorer ce = new ClassExplorer(p);
         try {
-            Files.walkFileTree(p, new ClassExplorer());
+            Files.walkFileTree(p, ce);
+            return ce.result();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return classNames;
     }
+
+
 
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
@@ -96,7 +71,7 @@ public class StaticAnalyzer {
     public static String getExtendedClassNameWithPackage(String targetSrcDir, String className, String childClass){
         String targetPackage = childClass.replace(".", "/");
         while(true) {
-            Set<String> classNames = getClassNames(targetSrcDir + "/" + targetPackage);
+            Set<String> classNames = getClassNames();
             for (String n : classNames) {
                 String[] ns = n.split("\\.");
                 if (ns[ns.length - 1].equals(className)) {
@@ -162,33 +137,7 @@ public class StaticAnalyzer {
                         .collect(Collectors.toList());
     }
 
-    public static String shortMethodName(String fullMethodName){
-        String name = fullMethodName.split("\\(")[0];
-        String args = fullMethodName.substring(fullMethodName.indexOf("(")+1, fullMethodName.indexOf(")"));
-        List<String> argList = new ArrayList<>(List.of(args.split(", ")));
-        List<String> shortArgList = new ArrayList<>();
-        for(String arg : argList){
-            if(arg.contains(".") || arg.contains("/")) {
-                String[] splitArgs = arg.split("[./]");
-                shortArgList.add(splitArgs[splitArgs.length - 1]);
-            }
-            else {
-                shortArgList.add(arg);
-            }
-        }
-
-        StringBuilder shortMethod = new StringBuilder(name + "(");
-        for(int i = 0; i < shortArgList.size(); i++){
-            String shortArg = shortArgList.get(i);
-            shortMethod.append(shortArg);
-            if (i != shortArgList.size() - 1) shortMethod.append(", ");
-        }
-        shortMethod.append(")");
-        return shortMethod.toString();
-    }
-
     public static Set<Integer> canSetLineOfClass(String targetClassName, String variable){
-        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
         Set<String> methods;
         Set<Integer> canSet = new HashSet<>();
 
@@ -230,6 +179,41 @@ public class StaticAnalyzer {
 
         bs.accept(new SimpleNameVisitor(), "");
         return canSet;
+    }
+
+    static class ClassExplorer implements FileVisitor<Path> {
+        Path p;
+        Set<String> classNames;
+
+        public ClassExplorer(Path targetSrcPath){
+            this.p = targetSrcPath;
+            this.classNames = new HashSet<>();
+        }
+
+        public Set<String> result(){
+            return classNames;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+            return FileVisitResult.CONTINUE;
+        }
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+            if(file.toString().endsWith(".java")){
+                classNames.add(p.relativize(file).toString().split("\\.")[0].replace("/", "."));
+            }
+            return FileVisitResult.CONTINUE;
+        }
+        @Override
+        public FileVisitResult visitFileFailed(Path file, IOException exc) {
+            System.out.println("failed: " + file.toString());
+            return FileVisitResult.CONTINUE;
+        }
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+            return FileVisitResult.CONTINUE;
+        }
     }
 }
 

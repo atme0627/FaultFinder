@@ -32,7 +32,7 @@ public class ProbeEx extends AbstractProbe {
         super(assertInfo);
         probedValue = new HashSet<>();
         String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
-        targetClasses = StaticAnalyzer.getClassNames(targetSrcDir);
+        targetClasses = StaticAnalyzer.getClassNames();
     }
 
     public ProbeExResult run(int sleepTime) {
