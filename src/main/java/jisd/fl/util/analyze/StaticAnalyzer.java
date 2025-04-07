@@ -70,7 +70,7 @@ public class StaticAnalyzer {
     //返り値は demo.SortTest#test1(int a)の形式
     public static Set<String> getMethodNames(CodeElement targetClass) throws NoSuchFileException {
         return JavaParserUtil
-                .extractCallableDeclaration(targetClass.getFullyQualifiedClassName())
+                .extractCallableDeclaration(targetClass)
                 .stream()
                 .map(cd -> (targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature()))
                 .collect(Collectors.toSet());
@@ -79,7 +79,7 @@ public class StaticAnalyzer {
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
     public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(CodeElement targetClass) throws NoSuchFileException {;
         return JavaParserUtil
-                .extractCallableDeclaration(targetClass.getFullyQualifiedClassName())
+                .extractCallableDeclaration(targetClass)
                 .stream()
                 .collect(toMap(
                     cd -> targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature(),
@@ -93,7 +93,7 @@ public class StaticAnalyzer {
 
     public static Optional<Range> getRangeOfStatement(CodeElement targetClass, int line) {
         try {
-            Optional<Statement> expStmt = JavaParserUtil.getStatementByLine(targetClass.getFullyQualifiedClassName(), line);
+            Optional<Statement> expStmt = JavaParserUtil.getStatementByLine(targetClass, line);
             return (expStmt.isPresent()) ? expStmt.get().getRange() : Optional.empty();
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
@@ -122,7 +122,7 @@ public class StaticAnalyzer {
 
     public static String getMethodNameFormLine(String targetClassName, int line) throws NoSuchFileException {
         CodeElement targetClass = new CodeElement(targetClassName);
-        return JavaParserUtil.getCallableDeclarationByLine(targetClassName, line).orElseThrow().getNameAsString();
+        return JavaParserUtil.getCallableDeclarationByLine(targetClass, line).orElseThrow().getNameAsString();
     }
 
     //(クラス, 対象の変数) --> 変数が代入されている行（初期化も含む）

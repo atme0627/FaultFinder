@@ -9,6 +9,7 @@ import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import jisd.fl.util.analyze.CodeElement;
 
 import javax.swing.plaf.nimbus.State;
 import javax.swing.text.html.Option;
@@ -22,6 +23,9 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class JavaParserUtil {
+    public static CompilationUnit parseClass(CodeElement targetClass, boolean isTest) throws NoSuchFileException {
+       return parseClass(targetClass.getFullyQualifiedClassName(), isTest);
+    }
 
     public static CompilationUnit parseClass(String className, boolean isTest) throws NoSuchFileException {
         Path p = Paths.get(getFullPath(className, isTest));
@@ -68,31 +72,31 @@ public class JavaParserUtil {
     }
 
 
-    public static List<CallableDeclaration> extractCallableDeclaration(String targetClassName) throws NoSuchFileException {
-        return extractNode(targetClassName, CallableDeclaration.class);
+    public static List<CallableDeclaration> extractCallableDeclaration(CodeElement targetClass) throws NoSuchFileException {
+        return extractNode(targetClass, CallableDeclaration.class);
     }
 
-    public static List<Statement> extractStatement(String targetClassName) throws NoSuchFileException {
-        return extractNode(targetClassName, Statement.class);
+    public static List<Statement> extractStatement(CodeElement targetClass) throws NoSuchFileException {
+        return extractNode(targetClass, Statement.class);
     }
 
-    private static <T extends Node> List<T> extractNode(String targetClassName, Class<T> nodeClass) throws NoSuchFileException {
-        return parseClass(targetClassName, false)
+    private static <T extends Node> List<T> extractNode(CodeElement targetClass, Class<T> nodeClass) throws NoSuchFileException {
+        return parseClass(targetClass, false)
                 .findAll(nodeClass);
     }
 
 
-    public static Optional<CallableDeclaration> getCallableDeclarationByLine(String targetClassName, int line) throws NoSuchFileException {
-        return getNodeByLine(targetClassName, line, CallableDeclaration.class);
+    public static Optional<CallableDeclaration> getCallableDeclarationByLine(CodeElement targetClass, int line) throws NoSuchFileException {
+        return getNodeByLine(targetClass, line, CallableDeclaration.class);
     }
 
     //その行を含む最小範囲のStatementを返す
-    public static Optional<Statement> getStatementByLine(String targetClassName, int line) throws NoSuchFileException {
-        return getNodeByLine(targetClassName, line, Statement.class);
+    public static Optional<Statement> getStatementByLine(CodeElement targetClass, int line) throws NoSuchFileException {
+        return getNodeByLine(targetClass, line, Statement.class);
     }
 
-    private static <T extends Node> Optional<T> getNodeByLine(String targetClassName, int line, Class<T> nodeClass) throws NoSuchFileException {
-        return extractNode(targetClassName, nodeClass)
+    private static <T extends Node> Optional<T> getNodeByLine(CodeElement targetClass, int line, Class<T> nodeClass) throws NoSuchFileException {
+        return extractNode(targetClass, nodeClass)
                 .stream()
                 .filter(stmt -> stmt.getRange().isPresent())
                 .filter(stmt -> (stmt.getBegin().get().line <= line))

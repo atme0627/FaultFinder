@@ -143,6 +143,31 @@ class StaticAnalyzerTest {
     }
 
     @Nested
+    class getMethodNameFromLineTest {
+        @BeforeEach
+        void initProperty(){
+            PropertyLoader.setTargetSrcDir("src/test/resources");
+        }
+
+        @Test
+        void simpleCase(){
+            CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase");
+            try {
+                Map<String, Pair<Integer, Integer>> actual = StaticAnalyzer.getRangeOfAllMethods(targetClass);
+                assertThat(actual.entrySet(), hasSize(3));
+                assertThat(actual.entrySet(), hasItems(
+                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#SimpleCase()", Pair.of(8, 10)),
+                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#methodA()", Pair.of(12, 16)),
+                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#methodB()", Pair.of(18, 19))
+                ));
+
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Nested
     class getAssertLineTest {
         @Test
         void test1() throws NoSuchFileException {
