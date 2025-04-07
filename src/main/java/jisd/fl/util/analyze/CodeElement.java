@@ -1,6 +1,9 @@
 package jisd.fl.util.analyze;
 
 import javax.validation.constraints.NotBlank;
+import java.util.Set;
+
+import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
 public class CodeElement {
     @NotBlank
@@ -19,6 +22,7 @@ public class CodeElement {
         final String className;
         final String methodName;
 
+        //with method name
         if(fullyQualifiedName.contains("#")){
             fqClassName = fullyQualifiedName.split("#")[0];
             methodName = fullyQualifiedName.split("#")[1].split("\\(")[0];
@@ -52,4 +56,14 @@ public class CodeElement {
         return packageName + "." + className;
     }
 
+    public static CodeElement generateFullyQualifiedName(String className, String targetSrcDir){
+        Set<String> classNames = getClassNames(targetSrcDir);
+        for (String n : classNames) {
+            String[] ns = n.split("\\.");
+            if (ns[ns.length - 1].equals(className)) {
+                return new CodeElement(n);
+            }
+        }
+        throw new RuntimeException("Cannot find class " + className + " in Dir: " + targetSrcDir);
+    }
 }

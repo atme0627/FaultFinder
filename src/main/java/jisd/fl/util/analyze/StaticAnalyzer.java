@@ -99,18 +99,6 @@ public class StaticAnalyzer {
         }
     }
 
-    public static String getClassNameWithPackage(String targetSrcDir, String className) {
-        Set<String> classNames = getClassNames(targetSrcDir);
-        for (String n : classNames) {
-            String[] ns = n.split("\\.");
-            if (ns[ns.length - 1].equals(className)) {
-                return n;
-            }
-        }
-        throw new RuntimeException("StaticAnalyzer#getClassNameWithPackage\n" +
-                "Cannot find class: " + className);
-    }
-
     public static String getExtendedClassNameWithPackage(String targetSrcDir, String className, String childClass){
         String targetPackage = childClass.replace(".", "/");
         while(true) {

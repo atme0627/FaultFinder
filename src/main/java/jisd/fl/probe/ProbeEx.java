@@ -280,8 +280,8 @@ public class ProbeEx extends AbstractProbe {
             String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
             ClassOrInterfaceDeclaration classDecl = unit.findFirst(ClassOrInterfaceDeclaration.class).get();
             if(classDecl.getExtendedTypes().isEmpty()) break;
-            className = StaticAnalyzer.getClassNameWithPackage(targetSrcDir, classDecl.getExtendedTypes(0).getNameAsString());
-            System.out.println("parent: " + className);
+            CodeElement cd = CodeElement.generateFullyQualifiedName(targetSrcDir, classDecl.getExtendedTypes(0).getNameAsString());
+            System.out.println("parent: " + cd.getFullyQualifiedClassName());
         }
 
         throw new RuntimeException("Variable \"" + variable + "\" is not found in " + targetClass);
