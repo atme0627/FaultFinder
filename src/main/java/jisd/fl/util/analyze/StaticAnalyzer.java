@@ -32,8 +32,6 @@ public class StaticAnalyzer {
         }
     }
 
-
-
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
     public static Set<String> getMethodNames(CodeElement targetClass) throws NoSuchFileException {
