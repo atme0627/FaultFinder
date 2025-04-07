@@ -484,8 +484,9 @@ public abstract class AbstractProbe {
         Set<String> calleeMethods = new HashSet<>();
         String locateClass = locateMethod.split("#")[0];
         List<Integer> methodCallingLines = null;
+        CodeElement tmpCd = new CodeElement(locateMethod);
         try {
-            methodCallingLines = StaticAnalyzer.getMethodCallingLine(locateMethod);
+            methodCallingLines = StaticAnalyzer.getMethodCallingLine(tmpCd);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }

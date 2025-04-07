@@ -152,24 +152,9 @@ public class StaticAnalyzer {
 
     //メソッド --> メソッドが呼ばれている行
     //methodNameはクラス、シグニチャを含む
-    public static List<Integer> getMethodCallingLine(String methodName) throws NoSuchFileException {
-        List<Integer> methodCallingLine = new ArrayList<>();
-
-        class MethodVisitor extends VoidVisitorAdapter<String> {
-            @Override
-            public void visit(MethodCallExpr n, String arg) {
-                int line = n.getBegin().get().line;
-                if(!methodCallingLine.contains(line)) {
-                    methodCallingLine.add(line);
-                }
-                super.visit(n, arg);
-            }
-        }
-
-        CodeElement cd = new CodeElement(methodName);
-        BlockStmt bs = JavaParserUtil.extractBodyOfMethod(cd);
-
-        return bs.findAll(MethodCallExpr.class)
+    public static List<Integer> getMethodCallingLine(CodeElement targetMethod) throws NoSuchFileException {
+        return JavaParserUtil.extractBodyOfMethod(targetMethod)
+                        .findAll(MethodCallExpr.class)
                         .stream()
                         .filter(exp -> exp.getBegin().isPresent())
                         .map(exp -> exp.getBegin().get().line)

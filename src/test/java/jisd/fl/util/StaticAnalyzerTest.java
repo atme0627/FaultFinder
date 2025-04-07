@@ -212,7 +212,8 @@ class StaticAnalyzerTest {
 
         @Test
         void d4jMath87_SimplexTableau() throws NoSuchFileException {
-            String locateMethod = "StaticAnalyzerTest.getMethodCallingLineTest.d4jMath87_SimplexTableau#getSolution()";
+            CodeElement locateMethod
+                    = new CodeElement("StaticAnalyzerTest.getMethodCallingLineTest.d4jMath87_SimplexTableau#getSolution()");
             List<Integer> actual = StaticAnalyzer.getMethodCallingLine(locateMethod);
             assertThat(actual, hasSize(8));
             assertThat(actual, hasItems(325, 327, 328, 331, 332, 337, 339, 343));
