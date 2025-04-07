@@ -1,6 +1,7 @@
 package jisd.fl.util.analyze;
 
 import com.github.javaparser.Range;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
@@ -121,15 +122,7 @@ public class StaticAnalyzer {
 
     public static String getMethodNameFormLine(String targetClassName, int line) throws NoSuchFileException {
         CodeElement targetClass = new CodeElement(targetClassName);
-        Map<String, Pair<Integer, Integer>> ranges = getRangeOfAllMethods(targetClass);
-        String[] method = new String[1];
-        ranges.forEach((m, pair) -> {
-            if(pair.getLeft() <= line && line <= pair.getRight()) {
-                method[0] = m;
-            }
-        });
-
-        return method[0];
+        return JavaParserUtil.getCallableDeclarationByLine(targetClassName, line).orElseThrow().getNameAsString();
     }
 
     //(クラス, 対象の変数) --> 変数が代入されている行（初期化も含む）

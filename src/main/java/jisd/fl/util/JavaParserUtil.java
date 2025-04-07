@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class JavaParserUtil {
@@ -75,21 +76,29 @@ public class JavaParserUtil {
         return extractNode(targetClassName, Statement.class);
     }
 
+    private static <T extends Node> List<T> extractNode(String targetClassName, Class<T> nodeClass) throws NoSuchFileException {
+        return parseClass(targetClassName, false)
+                .findAll(nodeClass);
+    }
+
+
+    public static Optional<CallableDeclaration> getCallableDeclarationByLine(String targetClassName, int line) throws NoSuchFileException {
+        return getNodeByLine(targetClassName, line, CallableDeclaration.class);
+    }
+
     //その行を含む最小範囲のStatementを返す
     public static Optional<Statement> getStatementByLine(String targetClassName, int line) throws NoSuchFileException {
-        return extractStatement(targetClassName)
+        return getNodeByLine(targetClassName, line, Statement.class);
+    }
+
+    private static <T extends Node> Optional<T> getNodeByLine(String targetClassName, int line, Class<T> nodeClass) throws NoSuchFileException {
+        return extractNode(targetClassName, nodeClass)
                 .stream()
                 .filter(stmt -> stmt.getRange().isPresent())
                 .filter(stmt -> (stmt.getBegin().get().line <= line))
                 .filter(stmt -> (stmt.getEnd().get().line >= line))
                 .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
     }
-
-    private static <T extends Node> List<T> extractNode(String targetClassName, Class<T> nodeClass) throws NoSuchFileException {
-        return parseClass(targetClassName, false)
-                .findAll(nodeClass);
-    }
-
 
 
     private static String getFullPath(String className, boolean isTest){
