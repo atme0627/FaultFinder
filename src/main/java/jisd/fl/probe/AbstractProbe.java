@@ -218,7 +218,7 @@ public abstract class AbstractProbe {
         List<UnaryExpr> ues;
         if(vi.isField()) {
             try {
-                CompilationUnit unit = JavaParserUtil.parseClass(vi.getLocateClass(), false);
+                CompilationUnit unit = JavaParserUtil.parseClass(vi.getLocateClass());
                 aes = unit.findAll(AssignExpr.class);
                 ues = unit.findAll(UnaryExpr.class, (n)-> {
                     UnaryExpr.Operator ope = n.getOperator();

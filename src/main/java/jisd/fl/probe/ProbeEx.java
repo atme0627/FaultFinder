@@ -263,7 +263,7 @@ public class ProbeEx extends AbstractProbe {
         while(true) {
             CompilationUnit unit;
             try {
-                unit = JavaParserUtil.parseClass(className, false);
+                unit = JavaParserUtil.parseClass(className);
             } catch (NoSuchFileException e) {
                 break;
             }
@@ -284,7 +284,7 @@ public class ProbeEx extends AbstractProbe {
             String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
             ClassOrInterfaceDeclaration classDecl = unit.findFirst(ClassOrInterfaceDeclaration.class).get();
             if(classDecl.getExtendedTypes().isEmpty()) break;
-            CodeElement cd = CodeElement.generateFullyQualifiedName(targetSrcDir, classDecl.getExtendedTypes(0).getNameAsString());
+            CodeElement cd = CodeElement.generateFromSimpleClassName(targetSrcDir, classDecl.getExtendedTypes(0).getNameAsString());
             System.out.println("parent: " + cd.getFullyQualifiedClassName());
         }
 

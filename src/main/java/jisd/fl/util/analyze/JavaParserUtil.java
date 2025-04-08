@@ -7,45 +7,32 @@ import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import jisd.fl.util.PropertyLoader;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class JavaParserUtil {
-    public static CompilationUnit parseClass(CodeElement targetClass, boolean isTest) throws NoSuchFileException {
-       return parseClass(targetClass.getFullyQualifiedClassName(), isTest);
+    //引数に与えられるclassNameがpackageを含まない可能性あり
+    @Deprecated
+    public static CompilationUnit parseClass(String className) throws NoSuchFileException {
+        CodeElement targetClass = new CodeElement(className);
+        return parseClass(targetClass);
     }
 
-    public static CompilationUnit parseClass(String className, boolean isTest) throws NoSuchFileException {
-        Path p = Paths.get(getFullPath(className, isTest));
-        CompilationUnit unit = null;
+    public static CompilationUnit parseClass(CodeElement targetClass) throws NoSuchFileException {
+        Path p = targetClass.getFilePath();
+        if (!Files.exists(p)) throw new NoSuchFileException(p.toString());
         try {
-            unit = StaticJavaParser.parse(p);
-        } catch (NoSuchFileException e) {
-            //mainでダメならtestを試す
-            if(isTest)  throw new NoSuchFileException(className);
-
-            p = Paths.get(getFullPath(className, true));
-            try {
-                unit = StaticJavaParser.parse(p);
-            } catch (NoSuchFileException ex) {
-                throw new NoSuchFileException(className);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        } catch (IOException e){
+            return StaticJavaParser.parse(p);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return unit;
     }
-
 
     //methodNameはクラス、シグニチャを含む
     public static CallableDeclaration<?> getCallableDeclarationByName(CodeElement targetMethod) {
@@ -98,7 +85,7 @@ public class JavaParserUtil {
     }
 
     private static <T extends Node> List<T> extractNode(CodeElement targetClass, Class<T> nodeClass) throws NoSuchFileException {
-        return parseClass(targetClass, false)
+        return parseClass(targetClass)
                 .findAll(nodeClass);
     }
 
@@ -120,21 +107,4 @@ public class JavaParserUtil {
                 .filter(stmt -> (stmt.getEnd().get().line >= line))
                 .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
     }
-
-
-    private static String getFullPath(String className, boolean isTest){
-        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
-        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-        return ((isTest) ? testSrcDir : targetSrcDir)
-                + "/" + className.replace(".", "/") + ".java";
-    }
-
-    public static boolean isConstructor(String methodName){
-        String className = methodName.split("#")[0];
-        String classNameWithoutPackage = className.substring(className.lastIndexOf('.') + 1);
-        String methodNameWithoutPackage = methodName.substring(0, methodName.indexOf("(")).split("#")[1];
-        return classNameWithoutPackage.equals(methodNameWithoutPackage);
-    }
-
-
 }

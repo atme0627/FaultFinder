@@ -1,6 +1,8 @@
 package jisd.fl.util.analyze;
 
 import javax.validation.constraints.NotBlank;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
@@ -31,7 +33,6 @@ public class CodeElement {
             fqClassName = fullyQualifiedName;
             methodSignature = null;
         }
-
         packageName = fqClassName.substring(0, fqClassName.lastIndexOf('.'));
         className = fqClassName.substring(fqClassName.lastIndexOf('.') + 1);
 
@@ -60,7 +61,12 @@ public class CodeElement {
         return packageName + "." + className + "#" + methodSignature;
     }
 
-    public static CodeElement generateFullyQualifiedName(String className, String targetSrcDir){
+    //signature含まない
+    public String getShortMethodName(){
+       return this.methodSignature.split("\\(")[0];
+    }
+
+    public static CodeElement generateFromSimpleClassName(String className, String targetSrcDir){
         Set<String> classNames = getClassNames();
         for (String n : classNames) {
             String[] ns = n.split("\\.");
@@ -69,5 +75,13 @@ public class CodeElement {
             }
         }
         throw new RuntimeException("Cannot find class " + className + " in Dir: " + targetSrcDir);
+    }
+
+    public Path getFilePath(){
+        return Paths.get(packageName.replace('.', '/'), className + ".java");
+    }
+
+    public boolean isConstructor(){
+        return this.className.equals(getShortMethodName());
     }
 }

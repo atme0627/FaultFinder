@@ -136,7 +136,7 @@ public  class TestUtil {
 
         CompilationUnit unit;
         try {
-            unit = JavaParserUtil.parseClass(targetClassName, true);
+            unit = JavaParserUtil.parseClass(targetClassName);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
