@@ -126,8 +126,8 @@ public class CodeElement {
         return Optional.of(candidates.get(0));
     }
 
-    public Path getSrcPath(){
-        return Paths.get(packageName.replace('.', '/'), className + ".java");
+    public Path getFilePath(){
+        return Paths.get(PropertyLoader.getProperty("targetSrcDir") + "/" + packageName.replace('.', '/'), className + ".java");
     }
 
     public boolean isConstructor(){
