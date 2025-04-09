@@ -23,7 +23,7 @@ import static java.util.stream.Collectors.toMap;
 public class StaticAnalyzer {
     //プロジェクト全体
     public static Set<String> getClassNames() {
-        return getClassNames(Paths.get(PropertyLoader.getProperty("targetSrcPath")));
+        return getClassNames(Paths.get(PropertyLoader.getProperty("targetSrcDir")));
     }
 
     //ディレクトリ指定

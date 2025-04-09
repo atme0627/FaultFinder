@@ -131,7 +131,12 @@ public class CodeElement {
     }
 
     public Path getFilePath(){
-        return Paths.get(PropertyLoader.getProperty("targetSrcDir") + "/" + packageName.replace('.', '/'), className + ".java");
+        return getFilePath(false);
+    }
+
+    public Path getFilePath(boolean isTest){
+        String dir = isTest ? PropertyLoader.getProperty("testSrcDir") : PropertyLoader.getProperty("targetSrcDir");
+        return Paths.get(dir + "/" + packageName.replace('.', '/'), className + ".java");
     }
 
     public boolean isConstructor(){

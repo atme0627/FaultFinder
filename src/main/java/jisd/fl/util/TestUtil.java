@@ -31,7 +31,7 @@ public  class TestUtil {
         FileUtil.initDirectory(PropertyLoader.getProperty("compiledWithJunitFilePath"));
         String[] args = {
                 "-cp", PropertyLoader.getCpForCompileTestClass(),
-                targetTestClass.getFilePath().toString(),
+                targetTestClass.getFilePath(true).toString(),
                 "-d", PropertyLoader.getProperty("compiledWithJunitFilePath")};
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         int rc = javac.run(null, null, null, args);
@@ -122,6 +122,7 @@ public  class TestUtil {
         }
         dbg.setSrcDir(targetSrcDir, testSrcDir);
         DebugResult.setDefaultMaxRecordNoOfValue(500);
+        compileTestClass(testMethod);
         return dbg;
     }
 
