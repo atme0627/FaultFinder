@@ -45,7 +45,7 @@ public class PropertyLoader {
         return properties.getProperty(key);
     }
 
-    public static  String getJunitClassPaths(){
+    public static String getJunitClassPaths(){
         String junitPlatformLauncher = getProperty("junit-platform-launcher");
         String junitPlatformEngine = getProperty("junit-platform-engine");
         String junitPlatformCommons = getProperty("junit-platform-commons");
@@ -69,6 +69,10 @@ public class PropertyLoader {
                 ":" + junitVintageEngine;
 
         return cp;
+    }
+
+    public static String getCpForCompileTestClass(){
+        return properties.getProperty("targetBinDir") + ":" + getJunitClassPaths();
     }
 
     public static void setProperty(String key, String value){

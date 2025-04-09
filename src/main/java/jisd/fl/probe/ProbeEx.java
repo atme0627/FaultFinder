@@ -281,10 +281,9 @@ public class ProbeEx extends AbstractProbe {
             }
 
             //親クラスを探す
-            String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
             ClassOrInterfaceDeclaration classDecl = unit.findFirst(ClassOrInterfaceDeclaration.class).get();
             if(classDecl.getExtendedTypes().isEmpty()) break;
-            CodeElement cd = CodeElement.generateFromSimpleClassName(targetSrcDir, classDecl.getExtendedTypes(0).getNameAsString());
+            CodeElement cd = CodeElement.generateFromSimpleClassName(classDecl.getExtendedTypes(0).getNameAsString()).orElseThrow();
             System.out.println("parent: " + cd.getFullyQualifiedClassName());
         }
 
