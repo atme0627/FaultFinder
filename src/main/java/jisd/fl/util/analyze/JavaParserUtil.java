@@ -25,7 +25,7 @@ public class JavaParserUtil {
     }
 
     public static CompilationUnit parseClass(CodeElement targetClass) throws NoSuchFileException {
-        Path p = targetClass.getFilePath();
+        Path p = targetClass.getSrcPath();
         if (!Files.exists(p)) throw new NoSuchFileException(p.toString());
         try {
             return StaticJavaParser.parse(p);
@@ -89,7 +89,6 @@ public class JavaParserUtil {
                 .findAll(nodeClass);
     }
 
-
     public static Optional<CallableDeclaration> getCallableDeclarationByLine(CodeElement targetClass, int line) throws NoSuchFileException {
         return getNodeByLine(targetClass, line, CallableDeclaration.class);
     }
@@ -106,5 +105,10 @@ public class JavaParserUtil {
                 .filter(stmt -> (stmt.getBegin().get().line <= line))
                 .filter(stmt -> (stmt.getEnd().get().line >= line))
                 .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
+    }
+
+    public static ClassOrInterfaceDeclaration getParentOfMethod(MethodDeclaration md){
+        Node parent = md.getParentNode().orElse(null);
+        return (ClassOrInterfaceDeclaration) parent;
     }
 }

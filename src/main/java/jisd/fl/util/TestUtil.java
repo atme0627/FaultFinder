@@ -3,14 +3,18 @@ package jisd.fl.util;
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
+import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.analyze.StaticAnalyzer;
+import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -24,63 +28,65 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public  class TestUtil {
+    @Deprecated
     public static void compileTestClass(String testClassName) {
-        final String compiledWithJunitFilePath = PropertyLoader.getProperty("compiledWithJunitFilePath");
-        final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
-        final String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-        final String testBinDir = PropertyLoader.getProperty("testBinDir");
-        final String junitClassPath = PropertyLoader.getJunitClassPaths();
+        compileTestClass(new CodeElement(testClassName));
+    }
 
-        FileUtil.initDirectory(compiledWithJunitFilePath);
-
-        String[] args = {"-cp", junitClassPath + ":" + targetBinDir + ":" + testBinDir,  testSrcDir + "/" + testClassName.replace(".", "/") + ".java", "-d", compiledWithJunitFilePath};
-
+    public static void compileTestClass(CodeElement targetTestClass) {
+        FileUtil.initDirectory(PropertyLoader.getProperty("compiledWithJunitFilePath"));
+        String[] args = {
+                "-cp", PropertyLoader.getCpForCompileTestClass(),
+                targetTestClass.getSrcPath().toString(),
+                "-d", PropertyLoader.getProperty("compiledWithJunitFilePath")};
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-        //System.out.println("javac " + Arrays.toString(args));
         int rc = javac.run(null, null, null, args);
         if (rc != 0) {
             throw new RuntimeException("failed to compile.");
         }
     }
 
+
+    @Deprecated
+    public static boolean execTestCaseWithJacocoAgent(String testMethodNameWithSignature, String execFileName) throws IOException, InterruptedException {
+        return execTestCaseWithJacocoAgent(new CodeElement(testMethodNameWithSignature), execFileName);
+    }
     //TestLauncherにjacoco agentをつけて起動
     //methodNameは次のように指定: org.example.order.OrderTests#test1(int a)
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
-    public static boolean execTestCaseWithJacocoAgent(String testMethodNameWithSignature, String execFileName) throws IOException, InterruptedException {
+    public static boolean execTestCaseWithJacocoAgent(CodeElement testMethod, String execFileName) throws IOException, InterruptedException {
         final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
         final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
         final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
-        final String testBinDir = PropertyLoader.getProperty("testBinDir");
         final String junitClassPath = PropertyLoader.getJunitClassPaths();
-
-        String testMethodName = testMethodNameWithSignature.split("\\(")[0];
         String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
-        String junitTestSelectOption =" --select-method " + testMethodName;
-
-//        String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
-//                " -jar " + junitConsoleLauncherPath + " -cp " + targetBinDir + ":" + testBinDir + ":" +
-//                compiledWithJunitFilePath + junitTestSelectOption;
-
-        String cmd = "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
-                " -cp " + "./build/classes/java/main" + ":./.probe_test_classes" + ":" + targetBinDir + ":" + testBinDir + ":" + junitClassPath + " jisd.fl.util.TestLauncher " + testMethodName;
 
         //Junit Console Launcherの終了ステータスは、
         // 1: コンテナやテストが失敗
         // 2: テストが見つからないかつ--fail-if-no-testsが指定されている
         // 0: それ以外
+        String cmd =
+                "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
+                " -cp " + ":./.probe_test_classes"
+                        + "./build/classes/java/main"
+                        + ":" + targetBinDir
+                        + ":" + junitClassPath
+                + " jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
         Process proc = Runtime.getRuntime().exec(cmd);
         proc.waitFor();
 
-//        //debug
-        String line = null;
-        System.out.println("STDOUT---------------");
-        try ( var buf = new BufferedReader( new InputStreamReader( proc.getInputStream() ) ) ) {
-            while( ( line = buf.readLine() ) != null ) System.out.println( line );
-        }
-        System.out.println("STDERR---------------");
-        try ( var buf = new BufferedReader( new InputStreamReader( proc.getErrorStream() ) ) ) {
-            while( ( line = buf.readLine() ) != null ) System.err.println( line );
+        boolean DEBUG=false;
+        if(DEBUG) {
+            String line = null;
+            System.out.println("STDOUT---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) System.out.println(line);
+            }
+            System.out.println("STDERR---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = buf.readLine()) != null) System.err.println(line);
+            }
         }
 
         //execファイルが生成されるまで待機
@@ -96,103 +102,98 @@ public  class TestUtil {
         return proc.exitValue() == 0;
     }
 
+    @Deprecated
     public static Debugger testDebuggerFactory(String testMethodName) {
-        final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
-        final String testBinDir = PropertyLoader.getProperty("testBinDir");
-        final String junitClassPath = PropertyLoader.getJunitClassPaths();
+        return testDebuggerFactory(new CodeElement(testMethodName));
+    }
+    public static Debugger testDebuggerFactory(CodeElement testMethod) {
         String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
         String testSrcDir = PropertyLoader.getProperty("testSrcDir");
         Debugger dbg;
         while(true) {
             try {
-                dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethodName,
-                        "-cp " + "./build/classes/java/main" + ":" + testBinDir + ":" + targetBinDir + ":" + junitClassPath);
+                dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName(),
+                        "-cp " + "./build/classes/java/main"
+                                + ":" + PropertyLoader.getProperty("compiledWithJunitFilePath")
+                                + ":" + PropertyLoader.getCpForCompileTestClass());
                 break;
-            } catch (RuntimeException ignored) {
-                System.err.println(ignored);
+            } catch (RuntimeException e1) {
+                System.err.println(e1);
                 try {
                     Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                } catch (InterruptedException e2) {
+                    throw new RuntimeException(e2);
                 }
             }
         }
-
         dbg.setSrcDir(targetSrcDir, testSrcDir);
         DebugResult.setDefaultMaxRecordNoOfValue(500);
         return dbg;
+    }
+
+
+    @Deprecated
+    public static Set<String> getTestMethods(String targetClassName)  {
+        return getTestMethods(new CodeElement(targetClassName))
+                .stream()
+                .map(CodeElement::getFullyQualifiedMethodName)
+                .collect(Collectors.toSet());
     }
 
     //targetSrcPathは最後"/"なし
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
     //publicメソッド以外は取得しない
-    //testMethodはprivateのものを含めないのでpublicOnlyをtrueに
-    public static Set<String> getTestMethods(String targetClassName)  {
-        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-        Set<String> methodNames = new LinkedHashSet<>();
-        Function<CallableDeclaration<?>, String> methodNameBuilder = (n) -> (
-                targetClassName.replace("/", ".") + "#" + n.getNameAsString());
-
+    public static Set<CodeElement> getTestMethods(CodeElement targetClass)  {
+        Set<CodeElement> methodNames = new LinkedHashSet<>();
         CompilationUnit unit;
         try {
-            unit = JavaParserUtil.parseClass(targetClassName);
+            unit = JavaParserUtil.parseClass(targetClass);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
-        String shortName = targetClassName.substring(targetClassName.lastIndexOf(".") + 1);
-        ClassOrInterfaceDeclaration coid = unit.getClassByName(shortName).get();
+        ClassOrInterfaceDeclaration classOrInterfaceDec = unit.getClassByName(targetClass.getShortClassName()).orElseThrow();
 
-        //テストクラスがjunit4スタイルのものか判定
-        boolean junit4Style = false;
-        List<ImportDeclaration> ids = unit.findAll(ImportDeclaration.class);
-        for(ImportDeclaration id : ids){
-            if(id.getName().toString().equals("org.junit.Test")) junit4Style = true;
-        }
+        //親クラスが存在する場合、再帰的にそのClassも探索
+        PackageDeclaration parentPackage = unit.getPackageDeclaration().orElse(new PackageDeclaration(new Name("")));
+        List<CodeElement> parentClasses =
+            classOrInterfaceDec.getExtendedTypes().stream()
+            .filter(parentShort -> !parentShort.getName().toString().equals(targetClass.getShortClassName()))
+            .filter(parentShort -> !parentShort.getName().toString().equals("TestCase"))
+            .map(parentShort -> new CodeElement(parentPackage.getNameAsString(), parentShort.getNameAsString()))
+            .collect(Collectors.toList());
+        parentClasses.stream().map(TestUtil::getTestMethods)
+                .forEach(methodNames::addAll);
 
-        //親クラスがいる場合、そっちのテストクラスも探す
-        for(ClassOrInterfaceType parent : coid.getExtendedTypes()){
-            if(parent.getName().toString().equals(shortName)) continue;
-            if(parent.getName().toString().equals("TestCase")) continue;
-
-            String fullName = StaticAnalyzer.getExtendedClassNameWithPackage(testSrcDir, parent.getNameAsString(), targetClassName);
-            Set<String> parentMethods = getTestMethods(fullName);
-            parentMethods = parentMethods
+        //targetClass内のtestClassを探索
+        if (!isJunit4Style(unit)) {
+            //@Nestedクラスがある場合、再帰的に探索
+            classOrInterfaceDec.findAll(ClassOrInterfaceDeclaration.class)
                     .stream()
-                    .map((m)-> targetClassName + "#" + m.split("#")[1])
-                    .collect(Collectors.toSet());
-            methodNames.addAll(parentMethods);
+                    .filter(c -> !c.equals(classOrInterfaceDec))
+                    .forEach(c -> {
+                        if(c.isAnnotationPresent("Nested")) {
+                            methodNames.addAll(getTestMethods(new CodeElement(c)));
+                        }
+                        classOrInterfaceDec.remove(c);
+                    });
         }
-
-        if(!junit4Style) {
-            List<ClassOrInterfaceDeclaration> childlen = coid.findAll(ClassOrInterfaceDeclaration.class);
-            for (ClassOrInterfaceDeclaration child : childlen) {
-                if (child.equals(coid)) continue;
-                coid.remove(child);
-            }
-            List<MethodDeclaration> mds = coid.findAll(MethodDeclaration.class);
-            for (MethodDeclaration md : mds) {
-                if(md.isPublic()
-                    && md.getAccessSpecifier() == AccessSpecifier.PUBLIC
-                    && md.getType().isVoidType()
-                    && md.getParameters().isEmpty()
-                    && md.getAnnotations().isEmpty()
-                    && md.findAncestor(MethodDeclaration.class).isEmpty()
-                    && !md.getNameAsString().equals("setUp")
-                    && !md.getNameAsString().equals("tearDown")){
-                    methodNames.add(methodNameBuilder.apply(md));
-                }
-            }
-        }
-        else {
-            List<MethodDeclaration> mds = coid.findAll(MethodDeclaration.class);
-            for (MethodDeclaration md : mds) {
-                if(md.isAnnotationPresent("Test")){
-                    methodNames.add(methodNameBuilder.apply(md));
-                }
-            }
-        }
+        classOrInterfaceDec.findAll(MethodDeclaration.class)
+                .stream()
+                .filter(md -> md.isAnnotationPresent("Test"))
+                .map(CodeElement::new)
+                .forEach(methodNames::add);
 
         return methodNames;
+    }
+
+    //あるクラス内にあるテストメソッドのみ集める（親クラス、入れ子クラスは考えない）
+    private static Set<CodeElement> getTestMethodsInClass()
+
+    //テストクラスがjunit4スタイルのものか判定
+    private static boolean isJunit4Style(CompilationUnit unit){
+        return unit.findAll(ImportDeclaration.class)
+                .stream()
+                .anyMatch(id -> id.getName().toString().equals("org.junit.Test"));
     }
 }

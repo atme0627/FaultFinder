@@ -21,8 +21,13 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toMap;
 
 public class StaticAnalyzer {
+    //プロジェクト全体
     public static Set<String> getClassNames() {
-        Path p = Paths.get(PropertyLoader.getProperty("targetSrcPath"));
+        return getClassNames(Paths.get(PropertyLoader.getProperty("targetSrcPath")));
+    }
+
+    //ディレクトリ指定
+    public static Set<String> getClassNames(Path p) {
         ClassExplorer ce = new ClassExplorer(p);
         try {
             Files.walkFileTree(p, ce);
@@ -66,13 +71,13 @@ public class StaticAnalyzer {
         }
     }
 
-    public static String getExtendedClassNameWithPackage(String targetSrcDir, String className, String childClass){
+    public static CodeElement getExtendedClassNameWithPackage(String parentSimpleClassName, String childClass){
         String targetPackage = childClass.replace(".", "/");
         while(true) {
             Set<String> classNames = getClassNames();
             for (String n : classNames) {
                 String[] ns = n.split("\\.");
-                if (ns[ns.length - 1].equals(className)) {
+                if (ns[ns.length - 1].equals(parentSimpleClassName)) {
                     return targetPackage + "." + n;
                 }
             }
@@ -82,7 +87,7 @@ public class StaticAnalyzer {
         }
 
         throw new RuntimeException("StaticAnalyzer#getClassNameWithPackage\n" +
-                "Cannot find class: " + className);
+                "Cannot find class: " + parentSimpleClassName);
     }
 
     @Deprecated
