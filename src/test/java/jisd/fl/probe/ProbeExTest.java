@@ -12,6 +12,7 @@ import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.sbfl.FaultFinder;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.util.FileUtil;
+import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -20,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 class ProbeExTest {
+
     String project = "Math";
     int bugId = 2;
 
@@ -60,36 +62,16 @@ class ProbeExTest {
 
     @Test
     void runTest() {
-        Defects4jUtil.changeTargetVersion(project, bugId);
+        PropertyLoader.setProperty("targetSrcDir","/home/ezaki/tools/Math_2_buggy/src/main/java");
+        PropertyLoader.setProperty("testSrcDir", "/home/ezaki/tools/Math_2_buggy/src/test/java");
+        PropertyLoader.setProperty("testBinDir", "/home/ezaki/tools/Math_2_buggy/target/classes");
+        PropertyLoader.setProperty("targetBinDir", "/home/ezaki/tools/Math_2_buggy/target/classes");
         ProbeEx prbEx = new ProbeEx(fai);
         ProbeExResult pr = prbEx.run(3000);
         pr.print();
 
        // pr.generateJson(dir, fileName);
     }
-
-//    @Test
-//    void testForPaper() {
-//        CoverageAnalyzer ca = new CoverageAnalyzer();
-//        CoverageCollection cov = ca.analyzeAll(testClassName);
-//        FaultFinder ff = new FaultFinder(cov, Formula.OCHIAI);
-//        ff.printRanking(10);
-//
-//
-//        VariableInfo probeVariable = new VariableInfo(
-//                "org.apache.commons.math.optimization.RealPointValuePair", "point",
-//                true, true, true, 1, "-1.0", null
-//        );
-//
-//        FailedAssertInfo fai = new FailedAssertEqualInfo(
-//                "org.apache.commons.math.optimization.linear.SimplexSolverTest#estMath713NegativeVariable()",
-//                "-1.0", probeVariable);
-//
-//        ff.probeEx(fai, 3000);
-//
-//    }
-
-
 }
 
 

@@ -19,13 +19,13 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StaticAnalyzerTest {
+    @BeforeEach
+    void initProperty(){
+        PropertyLoader.setTargetSrcDir("src/test/resources/jisd/fl/util");
+    }
+
     @Nested
     class getMethodNamesTest{
-        @BeforeEach
-        void initProperty(){
-            PropertyLoader.setTargetSrcDir("src/test/resources");
-        }
-
         @Test
         void SimpleCase() {
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNamesTest.SimpleCase");
@@ -65,11 +65,6 @@ class StaticAnalyzerTest {
 
     @Nested
     class getRangeOfAllMethodsTest {
-        @BeforeEach
-        void initProperty(){
-            PropertyLoader.setTargetSrcDir("src/test/resources");
-        }
-
         @Test
         void simpleCase(){
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase");
@@ -90,11 +85,6 @@ class StaticAnalyzerTest {
 
     @Nested
     class getRangeOfStatementTest {
-        @BeforeEach
-        void initProperty(){
-            PropertyLoader.setTargetSrcDir("src/test/resources");
-        }
-
         @Test
         void simpleCase1(){
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
@@ -134,11 +124,6 @@ class StaticAnalyzerTest {
 
     @Nested
     class getMethodNameFromLineTest {
-        @BeforeEach
-        void initProperty(){
-            PropertyLoader.setTargetSrcDir("src/test/resources");
-        }
-
         @Test
         void simpleCase1(){
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
@@ -164,11 +149,6 @@ class StaticAnalyzerTest {
 
     @Nested
     class getAssignLineTest {
-        @BeforeEach
-        void initProperty(){
-            PropertyLoader.setTargetSrcDir("src/test/resources");
-        }
-
         @Test
         void d4jMath87_SimplexTableau1() {
             CodeElement locateMethod
@@ -207,11 +187,6 @@ class StaticAnalyzerTest {
 
     @Nested
     class getMethodCallingLineTest {
-        @BeforeEach
-        void initProperty() {
-            PropertyLoader.setTargetSrcDir("src/test/resources");
-        }
-
         @Test
         void d4jMath87_SimplexTableau() throws NoSuchFileException {
             CodeElement locateMethod

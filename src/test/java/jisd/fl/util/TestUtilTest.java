@@ -20,7 +20,7 @@ class TestUtilTest {
     class getTestMethodsTest {
         @BeforeEach
         void initProperty(){
-            PropertyLoader.setTargetSrcDir("src/test/resources");
+            PropertyLoader.setTargetSrcDir("src/test/resources/jisd/fl/util");
         }
 
         @Test
