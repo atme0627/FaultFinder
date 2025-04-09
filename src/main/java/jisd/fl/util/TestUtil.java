@@ -1,20 +1,15 @@
 package jisd.fl.util;
 
-import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.PackageDeclaration;
-import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.Name;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.JavaParserUtil;
-import jisd.fl.util.analyze.StaticAnalyzer;
-import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -24,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public  class TestUtil {
@@ -37,7 +31,7 @@ public  class TestUtil {
         FileUtil.initDirectory(PropertyLoader.getProperty("compiledWithJunitFilePath"));
         String[] args = {
                 "-cp", PropertyLoader.getCpForCompileTestClass(),
-                targetTestClass.getSrcPath().toString(),
+                targetTestClass.getFilePath().toString(),
                 "-d", PropertyLoader.getProperty("compiledWithJunitFilePath")};
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         int rc = javac.run(null, null, null, args);
@@ -144,51 +138,80 @@ public  class TestUtil {
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
     //publicメソッド以外は取得しない
+    //どうせjunitの実行時にはクラスパスにテストクラスを含める必要があるので
+    //junitのorg.junit.platform.launcherを使う方法にした方がいい
+    @Deprecated
     public static Set<CodeElement> getTestMethods(CodeElement targetClass)  {
         Set<CodeElement> methodNames = new LinkedHashSet<>();
+        CompilationUnit unit = getUnitFromCodeElement(targetClass);
+        ClassOrInterfaceDeclaration cd = getClassNodeFromCodeElement(targetClass);
+
+        //親クラスが存在する場合、そのClassも探索
+        getAncestorClasses(targetClass)
+                .stream()
+                .map(TestUtil::getTestMethodsInClass)
+                .forEach(methodNames::addAll);
+
+        //targetClass内のtestClassを探索
+        if (!isJunit4Style(unit)) {
+            //@Nestedクラスがある場合、再帰的に探索
+            cd.findAll(ClassOrInterfaceDeclaration.class)
+                    .stream()
+                    .filter(c -> !c.equals(cd))
+                    .forEach(c -> {
+                        if(c.isAnnotationPresent("Nested")) {
+                            methodNames.addAll(getTestMethods(new CodeElement(c)));
+                        }
+                        cd.remove(c);
+                    });
+        }
+
+        //targetClassに含まれるmethodを探索
+        methodNames.addAll(getTestMethodsInClass(targetClass));
+        return methodNames;
+    }
+
+
+    //あるクラス内にあるテストメソッドのみ集める（親クラス、入れ子クラスは考えない）
+    private static Set<CodeElement> getTestMethodsInClass(CodeElement targetClass){
+        return getClassNodeFromCodeElement(targetClass)
+                .findAll(MethodDeclaration.class)
+                .stream()
+                .filter(md -> md.isAnnotationPresent("Test"))
+                .map(CodeElement::new)
+                .collect(Collectors.toSet());
+    }
+
+    private static Set<CodeElement> getAncestorClasses(CodeElement targetClass){
+       Set<CodeElement> result = new HashSet<>();
+       CompilationUnit unit = getUnitFromCodeElement(targetClass);
+       ClassOrInterfaceDeclaration cd = getClassNodeFromCodeElement(targetClass);
+       if(cd.getExtendedTypes().isEmpty()) return result;
+
+       String parentPackageName = JavaParserUtil.getPackageName(unit);
+       cd.getExtendedTypes()
+               .stream()
+               .map(type -> new CodeElement(parentPackageName, type.getNameAsString()))
+               .forEach(ce -> {
+                   result.add(ce);
+                   result.addAll(getAncestorClasses(ce));
+               });
+       return result;
+    }
+
+    private static ClassOrInterfaceDeclaration getClassNodeFromCodeElement(CodeElement targetClass){
+        return getUnitFromCodeElement(targetClass).getClassByName(targetClass.getShortClassName()).orElseThrow();
+    }
+
+    private static CompilationUnit getUnitFromCodeElement(CodeElement targetClass){
         CompilationUnit unit;
         try {
             unit = JavaParserUtil.parseClass(targetClass);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
-        ClassOrInterfaceDeclaration classOrInterfaceDec = unit.getClassByName(targetClass.getShortClassName()).orElseThrow();
-
-        //親クラスが存在する場合、再帰的にそのClassも探索
-        PackageDeclaration parentPackage = unit.getPackageDeclaration().orElse(new PackageDeclaration(new Name("")));
-        List<CodeElement> parentClasses =
-            classOrInterfaceDec.getExtendedTypes().stream()
-            .filter(parentShort -> !parentShort.getName().toString().equals(targetClass.getShortClassName()))
-            .filter(parentShort -> !parentShort.getName().toString().equals("TestCase"))
-            .map(parentShort -> new CodeElement(parentPackage.getNameAsString(), parentShort.getNameAsString()))
-            .collect(Collectors.toList());
-        parentClasses.stream().map(TestUtil::getTestMethods)
-                .forEach(methodNames::addAll);
-
-        //targetClass内のtestClassを探索
-        if (!isJunit4Style(unit)) {
-            //@Nestedクラスがある場合、再帰的に探索
-            classOrInterfaceDec.findAll(ClassOrInterfaceDeclaration.class)
-                    .stream()
-                    .filter(c -> !c.equals(classOrInterfaceDec))
-                    .forEach(c -> {
-                        if(c.isAnnotationPresent("Nested")) {
-                            methodNames.addAll(getTestMethods(new CodeElement(c)));
-                        }
-                        classOrInterfaceDec.remove(c);
-                    });
-        }
-        classOrInterfaceDec.findAll(MethodDeclaration.class)
-                .stream()
-                .filter(md -> md.isAnnotationPresent("Test"))
-                .map(CodeElement::new)
-                .forEach(methodNames::add);
-
-        return methodNames;
+        return unit;
     }
-
-    //あるクラス内にあるテストメソッドのみ集める（親クラス、入れ子クラスは考えない）
-    private static Set<CodeElement> getTestMethodsInClass()
 
     //テストクラスがjunit4スタイルのものか判定
     private static boolean isJunit4Style(CompilationUnit unit){

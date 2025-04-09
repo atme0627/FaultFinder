@@ -71,25 +71,6 @@ public class StaticAnalyzer {
         }
     }
 
-    public static CodeElement getExtendedClassNameWithPackage(String parentSimpleClassName, String childClass){
-        String targetPackage = childClass.replace(".", "/");
-        while(true) {
-            Set<String> classNames = getClassNames();
-            for (String n : classNames) {
-                String[] ns = n.split("\\.");
-                if (ns[ns.length - 1].equals(parentSimpleClassName)) {
-                    return targetPackage + "." + n;
-                }
-            }
-
-            if(!targetPackage.contains("/")) break;
-            targetPackage = targetPackage.substring(0, targetPackage.lastIndexOf("/"));
-        }
-
-        throw new RuntimeException("StaticAnalyzer#getClassNameWithPackage\n" +
-                "Cannot find class: " + parentSimpleClassName);
-    }
-
     @Deprecated
     public static String getMethodNameFormLine(String targetClassName, int line) throws NoSuchFileException {
         CodeElement targetClass = new CodeElement(targetClassName);

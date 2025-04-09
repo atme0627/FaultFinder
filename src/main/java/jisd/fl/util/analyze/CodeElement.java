@@ -8,6 +8,7 @@ import com.github.javaparser.ast.expr.Name;
 import jisd.fl.util.PropertyLoader;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
 public class CodeElement {
-    @NotBlank
+    @NotNull
     final public String packageName;
     @NotBlank
     final public String className;
@@ -64,16 +65,14 @@ public class CodeElement {
 
     public CodeElement(ClassOrInterfaceDeclaration cd){
         CompilationUnit unit = cd.findAncestor(CompilationUnit.class).orElseThrow();
-        PackageDeclaration pd = unit.getPackageDeclaration().orElse(new PackageDeclaration(new Name("")));
-        this.packageName = pd.getNameAsString();
+        this.packageName = JavaParserUtil.getPackageName(unit);
         this.className = cd.getNameAsString();
         this.methodSignature = null;
     }
 
     public CodeElement(MethodDeclaration md){
         CompilationUnit unit = md.findAncestor(CompilationUnit.class).orElseThrow();
-        PackageDeclaration pd = unit.getPackageDeclaration().orElse(new PackageDeclaration(new Name("")));
-        this.packageName = pd.getNameAsString();
+        this.packageName = JavaParserUtil.getPackageName(unit);
         this.className = JavaParserUtil.getParentOfMethod(md).getNameAsString();
         this.methodSignature = md.getSignature().toString();
     }
@@ -90,6 +89,11 @@ public class CodeElement {
     @Override
     public int hashCode(){
         return this.getFullyQualifiedMethodName().hashCode();
+    }
+
+    @Override
+    public String toString(){
+        return this.methodSignature != null ? this.getFullyQualifiedMethodName() : this.getFullyQualifiedClassName();
     }
 
     public String getFullyQualifiedClassName(){
