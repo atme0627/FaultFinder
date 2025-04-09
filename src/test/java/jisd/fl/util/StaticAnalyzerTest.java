@@ -19,8 +19,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StaticAnalyzerTest {
-    String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
-
     @Nested
     class getMethodNamesTest{
         @BeforeEach

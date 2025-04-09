@@ -1,5 +1,7 @@
 package jisd.fl.util.analyze;
 
+import jisd.fl.util.PropertyLoader;
+
 import javax.validation.constraints.NotBlank;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,7 +80,7 @@ public class CodeElement {
     }
 
     public Path getFilePath(){
-        return Paths.get(packageName.replace('.', '/'), className + ".java");
+        return Paths.get(PropertyLoader.getProperty("targetSrcDir") + "/" + packageName.replace('.', '/'), className + ".java");
     }
 
     public boolean isConstructor(){

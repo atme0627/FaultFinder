@@ -5,13 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6757f081-dac4-4109-934d-3412514b1ba5" name="変更" comment="revise AbstractProbe.java not to use classInfo">
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fl_properties/fl_config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/fl_properties/fl_config.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/experiment/main/probeEx.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/experiment/main/probeEx.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/probe/ProbeEx.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/PropertyLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/PropertyLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/sbfl/FaultFinderTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/sbfl/FaultFinderTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/jisd/fl/util/analyze/CodeElement.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/jisd/fl/util/analyze/CodeElement.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/jisd/fl/util/StaticAnalyzerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/jisd/fl/util/StaticAnalyzerTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,6 +66,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -136,6 +138,7 @@
     "Gradle.RankingEvaluatorTest.calcMWETest.executor": "Run",
     "Gradle.RankingEvaluatorTest.loadProbeExTest.executor": "Run",
     "Gradle.StaticAnalyzerTest.debug.executor": "Run",
+    "Gradle.StaticAnalyzerTest.executor": "Run",
     "Gradle.StaticAnalyzerTest.getMethodNameTest.executor": "Run",
     "Gradle.StaticAnalyzerTest.getMethodNameTest2.executor": "Run",
     "Gradle.StaticAnalyzerTest.getMethodNameTest3.executor": "Run",
@@ -144,13 +147,14 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
     "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "refactoring",
+    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/ezaki/IdeaProjects/MyFaultFinder",
-    "project.structure.last.edited": "SDK",
+    "project.structure.last.edited": "プロジェクト",
     "project.structure.proportion": "0.24414062",
     "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "settings.sync",
     "settings.editor.splitter.proportion": "0.24965894"
   }
 }]]></component>
@@ -173,7 +177,7 @@
       <recent name="experiment.coverage" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.ProbeExTest.runTest">
+  <component name="RunManager" selected="Gradle.StaticAnalyzerTest">
     <configuration name="TestLauncher" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="jisd.fl.util.TestLauncher" />
       <module name="MyFaultFinder.main" />
@@ -187,30 +191,6 @@
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
-    </configuration>
-    <configuration name="FaultFinderTest.loadTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;jisd.fl.sbfl.FaultFinderTest.loadTest&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>true</RunAsTest>
-      <method v="2" />
     </configuration>
     <configuration name="FaultFinderTest.probeExTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
@@ -282,6 +262,30 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
+    <configuration name="StaticAnalyzerTest" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;jisd.fl.util.StaticAnalyzerTest&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
     <configuration name="ProbeExTest.runTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="MyFaultFinder.main" />
       <extension name="coverage">
@@ -300,11 +304,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.StaticAnalyzerTest" />
         <item itemvalue="JUnit.ProbeExTest.runTest" />
-        <item itemvalue="Gradle.FaultFinderTest.probeExTest" />
-        <item itemvalue="Gradle.FaultFinderTest.loadTest" />
         <item itemvalue="Gradle.ProbeExTest.runTest" />
         <item itemvalue="Gradle.MyFaultFinder [shadowJar]" />
+        <item itemvalue="Gradle.FaultFinderTest.probeExTest" />
       </list>
     </recent_temporary>
   </component>
@@ -494,22 +498,22 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
-          <line>575</line>
+          <line>601</line>
           <option name="timeStamp" value="173" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
-          <line>531</line>
+          <line>557</line>
           <option name="timeStamp" value="175" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
-          <line>538</line>
+          <line>564</line>
           <option name="timeStamp" value="176" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/jisd/fl/probe/AbstractProbe.java</url>
-          <line>550</line>
+          <line>576</line>
           <option name="timeStamp" value="179" />
         </line-breakpoint>
       </breakpoints>
