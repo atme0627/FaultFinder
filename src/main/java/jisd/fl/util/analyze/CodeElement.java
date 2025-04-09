@@ -1,20 +1,27 @@
 package jisd.fl.util.analyze;
 
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.PackageDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.expr.Name;
 import jisd.fl.util.PropertyLoader;
 
 import javax.validation.constraints.NotBlank;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Set;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
 public class CodeElement {
     @NotBlank
-    final String packageName;
+    final public String packageName;
     @NotBlank
-    final String className;
-    final String methodSignature;
+    final public String className;
+    final public String methodSignature;
 
     //メソッド名はあってもなくても良い
     //ex1.) sample.demo
@@ -55,6 +62,36 @@ public class CodeElement {
         this.methodSignature = methodSignature;
     }
 
+    public CodeElement(ClassOrInterfaceDeclaration cd){
+        CompilationUnit unit = cd.findAncestor(CompilationUnit.class).orElseThrow();
+        PackageDeclaration pd = unit.getPackageDeclaration().orElse(new PackageDeclaration(new Name("")));
+        this.packageName = pd.getNameAsString();
+        this.className = cd.getNameAsString();
+        this.methodSignature = null;
+    }
+
+    public CodeElement(MethodDeclaration md){
+        CompilationUnit unit = md.findAncestor(CompilationUnit.class).orElseThrow();
+        PackageDeclaration pd = unit.getPackageDeclaration().orElse(new PackageDeclaration(new Name("")));
+        this.packageName = pd.getNameAsString();
+        this.className = JavaParserUtil.getParentOfMethod(md).getNameAsString();
+        this.methodSignature = md.getSignature().toString();
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        if(obj == null) return false;
+        if(!(obj instanceof CodeElement)) return false;
+        if(this.getFullyQualifiedMethodName()
+                .equals(((CodeElement) obj).getFullyQualifiedMethodName())) return true;
+        return false;
+    }
+
+    @Override
+    public int hashCode(){
+        return this.getFullyQualifiedMethodName().hashCode();
+    }
+
     public String getFullyQualifiedClassName(){
         return packageName + "." + className;
     }
@@ -63,24 +100,34 @@ public class CodeElement {
         return packageName + "." + className + "#" + methodSignature;
     }
 
+    public String getShortClassName(){
+        return this.className;
+    }
+
     //signature含まない
     public String getShortMethodName(){
        return this.methodSignature.split("\\(")[0];
     }
 
-    public static CodeElement generateFromSimpleClassName(String className, String targetSrcDir){
-        Set<String> classNames = getClassNames();
-        for (String n : classNames) {
-            String[] ns = n.split("\\.");
-            if (ns[ns.length - 1].equals(className)) {
-                return new CodeElement(n);
-            }
-        }
-        throw new RuntimeException("Cannot find class " + className + " in Dir: " + targetSrcDir);
+    public static Optional<CodeElement> generateFromSimpleClassName(String className){
+        return generateFromSimpleClassName(className, Paths.get(PropertyLoader.getProperty("targetSrcPath")));
     }
 
-    public Path getFilePath(){
-        return Paths.get(PropertyLoader.getProperty("targetSrcDir") + "/" + packageName.replace('.', '/'), className + ".java");
+    public static Optional<CodeElement> generateFromSimpleClassName(String className, Path targetSrcPath) {
+        List<CodeElement> candidates = StaticAnalyzer.getClassNames(targetSrcPath)
+                .stream()
+                .filter(cn -> cn.substring(cn.lastIndexOf(".") + 1).equals(className))
+                .map(CodeElement::new)
+                .collect(Collectors.toList());
+
+        //候補がない場合、複数候補がある場合はfail
+        if(candidates.isEmpty())  return Optional.empty();
+        if(candidates.size() > 1) return Optional.empty();
+        return Optional.of(candidates.get(0));
+    }
+
+    public Path getSrcPath(){
+        return Paths.get(packageName.replace('.', '/'), className + ".java");
     }
 
     public boolean isConstructor(){
