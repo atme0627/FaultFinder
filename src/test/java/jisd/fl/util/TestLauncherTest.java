@@ -4,58 +4,48 @@ import com.sun.jdi.*;
 import experiment.defect4j.Defects4jUtil;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
+import jisd.fl.probe.ProbeEx;
+import jisd.fl.probe.ProbeExResult;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 
 class TestLauncherTest {
-
-    @Test
-    void launchTest(){
-        String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
-        //カッコつけたら動かない
-        TestLauncher tl = new TestLauncher(testMethodName);
-        tl.runTest();
+    @BeforeEach
+    void initProperty() {
+        PropertyLoader.setProperty("targetSrcDir", "src/test/resources/d4jProject/Math_2_buggy/src/main/java");
+        PropertyLoader.setProperty("testSrcDir", "src/test/resources/d4jProject/Math_2_buggy/src/test/java");
+        PropertyLoader.setProperty("testBinDir", "src/test/resources/d4jProject/Math_2_buggy/target/test-classes");
+        PropertyLoader.setProperty("targetBinDir", "src/test/resources/d4jProject/Math_2_buggy/target/classes");
     }
 
     @Test
-    void jisdtest1(){
-        String testMethodName = "org.apache.commons.math3.fraction.BigFractionTest#testDigitLimitConstructor()";
-        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+    void launchTest() throws IOException, InterruptedException {
+        String testClassName = "org.apache.commons.math3.distribution.HypergeometricDistributionTest";
+        String shortTestMethodName = "testMath1021";
+        String testMethodName = testClassName + "#" + shortTestMethodName + "()";
 
-        Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
-        dbg.setSrcDir(testSrcDir, targetSrcDir);
+        Process proc = Runtime.getRuntime().exec(
+                "java -cp ./build/classes/java/main"
+                        + ":" + PropertyLoader.getProperty("testBinDir")
+                        + ":" + PropertyLoader.getProperty("targetBinDir")
+                        + ":" + PropertyLoader.getJunitClassPaths()
+                        + " jisd.fl.util.TestLauncher " + testMethodName
+        );
 
-        dbg.setMain("org.apache.commons.math3.fraction.BigFraction");
-        dbg.stopAt(274);
-        dbg.stopAt(283);
-        dbg.stopAt(284);
-        dbg.stopAt(300);
-        dbg.run(3000);
-        ThreadReference th = dbg.thread();
-        for(int i = 0; i < 4; i++) {
-            dbg.step();
-            try {
-                List<StackFrame> st = th.frames();
-                Location loc = st.get(0).location();
-                System.out.println(loc.method().toString());
-            } catch (IncompatibleThreadStateException e) {
-                throw new RuntimeException(e);
-            }
-            dbg.cont(10);
+        proc.waitFor();
+        String line = null;
+        System.out.println("STDOUT---------------");
+        try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+            while ((line = buf.readLine()) != null) System.out.println(line);
         }
-    }
-
-    @Test
-    void launchTest2(){
-        String project = "Math";
-        int bugId = 22;
-
-        Defects4jUtil.changeTargetVersion(project, bugId);
-        String testMethodName = "org.apache.commons.math3.distribution.FDistributionTest#testIsSupportLowerBoundInclusive()";
-        //カッコつけたら動かない
-        TestLauncher tl = new TestLauncher(testMethodName);
-        tl.runTest();
+        System.out.println("STDERR---------------");
+        try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+            while ((line = buf.readLine()) != null) System.err.println(line);
+        }
     }
 }

@@ -21,6 +21,7 @@ public class TestLauncher {
         this.testMethodName = testMethodName;
     }
 
+    //args[0]: method名
     public static void main(String[] args) {
         String testMethodName = args[0];
         TestLauncher tl = new TestLauncher(testMethodName);

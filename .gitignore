@@ -40,3 +40,7 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+/src/test/resources/d4jProject/Math_2_buggy/
+/.idea/
+/gradle/
