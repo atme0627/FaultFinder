@@ -48,7 +48,7 @@ class TestUtilTest {
             }
         }
 
-        static void printTestIdentifiers(TestPlan plan, TestIdentifier id, int level) {
+        void printTestIdentifiers(TestPlan plan, TestIdentifier id, int level) {
             if (id.isTest()) {
                 System.out.println("  ".repeat(level) + "Test: " + id.getDisplayName());
             } else if (id.isContainer()) {

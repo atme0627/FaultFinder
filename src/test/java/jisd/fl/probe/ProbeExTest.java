@@ -13,6 +13,8 @@ import jisd.fl.sbfl.FaultFinder;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.util.FileUtil;
 import jisd.fl.util.PropertyLoader;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -21,56 +23,97 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 class ProbeExTest {
+    @Nested
+    class d4jTest {
+        String project = "Math";
+        int bugId = 2;
 
-    String project = "Math";
-    int bugId = 2;
+        String testClassName = "org.apache.commons.math3.distribution.HypergeometricDistributionTest";
+        String shortTestMethodName = "testMath1021";
+        String testMethodName = testClassName + "#" + shortTestMethodName + "()";
 
-    String testClassName = "org.apache.commons.math3.distribution.HypergeometricDistributionTest";
-    String shortTestMethodName = "testMath1021";
+        String variableName = "tmp2";
+        boolean isPrimitive = true;
+        boolean isField = false;
+        boolean isArray = false;
+        int arrayNth = -1;
+        String actual = "-50";
+        String locate = "org.apache.commons.math3.distribution.AbstractIntegerDistribution#inverseCumulativeProbability(double)";
 
-    String testMethodName = testClassName + "#" + shortTestMethodName + "()";
+        VariableInfo probeVariable = new VariableInfo(
+                locate,
+                variableName,
+                isPrimitive,
+                isField,
+                isArray,
+                arrayNth,
+                actual,
+                null
+        );
 
-    String variableName = "tmp2";
-    boolean isPrimitive = true;
-    boolean isField = false;
-    boolean isArray = false;
-    int arrayNth = -1;
-    String actual = "-50";
+        FailedAssertInfo fai = new FailedAssertEqualInfo(
+                testMethodName,
+                actual,
+                probeVariable);
+        @BeforeEach
+        void initProperty() {
+            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/d4jProject/Math_2_buggy/src/main/java");
+            PropertyLoader.setProperty("testSrcDir", "src/test/resources/d4jProject/Math_2_buggy/src/test/java");
+            PropertyLoader.setProperty("testBinDir", "src/test/resources/d4jProject/Math_2_buggy/target/test-classes");
+            PropertyLoader.setProperty("targetBinDir", "src/test/resources/d4jProject/Math_2_buggy/target/classes");
+        }
 
-    String locate = "org.apache.commons.math3.distribution.AbstractIntegerDistribution#inverseCumulativeProbability(double)";
+        @Test
+        void runTest() {
+            ProbeEx prbEx = new ProbeEx(fai);
+            ProbeExResult pr = prbEx.run(3000);
+            pr.print();
+        }
+    }
 
+    @Nested
+    class simpleCaseTest {
+        String testClassName = "SampleTest";
+        String shortTestMethodName = "case1";
+        String testMethodName = testClassName + "#" + shortTestMethodName + "()";
 
-    String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";
-    String fileName = testMethodName + "_" + variableName;
+        String variableName = "actual";
+        boolean isPrimitive = true;
+        boolean isField = false;
+        boolean isArray = true;
+        int arrayNth = 1;
+        String actual = "3";
+        String locate = testMethodName;
 
-    VariableInfo probeVariable = new VariableInfo(
-            locate,
-            variableName,
-            isPrimitive,
-            isField,
-            isArray,
-            arrayNth,
-            actual,
-            null
-    );
+        VariableInfo probeVariable = new VariableInfo(
+                locate,
+                variableName,
+                isPrimitive,
+                isField,
+                isArray,
+                arrayNth,
+                actual,
+                null
+        );
 
-    FailedAssertInfo fai = new FailedAssertEqualInfo(
-            testMethodName,
-            actual,
-            probeVariable);
+        FailedAssertInfo fai = new FailedAssertEqualInfo(
+                testMethodName,
+                actual,
+                probeVariable);
+        @BeforeEach
+        void initProperty() {
+            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/main");
+            PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/test");
+            PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/main");
+            PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/test");
+        }
 
-
-    @Test
-    void runTest() {
-        PropertyLoader.setProperty("targetSrcDir","/home/ezaki/tools/Math_2_buggy/src/main/java");
-        PropertyLoader.setProperty("testSrcDir", "/home/ezaki/tools/Math_2_buggy/src/test/java");
-        PropertyLoader.setProperty("testBinDir", "/home/ezaki/tools/Math_2_buggy/target/classes");
-        PropertyLoader.setProperty("targetBinDir", "/home/ezaki/tools/Math_2_buggy/target/classes");
-        ProbeEx prbEx = new ProbeEx(fai);
-        ProbeExResult pr = prbEx.run(3000);
-        pr.print();
-
-       // pr.generateJson(dir, fileName);
+        @Test
+        void runTest() {
+            ProbeEx prbEx = new ProbeEx(fai);
+            ProbeExResult pr = prbEx.run(1000);
+            pr.print();
+        }
     }
 }
 

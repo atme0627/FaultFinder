@@ -43,8 +43,16 @@ public class CodeElement {
             fqClassName = fullyQualifiedName;
             methodSignature = null;
         }
-        packageName = fqClassName.substring(0, fqClassName.lastIndexOf('.'));
-        className = fqClassName.substring(fqClassName.lastIndexOf('.') + 1);
+
+        //with package
+        if(fullyQualifiedName.contains(".")) {
+            packageName = fqClassName.substring(0, fqClassName.lastIndexOf('.'));
+            className = fqClassName.substring(fqClassName.lastIndexOf('.') + 1);
+        }
+        else {
+            packageName = "";
+            className = fqClassName;
+        }
 
         this.packageName = packageName;
         this.className = className;
@@ -97,11 +105,11 @@ public class CodeElement {
     }
 
     public String getFullyQualifiedClassName(){
-        return packageName + "." + className;
+        return packageName.isEmpty() ? className : packageName + "." + className;
     }
 
     public String getFullyQualifiedMethodName(){
-        return packageName + "." + className + "#" + methodSignature;
+        return packageName.isEmpty() ? className + "#" + methodSignature : packageName + "." + className + "#" + methodSignature;
     }
 
     public String getShortClassName(){

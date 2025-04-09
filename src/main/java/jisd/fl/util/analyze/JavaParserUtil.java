@@ -25,8 +25,20 @@ public class JavaParserUtil {
         return parseClass(targetClass);
     }
 
+    //応急処置
     public static CompilationUnit parseClass(CodeElement targetClass) throws NoSuchFileException {
         Path p = targetClass.getFilePath();
+        if (!Files.exists(p)) return parseTestClass(targetClass);
+        try {
+            return StaticJavaParser.parse(p);
+        }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static CompilationUnit parseTestClass(CodeElement targetClass) throws NoSuchFileException {
+        Path p = targetClass.getFilePath(true);
         if (!Files.exists(p)) throw new NoSuchFileException(p.toString());
         try {
             return StaticJavaParser.parse(p);
@@ -34,6 +46,8 @@ public class JavaParserUtil {
             throw new RuntimeException(e);
         }
     }
+
+
 
     //methodNameはクラス、シグニチャを含む
     public static CallableDeclaration<?> getCallableDeclarationByName(CodeElement targetMethod) {
