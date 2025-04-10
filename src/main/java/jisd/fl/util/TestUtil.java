@@ -108,9 +108,7 @@ public  class TestUtil {
             try {
                 dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName(),
                         "-cp " + "./build/classes/java/main"
-                                + ":" + PropertyLoader.getProperty("testBinDir")
-                                + ":" + PropertyLoader.getProperty("targetBinDir")
-                                + ":" + PropertyLoader.getJunitClassPaths());
+                                + ":" );
                 break;
             } catch (RuntimeException e1) {
                 System.err.println(e1);
@@ -123,6 +121,7 @@ public  class TestUtil {
         }
         dbg.setSrcDir(targetSrcDir, testSrcDir);
         DebugResult.setDefaultMaxRecordNoOfValue(500);
+        compileTestClass(testMethod);
         return dbg;
     }
 
