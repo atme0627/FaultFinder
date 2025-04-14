@@ -77,7 +77,7 @@ class TestUtilTest {
             CodeElement targetMethod = new CodeElement("sample.SampleTest#case2()");
             Debugger dbg = TestUtil.testDebuggerFactory(targetMethod);
             dbg.stopAt("sample.SampleTest", 19);
-            dbg.run(3000);
+            dbg.run(1000);
             dbg.locals();
             dbg.exit();
         }

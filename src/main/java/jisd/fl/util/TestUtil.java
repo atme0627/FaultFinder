@@ -32,10 +32,10 @@ public  class TestUtil {
         String sourcepath = PropertyLoader.getTargetSrcDir() + ":" + PropertyLoader.getTestSrcDir();
         String[] cmdArray = {
                 "javac",
+                "-g",
                 "-cp", classpath,
                 "-sourcepath", sourcepath,
                 "-d", "classesForDebug/",
-                "-g",
                 targetTestClass.getFilePath(true).toString()
         };
         try {
@@ -119,7 +119,6 @@ public  class TestUtil {
                           "jisd.fl.util.TestLauncher "
                                 + testMethod.getFullyQualifiedMethodName(),
                         "-cp " + "./build/classes/java/main"
-                                + ":" + PropertyLoader.getTargetBinDir()
                                 + ":" + PropertyLoader.getDebugBinDir()
                                 + ":" + PropertyLoader.getJunitClassPaths()
                 );
