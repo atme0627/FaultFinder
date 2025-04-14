@@ -82,4 +82,21 @@ class TestUtilTest {
             dbg.exit();
         }
     }
+
+    @Nested
+    class compileForDebug{
+        @BeforeEach
+        void initProperty() {
+            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/main");
+            PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/test");
+            PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/main");
+            PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/test");
+        }
+
+       @Test
+       void simpleCase(){
+           CodeElement targetMethod = new CodeElement("sample.SampleTest#case2()");
+           TestUtil.compileForDebug(targetMethod);
+       }
+    }
 }

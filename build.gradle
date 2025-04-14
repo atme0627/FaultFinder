@@ -15,33 +15,21 @@ repositories {
 }
 
 dependencies {
-        implementation(fileTree(dir: 'locallib', include: ['jisd-0.3.0_bata.jar']))
-    //defects4j
-
-//    int i = 1
-//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/main/java'))
-//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test/java'))
-//
-//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/java'))
-//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/src/test'))
-//
-//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/classes'))
-//        implementation(files('/Users/ezaki/Desktop/research/experiment/defects4j/Math/Math_' + i + '_buggy/target/test-classes'))
+    implementation(fileTree(dir: 'locallib', include: ['jisd-0.3.0_bata.jar']))
 
     //junit4
     // https://mvnrepository.com/artifact/junit/junit
-    implementation 'junit:junit:4.13.2'
+    //implementation 'junit:junit:4.13.2'
 
     //Junit5
     // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
     implementation 'org.junit.platform:junit-platform-launcher:1.10.0'
     // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-engine
-    implementation 'org.junit.platform:junit-platform-engine:1.10.0'
+    //implementation 'org.junit.platform:junit-platform-engine:1.10.0'
     // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    implementation 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    //implementation 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     // https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine
-    implementation 'org.junit.vintage:junit-vintage-engine:5.10.0'
-    testImplementation 'org.hamcrest:hamcrest-all:1.3'
+    //implementation 'org.junit.vintage:junit-vintage-engine:5.10.0'
 
     //parser
     implementation 'com.github.javaparser:javaparser-core:3.19.0'
@@ -60,6 +48,7 @@ dependencies {
     //for test
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 
     //----for JISD -------------------------------------------
     // https://mvnrepository.com/artifact/org.ow2.asm/asm

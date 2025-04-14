@@ -28,22 +28,22 @@ public  class TestUtil {
     //-gつきでコンパイル
     public static void compileForDebug(CodeElement targetTestClass) {
         FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
-        String args =
-                "-cp " + "\"" + PropertyLoader.getTargetSrcDir() +
-                ":" + PropertyLoader.getTestSrcDir() +
-                ":" + PropertyLoader.getJunitClassPaths() + "\"" +
-                " -d " + PropertyLoader.getDebugBinDir() +
-                " -g " +
-                targetTestClass.getFilePath(true).toString();
-
-        System.out.println(args);
+        String classpath = "locallib/junit-dependency/*";
+        String sourcepath = PropertyLoader.getTargetSrcDir() + ":" + PropertyLoader.getTestSrcDir();
+        String[] cmdArray = {
+                "javac",
+                "-cp", classpath,
+                "-sourcepath", sourcepath,
+                "-d", "classesForDebug/",
+                "-g",
+                targetTestClass.getFilePath(true).toString()
+        };
         try {
-            Process proc = Runtime
-                    .getRuntime()
-                    .exec("javac " + args);
+            ProcessBuilder pb = new ProcessBuilder(cmdArray);
+            Process proc = pb.start();
             String line = null;
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
-                while ((line = buf.readLine()) != null) System.out.println(line);
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = buf.readLine()) != null) System.err.println(line);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

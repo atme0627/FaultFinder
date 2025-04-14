@@ -5,7 +5,7 @@ import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.FileUtil;
-import org.junit.jupiter.api.Test;
+//import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,7 +54,7 @@ class ProbeExTest {
             probeVariable);
 
 
-    @Test
+    //@Test
     void runTest() {
         Defects4jUtil.changeTargetVersion(project, bugId);
         ProbeEx prbEx = new ProbeEx(fai);

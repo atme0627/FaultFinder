@@ -43,10 +43,6 @@ public class PropertyLoader {
         return getProperty("junitDependencyJars");
     }
 
-    public static String getCpForCompileTestClass() {
-        return properties.getProperty("targetBinDir") + ":" + getJunitClassPaths();
-    }
-
     public static void setProperty(String key, String value) {
         properties.setProperty(key, value);
     }
@@ -94,6 +90,10 @@ public class PropertyLoader {
 
     public static String getTestSrcDir() {
         return getProperty("testSrcDir");
+    }
+
+    public static String getTestBinDir() {
+        return getProperty("testBinDir");
     }
 
     public static String getDebugBinDir() {
