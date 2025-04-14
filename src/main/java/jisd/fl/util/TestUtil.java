@@ -2,10 +2,8 @@ package jisd.fl.util;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.Name;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.fl.util.analyze.CodeElement;
@@ -23,20 +21,32 @@ import java.util.stream.Collectors;
 
 public  class TestUtil {
     @Deprecated
-    public static void compileTestClass(String testClassName) {
-        compileTestClass(new CodeElement(testClassName));
+    public static void compileForDebug(String testClassName) {
+        compileForDebug(new CodeElement(testClassName));
     }
 
-    public static void compileTestClass(CodeElement targetTestClass) {
-        FileUtil.initDirectory(PropertyLoader.getProperty("compiledWithJunitFilePath"));
-        String[] args = {
-                "-cp", PropertyLoader.getCpForCompileTestClass(),
-                targetTestClass.getFilePath(true).toString(),
-                "-d", PropertyLoader.getProperty("compiledWithJunitFilePath")};
-        JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-        int rc = javac.run(null, null, null, args);
-        if (rc != 0) {
-            throw new RuntimeException("failed to compile.");
+    //-gつきでコンパイル
+    public static void compileForDebug(CodeElement targetTestClass) {
+        FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
+        String args =
+                "-cp " + "\"" + PropertyLoader.getTargetSrcDir() +
+                ":" + PropertyLoader.getTestSrcDir() +
+                ":" + PropertyLoader.getJunitClassPaths() + "\"" +
+                " -d " + PropertyLoader.getDebugBinDir() +
+                " -g " +
+                targetTestClass.getFilePath(true).toString();
+
+        System.out.println(args);
+        try {
+            Process proc = Runtime
+                    .getRuntime()
+                    .exec("javac " + args);
+            String line = null;
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) System.out.println(line);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -101,6 +111,7 @@ public  class TestUtil {
         return testDebuggerFactory(new CodeElement(testMethodName));
     }
     public static Debugger testDebuggerFactory(CodeElement testMethod) {
+        compileForDebug(testMethod);
         Debugger dbg;
         while(true) {
             try {
@@ -109,7 +120,7 @@ public  class TestUtil {
                                 + testMethod.getFullyQualifiedMethodName(),
                         "-cp " + "./build/classes/java/main"
                                 + ":" + PropertyLoader.getTargetBinDir()
-                                + ":" + PropertyLoader.getTestBinDir()
+                                + ":" + PropertyLoader.getDebugBinDir()
                                 + ":" + PropertyLoader.getJunitClassPaths()
                 );
 

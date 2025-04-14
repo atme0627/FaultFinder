@@ -81,6 +81,9 @@ public class PropertyLoader {
         setProperty("testBinDir", testBinDir);
     }
 
+    public static void setDebugBinDir(String debugBinDir) {
+        setProperty("debugBinDir", debugBinDir);
+    }
     public static String getTargetSrcDir() {
         return getProperty("targetSrcDir");
     }
@@ -93,7 +96,7 @@ public class PropertyLoader {
         return getProperty("testSrcDir");
     }
 
-    public static String getTestBinDir() {
-        return getProperty("testBinDir");
+    public static String getDebugBinDir() {
+        return getProperty("debugBinDir");
     }
 }

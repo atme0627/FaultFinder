@@ -1,26 +1,12 @@
 package jisd.fl.probe;
 
-import experiment.coverage.CoverageGenerator;
-import experiment.defect4j.Defects4jUtil;
-import experiment.sbfl.RankingEvaluator;
-import jisd.fl.coverage.CoverageAnalyzer;
-import jisd.fl.coverage.CoverageCollection;
-import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.sbfl.FaultFinder;
-import jisd.fl.sbfl.Formula;
-import jisd.fl.util.FileUtil;
 import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Set;
 
 class ProbeExTest {
     @Nested
@@ -111,7 +97,7 @@ class ProbeExTest {
         @Test
         void runTest() {
             ProbeEx prbEx = new ProbeEx(fai);
-            ProbeExResult pr = prbEx.run(2000);
+            ProbeExResult pr = prbEx.run(3000);
             pr.print();
         }
     }

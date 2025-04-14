@@ -27,7 +27,7 @@ class TestLauncherTest {
 
             Process proc = Runtime.getRuntime().exec(
                     "java -cp ./build/classes/java/main"
-                            + ":" + PropertyLoader.getTestBinDir()
+                            + ":" + PropertyLoader.getDebugBinDir()
                             + ":" + PropertyLoader.getTargetBinDir()
                             + ":" + PropertyLoader.getJunitClassPaths()
                             + " jisd.fl.util.TestLauncher " + testMethodName
@@ -62,7 +62,7 @@ class TestLauncherTest {
 
             Process proc = Runtime.getRuntime().exec(
                     "java -cp ./build/classes/java/main"
-                            + ":" + PropertyLoader.getTestBinDir()
+                            + ":" + PropertyLoader.getDebugBinDir()
                             + ":" + PropertyLoader.getTargetBinDir()
                             + ":" + PropertyLoader.getJunitClassPaths()
                             + " jisd.fl.util.TestLauncher " + testMethodName

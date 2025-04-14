@@ -45,7 +45,7 @@ public class CoverageAnalyzer {
         if(testMethodNames.isEmpty()) throw new RuntimeException("test method is not found. [CLASS] " + testMethodNames);
 
         //テストクラスをコンパイル
-        TestUtil.compileTestClass(testClassName);
+        TestUtil.compileForDebug(testClassName);
         MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
         int failedCount = 0;
         for(String testMethodName : testMethodNames){
