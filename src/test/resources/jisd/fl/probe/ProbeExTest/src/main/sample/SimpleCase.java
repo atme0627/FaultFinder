@@ -1,3 +1,4 @@
+package sample;
 class SimpleCase {
 
     public SimpleCase(){}

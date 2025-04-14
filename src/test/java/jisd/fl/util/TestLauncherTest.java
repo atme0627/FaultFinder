@@ -58,7 +58,7 @@ class TestLauncherTest {
 
         @Test
         void launchTest() throws IOException, InterruptedException {
-            String testMethodName = "SampleTest#case2()";
+            String testMethodName = "sample.SampleTest#case2()";
 
             Process proc = Runtime.getRuntime().exec(
                     "java -cp ./build/classes/java/main"

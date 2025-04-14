@@ -101,14 +101,18 @@ public  class TestUtil {
         return testDebuggerFactory(new CodeElement(testMethodName));
     }
     public static Debugger testDebuggerFactory(CodeElement testMethod) {
-        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
-        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
         Debugger dbg;
         while(true) {
             try {
-                dbg = new Debugger("jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName(),
+                dbg = new Debugger(
+                          "jisd.fl.util.TestLauncher "
+                                + testMethod.getFullyQualifiedMethodName(),
                         "-cp " + "./build/classes/java/main"
-                                + ":" );
+                                + ":" + PropertyLoader.getTargetBinDir()
+                                + ":" + PropertyLoader.getTestBinDir()
+                                + ":" + PropertyLoader.getJunitClassPaths()
+                );
+
                 break;
             } catch (RuntimeException e1) {
                 System.err.println(e1);
@@ -119,9 +123,8 @@ public  class TestUtil {
                 }
             }
         }
-        dbg.setSrcDir(targetSrcDir, testSrcDir);
+        dbg.setSrcDir(PropertyLoader.getTargetSrcDir(), PropertyLoader.getTestSrcDir());
         DebugResult.setDefaultMaxRecordNoOfValue(500);
-        compileTestClass(testMethod);
         return dbg;
     }
 

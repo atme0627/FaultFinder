@@ -1,6 +1,7 @@
 package jisd.fl.util;
 
 import experiment.defect4j.Defects4jUtil;
+import jisd.debug.Debugger;
 import jisd.fl.util.analyze.CodeElement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -17,7 +18,7 @@ import java.util.Set;
 
 class TestUtilTest {
     @Nested
-    class getTestMethodsTest {
+    class GetTestMethodsTest {
         @BeforeEach
         void initProperty(){
             PropertyLoader.setTargetSrcDir("src/test/resources/jisd/fl/util");
@@ -58,6 +59,37 @@ class TestUtilTest {
             for (TestIdentifier child : plan.getChildren(id)) {
                 printTestIdentifiers(plan, child, level + 1);
             }
+        }
+    }
+
+    @Nested
+    class TestDebuggerFactory {
+        @BeforeEach
+        void initProperty() {
+            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/main");
+            PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/test");
+            PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/main");
+            PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/test");
+        }
+
+        @Test
+        void simpleCase(){
+            CodeElement targetMethod = new CodeElement("sample.SampleTest#case2()");
+            Debugger dbg = TestUtil.testDebuggerFactory(targetMethod);
+            dbg.stopAt("SampleTest", 21);
+            dbg.run(2000);
+            //dbg.where();
+            dbg.exit();
+        }
+
+        @Test
+        void debug(){
+            CodeElement targetMethod = new CodeElement("sample.SampleTest#case2()");
+            Debugger dbg = TestUtil.testDebuggerFactory(targetMethod);
+            dbg.stopAt("SampleTest", 21);
+            dbg.run(2000);
+            //dbg.where();
+            dbg.exit();
         }
     }
 }
