@@ -9,6 +9,7 @@ import jisd.fl.util.PropertyLoader;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -139,7 +140,9 @@ public class CodeElement {
     }
 
     public Path getFilePath(){
-        return getFilePath(false);
+        Path p = getFilePath(false);
+        if(Files.exists(p)) return p;
+        return getFilePath(true);
     }
 
     public Path getFilePath(boolean isTest){

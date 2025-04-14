@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 class SampleTest {
     SimpleCase simpleCase = new SimpleCase();
-
     @Test
     void case1(){
         int[] actual = simpleCase.sort(1, 2, 3);

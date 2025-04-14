@@ -24,6 +24,7 @@ import org.json.JSONException;
 
 import java.io.*;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -84,12 +85,7 @@ public abstract class AbstractProbe {
         //printWatchedValues(watchedValueCollection,variableInfo.getVariableName(true, true));
         //printWatchedValues(watchedValueCollection, null);
         ProbeResult result = null;
-        try {
-            result = searchProbeLine(watchedValues, variableInfo.getActualValue(), variableInfo);
-        }
-        catch (RuntimeException e){
-            System.out.println(e);
-        }
+        result = searchProbeLine(watchedValues, variableInfo.getActualValue(), variableInfo);
 
         int count = 0;
         //debugで値を取れなかった場合、やり直す
@@ -401,11 +397,12 @@ public abstract class AbstractProbe {
     //Statementのソースコードを取得
     protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines){
         if(locationClass.contains("$")) locationClass = locationClass.split("\\$")[0];
-        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
-        String path = targetSrcDir + "/" + locationClass.replace('.', '/') + ".java";
+        CodeElement tmpCd = new CodeElement(locationClass);
+
+        Path path = tmpCd.getFilePath();
         List<String> src = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(path.toString()))) {
             String string = reader.readLine();
             while (string != null){
                 src.add(string);

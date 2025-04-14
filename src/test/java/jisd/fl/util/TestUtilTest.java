@@ -76,19 +76,9 @@ class TestUtilTest {
         void simpleCase(){
             CodeElement targetMethod = new CodeElement("sample.SampleTest#case2()");
             Debugger dbg = TestUtil.testDebuggerFactory(targetMethod);
-            dbg.stopAt("SampleTest", 21);
-            dbg.run(2000);
-            //dbg.where();
-            dbg.exit();
-        }
-
-        @Test
-        void debug(){
-            CodeElement targetMethod = new CodeElement("sample.SampleTest#case2()");
-            Debugger dbg = TestUtil.testDebuggerFactory(targetMethod);
-            dbg.stopAt("SampleTest", 21);
-            dbg.run(2000);
-            //dbg.where();
+            dbg.stopAt("sample.SampleTest", 19);
+            dbg.run(3000);
+            dbg.locals();
             dbg.exit();
         }
     }

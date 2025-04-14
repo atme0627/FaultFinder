@@ -73,8 +73,8 @@ class ProbeExTest {
 
     @Nested
     class simpleCaseTest {
-        String testClassName = "SampleTest";
-        String shortTestMethodName = "case1";
+        String testClassName = "sample.SampleTest";
+        String shortTestMethodName = "case2";
         String testMethodName = testClassName + "#" + shortTestMethodName + "()";
 
         String variableName = "actual";
@@ -111,7 +111,7 @@ class ProbeExTest {
         @Test
         void runTest() {
             ProbeEx prbEx = new ProbeEx(fai);
-            ProbeExResult pr = prbEx.run(1000);
+            ProbeExResult pr = prbEx.run(2000);
             pr.print();
         }
     }
