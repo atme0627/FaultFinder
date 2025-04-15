@@ -31,13 +31,11 @@ public class ProbeEx extends AbstractProbe {
     public ProbeEx(FailedAssertInfo assertInfo) {
         super(assertInfo);
         probedValue = new HashSet<>();
-        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
         targetClasses = StaticAnalyzer.getClassNames();
     }
 
     public ProbeExResult run(int sleepTime) {
         ProbeExResult result = new ProbeExResult();
-        int depth = 0;
         VariableInfo firstTarget = assertInfo.getVariableInfo();
         List<VariableInfo> probingTargets = new ArrayList<>();
         List<VariableInfo> nextTargets = new ArrayList<>();
@@ -54,6 +52,7 @@ public class ProbeEx extends AbstractProbe {
             result.addElement(firstTarget.getLocateMethod(true), 1, 1);
         }
 
+        int depth = 0;
         while(!probingTargets.isEmpty()) {
             if(!isArgument) depth += 1;
             if(depth > 10) break;

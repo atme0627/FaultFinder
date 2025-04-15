@@ -5,7 +5,7 @@ import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.debug.value.PrimitiveInfo;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.AbstractProbe.ProbeInfoCollection;
+import jisd.fl.probe.record.ProbeInfoCollection;
 import jisd.fl.probe.assertinfo.VariableInfo;
 
 import java.time.LocalDateTime;
