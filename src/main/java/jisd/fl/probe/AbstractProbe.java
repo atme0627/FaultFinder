@@ -12,7 +12,8 @@ import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.probe.record.ProbeInfoCollection;
+import jisd.fl.probe.record.ProbeInfo;
+import jisd.fl.probe.record.TracedValueRecord;
 import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.CodeElement;
@@ -81,7 +82,7 @@ public abstract class AbstractProbe {
     //一回のprobeを行う
     //条件を満たす行の情報を返す
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
-        ProbeInfoCollection tracedValues = traceVariableValues(variableInfo, sleepTime);
+        TracedValueRecord tracedValues = traceVariableValues(variableInfo, sleepTime);
         List<ProbeInfo> watchedValues = tracedValues.getPis(variableInfo.getVariableName(true, true));
         ProbeResult result = searchProbeLine(watchedValues, variableInfo.getActualValue(), variableInfo);
 
@@ -96,7 +97,7 @@ public abstract class AbstractProbe {
         return result;
     }
 
-    protected ProbeInfoCollection traceVariableValues(VariableInfo variableInfo, int sleepTime){
+    protected TracedValueRecord traceVariableValues(VariableInfo variableInfo, int sleepTime){
         disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
         List<Integer> canSetLines = getCanSetLineByJP(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
@@ -120,7 +121,7 @@ public abstract class AbstractProbe {
         }
 
         enableStdOut();
-        ProbeInfoCollection watchedValues = jiProcessor.getInfoFromWatchPoints(watchPoints, variableInfo);
+        TracedValueRecord watchedValues = jiProcessor.getInfoFromWatchPoints(watchPoints, variableInfo);
         dbg.exit();
         dbg.clearResults();
         watchedValues.considerNotDefinedVariable();
@@ -409,7 +410,7 @@ public abstract class AbstractProbe {
         System.setOut(stdOut);
     }
 
-    protected void printWatchedValues(ProbeInfoCollection watchedValues, String variableName){
+    protected void printWatchedValues(TracedValueRecord watchedValues, String variableName){
         //System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
         if(variableName != null) {
             watchedValues.print(variableName);
@@ -689,36 +690,5 @@ public abstract class AbstractProbe {
             ci = testSif.createClass(className);
         }
         return ci;
-    }
-
-    public static class ProbeInfo implements Comparable<ProbeInfo>{
-        public LocalDateTime createAt;
-        public Location loc;
-        public String variableName;
-        public String value;
-        int arrayIndex = -1;
-
-        public ProbeInfo(LocalDateTime createAt,
-                         Location loc,
-                         String variableName,
-                         String value){
-            this.createAt = createAt;
-            this.loc = loc;
-            this.variableName = variableName;
-            this.value = value;
-        }
-
-        @Override
-        public int compareTo(ProbeInfo o) {
-            return createAt.compareTo(o.createAt);
-        }
-
-        @Override
-        public String toString(){
-            return   "[CreateAt] " + createAt +
-                    " [Variable] " + variableName +
-                    " [Line] " + loc.getLineNumber() +
-                    " [value] " + value;
-        }
     }
 }

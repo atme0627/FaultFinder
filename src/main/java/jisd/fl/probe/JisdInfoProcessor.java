@@ -5,7 +5,8 @@ import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.debug.value.PrimitiveInfo;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.record.ProbeInfoCollection;
+import jisd.fl.probe.record.ProbeInfo;
+import jisd.fl.probe.record.TracedValueRecord;
 import jisd.fl.probe.assertinfo.VariableInfo;
 
 import java.time.LocalDateTime;
@@ -13,11 +14,11 @@ import java.util.*;
 
 public class JisdInfoProcessor {
 
-    public ProbeInfoCollection getInfoFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo variableInfo){
+    public TracedValueRecord getInfoFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo variableInfo){
         //get Values from debugResult
         //実行されなかった行の情報は飛ばす。
         //実行されたがnullのものは含む。
-        ProbeInfoCollection watchedValues = new ProbeInfoCollection();
+        TracedValueRecord watchedValues = new TracedValueRecord();
         for (Optional<Point> op : watchPoints) {
             Point p;
             if (op.isEmpty()) continue;
@@ -35,8 +36,8 @@ public class JisdInfoProcessor {
 
     //primitive型の値のみを取得
     //variableInfoが参照型の場合、fieldを取得してその中から目的のprimitive型の値を探す
-    public List<AbstractProbe.ProbeInfo> getValuesFromDebugResults(VariableInfo targetInfo, HashMap<String, DebugResult> drs){
-        List<AbstractProbe.ProbeInfo> pis = new ArrayList<>();
+    public List<ProbeInfo> getValuesFromDebugResults(VariableInfo targetInfo, HashMap<String, DebugResult> drs){
+        List<ProbeInfo> pis = new ArrayList<>();
         drs.forEach((variable, dr) -> {
             VariableInfo variableInfo = variable.equals(targetInfo.getVariableName(true, false)) ? targetInfo : null;
             pis.addAll(getValuesFromDebugResult(variableInfo, dr));
@@ -44,9 +45,9 @@ public class JisdInfoProcessor {
         return pis;
     }
 
-    public List<AbstractProbe.ProbeInfo> getValuesFromDebugResult(VariableInfo variableInfo, DebugResult dr) {
+    public List<ProbeInfo> getValuesFromDebugResult(VariableInfo variableInfo, DebugResult dr) {
         List<ValueInfo> vis = null;
-        List<AbstractProbe.ProbeInfo> pis = new ArrayList<>();
+        List<ProbeInfo> pis = new ArrayList<>();
         try {
             vis = new ArrayList<>(dr.getValues());
         } catch (RuntimeException e) {
@@ -61,26 +62,26 @@ public class JisdInfoProcessor {
             //対象の変数がnullの場合
             if (vi.getValue().isEmpty()) {
                 value = "null";
-                pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName, value));
+                pis.add(new ProbeInfo(createdAt, loc, variableName, value));
             } else {
                 //viがprobe対象
                 if(variableInfo != null && variableInfo.getTargetField() != null){
                     value = getPrimitiveInfoFromReferenceType(vi, variableInfo).getValue();
-                    pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName, value));
+                    pis.add(new ProbeInfo(createdAt, loc, variableName, value));
                 }
                 //viがプリミティブ型の一次元配列
                 else if(vi.getValue().contains("[") && !vi.getValue().contains("][")) {
                     List<PrimitiveInfo> piList = getPrimitiveInfoFromArrayType(vi);
                     for(int i = 0; i < piList.size(); i++){
                         value = piList.get(i).getValue();
-                        pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName + "[" + i + "]", value));
+                        pis.add(new ProbeInfo(createdAt, loc, variableName + "[" + i + "]", value));
                     }
                 }
 
                 //viがプリミティブ型かそのラッパー
                 else if(isPrimitive(vi)) {
                     value = getPrimitiveInfoFromPrimitiveType(vi).getValue();
-                    pis.add(new AbstractProbe.ProbeInfo(createdAt, loc, variableName, value));
+                    pis.add(new ProbeInfo(createdAt, loc, variableName, value));
                 }
 
                 else {
@@ -90,7 +91,7 @@ public class JisdInfoProcessor {
                     if (value.contains("(id")) {
                         value = value.split("\\(")[0];
                     }
-                    pis.add(new AbstractProbe.ProbeInfo(vi.getCreatedAt(), loc, vi.getName(), value));
+                    pis.add(new ProbeInfo(vi.getCreatedAt(), loc, vi.getName(), value));
                 }
             }
         }

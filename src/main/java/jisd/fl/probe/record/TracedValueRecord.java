@@ -7,30 +7,30 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class ProbeInfoCollection {
-    public ProbeInfoCollection() {};
-    Map<String, List<AbstractProbe.ProbeInfo>> piCollection = new HashMap<>();
-    public void addElements(List<AbstractProbe.ProbeInfo> pis){
-        for(AbstractProbe.ProbeInfo pi : pis){
+public class TracedValueRecord {
+    public TracedValueRecord() {};
+    Map<String, List<ProbeInfo>> piCollection = new HashMap<>();
+    public void addElements(List<ProbeInfo> pis){
+        for(ProbeInfo pi : pis){
             if(piCollection.containsKey(pi.variableName)){
                 piCollection.get(pi.variableName).add(pi);
             }
             else {
-                List<AbstractProbe.ProbeInfo> newPis = new ArrayList<>();
+                List<ProbeInfo> newPis = new ArrayList<>();
                 newPis.add(pi);
                 piCollection.put(pi.variableName, newPis);
             }
         }
     }
 
-    public List<AbstractProbe.ProbeInfo> getPis(String key){
+    public List<ProbeInfo> getPis(String key){
         //配列の場合[0]がついていないものも一緒に返す
         if(key.contains("[")){
-            List<AbstractProbe.ProbeInfo> pis = new ArrayList<>();
+            List<ProbeInfo> pis = new ArrayList<>();
             pis.addAll(piCollection.get(key));
-            List<AbstractProbe.ProbeInfo> tmp = piCollection.get(key.split("\\[")[0]);
+            List<ProbeInfo> tmp = piCollection.get(key.split("\\[")[0]);
             if(tmp != null) pis.addAll(tmp);
-            pis.sort(AbstractProbe.ProbeInfo::compareTo);
+            pis.sort(ProbeInfo::compareTo);
             return pis;
         }
         return piCollection.get(key);
@@ -41,14 +41,14 @@ public class ProbeInfoCollection {
     }
 
     public void sort(){
-        for(List<AbstractProbe.ProbeInfo> pis : piCollection.values()){
-            pis.sort(AbstractProbe.ProbeInfo::compareTo);
+        for(List<ProbeInfo> pis : piCollection.values()){
+            pis.sort(ProbeInfo::compareTo);
         }
     }
     public Map<String, String> getValuesAtSameTime(LocalDateTime createAt){
         Map<String, String> pis = new HashMap<>();
-        for(List<AbstractProbe.ProbeInfo> l : piCollection.values()){
-            for(AbstractProbe.ProbeInfo pi : l){
+        for(List<ProbeInfo> l : piCollection.values()){
+            for(ProbeInfo pi : l){
                 if(pi.createAt.equals(createAt)) {
                     pis.put(pi.variableName, pi.value);
                 }
@@ -59,8 +59,8 @@ public class ProbeInfoCollection {
 
     public Map<String, String> getValuesFromLines(Pair<Integer, Integer> lines){
         Map<String, String> pis = new HashMap<>();
-        for(List<AbstractProbe.ProbeInfo> l : piCollection.values()){
-            for(AbstractProbe.ProbeInfo pi : l){
+        for(List<ProbeInfo> l : piCollection.values()){
+            for(ProbeInfo pi : l){
                 for(int i = lines.getLeft(); i <= lines.getRight(); i++) {
                     if (pi.loc.getLineNumber() == i) {
                         pis.put(pi.variableName, pi.value);
@@ -75,16 +75,16 @@ public class ProbeInfoCollection {
     //実行されていることを認識するために、定義されていない行の値は"not defined"として埋める。
     public void considerNotDefinedVariable(){
         Set<Pair<LocalDateTime, Integer>> executedLines = new HashSet<>();
-        for(List<AbstractProbe.ProbeInfo> pis : piCollection.values()){
-            for(AbstractProbe.ProbeInfo pi : pis){
+        for(List<ProbeInfo> pis : piCollection.values()){
+            for(ProbeInfo pi : pis){
                 executedLines.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
             }
         }
 
-        for(List<AbstractProbe.ProbeInfo> pis : piCollection.values()){
+        for(List<ProbeInfo> pis : piCollection.values()){
             String variableName = pis.get(0).variableName;
             Set<Pair<LocalDateTime, Integer>> executedLinesInThisPis = new HashSet<>();
-            for(AbstractProbe.ProbeInfo pi : pis){
+            for(ProbeInfo pi : pis){
                 executedLinesInThisPis.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
             }
 
@@ -95,7 +95,7 @@ public class ProbeInfoCollection {
                 // continue;
                 Set<Pair<LocalDateTime, Integer>> executedLinesOfWithoutBracket = new HashSet<>();
                 if(getPis(variableName.split("\\[")[0]) != null) {
-                    for (AbstractProbe.ProbeInfo pi : getPis(variableName.split("\\[")[0])) {
+                    for (ProbeInfo pi : getPis(variableName.split("\\[")[0])) {
                         executedLinesOfWithoutBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
                     }
                 }
@@ -117,7 +117,7 @@ public class ProbeInfoCollection {
                     // continue;
                     Set<Pair<LocalDateTime, Integer>> executedLinesOfWithBracket = new HashSet<>();
                     if(getPis(variableName + "[0]") != null) {
-                        for (AbstractProbe.ProbeInfo pi : getPis(variableName + "[0]")) {
+                        for (ProbeInfo pi : getPis(variableName + "[0]")) {
                             executedLinesOfWithBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
                         }
                     }
@@ -139,15 +139,15 @@ public class ProbeInfoCollection {
                 LocalDateTime createAt = notExecline.getLeft();
                 Location pisLoc = pis.get(0).loc;
                 Location loc = new Location(pisLoc.getClassName(), pisLoc.getMethodName(), notExecline.getRight(), "No defined");
-                pis.add(new AbstractProbe.ProbeInfo(createAt, loc, variableName, "Not defined"));
+                pis.add(new ProbeInfo(createAt, loc, variableName, "Not defined"));
             }
         }
     }
 
     public void print(String key){
-        List<AbstractProbe.ProbeInfo> pis = getPis(key);
+        List<ProbeInfo> pis = getPis(key);
         if(pis == null) throw new RuntimeException("key " + key + " is not exist.");
-        for(AbstractProbe.ProbeInfo pi : pis) {
+        for(ProbeInfo pi : pis) {
             System.out.println("    >> " + pi);
         }
     }
@@ -159,7 +159,7 @@ public class ProbeInfoCollection {
     }
 
     public void clear(){
-        for(List<AbstractProbe. ProbeInfo> l : piCollection.values()){
+        for(List<ProbeInfo> l : piCollection.values()){
             l = null;
         }
     }
