@@ -1,7 +1,6 @@
 package jisd.fl.probe.record;
 
 import jisd.debug.Location;
-import jisd.fl.probe.AbstractProbe;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDateTime;
@@ -9,28 +8,28 @@ import java.util.*;
 
 public class TracedValueRecord {
     public TracedValueRecord() {};
-    Map<String, List<ProbeInfo>> piCollection = new HashMap<>();
-    public void addElements(List<ProbeInfo> pis){
-        for(ProbeInfo pi : pis){
+    Map<String, List<TracedValue>> piCollection = new HashMap<>();
+    public void addElements(List<TracedValue> pis){
+        for(TracedValue pi : pis){
             if(piCollection.containsKey(pi.variableName)){
                 piCollection.get(pi.variableName).add(pi);
             }
             else {
-                List<ProbeInfo> newPis = new ArrayList<>();
+                List<TracedValue> newPis = new ArrayList<>();
                 newPis.add(pi);
                 piCollection.put(pi.variableName, newPis);
             }
         }
     }
 
-    public List<ProbeInfo> getPis(String key){
+    public List<TracedValue> getPis(String key){
         //配列の場合[0]がついていないものも一緒に返す
         if(key.contains("[")){
-            List<ProbeInfo> pis = new ArrayList<>();
+            List<TracedValue> pis = new ArrayList<>();
             pis.addAll(piCollection.get(key));
-            List<ProbeInfo> tmp = piCollection.get(key.split("\\[")[0]);
+            List<TracedValue> tmp = piCollection.get(key.split("\\[")[0]);
             if(tmp != null) pis.addAll(tmp);
-            pis.sort(ProbeInfo::compareTo);
+            pis.sort(TracedValue::compareTo);
             return pis;
         }
         return piCollection.get(key);
@@ -41,14 +40,14 @@ public class TracedValueRecord {
     }
 
     public void sort(){
-        for(List<ProbeInfo> pis : piCollection.values()){
-            pis.sort(ProbeInfo::compareTo);
+        for(List<TracedValue> pis : piCollection.values()){
+            pis.sort(TracedValue::compareTo);
         }
     }
     public Map<String, String> getValuesAtSameTime(LocalDateTime createAt){
         Map<String, String> pis = new HashMap<>();
-        for(List<ProbeInfo> l : piCollection.values()){
-            for(ProbeInfo pi : l){
+        for(List<TracedValue> l : piCollection.values()){
+            for(TracedValue pi : l){
                 if(pi.createAt.equals(createAt)) {
                     pis.put(pi.variableName, pi.value);
                 }
@@ -59,8 +58,8 @@ public class TracedValueRecord {
 
     public Map<String, String> getValuesFromLines(Pair<Integer, Integer> lines){
         Map<String, String> pis = new HashMap<>();
-        for(List<ProbeInfo> l : piCollection.values()){
-            for(ProbeInfo pi : l){
+        for(List<TracedValue> l : piCollection.values()){
+            for(TracedValue pi : l){
                 for(int i = lines.getLeft(); i <= lines.getRight(); i++) {
                     if (pi.loc.getLineNumber() == i) {
                         pis.put(pi.variableName, pi.value);
@@ -75,16 +74,16 @@ public class TracedValueRecord {
     //実行されていることを認識するために、定義されていない行の値は"not defined"として埋める。
     public void considerNotDefinedVariable(){
         Set<Pair<LocalDateTime, Integer>> executedLines = new HashSet<>();
-        for(List<ProbeInfo> pis : piCollection.values()){
-            for(ProbeInfo pi : pis){
+        for(List<TracedValue> pis : piCollection.values()){
+            for(TracedValue pi : pis){
                 executedLines.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
             }
         }
 
-        for(List<ProbeInfo> pis : piCollection.values()){
+        for(List<TracedValue> pis : piCollection.values()){
             String variableName = pis.get(0).variableName;
             Set<Pair<LocalDateTime, Integer>> executedLinesInThisPis = new HashSet<>();
-            for(ProbeInfo pi : pis){
+            for(TracedValue pi : pis){
                 executedLinesInThisPis.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
             }
 
@@ -95,7 +94,7 @@ public class TracedValueRecord {
                 // continue;
                 Set<Pair<LocalDateTime, Integer>> executedLinesOfWithoutBracket = new HashSet<>();
                 if(getPis(variableName.split("\\[")[0]) != null) {
-                    for (ProbeInfo pi : getPis(variableName.split("\\[")[0])) {
+                    for (TracedValue pi : getPis(variableName.split("\\[")[0])) {
                         executedLinesOfWithoutBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
                     }
                 }
@@ -117,7 +116,7 @@ public class TracedValueRecord {
                     // continue;
                     Set<Pair<LocalDateTime, Integer>> executedLinesOfWithBracket = new HashSet<>();
                     if(getPis(variableName + "[0]") != null) {
-                        for (ProbeInfo pi : getPis(variableName + "[0]")) {
+                        for (TracedValue pi : getPis(variableName + "[0]")) {
                             executedLinesOfWithBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
                         }
                     }
@@ -139,15 +138,15 @@ public class TracedValueRecord {
                 LocalDateTime createAt = notExecline.getLeft();
                 Location pisLoc = pis.get(0).loc;
                 Location loc = new Location(pisLoc.getClassName(), pisLoc.getMethodName(), notExecline.getRight(), "No defined");
-                pis.add(new ProbeInfo(createAt, loc, variableName, "Not defined"));
+                pis.add(new TracedValue(createAt, loc, variableName, "Not defined"));
             }
         }
     }
 
     public void print(String key){
-        List<ProbeInfo> pis = getPis(key);
+        List<TracedValue> pis = getPis(key);
         if(pis == null) throw new RuntimeException("key " + key + " is not exist.");
-        for(ProbeInfo pi : pis) {
+        for(TracedValue pi : pis) {
             System.out.println("    >> " + pi);
         }
     }
@@ -159,7 +158,7 @@ public class TracedValueRecord {
     }
 
     public void clear(){
-        for(List<ProbeInfo> l : piCollection.values()){
+        for(List<TracedValue> l : piCollection.values()){
             l = null;
         }
     }

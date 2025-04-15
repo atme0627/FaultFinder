@@ -4,17 +4,17 @@ import jisd.debug.Location;
 
 import java.time.LocalDateTime;
 
-public class ProbeInfo implements Comparable<ProbeInfo>{
+public class TracedValue implements Comparable<TracedValue>{
     public LocalDateTime createAt;
     public Location loc;
     public String variableName;
     public String value;
     int arrayIndex = -1;
 
-    public ProbeInfo(LocalDateTime createAt,
-                     Location loc,
-                     String variableName,
-                     String value){
+    public TracedValue(LocalDateTime createAt,
+                       Location loc,
+                       String variableName,
+                       String value){
         this.createAt = createAt;
         this.loc = loc;
         this.variableName = variableName;
@@ -22,7 +22,7 @@ public class ProbeInfo implements Comparable<ProbeInfo>{
     }
 
     @Override
-    public int compareTo(ProbeInfo o) {
+    public int compareTo(TracedValue o) {
         return createAt.compareTo(o.createAt);
     }
 

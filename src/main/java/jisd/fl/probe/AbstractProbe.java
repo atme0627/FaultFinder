@@ -8,11 +8,10 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.*;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
-import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.probe.record.ProbeInfo;
+import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueRecord;
 import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.PropertyLoader;
@@ -83,7 +82,7 @@ public abstract class AbstractProbe {
     //条件を満たす行の情報を返す
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
         TracedValueRecord tracedValues = traceVariableValues(variableInfo, sleepTime);
-        List<ProbeInfo> watchedValues = tracedValues.getPis(variableInfo.getVariableName(true, true));
+        List<TracedValue> watchedValues = tracedValues.getPis(variableInfo.getVariableName(true, true));
         ProbeResult result = searchProbeLine(watchedValues, variableInfo.getActualValue(), variableInfo);
 
         //probe lineが特定できなかった場合
@@ -179,9 +178,9 @@ public abstract class AbstractProbe {
     }
 
 
-    private ProbeResult searchProbeLine(List<ProbeInfo> watchedValues, String actual, VariableInfo vi){
+    private ProbeResult searchProbeLine(List<TracedValue> watchedValues, String actual, VariableInfo vi){
         System.out.println("    >> Probe Info: Searching probe line.");
-        ProbeInfo pi;
+        TracedValue pi;
 
         //代入行の特定
         //unaryExpr(ex a++)も含める
@@ -249,20 +248,20 @@ public abstract class AbstractProbe {
         }
 
         //代入後にactualの値に変化している行の特定
-        List<ProbeInfo> changeToActualLines = new ArrayList<>();
+        List<TracedValue> changeToActualLines = new ArrayList<>();
         for(int i = 0; i < watchedValues.size() - 1; i++){
-            ProbeInfo watchingLine = watchedValues.get(i);
+            TracedValue watchingLine = watchedValues.get(i);
             if(!assignedLine.contains(watchingLine.loc.getLineNumber())) continue;
-            ProbeInfo afterAssignLine = watchedValues.get(i+1);
+            TracedValue afterAssignLine = watchedValues.get(i+1);
             if(!afterAssignLine.value.equals(vi.getActualValue())) continue;
             changeToActualLines.add(watchingLine);
         }
 
         //実行された代入行が存在するパターン -->その中でさいごに実行された行がprobe line
         if(!changeToActualLines.isEmpty()) {
-            changeToActualLines.sort(ProbeInfo::compareTo);
-            ProbeInfo probeLineInfo = changeToActualLines.get(changeToActualLines.size() - 1);
-            ProbeInfo afterAssignLine = watchedValues.get(watchedValues.indexOf(probeLineInfo));
+            changeToActualLines.sort(TracedValue::compareTo);
+            TracedValue probeLineInfo = changeToActualLines.get(changeToActualLines.size() - 1);
+            TracedValue afterAssignLine = watchedValues.get(watchedValues.indexOf(probeLineInfo));
 
             return resultIfAssigned(
                     probeLineInfo.loc.getLineNumber(),
@@ -621,7 +620,7 @@ public abstract class AbstractProbe {
         while(true) {
             if (p.isPresent() && p.get().getResults(vi.getVariableName(true, false)).isPresent()) {
                 DebugResult dr = p.get().getResults(vi.getVariableName(true, false)).get();
-                List<ProbeInfo> pis = jiProcessor.getValuesFromDebugResult(vi, dr);
+                List<TracedValue> pis = jiProcessor.getValuesFromDebugResult(vi, dr);
                 int index = 0;
                 if (vi.isArray()) index = vi.getArrayNth();
                 if (pis.get(index).value.equals(vi.getActualValue())) {
