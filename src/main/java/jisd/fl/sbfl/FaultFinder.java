@@ -2,10 +2,8 @@ package jisd.fl.sbfl;
 
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
-import jisd.fl.probe.Probe;
 import jisd.fl.probe.ProbeEx;
 import jisd.fl.probe.ProbeExResult;
-import jisd.fl.probe.ProbeResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.analyze.CodeElement;
@@ -130,57 +128,6 @@ public class FaultFinder {
             double preScore = sbflResult.getSuspicious(contextMethod);
             sbflResult.setSuspicious(contextMethod, preScore + suspConst);
             iblResult.addElement(contextMethod, preScore, sbflResult.getSuspicious(contextMethod));
-        }
-
-        iblResult.print();
-        sbflResult.sort();
-        sbflResult.printFLResults(rankingSize);
-    }
-
-    public void probe(FailedAssertInfo fai, int sleepTime){
-        VariableInfo variableInfo = fai.getVariableInfo();
-        System.out.println("[  PROBE  ] " + fai.getTestMethodName() + ": " + variableInfo);
-        Probe prb = new Probe(fai);
-        ProbeResult probeResult = null;
-        try {
-             probeResult = prb.run(sleepTime);
-        } catch (RuntimeException e){
-        //probeMethodsがメソッドを持っているかチェック
-            throw new RuntimeException("FaultFinder#probe\n" +
-                    "probeLine does not have methods.");
-        }
-        probe(probeResult);
-    }
-
-    public void probe(ProbeResult probeResult){
-        IblResult iblResult = new IblResult();
-        System.out.println("probe method: " + probeResult.getProbeMethod());
-        //calc suspicious score
-        double callerFactor = 0.0;
-        double siblingFactor = 0.0;
-        double preScore;
-        String probeMethod = probeResult.getProbeMethod();
-        String callerMethod = probeResult.getCallerMethod().getRight();
-        callerFactor = probeC2 * sbflResult.getSuspicious(callerMethod);
-        for(String siblingMethod : probeResult.getSiblingMethods()){
-            if (probeMethod.equals(siblingMethod)) continue;
-            siblingFactor += probeC2 * sbflResult.getSuspicious(siblingMethod);
-        }
-
-        //set suspicious score
-        preScore = sbflResult.getSuspicious(probeMethod);
-        sbflResult.setSuspicious(probeMethod, preScore * (1 + probeC1) + callerFactor + siblingFactor);
-        iblResult.addElement(probeMethod, preScore, sbflResult.getSuspicious(probeMethod));
-
-        preScore = sbflResult.getSuspicious(callerMethod);
-        sbflResult.setSuspicious(callerMethod, preScore + callerFactor + siblingFactor);
-        iblResult.addElement(callerMethod, preScore, sbflResult.getSuspicious(callerMethod));
-
-        for(String siblingMethod : probeResult.getSiblingMethods()){
-            if (probeMethod.equals(siblingMethod)) continue;
-            preScore = sbflResult.getSuspicious(siblingMethod);
-            sbflResult.setSuspicious(siblingMethod, preScore + callerFactor + siblingFactor);
-            iblResult.addElement(siblingMethod, preScore, sbflResult.getSuspicious(siblingMethod));
         }
 
         iblResult.print();

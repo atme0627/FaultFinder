@@ -69,17 +69,6 @@ class FaultFinderTest {
     }
 
     @Test
-    void probeTest() throws Exception {
-        String project = "Math";
-        int bugId = 87;
-
-        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName);
-        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.probe(fai, 3000);
-    }
-
-    @Test
     void probeExTest() {
         String project = "Math";
         int bugId = 87;
