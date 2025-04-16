@@ -62,13 +62,9 @@ public class StaticAnalyzer {
         return Pair.of(node.getBegin().get().line, node.getEnd().get().line);
     }
 
-    public static Optional<Range> getRangeOfStatement(CodeElement targetClass, int line) {
-        try {
-            Optional<Statement> expStmt = JavaParserUtil.getStatementByLine(targetClass, line);
-            return (expStmt.isPresent()) ? expStmt.get().getRange() : Optional.empty();
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
+    public static Optional<Range> getRangeOfStatement(CodeElement targetClass, int line) throws NoSuchFileException {
+        Optional<Statement> expStmt = JavaParserUtil.getStatementByLine(targetClass, line);
+        return (expStmt.isPresent()) ? expStmt.get().getRange() : Optional.empty();
     }
 
     @Deprecated
@@ -86,21 +82,31 @@ public class StaticAnalyzer {
     public static List<Integer> getAssignLine(CodeElement targetClass, String variable) {
         //CodeElement targetClass = new CodeElement(className);
         List<Integer> assignLines =
-                JavaParserUtil.extractAssignExpr(targetClass)
-                        .stream()
-                        .map(exp -> exp.isArrayAccessExpr() ? exp.asArrayAccessExpr().getName() : exp.getTarget())
-                        .filter(exp -> exp.toString().equals(variable))
-                        .filter(exp -> exp.getEnd().isPresent())
-                        .map(exp -> exp.getEnd().get().line)
-                        .collect(Collectors.toList());
+                null;
+        try {
+            assignLines = JavaParserUtil.extractAssignExpr(targetClass)
+                    .stream()
+                    .map(exp -> exp.isArrayAccessExpr() ? exp.asArrayAccessExpr().getName() : exp.getTarget())
+                    .filter(exp -> exp.toString().equals(variable))
+                    .filter(exp -> exp.getEnd().isPresent())
+                    .map(exp -> exp.getEnd().get().line)
+                    .collect(Collectors.toList());
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
 
         List<Integer> declarationLines =
-                JavaParserUtil.extractVariableDeclarator(targetClass)
-                        .stream()
-                        .filter(exp -> exp.getName().toString().equals(variable))
-                        .filter(exp -> exp.getEnd().isPresent())
-                        .map(exp -> exp.getEnd().get().line)
-                        .collect(Collectors.toList());
+                null;
+        try {
+            declarationLines = JavaParserUtil.extractVariableDeclarator(targetClass)
+                    .stream()
+                    .filter(exp -> exp.getName().toString().equals(variable))
+                    .filter(exp -> exp.getEnd().isPresent())
+                    .map(exp -> exp.getEnd().get().line)
+                    .collect(Collectors.toList());
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
 
         return Stream.of(assignLines, declarationLines)
                         .flatMap(Collection::stream)

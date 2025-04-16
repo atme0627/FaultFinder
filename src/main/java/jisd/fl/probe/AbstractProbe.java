@@ -15,11 +15,9 @@ import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueRecord;
 import jisd.fl.util.analyze.JavaParserUtil;
-import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import jisd.fl.util.TestUtil;
-import jisd.info.StaticInfoFactory;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.*;
@@ -115,15 +113,12 @@ public abstract class AbstractProbe {
 
         //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
         if(!changeToActualLines.isEmpty()) {
+            //原因行
             TracedValue causeLine = changeToActualLines.get(changeToActualLines.size() - 1);
-            TracedValue afterAssignLine = tracedValues.get(tracedValues.indexOf(causeLine));
+            //原因行の次に実行された行
+            TracedValue afterAssignedLine = tracedValues.get(tracedValues.indexOf(causeLine));
 
-            return resultIfAssigned(
-                    causeLine.loc.getLineNumber(),
-                    vi.getLocateMethodElement(),
-                    causeLine.createAt,
-                    afterAssignLine.loc.getLineNumber(),
-                    vi);
+            return resultIfAssigned(causeLine, afterAssignedLine, vi);
         }
 
         //fieldは代入以外での値の変更を特定できない
@@ -239,27 +234,29 @@ public abstract class AbstractProbe {
 
 
 
-    private ProbeResult resultIfAssigned(int probeLine, CodeElement locationClass, LocalDateTime createAt, int watchedAt, VariableInfo vi){
+    private ProbeResult resultIfAssigned(TracedValue causeLineData, TracedValue afterAssignedLineData, VariableInfo vi){
         //代入によって変数がactualの値を取るようになったパターン
         //値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
+        int causeLineNumber = causeLineData.loc.getLineNumber();
+        int afterAssignedLineNumber = afterAssignedLineData.loc.getLineNumber();
+        LocalDateTime createAt = causeLineData.createAt;
+
+        CodeElement locateElement = vi.getLocateMethodElement();
+        String probeMethod = StaticAnalyzer.getMethodNameFormLine(locateElement, causeLineNumber);
+
+        Range probeRange = StaticAnalyzer.getRangeOfStatement(locateElement, causeLineNumber).orElse(null);
+        Pair<Integer, Integer> probeLines =
+                probeRange != null ?
+                Pair.of(probeRange.begin.line, probeRange.end.line) :
+                Pair.of(causeLineNumber, causeLineNumber);
+
         ProbeResult result = new ProbeResult();
-        String probeMethod;
-        Pair<Integer, Integer> probeLines = null;
-
-        try {
-            probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass, probeLine);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
-        Range probeRange = StaticAnalyzer.getRangeOfStatement(locationClass, probeLine).orElse(null);
-        probeLines = probeRange != null ? Pair.of(probeRange.begin.line, probeRange.end.line) : Pair.of(probeLine, probeLine);
         result.setArgument(false);
         result.setLines(probeLines);
         result.setProbeMethod(probeMethod);
-        result.setSrc(getProbeStatement(locationClass, probeLines));
+        result.setSrc(getProbeStatement(locateElement, probeLines));
         result.setCreateAt(createAt);
-        result.setWatchedAt(watchedAt);
+        result.setWatchedAt(afterAssignedLineNumber);
         result.setVariableInfo(vi);
         return result;
     }
@@ -319,14 +316,9 @@ public abstract class AbstractProbe {
     }
     //Statementのソースコードを取得
     protected String getProbeStatement(CodeElement locationClass, Pair<Integer, Integer> probeLines){
-        try {
-            Optional<Statement> stmt = JavaParserUtil.getStatementByLine(locationClass, probeLines.getLeft());
-            if(stmt.isEmpty()) throw new RuntimeException();
-            return stmt.get().toString();
-        } catch (NoSuchFileException e) {
-            return "not found";
-            //throw new RuntimeException(e);
-        }
+        Optional<Statement> stmt = JavaParserUtil.getStatementByLine(locationClass, probeLines.getLeft());
+        if(stmt.isEmpty()) throw new RuntimeException();
+        return stmt.get().toString();
     }
 
     protected void disableStdOut(String msg){

@@ -127,23 +127,15 @@ class StaticAnalyzerTest {
         @Test
         void simpleCase1(){
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
-            try {
-                String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 12);
-                assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodA(int)", actual);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
+            String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 12);
+            assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodA(int)", actual);
         }
 
         @Test
         void simpleCase2(){
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
-            try {
-                String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 21);
-                assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodB()", actual);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
+            String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 21);
+            assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodB()", actual);
         }
     }
 
