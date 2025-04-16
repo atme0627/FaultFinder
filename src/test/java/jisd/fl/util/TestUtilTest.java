@@ -74,6 +74,7 @@ class TestUtilTest {
 
         @Test
         void simpleCase(){
+            TestUtil.compileForDebug(new CodeElement("sample.SampleTest"));
             CodeElement targetMethod = new CodeElement("sample.SampleTest#case2()");
             Debugger dbg = TestUtil.testDebuggerFactory(targetMethod);
             dbg.stopAt("sample.SampleTest", 19);
