@@ -128,26 +128,27 @@ public abstract class AbstractProbe {
     }
 
 
-    private ProbeResult searchProbeLine(List<TracedValue> watchedValues, VariableInfo vi){
+    private ProbeResult searchProbeLine(List<TracedValue> tracedValues, VariableInfo vi){
         TracedValue pi;
         String actual = vi.getActualValue();
         Set<Integer> assignedLine = new HashSet<>(valueChangedLine(vi));
 
         //代入後にactualの値に変化している行の特定
         List<TracedValue> changeToActualLines = new ArrayList<>();
-        for(int i = 0; i < watchedValues.size() - 1; i++){
-            TracedValue watchingLine = watchedValues.get(i);
+        for(int i = 0; i < tracedValues.size() - 1; i++){
+            TracedValue watchingLine = tracedValues.get(i);
+            //watchingLineでは代入が行われていない -> 原因行ではない
             if(!assignedLine.contains(watchingLine.loc.getLineNumber())) continue;
-            TracedValue afterAssignLine = watchedValues.get(i+1);
-            if(!afterAssignLine.value.equals(vi.getActualValue())) continue;
-            changeToActualLines.add(watchingLine);
+            //次の行で値がactualに変わっている -> その行が原因行の候補
+            TracedValue afterAssignLine = tracedValues.get(i+1);
+            if(afterAssignLine.value.equals(vi.getActualValue())) changeToActualLines.add(watchingLine);
         }
 
         //実行された代入行が存在するパターン -->その中でさいごに実行された行がprobe line
         if(!changeToActualLines.isEmpty()) {
             changeToActualLines.sort(TracedValue::compareTo);
             TracedValue probeLineInfo = changeToActualLines.get(changeToActualLines.size() - 1);
-            TracedValue afterAssignLine = watchedValues.get(watchedValues.indexOf(probeLineInfo));
+            TracedValue afterAssignLine = tracedValues.get(tracedValues.indexOf(probeLineInfo));
 
             return resultIfAssigned(
                     probeLineInfo.loc.getLineNumber(),
@@ -166,11 +167,11 @@ public abstract class AbstractProbe {
 
         //実行された代入行がないパターン
         //初めて値がactualと一致した行の前に実行された行を暫定的にprobe lineとする。
-        for (int i = 0; i < watchedValues.size(); i++) {
-            pi = watchedValues.get(i);
+        for (int i = 0; i < tracedValues.size(); i++) {
+            pi = tracedValues.get(i);
             if (actual.equals(pi.value)) {
                 return resultIfNotAssigned(
-                        watchedValues.get(i == 0 ? i : i-1).loc.getLineNumber(),
+                        tracedValues.get(i == 0 ? i : i-1).loc.getLineNumber(),
                         vi.getLocateClass(),
                         vi.getVariableName(false, false),
                         pi.createAt,
