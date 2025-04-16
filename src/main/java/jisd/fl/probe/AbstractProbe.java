@@ -19,10 +19,8 @@ import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.CodeElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import jisd.fl.util.TestUtil;
-import jisd.info.ClassInfo;
 import jisd.info.StaticInfoFactory;
 import org.apache.commons.lang3.tuple.Pair;
-import org.json.JSONException;
 
 import java.io.*;
 import java.nio.file.NoSuchFileException;
@@ -34,25 +32,13 @@ public abstract class AbstractProbe {
 
     FailedAssertInfo assertInfo;
     Debugger dbg;
-    StaticInfoFactory targetSif;
-    StaticInfoFactory testSif;
     JisdInfoProcessor jiProcessor;
     static PrintStream stdOut = System.out;
-    static PrintStream stdErr = System.err;
-
 
     public AbstractProbe(FailedAssertInfo assertInfo) {
-        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
-        String targetBinDir = PropertyLoader.getProperty("targetBinDir");
-        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-        String testBinDir = PropertyLoader.getProperty("testBinDir");
-
         this.assertInfo = assertInfo;
         this.dbg = createDebugger();
         this.jiProcessor = new JisdInfoProcessor();
-
-        this.targetSif = new StaticInfoFactory(targetSrcDir, targetBinDir);
-        this.testSif = new StaticInfoFactory(testSrcDir, testBinDir);
     }
 
     //一回のprobeを行う
@@ -651,15 +637,4 @@ public abstract class AbstractProbe {
         return shortMethod.toString();
     }
 
-    protected ClassInfo createClassInfo(String className){
-        //mainがダメならtestを試す
-        ClassInfo ci;
-        try {
-            ci = targetSif.createClass(className);
-        }
-        catch (JSONException e){
-            ci = testSif.createClass(className);
-        }
-        return ci;
-    }
 }
