@@ -68,12 +68,12 @@ public abstract class AbstractProbe {
         System.out.println("    >> Probe Info: Searching probe line.");
         ProbeResult result = searchProbeLine(watchedValues, variableInfo);
 
-        //probe lineが特定できなかった場合
-        if(result == null || result.isNotFound()) return null;
+        //probe lineが特定できなかった場合nullを返す
+        if(result.isNotFound()) return null;
+
+        //原因行で他に登場した値をセット
         if(!result.isArgument()) result.setValuesInLine(tracedValues.filterByCreateAt(result.getCreateAt()));
 
-        //free memory
-        //tracedValues.clear();
         return result;
     }
 
