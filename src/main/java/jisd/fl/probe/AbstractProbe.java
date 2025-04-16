@@ -26,7 +26,6 @@ import org.json.JSONException;
 
 import java.io.*;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -83,15 +82,10 @@ public abstract class AbstractProbe {
         dbg = createDebugger();
         //set watchPoint
         dbg.setMain(dbgMain);
-//        List<Optional<Point>> watchPoints =
-//                canSetLines.stream()
-//                        .map(dbg::watch)
-//                        .collect(Collectors.toList());
-
-        List<Optional<Point>> watchPoints = new ArrayList<>();
-        for(int line : canSetLines){
-            watchPoints.add(dbg.watch(line));
-        }
+        List<Optional<Point>> watchPoints =
+                canSetLines.stream()
+                        .map(dbg::watch)
+                        .collect(Collectors.toList());
 
         //run Test debugger
         try {
