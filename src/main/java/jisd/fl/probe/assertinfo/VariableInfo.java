@@ -1,8 +1,9 @@
 package jisd.fl.probe.assertinfo;
 
-public class VariableInfo {
-    private final String locateClass;
-    private final String locateMethod; //ローカル変数の場合のみ
+import jisd.fl.util.analyze.CodeElement;
+
+public class VariableInfo { //ローカル変数の場合のみ
+    private final CodeElement locateMethod;
     private final String variableName;
     private final boolean isPrimitive;
     private final boolean isField;
@@ -22,8 +23,7 @@ public class VariableInfo {
                         String actualValue,
                         VariableInfo targetField){
 
-        this.locateClass = locateMethod.split("#")[0];
-        this.locateMethod = locateMethod;
+        this.locateMethod = new CodeElement(locateMethod);
 
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
@@ -35,7 +35,7 @@ public class VariableInfo {
     }
 
     public String getLocateClass() {
-        return locateClass;
+        return locateMethod.getFullyQualifiedClassName();
     }
 
     public String getVariableName(){
@@ -66,21 +66,17 @@ public class VariableInfo {
         return targetField;
     }
 
-    public String getLocateMethod(){
-        return getLocateMethod(false);
-    }
-
     public String getLocateMethod(boolean withClass) {
         if(withClass){
-            return locateMethod;
+            return locateMethod.getFullyQualifiedMethodName();
         }
         else {
-            if(locateMethod.contains("#")) {
-                return locateMethod.split("#")[1];
-            } else {
-                return locateMethod;
-            }
+            return locateMethod.methodSignature;
         }
+    }
+
+    public CodeElement getLocateMethodElement(){
+        return locateMethod;
     }
 
     @Override
@@ -95,8 +91,6 @@ public class VariableInfo {
         VariableInfo vi = (VariableInfo) obj;
 
         return
-            this.locateClass.equals(vi.locateClass) &&
-            this.locateMethod.equals(vi.locateMethod) &&
             this.variableName.equals(vi.variableName) &&
             this.isPrimitive == vi.isPrimitive &&
             this.isField == vi.isField &&

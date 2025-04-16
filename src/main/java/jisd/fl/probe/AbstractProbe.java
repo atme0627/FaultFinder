@@ -54,36 +54,14 @@ public abstract class AbstractProbe {
         this.testSif = new StaticInfoFactory(testSrcDir, testBinDir);
     }
 
-    public static String shortMethodName(String fullMethodName){
-        String name = fullMethodName.split("\\(")[0];
-        String args = fullMethodName.substring(fullMethodName.indexOf("(")+1, fullMethodName.indexOf(")"));
-        List<String> argList = new ArrayList<>(List.of(args.split(", ")));
-        List<String> shortArgList = new ArrayList<>();
-        for(String arg : argList){
-            if(arg.contains(".") || arg.contains("/")) {
-                String[] splitArgs = arg.split("[./]");
-                shortArgList.add(splitArgs[splitArgs.length - 1]);
-            }
-            else {
-                shortArgList.add(arg);
-            }
-        }
-        StringBuilder shortMethod = new StringBuilder(name + "(");
-        for(int i = 0; i < shortArgList.size(); i++){
-            String shortArg = shortArgList.get(i);
-            shortMethod.append(shortArg);
-            if (i != shortArgList.size() - 1) shortMethod.append(", ");
-        }
-        shortMethod.append(")");
-        return shortMethod.toString();
-    }
-
     //一回のprobeを行う
     //条件を満たす行の情報を返す
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
+        disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
         TracedValueRecord tracedValues = traceVariableValues(variableInfo, sleepTime);
-        List<TracedValue> watchedValues = tracedValues.getPis(variableInfo.getVariableName(true, true));
-        ProbeResult result = searchProbeLine(watchedValues, variableInfo.getActualValue(), variableInfo);
+
+        List<TracedValue> watchedValues = tracedValues.filterByVariableName(variableInfo.getVariableName(true, true));
+        ProbeResult result = searchProbeLine(watchedValues, variableInfo);
 
         //probe lineが特定できなかった場合
         if(result == null || result.isNotFound()) return null;
@@ -92,15 +70,13 @@ public abstract class AbstractProbe {
         if(!result.isArgument()) result.setValuesInLine(tracedValues.filterByCreateAt(result.getCreateAt()));
 
         //free memory
-        tracedValues.clear();
+        //tracedValues.clear();
         return result;
     }
 
     protected TracedValueRecord traceVariableValues(VariableInfo variableInfo, int sleepTime){
-        disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
-        List<Integer> canSetLines = getCanSetLineByJP(variableInfo);
+        List<Integer> canSetLines = getCanSetLine(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
-        //disableStdOut("[canSetLines] " + Arrays.toString(canSetLines.toArray()));
         List<Optional<Point>> watchPoints = new ArrayList<>();
         dbg = createDebugger();
         //set watchPoint
@@ -128,43 +104,7 @@ public abstract class AbstractProbe {
         return watchedValues;
     }
 
-//    //JisdのcanSetは同じ名前のローカル変数が出てきたときに、前のやつが上書きされる。
-//    private List<Integer> getCanSetLine(VariableInfo variableInfo) {
-//        Set<Integer> canSetSet = new HashSet<>();
-//        List<Integer> canSetLines;
-//        ClassInfo ci = createClassInfo(variableInfo.getLocateClass());
-//
-//        if(variableInfo.isField()) {
-//            Map<String, ArrayList<Integer>> canSet = ci.field(variableInfo.getVariableName()).canSet();
-//            for (List<Integer> lineWithVar : canSet.values()) {
-//                canSetSet.addAll(lineWithVar);
-//            }
-//        }
-//        else {
-//            //ci.methodは引数に内部で定義されたクラスのインスタンスを含む場合、フルパスが必要
-//            //ex.) SimplexTableau(org/apache/commons/math/optimization/linear/LinearObjectiveFunction, java.util.Collection, org/apache/commons/math/optimization/GoalType, boolean, double)
-//
-//            //ブレークポイントが付けられるのに含まれてない行が発生。
-//            //throws で囲まれた行はブレークポイントが置けない。
-//            String fullMethodName = StaticAnalyzer.fullNameOfMethod(variableInfo.getLocateMethod(), ci);
-//            MethodInfo mi = ci.method(fullMethodName);
-////            for(String localName : mi.localNames()) {
-////                LocalInfo li = mi.local(localName);
-////                canSetSet.addAll(li.canSet());
-////            }
-//            LocalInfo li = mi.local(variableInfo.getVariableName());
-//            for(int canSet : li.canSet()){
-//                canSetSet.add(canSet - 1);
-//                canSetSet.add(canSet);
-//                canSetSet.add(canSet + 1);
-//            }
-//        }
-//        canSetLines = new ArrayList<>(canSetSet);
-//        canSetLines.sort(Comparator.naturalOrder());
-//        return canSetLines;
-//    }
-
-    private List<Integer> getCanSetLineByJP(VariableInfo variableInfo) {
+    private List<Integer> getCanSetLine(VariableInfo variableInfo) {
         List<Integer> canSetLines;
         if(variableInfo.isField()) {
             canSetLines =  new ArrayList<>(StaticAnalyzer.canSetLineOfClass(variableInfo.getLocateClass(), variableInfo.getVariableName()));
@@ -178,10 +118,10 @@ public abstract class AbstractProbe {
     }
 
 
-    private ProbeResult searchProbeLine(List<TracedValue> watchedValues, String actual, VariableInfo vi){
+    private ProbeResult searchProbeLine(List<TracedValue> watchedValues, VariableInfo vi){
         System.out.println("    >> Probe Info: Searching probe line.");
         TracedValue pi;
-
+        String actual = vi.getActualValue();
         //代入行の特定
         //unaryExpr(ex a++)も含める
         Set<Integer> assignedLine = new HashSet<>();
@@ -677,6 +617,30 @@ public abstract class AbstractProbe {
         StringBuilder sb = new StringBuilder(methodName);
         sb.setCharAt(sb.lastIndexOf("."), '#');
         return sb.toString();
+    }
+
+    public static String shortMethodName(String fullMethodName){
+        String name = fullMethodName.split("\\(")[0];
+        String args = fullMethodName.substring(fullMethodName.indexOf("(")+1, fullMethodName.indexOf(")"));
+        List<String> argList = new ArrayList<>(List.of(args.split(", ")));
+        List<String> shortArgList = new ArrayList<>();
+        for(String arg : argList){
+            if(arg.contains(".") || arg.contains("/")) {
+                String[] splitArgs = arg.split("[./]");
+                shortArgList.add(splitArgs[splitArgs.length - 1]);
+            }
+            else {
+                shortArgList.add(arg);
+            }
+        }
+        StringBuilder shortMethod = new StringBuilder(name + "(");
+        for(int i = 0; i < shortArgList.size(); i++){
+            String shortArg = shortArgList.get(i);
+            shortMethod.append(shortArg);
+            if (i != shortArgList.size() - 1) shortMethod.append(", ");
+        }
+        shortMethod.append(")");
+        return shortMethod.toString();
     }
 
     protected ClassInfo createClassInfo(String className){
