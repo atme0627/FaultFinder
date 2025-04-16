@@ -70,8 +70,6 @@ public abstract class AbstractProbe {
 
         //probe lineが特定できなかった場合
         if(result == null || result.isNotFound()) return null;
-
-        result.setVariableInfo(variableInfo);
         if(!result.isArgument()) result.setValuesInLine(tracedValues.filterByCreateAt(result.getCreateAt()));
 
         //free memory
@@ -129,32 +127,23 @@ public abstract class AbstractProbe {
 
 
     private ProbeResult searchProbeLine(List<TracedValue> tracedValues, VariableInfo vi){
-        TracedValue pi;
-        String actual = vi.getActualValue();
-        Set<Integer> assignedLine = new HashSet<>(valueChangedLine(vi));
+        //対象の変数に値の変化が起きている行の特定
+        List<Integer> assignedLine = valueChangedLine(vi);
 
-        //代入後にactualの値に変化している行の特定
-        List<TracedValue> changeToActualLines = new ArrayList<>();
-        for(int i = 0; i < tracedValues.size() - 1; i++){
-            TracedValue watchingLine = tracedValues.get(i);
-            //watchingLineでは代入が行われていない -> 原因行ではない
-            if(!assignedLine.contains(watchingLine.loc.getLineNumber())) continue;
-            //次の行で値がactualに変わっている -> その行が原因行の候補
-            TracedValue afterAssignLine = tracedValues.get(i+1);
-            if(afterAssignLine.value.equals(vi.getActualValue())) changeToActualLines.add(watchingLine);
-        }
+        //代入の実行後にactualの値に変化している行の特定(ない場合あり)
+        List<TracedValue> changeToActualLines = valueChangedToActualLine(tracedValues, assignedLine, vi.getActualValue());
 
-        //実行された代入行が存在するパターン -->その中でさいごに実行された行がprobe line
+        //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
         if(!changeToActualLines.isEmpty()) {
-            changeToActualLines.sort(TracedValue::compareTo);
-            TracedValue probeLineInfo = changeToActualLines.get(changeToActualLines.size() - 1);
-            TracedValue afterAssignLine = tracedValues.get(tracedValues.indexOf(probeLineInfo));
+            TracedValue causeLine = changeToActualLines.get(changeToActualLines.size() - 1);
+            TracedValue afterAssignLine = tracedValues.get(tracedValues.indexOf(causeLine));
 
             return resultIfAssigned(
-                    probeLineInfo.loc.getLineNumber(),
-                    vi.getLocateClass(),
-                    probeLineInfo.createAt,
-                    afterAssignLine.loc.getLineNumber());
+                    causeLine.loc.getLineNumber(),
+                    vi.getLocateMethodElement(),
+                    causeLine.createAt,
+                    afterAssignLine.loc.getLineNumber(),
+                    vi);
         }
 
         //fieldは代入以外での値の変更を特定できない
@@ -167,15 +156,17 @@ public abstract class AbstractProbe {
 
         //実行された代入行がないパターン
         //初めて値がactualと一致した行の前に実行された行を暫定的にprobe lineとする。
+        TracedValue firstMatchedLine;
         for (int i = 0; i < tracedValues.size(); i++) {
-            pi = tracedValues.get(i);
-            if (actual.equals(pi.value)) {
+            firstMatchedLine = tracedValues.get(i);
+            if (vi.getActualValue().equals(firstMatchedLine.value)) {
                 return resultIfNotAssigned(
                         tracedValues.get(i == 0 ? i : i-1).loc.getLineNumber(),
                         vi.getLocateClass(),
                         vi.getVariableName(false, false),
-                        pi.createAt,
-                        pi.loc.getLineNumber());
+                        firstMatchedLine.createAt,
+                        firstMatchedLine.loc.getLineNumber(),
+                        vi);
             }
         }
 
@@ -252,9 +243,23 @@ public abstract class AbstractProbe {
         return result;
     }
 
+    private List<TracedValue> valueChangedToActualLine(List<TracedValue> tracedValues, List<Integer> assignedLine, String actual){
+        List<TracedValue> changedToActualLines = new ArrayList<>();
+        for(int i = 0; i < tracedValues.size() - 1; i++){
+            TracedValue watchingLine = tracedValues.get(i);
+            //watchingLineでは代入が行われていない -> 原因行ではない
+            if(!assignedLine.contains(watchingLine.loc.getLineNumber())) continue;
+            //次の行で値がactualに変わっている -> その行が原因行の候補
+            TracedValue afterAssignLine = tracedValues.get(i+1);
+            if(afterAssignLine.value.equals(actual)) changedToActualLines.add(watchingLine);
+        }
+        changedToActualLines.sort(TracedValue::compareTo);
+        return changedToActualLines;
+    }
 
 
-    private ProbeResult resultIfAssigned(int probeLine, String locationClass, LocalDateTime createAt, int watchedAt){
+
+    private ProbeResult resultIfAssigned(int probeLine, CodeElement locationClass, LocalDateTime createAt, int watchedAt, VariableInfo vi){
         //代入によって変数がactualの値を取るようになったパターン
         //値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
         ProbeResult result = new ProbeResult();
@@ -267,8 +272,7 @@ public abstract class AbstractProbe {
             throw new RuntimeException(e);
         }
 
-        CodeElement ce = new CodeElement(locationClass);
-        Range probeRange = StaticAnalyzer.getRangeOfStatement(ce, probeLine).orElse(null);
+        Range probeRange = StaticAnalyzer.getRangeOfStatement(locationClass, probeLine).orElse(null);
         probeLines = probeRange != null ? Pair.of(probeRange.begin.line, probeRange.end.line) : Pair.of(probeLine, probeLine);
         result.setArgument(false);
         result.setLines(probeLines);
@@ -276,10 +280,11 @@ public abstract class AbstractProbe {
         result.setSrc(getProbeStatement(locationClass, probeLines));
         result.setCreateAt(createAt);
         result.setWatchedAt(watchedAt);
+        result.setVariableInfo(vi);
         return result;
     }
 
-    private ProbeResult resultIfNotAssigned(int probeLine, String locationClass, String variableName, LocalDateTime createAt, int watchedAt){
+    private ProbeResult resultIfNotAssigned(int probeLine, String locationClass, String variableName, LocalDateTime createAt, int watchedAt, VariableInfo vi){
         //代入以外の要因で変数がactualの値をとるようになったパターン
         //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
@@ -325,35 +330,17 @@ public abstract class AbstractProbe {
         result.setProbeMethod(probeMethod);
         result.setWatchedAt(watchedAt);
         result.setArgument(true);
+        result.setVariableInfo(vi);
         return result;
     }
 
+    protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines) {
+        return getProbeStatement(new CodeElement(locationClass), probeLines);
+    }
     //Statementのソースコードを取得
-    protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines){
-//        if(locationClass.contains("$")) locationClass = locationClass.split("\\$")[0];
-        CodeElement tmpCd = new CodeElement(locationClass);
-//
-//        Path path = tmpCd.getFilePath();
-//        List<String> src = new ArrayList<>();
-//
-//        try (BufferedReader reader = new BufferedReader(new FileReader(path.toString()))) {
-//            String string = reader.readLine();
-//            while (string != null){
-//                src.add(string);
-//                string = reader.readLine();
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//        StringBuilder stmt = new StringBuilder();
-//        for(int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
-//            stmt.append(src.get(i - 1));
-//            stmt.append("\n");
-//        }
-//        return stmt.toString();
+    protected String getProbeStatement(CodeElement locationClass, Pair<Integer, Integer> probeLines){
         try {
-            Optional<Statement> stmt = JavaParserUtil.getStatementByLine(tmpCd, probeLines.getLeft());
+            Optional<Statement> stmt = JavaParserUtil.getStatementByLine(locationClass, probeLines.getLeft());
             if(stmt.isEmpty()) throw new RuntimeException();
             return stmt.get().toString();
         } catch (NoSuchFileException e) {
