@@ -51,39 +51,27 @@ public class JavaParserUtil {
 
     //methodNameはクラス、シグニチャを含む
     public static CallableDeclaration<?> getCallableDeclarationByName(CodeElement targetMethod) {
-        try {
-            Optional<CallableDeclaration> omd = extractCallableDeclaration(targetMethod)
-                    .stream()
-                    .filter(cd -> cd.getSignature().toString().equals(targetMethod.methodSignature))
-                    .findFirst();
+        Optional<CallableDeclaration> omd = extractCallableDeclaration(targetMethod)
+                .stream()
+                .filter(cd -> cd.getSignature().toString().equals(targetMethod.methodSignature))
+                .findFirst();
         return omd.orElseThrow(RuntimeException::new);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
     }
 
-    public static List<CallableDeclaration> extractCallableDeclaration(CodeElement targetClass) throws NoSuchFileException {
+    public static List<CallableDeclaration> extractCallableDeclaration(CodeElement targetClass) {
         return extractNode(targetClass, CallableDeclaration.class);
     }
 
-    public static List<Statement> extractStatement(CodeElement targetClass) throws NoSuchFileException {
+    public static List<Statement> extractStatement(CodeElement targetClass) {
         return extractNode(targetClass, Statement.class);
     }
 
     public static List<AssignExpr> extractAssignExpr(CodeElement targetClass) {
-        try {
-            return extractNode(targetClass, AssignExpr.class);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
+        return extractNode(targetClass, AssignExpr.class);
     }
 
     public static List<VariableDeclarator> extractVariableDeclarator(CodeElement targetClass) {
-        try {
-            return extractNode(targetClass, VariableDeclarator.class);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
+        return extractNode(targetClass, VariableDeclarator.class);
     }
 
     @Deprecated
@@ -99,12 +87,16 @@ public class JavaParserUtil {
                 cd.asConstructorDeclaration().getBody();
     }
 
-    private static <T extends Node> List<T> extractNode(CodeElement targetClass, Class<T> nodeClass) throws NoSuchFileException {
-        return parseClass(targetClass)
-                .findAll(nodeClass);
+    private static <T extends Node> List<T> extractNode(CodeElement targetClass, Class<T> nodeClass) {
+        try {
+            return parseClass(targetClass)
+                    .findAll(nodeClass);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static Optional<CallableDeclaration> getCallableDeclarationByLine(CodeElement targetClass, int line) throws NoSuchFileException {
+    public static Optional<CallableDeclaration> getCallableDeclarationByLine(CodeElement targetClass, int line) {
         return getNodeByLine(targetClass, line, CallableDeclaration.class);
     }
 
@@ -113,7 +105,7 @@ public class JavaParserUtil {
         return getNodeByLine(targetClass, line, Statement.class);
     }
 
-    private static <T extends Node> Optional<T> getNodeByLine(CodeElement targetClass, int line, Class<T> nodeClass) throws NoSuchFileException {
+    private static <T extends Node> Optional<T> getNodeByLine(CodeElement targetClass, int line, Class<T> nodeClass)  {
         return extractNode(targetClass, nodeClass)
                 .stream()
                 .filter(stmt -> stmt.getRange().isPresent())
