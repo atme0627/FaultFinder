@@ -97,7 +97,7 @@ class ProbeExTest {
         @Test
         void runTest() {
             ProbeEx prbEx = new ProbeEx(fai);
-            ProbeExResult pr = prbEx.run(1000);
+            ProbeExResult pr = prbEx.run(3000);
             pr.print();
         }
     }

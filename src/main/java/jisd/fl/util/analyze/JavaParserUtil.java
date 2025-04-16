@@ -25,7 +25,7 @@ public class JavaParserUtil {
         return parseClass(targetClass);
     }
 
-    //応急処置
+    //TODO: parseTestClassのところはいらないはず
     public static CompilationUnit parseClass(CodeElement targetClass) throws NoSuchFileException {
         Path p = targetClass.getFilePath();
         if (!Files.exists(p)) return parseTestClass(targetClass);

@@ -18,13 +18,13 @@ public class TracedValueRecord {
 
     public List<TracedValue> filterByVariableName(String varName){
         List<TracedValue> result = record.stream()
-                .filter(tv -> tv.value.equals(varName))
+                .filter(tv -> tv.variableName.equals(varName))
                 .collect(Collectors.toList());
 
         //配列の場合[0]がついていないものも一緒に返す
         if(varName.contains("[")){
             record.stream()
-                    .filter(tv -> tv.value.equals(varName.split("\\[")[0]))
+                    .filter(tv -> tv.variableName.equals(varName.split("\\[")[0]))
                     .forEach(record::add);
         }
         result.sort(TracedValue::compareTo);

@@ -5,6 +5,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.sun.jdi.*;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
@@ -28,6 +29,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class AbstractProbe {
 
@@ -57,10 +59,13 @@ public abstract class AbstractProbe {
     //一回のprobeを行う
     //条件を満たす行の情報を返す
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
+        //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
         TracedValueRecord tracedValues = traceVariableValues(variableInfo, sleepTime);
 
+        //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
         List<TracedValue> watchedValues = tracedValues.filterByVariableName(variableInfo.getVariableName(true, true));
+        System.out.println("    >> Probe Info: Searching probe line.");
         ProbeResult result = searchProbeLine(watchedValues, variableInfo);
 
         //probe lineが特定できなかった場合
@@ -77,11 +82,16 @@ public abstract class AbstractProbe {
     protected TracedValueRecord traceVariableValues(VariableInfo variableInfo, int sleepTime){
         List<Integer> canSetLines = getCanSetLine(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
-        List<Optional<Point>> watchPoints = new ArrayList<>();
         dbg = createDebugger();
         //set watchPoint
         dbg.setMain(dbgMain);
-        for (int line : canSetLines) {
+//        List<Optional<Point>> watchPoints =
+//                canSetLines.stream()
+//                        .map(dbg::watch)
+//                        .collect(Collectors.toList());
+
+        List<Optional<Point>> watchPoints = new ArrayList<>();
+        for(int line : canSetLines){
             watchPoints.add(dbg.watch(line));
         }
 
@@ -97,10 +107,10 @@ public abstract class AbstractProbe {
 
         enableStdOut();
         TracedValueRecord watchedValues = jiProcessor.getInfoFromWatchPoints(watchPoints, variableInfo);
-        dbg.exit();
-        dbg.clearResults();
         watchedValues.considerNotDefinedVariable();
         watchedValues.sort();
+        dbg.exit();
+        dbg.clearResults();
         return watchedValues;
     }
 
@@ -119,73 +129,9 @@ public abstract class AbstractProbe {
 
 
     private ProbeResult searchProbeLine(List<TracedValue> watchedValues, VariableInfo vi){
-        System.out.println("    >> Probe Info: Searching probe line.");
         TracedValue pi;
         String actual = vi.getActualValue();
-        //代入行の特定
-        //unaryExpr(ex a++)も含める
-        Set<Integer> assignedLine = new HashSet<>();
-        List<AssignExpr> aes;
-        List<UnaryExpr> ues;
-        if(vi.isField()) {
-            try {
-                CompilationUnit unit = JavaParserUtil.parseClass(vi.getLocateClass());
-                aes = unit.findAll(AssignExpr.class);
-                ues = unit.findAll(UnaryExpr.class, (n)-> {
-                    UnaryExpr.Operator ope = n.getOperator();
-                    return ope == UnaryExpr.Operator.POSTFIX_DECREMENT ||
-                            ope == UnaryExpr.Operator.POSTFIX_INCREMENT ||
-                            ope == UnaryExpr.Operator.PREFIX_DECREMENT ||
-                            ope == UnaryExpr.Operator.PREFIX_INCREMENT;
-                });
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        else {
-            BlockStmt bs = JavaParserUtil.extractBodyOfMethod(vi.getLocateMethod(true));
-            aes = bs.findAll(AssignExpr.class);
-            ues = bs.findAll(UnaryExpr.class, (n)-> {
-                UnaryExpr.Operator ope = n.getOperator();
-                return ope == UnaryExpr.Operator.POSTFIX_DECREMENT ||
-                        ope == UnaryExpr.Operator.POSTFIX_INCREMENT ||
-                        ope == UnaryExpr.Operator.PREFIX_DECREMENT ||
-                        ope == UnaryExpr.Operator.PREFIX_INCREMENT;
-            });
-        }
-        for(AssignExpr ae : aes){
-            //対象の変数に代入されているか確認
-            Expression target = ae.getTarget();
-            String targetName;
-            if(target.isArrayAccessExpr()) {
-                targetName = target.asArrayAccessExpr().getName().toString();
-            }
-            else if(target.isFieldAccessExpr()){
-                targetName = target.asFieldAccessExpr().getName().toString();
-            }
-            else {
-                targetName = target.toString();
-            }
-
-            if(targetName.equals(vi.getVariableName())) {
-                if(vi.isField() == target.isFieldAccessExpr())
-                    for(int i = ae.getBegin().get().line; i <= ae.getEnd().get().line; i++) {
-                        assignedLine.add(i);
-                    }
-            }
-        }
-        for(UnaryExpr ue : ues){
-            //対象の変数に代入されているか確認
-            Expression target = ue.getExpression();
-            String targetName = target.toString();
-
-            if(targetName.equals(vi.getVariableName())) {
-                if(vi.isField() == target.isFieldAccessExpr())
-                    for(int i = ue.getBegin().get().line; i <= ue.getEnd().get().line; i++) {
-                        assignedLine.add(i);
-                    }
-            }
-        }
+        Set<Integer> assignedLine = new HashSet<>(valueChangedLine(vi));
 
         //代入後にactualの値に変化している行の特定
         List<TracedValue> changeToActualLines = new ArrayList<>();
@@ -234,6 +180,78 @@ public abstract class AbstractProbe {
 
         throw new RuntimeException("There is no value which same to actual.");
     }
+
+    private List<Integer> valueChangedLine(VariableInfo vi){
+        //代入行の特定
+        //unaryExpr(ex a++)も含める
+        CodeElement locateElement = vi.getLocateMethodElement();
+        List<Integer> result = new ArrayList<>();
+        List<AssignExpr> aes;
+        List<UnaryExpr> ues;
+        if(vi.isField()) {
+            try {
+                aes = JavaParserUtil.extractAssignExpr(locateElement);
+                CompilationUnit unit = JavaParserUtil.parseClass(locateElement);
+                ues = unit.findAll(UnaryExpr.class, (n)-> {
+                    UnaryExpr.Operator ope = n.getOperator();
+                    return ope == UnaryExpr.Operator.POSTFIX_DECREMENT ||
+                            ope == UnaryExpr.Operator.POSTFIX_INCREMENT ||
+                            ope == UnaryExpr.Operator.PREFIX_DECREMENT ||
+                            ope == UnaryExpr.Operator.PREFIX_INCREMENT;
+                });
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else {
+            BlockStmt bs = JavaParserUtil.extractBodyOfMethod(locateElement);
+            aes = bs.findAll(AssignExpr.class);
+            ues = bs.findAll(UnaryExpr.class, (n)-> {
+                UnaryExpr.Operator ope = n.getOperator();
+                return ope == UnaryExpr.Operator.POSTFIX_DECREMENT ||
+                        ope == UnaryExpr.Operator.POSTFIX_INCREMENT ||
+                        ope == UnaryExpr.Operator.PREFIX_DECREMENT ||
+                        ope == UnaryExpr.Operator.PREFIX_INCREMENT;
+            });
+        }
+
+        for(AssignExpr ae : aes){
+            //対象の変数に代入されているか確認
+            Expression target = ae.getTarget();
+            String targetName;
+            if(target.isArrayAccessExpr()) {
+                targetName = target.asArrayAccessExpr().getName().toString();
+            }
+            else if(target.isFieldAccessExpr()){
+                targetName = target.asFieldAccessExpr().getName().toString();
+            }
+            else {
+                targetName = target.toString();
+            }
+
+            if(targetName.equals(vi.getVariableName())) {
+                if(vi.isField() == target.isFieldAccessExpr())
+                    for(int i = ae.getBegin().get().line; i <= ae.getEnd().get().line; i++) {
+                        result.add(i);
+                    }
+            }
+        }
+        for(UnaryExpr ue : ues){
+            //対象の変数に代入されているか確認
+            Expression target = ue.getExpression();
+            String targetName = target.toString();
+
+            if(targetName.equals(vi.getVariableName())) {
+                if(vi.isField() == target.isFieldAccessExpr())
+                    for(int i = ue.getBegin().get().line; i <= ue.getEnd().get().line; i++) {
+                        result.add(i);
+                    }
+            }
+        }
+        return result;
+    }
+
+
 
     private ProbeResult resultIfAssigned(int probeLine, String locationClass, LocalDateTime createAt, int watchedAt){
         //代入によって変数がactualの値を取るようになったパターン
@@ -311,28 +329,36 @@ public abstract class AbstractProbe {
 
     //Statementのソースコードを取得
     protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines){
-        if(locationClass.contains("$")) locationClass = locationClass.split("\\$")[0];
+//        if(locationClass.contains("$")) locationClass = locationClass.split("\\$")[0];
         CodeElement tmpCd = new CodeElement(locationClass);
-
-        Path path = tmpCd.getFilePath();
-        List<String> src = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(path.toString()))) {
-            String string = reader.readLine();
-            while (string != null){
-                src.add(string);
-                string = reader.readLine();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+//
+//        Path path = tmpCd.getFilePath();
+//        List<String> src = new ArrayList<>();
+//
+//        try (BufferedReader reader = new BufferedReader(new FileReader(path.toString()))) {
+//            String string = reader.readLine();
+//            while (string != null){
+//                src.add(string);
+//                string = reader.readLine();
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        StringBuilder stmt = new StringBuilder();
+//        for(int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
+//            stmt.append(src.get(i - 1));
+//            stmt.append("\n");
+//        }
+//        return stmt.toString();
+        try {
+            Optional<Statement> stmt = JavaParserUtil.getStatementByLine(tmpCd, probeLines.getLeft());
+            if(stmt.isEmpty()) throw new RuntimeException();
+            return stmt.get().toString();
+        } catch (NoSuchFileException e) {
+            return "not found";
+            //throw new RuntimeException(e);
         }
-
-        StringBuilder stmt = new StringBuilder();
-        for(int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
-            stmt.append(src.get(i - 1));
-            stmt.append("\n");
-        }
-        return stmt.toString();
     }
 
     protected void disableStdOut(String msg){

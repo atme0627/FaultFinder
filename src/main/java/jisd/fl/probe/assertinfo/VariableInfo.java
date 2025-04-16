@@ -24,7 +24,6 @@ public class VariableInfo { //ローカル変数の場合のみ
                         VariableInfo targetField){
 
         this.locateMethod = new CodeElement(locateMethod);
-
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
         this.isField = isField;
