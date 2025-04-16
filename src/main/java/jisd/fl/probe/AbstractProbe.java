@@ -89,7 +89,7 @@ public abstract class AbstractProbe {
         if(result == null || result.isNotFound()) return null;
 
         result.setVariableInfo(variableInfo);
-        if(!result.isArgument()) result.setValuesInLine(tracedValues.getValuesAtSameTime(result.getCreateAt()));
+        if(!result.isArgument()) result.setValuesInLine(tracedValues.filterByCreateAt(result.getCreateAt()));
 
         //free memory
         tracedValues.clear();

@@ -5,79 +5,63 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TracedValueRecord {
     public TracedValueRecord() {};
     Map<String, List<TracedValue>> piCollection = new HashMap<>();
-    public void addElements(List<TracedValue> pis){
-        for(TracedValue pi : pis){
-            if(piCollection.containsKey(pi.variableName)){
-                piCollection.get(pi.variableName).add(pi);
-            }
-            else {
-                List<TracedValue> newPis = new ArrayList<>();
-                newPis.add(pi);
-                piCollection.put(pi.variableName, newPis);
-            }
-        }
+    List<TracedValue> record = new ArrayList<>();
+
+    public void addElements(List<TracedValue> data){
+        record.addAll(data);
     }
 
-    public List<TracedValue> getPis(String key){
+    public List<TracedValue> filterByVariableName(String varName){
+        List<TracedValue> result = record.stream()
+                .filter(tv -> tv.value.equals(varName))
+                .collect(Collectors.toList());
+
         //配列の場合[0]がついていないものも一緒に返す
-        if(key.contains("[")){
-            List<TracedValue> pis = new ArrayList<>();
-            pis.addAll(piCollection.get(key));
-            List<TracedValue> tmp = piCollection.get(key.split("\\[")[0]);
-            if(tmp != null) pis.addAll(tmp);
-            pis.sort(TracedValue::compareTo);
-            return pis;
+        if(varName.contains("[")){
+            record.stream()
+                    .filter(tv -> tv.value.equals(varName.split("\\[")[0]))
+                    .forEach(record::add);
         }
-        return piCollection.get(key);
+        result.sort(TracedValue::compareTo);
+        return result;
+    }
+
+
+    //TODO: 返り値をなんとかする
+    public Map<String, String> filterByCreateAt(LocalDateTime createAt){
+        List<TracedValue> result =  record.stream()
+                .filter(tv -> tv.createAt.equals(createAt))
+                .collect(Collectors.toList());
+        return result.stream().collect(Collectors.toMap(tv -> tv.variableName,tv ->  tv.createAt.toString()));
     }
 
     public boolean isEmpty(){
-        return piCollection.isEmpty();
+        return record.isEmpty();
     }
 
     public void sort(){
-        for(List<TracedValue> pis : piCollection.values()){
-            pis.sort(TracedValue::compareTo);
-        }
-    }
-    public Map<String, String> getValuesAtSameTime(LocalDateTime createAt){
-        Map<String, String> pis = new HashMap<>();
-        for(List<TracedValue> l : piCollection.values()){
-            for(TracedValue pi : l){
-                if(pi.createAt.equals(createAt)) {
-                    pis.put(pi.variableName, pi.value);
-                }
-            }
-        }
-        return pis;
+        record.sort(TracedValue::compareTo);
     }
 
-    public Map<String, String> getValuesFromLines(Pair<Integer, Integer> lines){
-        Map<String, String> pis = new HashMap<>();
-        for(List<TracedValue> l : piCollection.values()){
-            for(TracedValue pi : l){
-                for(int i = lines.getLeft(); i <= lines.getRight(); i++) {
-                    if (pi.loc.getLineNumber() == i) {
-                        pis.put(pi.variableName, pi.value);
-                    }
-                }
-            }
-        }
-        return pis;
+    public List<String> getIncludedVariableNames(){
+        return record.stream()
+                .map(tv -> tv.variableName)
+                .distinct()
+                .collect(Collectors.toList());
     }
+
 
     //値の宣言行など、実行はされているが値が定義されていない行も
     //実行されていることを認識するために、定義されていない行の値は"not defined"として埋める。
     public void considerNotDefinedVariable(){
         Set<Pair<LocalDateTime, Integer>> executedLines = new HashSet<>();
-        for(List<TracedValue> pis : piCollection.values()){
-            for(TracedValue pi : pis){
-                executedLines.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
-            }
+        for(TracedValue tv : record){
+            executedLines.add(Pair.of(tv.createAt, tv.loc.getLineNumber()));
         }
 
         for(List<TracedValue> pis : piCollection.values()){
@@ -93,8 +77,8 @@ public class TracedValueRecord {
             if(variableName.contains("[")){
                 // continue;
                 Set<Pair<LocalDateTime, Integer>> executedLinesOfWithoutBracket = new HashSet<>();
-                if(getPis(variableName.split("\\[")[0]) != null) {
-                    for (TracedValue pi : getPis(variableName.split("\\[")[0])) {
+                if(filterByVariableName(variableName.split("\\[")[0]) != null) {
+                    for (TracedValue pi : filterByVariableName(variableName.split("\\[")[0])) {
                         executedLinesOfWithoutBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
                     }
                 }
@@ -115,8 +99,8 @@ public class TracedValueRecord {
                 if (isArray){
                     // continue;
                     Set<Pair<LocalDateTime, Integer>> executedLinesOfWithBracket = new HashSet<>();
-                    if(getPis(variableName + "[0]") != null) {
-                        for (TracedValue pi : getPis(variableName + "[0]")) {
+                    if(filterByVariableName(variableName + "[0]") != null) {
+                        for (TracedValue pi : filterByVariableName(variableName + "[0]")) {
                             executedLinesOfWithBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
                         }
                     }
@@ -143,23 +127,20 @@ public class TracedValueRecord {
         }
     }
 
-    public void print(String key){
-        List<TracedValue> pis = getPis(key);
-        if(pis == null) throw new RuntimeException("key " + key + " is not exist.");
-        for(TracedValue pi : pis) {
-            System.out.println("    >> " + pi);
+    public void print(String varName){
+        for(TracedValue tv : filterByVariableName(varName)) {
+            System.out.println("    >> " + tv);
         }
     }
 
     public void printAll(){
-        for(String key : piCollection.keySet()){
-            print(key);
+        for(TracedValue tv : record){
+            System.out.println("    >> " + tv);
         }
     }
 
+    //TODO: 必要ないかも
     public void clear(){
-        for(List<TracedValue> l : piCollection.values()){
-            l = null;
-        }
+        record = null;
     }
 }

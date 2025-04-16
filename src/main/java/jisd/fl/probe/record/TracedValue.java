@@ -9,7 +9,6 @@ public class TracedValue implements Comparable<TracedValue>{
     public Location loc;
     public String variableName;
     public String value;
-    int arrayIndex = -1;
 
     public TracedValue(LocalDateTime createAt,
                        Location loc,
