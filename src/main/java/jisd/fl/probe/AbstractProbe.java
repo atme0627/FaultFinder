@@ -77,7 +77,7 @@ public abstract class AbstractProbe {
     }
 
     protected TracedValueRecord traceVariableValues(VariableInfo variableInfo, int sleepTime){
-        List<Integer> canSetLines = getCanSetLine(variableInfo);
+        List<Integer> canSetLines = StaticAnalyzer.getCanSetLine(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
         dbg = createDebugger();
         //set watchPoint
@@ -104,17 +104,6 @@ public abstract class AbstractProbe {
         dbg.exit();
         dbg.clearResults();
         return watchedValues;
-    }
-
-    private List<Integer> getCanSetLine(VariableInfo variableInfo) {
-        List<Integer> canSetLines;
-        if(variableInfo.isField()) {
-            canSetLines =  new ArrayList<>(StaticAnalyzer.canSetLineOfClass(variableInfo.getLocateMethodElement(), variableInfo.getVariableName()));
-        }
-        else {
-            canSetLines =  new ArrayList<>(StaticAnalyzer.canSetLineOfMethod(variableInfo.getLocateMethodElement(), variableInfo.getVariableName()));
-        }
-        return canSetLines;
     }
 
 

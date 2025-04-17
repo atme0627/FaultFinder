@@ -56,7 +56,7 @@ class TestLauncherTest {
             PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/main");
             PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/test");
 
-            TestUtil.compileForDebug(new CodeElement("sample.SampleTest"));
+            TestUtil.compileForDebug(new CodeElement("sample"));
         }
 
         @Test

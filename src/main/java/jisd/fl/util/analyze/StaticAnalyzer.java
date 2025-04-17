@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.PropertyLoader;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
@@ -121,6 +122,14 @@ public class StaticAnalyzer {
                         .collect(Collectors.toList());
     }
 
+    public static List<Integer> getCanSetLine(VariableInfo variableInfo) {
+        if(variableInfo.isField()) {
+            return StaticAnalyzer.canSetLineOfClass(variableInfo.getLocateMethodElement(), variableInfo.getVariableName());
+        }
+        else {
+            return StaticAnalyzer.canSetLineOfMethod(variableInfo.getLocateMethodElement(), variableInfo.getVariableName());
+        }
+    }
 
     public static List<Integer> canSetLineOfClass(CodeElement targetClass, String variable){
         Set<String> methods;
@@ -161,22 +170,6 @@ public class StaticAnalyzer {
                     }
                 });
 
-//        class SimpleNameVisitor extends VoidVisitorAdapter<String> {
-//            @Override
-//            public void visit(SimpleName n, String arg) {
-//                if(n.getIdentifier().equals(variable)){
-//                    for(int i = -2; i <= 2; i++) {
-//                        if (bs.getBegin().get().line < n.getBegin().get().line + i
-//                                && n.getBegin().get().line + i <= bs.getEnd().get().line) {
-//                            canSet.add(n.getBegin().get().line + i);
-//                        }
-//                    }
-//                }
-//                super.visit(n, arg);
-//            }
-//        }
-//
-//        bs.accept(new SimpleNameVisitor(), "");
         return canSet.stream()
                 .distinct()
                 .sorted()
