@@ -122,9 +122,9 @@ public class StaticAnalyzer {
     }
 
 
-    public static Set<Integer> canSetLineOfClass(CodeElement targetClass, String variable){
+    public static List<Integer> canSetLineOfClass(CodeElement targetClass, String variable){
         Set<String> methods;
-        Set<Integer> canSet = new HashSet<>();
+        List<Integer> canSet = new ArrayList<>();
 
         try {
             methods = getMethodNames(targetClass);
@@ -135,14 +135,17 @@ public class StaticAnalyzer {
         methods.stream()
                 .map(CodeElement::new)
                 .forEach(e -> canSet.addAll(canSetLineOfMethod(e, variable)));
-        return canSet;
+
+        return canSet.stream()
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
 
-    public static Set<Integer> canSetLineOfMethod(CodeElement targetMethod, String variable){
-        Set<Integer> canSet = new HashSet<>();
-        BlockStmt bs;
-        bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
+    public static List<Integer> canSetLineOfMethod(CodeElement targetMethod, String variable){
+        List<Integer> canSet = new ArrayList<>();
+        BlockStmt bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
         //bodyが空の場合がある。
         if(bs == null) return canSet;
 
@@ -174,7 +177,10 @@ public class StaticAnalyzer {
 //        }
 //
 //        bs.accept(new SimpleNameVisitor(), "");
-        return canSet;
+        return canSet.stream()
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     static class ClassExplorer implements FileVisitor<Path> {

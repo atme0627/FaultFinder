@@ -109,13 +109,11 @@ public abstract class AbstractProbe {
     private List<Integer> getCanSetLine(VariableInfo variableInfo) {
         List<Integer> canSetLines;
         if(variableInfo.isField()) {
-            canSetLines =  new ArrayList<>(StaticAnalyzer.canSetLineOfClass(variableInfo.getLocateClass(), variableInfo.getVariableName()));
+            canSetLines =  new ArrayList<>(StaticAnalyzer.canSetLineOfClass(variableInfo.getLocateMethodElement(), variableInfo.getVariableName()));
         }
         else {
-            canSetLines =  new ArrayList<>(StaticAnalyzer.canSetLineOfMethod(variableInfo.getLocateMethod(true), variableInfo.getVariableName()));
+            canSetLines =  new ArrayList<>(StaticAnalyzer.canSetLineOfMethod(variableInfo.getLocateMethodElement(), variableInfo.getVariableName()));
         }
-
-        canSetLines.sort(Comparator.naturalOrder());
         return canSetLines;
     }
 
