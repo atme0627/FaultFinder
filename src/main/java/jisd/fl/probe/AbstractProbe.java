@@ -303,7 +303,12 @@ public abstract class AbstractProbe {
     }
     //Statementのソースコードを取得
     protected String getProbeStatement(CodeElement locationClass, Pair<Integer, Integer> probeLines){
-        Optional<Statement> stmt = JavaParserUtil.getStatementByLine(locationClass, probeLines.getLeft());
+        Optional<Statement> stmt = null;
+        try {
+            stmt = JavaParserUtil.getStatementByLine(locationClass, probeLines.getLeft());
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         if(stmt.isEmpty()) throw new RuntimeException();
         return stmt.get().toString();
     }
