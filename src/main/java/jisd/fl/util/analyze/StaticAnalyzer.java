@@ -160,17 +160,23 @@ public class StaticAnalyzer {
 
     public static List<Integer> canSetLineOfMethod(CodeElement targetMethod, String variable){
         List<Integer> canSet = new ArrayList<>();
-        BlockStmt bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
+        BlockStmt bs = null;
+        try {
+            bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         //bodyが空の場合がある。
         if(bs == null) return canSet;
 
+        BlockStmt finalBs = bs;
         bs.findAll(SimpleName.class)
                 .stream()
                 .filter(sn -> sn.getIdentifier().endsWith(variable))
                 .forEach(sn -> {
                     for(int i = -2; i <= 2; i++) {
-                        if (bs.getBegin().get().line < sn.getBegin().get().line + i
-                                && sn.getBegin().get().line + i <= bs.getEnd().get().line) {
+                        if (finalBs.getBegin().get().line < sn.getBegin().get().line + i
+                                && sn.getBegin().get().line + i <= finalBs.getEnd().get().line) {
                             canSet.add(sn.getBegin().get().line + i);
                         }
                     }

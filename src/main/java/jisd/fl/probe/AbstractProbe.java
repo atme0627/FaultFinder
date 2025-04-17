@@ -158,7 +158,12 @@ public abstract class AbstractProbe {
             }
         }
         else {
-            BlockStmt bs = JavaParserUtil.extractBodyOfMethod(locateElement);
+            BlockStmt bs = null;
+            try {
+                bs = JavaParserUtil.extractBodyOfMethod(locateElement);
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
             aes = bs.findAll(AssignExpr.class);
             ues = bs.findAll(UnaryExpr.class, (n)-> {
                 UnaryExpr.Operator ope = n.getOperator();
@@ -229,9 +234,14 @@ public abstract class AbstractProbe {
         LocalDateTime createAt = causeLineData.createAt;
 
         CodeElement locateElement = vi.getLocateMethodElement();
-        String probeMethod = StaticAnalyzer.getMethodNameFormLine(locateElement, causeLineNumber);
-
-        Range probeRange = StaticAnalyzer.getRangeOfStatement(locateElement, causeLineNumber).orElse(null);
+        String probeMethod;
+        Range probeRange;
+        try {
+            probeMethod = StaticAnalyzer.getMethodNameFormLine(locateElement, causeLineNumber);
+            probeRange = StaticAnalyzer.getRangeOfStatement(locateElement, causeLineNumber).orElse(null);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         Pair<Integer, Integer> probeLines =
                 probeRange != null ?
                 Pair.of(probeRange.begin.line, probeRange.end.line) :
@@ -267,7 +277,12 @@ public abstract class AbstractProbe {
         //1. 初期化の時点でその値が代入されている。
         //この場合、probeLineは必ずmethod内にいる。
         boolean isThereVariableDeclaration = false;
-        BlockStmt bs = JavaParserUtil.extractBodyOfMethod(probeMethod);
+        BlockStmt bs = null;
+        try {
+            bs = JavaParserUtil.extractBodyOfMethod(probeMethod);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
         for (VariableDeclarator vd : vds) {
             if (vd.getNameAsString().equals(variableName) &&
@@ -307,7 +322,7 @@ public abstract class AbstractProbe {
         try {
             stmt = JavaParserUtil.getStatementByLine(locationClass, probeLines.getLeft());
         } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
+            return "not found";
         }
         if(stmt.isEmpty()) throw new RuntimeException();
         return stmt.get().toString();

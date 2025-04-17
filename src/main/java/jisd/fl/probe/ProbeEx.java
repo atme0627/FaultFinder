@@ -368,7 +368,12 @@ public class ProbeEx extends AbstractProbe {
 
 //        Pair<Integer, Integer> lines = rangeOfStatements.getOrDefault(line, Pair.of(line, line));
         CodeElement tmpCd = new CodeElement(locateMethod);
-        Range tmpRange = StaticAnalyzer.getRangeOfStatement(tmpCd, line).orElse(null);
+        Range tmpRange = null;
+        try {
+            tmpRange = StaticAnalyzer.getRangeOfStatement(tmpCd, line).orElse(null);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         Pair<Integer, Integer> lines = tmpRange != null ? Pair.of(tmpRange.begin.line, tmpRange.end.line) : Pair.of(line, line);
         String calledMethod = pr.getProbeMethod();
         calledMethod = calledMethod.substring(calledMethod.indexOf("#")+1, calledMethod.indexOf("("));
@@ -437,7 +442,12 @@ public class ProbeEx extends AbstractProbe {
 //            }
 //        }
         CodeElement zzztmpCd = new CodeElement(locateMethod);
-        BlockStmt bs = JavaParserUtil.extractBodyOfMethod(zzztmpCd);
+        BlockStmt bs = null;
+        try {
+            bs = JavaParserUtil.extractBodyOfMethod(zzztmpCd);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
         return bs.accept(new BlockStmtVisitor(), line);
     }
 

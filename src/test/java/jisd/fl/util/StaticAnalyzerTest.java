@@ -86,7 +86,7 @@ class StaticAnalyzerTest {
     @Nested
     class getRangeOfStatementTest {
         @Test
-        void simpleCase1(){
+        void simpleCase1() throws NoSuchFileException {
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
             Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 9);
             assertTrue(actual.isPresent());
@@ -95,7 +95,7 @@ class StaticAnalyzerTest {
         }
 
         @Test
-        void simpleCase2(){
+        void simpleCase2() throws NoSuchFileException {
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
             Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 14);
             assertTrue(actual.isPresent());
@@ -104,7 +104,7 @@ class StaticAnalyzerTest {
         }
 
         @Test
-        void simpleCase3(){
+        void simpleCase3() throws NoSuchFileException {
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
             Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 23);
             assertTrue(actual.isPresent());
@@ -113,7 +113,7 @@ class StaticAnalyzerTest {
         }
 
         @Test
-        void simpleCase4(){
+        void simpleCase4() throws NoSuchFileException {
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
             Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 27);
             assertTrue(actual.isPresent());
@@ -125,14 +125,14 @@ class StaticAnalyzerTest {
     @Nested
     class getMethodNameFromLineTest {
         @Test
-        void simpleCase1(){
+        void simpleCase1() throws NoSuchFileException {
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
             String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 12);
             assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodA(int)", actual);
         }
 
         @Test
-        void simpleCase2(){
+        void simpleCase2() throws NoSuchFileException {
             CodeElement targetClass = new CodeElement("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
             String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 21);
             assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodB()", actual);
