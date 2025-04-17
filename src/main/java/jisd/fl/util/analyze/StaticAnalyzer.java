@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.PropertyLoader;
 import org.apache.commons.lang3.tuple.Pair;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
@@ -127,48 +128,58 @@ public class StaticAnalyzer {
                         .collect(Collectors.toList());
     }
 
-    public static Set<Integer> canSetLineOfClass(String targetClassName, String variable){
-        Set<String> methods;
-        Set<Integer> canSet = new HashSet<>();
+    public static List<Integer> getCanSetLine(VariableInfo variableInfo) {
+        if(variableInfo.isField()) {
+            return StaticAnalyzer.canSetLineOfClass(variableInfo.getLocateMethodElement(), variableInfo.getVariableName());
+        }
+        else {
+            return StaticAnalyzer.canSetLineOfMethod(variableInfo.getLocateMethodElement(), variableInfo.getVariableName());
+        }
+    }
 
-        CodeElement targetClass = new CodeElement(targetClassName);
+    public static List<Integer> canSetLineOfClass(CodeElement targetClass, String variable){
+        Set<String> methods;
+        List<Integer> canSet = new ArrayList<>();
+
         try {
             methods = getMethodNames(targetClass);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
 
-        for(String method: methods){
-            canSet.addAll(canSetLineOfMethod(method, variable));
-        }
-        return canSet;
+        methods.stream()
+                .map(CodeElement::new)
+                .forEach(e -> canSet.addAll(canSetLineOfMethod(e, variable)));
+
+        return canSet.stream()
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
 
-    public static Set<Integer> canSetLineOfMethod(String targetMethod, String variable){
-        Set<Integer> canSet = new HashSet<>();
-        BlockStmt bs;
-        bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
+    public static List<Integer> canSetLineOfMethod(CodeElement targetMethod, String variable){
+        List<Integer> canSet = new ArrayList<>();
+        BlockStmt bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
         //bodyが空の場合がある。
         if(bs == null) return canSet;
 
-        class SimpleNameVisitor extends VoidVisitorAdapter<String> {
-            @Override
-            public void visit(SimpleName n, String arg) {
-                if(n.getIdentifier().equals(variable)){
+        bs.findAll(SimpleName.class)
+                .stream()
+                .filter(sn -> sn.getIdentifier().endsWith(variable))
+                .forEach(sn -> {
                     for(int i = -2; i <= 2; i++) {
-                        if (bs.getBegin().get().line < n.getBegin().get().line + i
-                                && n.getBegin().get().line + i <= bs.getEnd().get().line) {
-                            canSet.add(n.getBegin().get().line + i);
+                        if (bs.getBegin().get().line < sn.getBegin().get().line + i
+                                && sn.getBegin().get().line + i <= bs.getEnd().get().line) {
+                            canSet.add(sn.getBegin().get().line + i);
                         }
                     }
-                }
-                super.visit(n, arg);
-            }
-        }
+                });
 
-        bs.accept(new SimpleNameVisitor(), "");
-        return canSet;
+        return canSet.stream()
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     static class ClassExplorer implements FileVisitor<Path> {
