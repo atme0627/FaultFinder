@@ -8,18 +8,22 @@ import java.util.Map;
 import java.util.Set;
 
 public class ProbeResult {
-    private Pair<Integer, Integer> lines;
-    private String src;
+    private VariableInfo vi;
+
+    //これらはStatementNodeに置き換えられる
+    //private Pair<Integer, Integer> lines;
+    //private String src;
+    //probeLineで観測された変数の値のペア
+    //private Map<String, String> valuesInLine;
+
     private String probeMethod;
     //呼び出し側のメソッドと呼び出している行
     private Pair<Integer, String> callerMethod;
-    private Set<String> siblingMethods;
     //falseの場合はその変数の欠陥が引数由来
     private boolean isArgument = false;
-    private VariableInfo vi;
-    //probeLineで観測された変数の値のペア
-    private Map<String, String> valuesInLine;
-    private LocalDateTime createAt;
+
+    //private LocalDateTime createAt;
+
     //実際にactualとなっていたことが観測された行
     private int watchedAt;
 
@@ -36,20 +40,12 @@ public class ProbeResult {
         return callerMethod;
     }
 
-    public Set<String> getSiblingMethods() {
-        return siblingMethods;
-    }
-
     void setProbeMethod(String probeMethod) {
         this.probeMethod = probeMethod;
     }
 
     void setCallerMethod(Pair<Integer, String> callerMethod) {
         this.callerMethod = callerMethod;
-    }
-
-    void setSiblingMethods(Set<String> siblingMethods) {
-        this.siblingMethods = siblingMethods;
     }
 
     public Pair<Integer, Integer> getProbeLines() {

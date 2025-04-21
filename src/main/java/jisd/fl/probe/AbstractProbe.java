@@ -266,10 +266,10 @@ public abstract class AbstractProbe {
         ProbeResult result = new ProbeResult();
         String probeMethod;
         Pair<Integer, Integer> probeLines = null;
-
+        CodeElement locateElement = vi.getLocateMethodElement();
         //実行しているメソッドを取得
         try {
-            probeMethod = StaticAnalyzer.getMethodNameFormLine(locationClass, probeLine);
+            probeMethod = StaticAnalyzer.getMethodNameFormLine(locateElement, probeLine);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
