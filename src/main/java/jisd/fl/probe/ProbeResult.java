@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -15,7 +16,7 @@ public class ProbeResult {
     //private String src;
     //probeLineで観測された変数の値のペア
     //private Map<String, String> valuesInLine;
-
+    private Statement stmt;
     private String probeMethod;
     //呼び出し側のメソッドと呼び出している行
     private Pair<Integer, String> callerMethod;
