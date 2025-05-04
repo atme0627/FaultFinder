@@ -1,24 +1,27 @@
 package jisd.fl.probe;
 
-import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.util.analyze.StatementElement;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Set;
 
 public class ProbeResult {
+    //probe対象の変数
     private final VariableInfo vi;
+
+    //変数の原因行
+    private final StatementElement stmt;
 
     //probeLineで観測された変数の値のペア
     private Map<String, String> valuesInLine;
-    private final Statement stmt;
+
     private String probeMethod;
     //呼び出し側のメソッドと呼び出している行
     private Pair<Integer, String> callerMethod;
     //falseの場合はその変数の欠陥が引数由来
-    private boolean isArgument = false;
+    private final boolean isCausedByArgument;
 
     private LocalDateTime createAt;
 
@@ -27,9 +30,18 @@ public class ProbeResult {
 
     //probeLineの特定ができなかったかどうか
     private boolean notFound = false;
-    public ProbeResult(VariableInfo vi, Statement stmt){
+
+    //probeの結果、原因がパラメータとして渡された変数にある場合
+    public ProbeResult(VariableInfo vi){
+        this.vi = vi;
+        this.stmt = null;
+        this.isCausedByArgument = true;
+    }
+
+    public ProbeResult(VariableInfo vi, StatementElement stmt){
         this.vi = vi;
         this.stmt = stmt;
+        this.isCausedByArgument = false;
     }
 
     public String getProbeMethod() {
@@ -49,19 +61,15 @@ public class ProbeResult {
     }
 
     public Pair<Integer, Integer> getProbeLines() {
-        return Pair.of(stmt.getBegin().get().line, stmt.getEnd().get().line);
+        return Pair.of(stmt.statement().getBegin().get().line, stmt.statement().getEnd().get().line);
     }
 
     public String getSrc() {
-        return stmt.toString();
+        return stmt == null ? "" : stmt.statement().toString();
     }
 
-    public boolean isArgument() {
-        return isArgument;
-    }
-
-    public void setArgument(boolean argument) {
-        isArgument = argument;
+    public boolean isCausedByArgument() {
+        return isCausedByArgument;
     }
 
     public VariableInfo getVariableInfo() {

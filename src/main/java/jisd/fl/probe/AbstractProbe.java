@@ -1,6 +1,5 @@
 package jisd.fl.probe;
 
-import com.github.javaparser.Range;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
@@ -14,10 +13,7 @@ import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueRecord;
-import jisd.fl.util.analyze.JavaParserUtil;
-import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.MethodElement;
-import jisd.fl.util.analyze.StaticAnalyzer;
+import jisd.fl.util.analyze.*;
 import jisd.fl.util.TestUtil;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -56,7 +52,7 @@ public abstract class AbstractProbe {
         if(result.isNotFound()) return null;
 
         //原因行で他に登場した値をセット
-        if(!result.isArgument()) result.setValuesInLine(tracedValues.filterByCreateAt(result.getCreateAt()));
+        if(!result.isCausedByArgument()) result.setValuesInLine(tracedValues.filterByCreateAt(result.getCreateAt()));
 
         return result;
     }
@@ -120,11 +116,10 @@ public abstract class AbstractProbe {
         //実行された代入行がないパターン
         //初めて値がactualと一致した行の前に実行された行を暫定的にprobe lineとする。
         TracedValue firstMatchedLine;
-        for (int i = 0; i < tracedValues.size(); i++) {
-            firstMatchedLine = tracedValues.get(i);
+        for (TracedValue tracedValue : tracedValues) {
+            firstMatchedLine = tracedValue;
             if (vi.getActualValue().equals(firstMatchedLine.value)) {
                 return resultIfNotAssigned(
-                        tracedValues.get(i == 0 ? i : i-1).loc.getLineNumber(),
                         vi.getVariableName(false, false),
                         firstMatchedLine.createAt,
                         firstMatchedLine.loc.getLineNumber(),
@@ -233,31 +228,24 @@ public abstract class AbstractProbe {
         int afterAssignedLineNumber = afterAssignedLineData.loc.getLineNumber();
         LocalDateTime createAt = causeLineData.createAt;
 
-        CodeElementName locateElement = vi.getLocateMethodElement();
-        String probeMethod;
-        Range probeRange;
-        Statement probeStmt;
+        //実行しているメソッドを取得
+        CodeElementName locateMethodElementName = vi.getLocateMethodElement();
+        MethodElement locateMethodElement;
         try {
-            probeMethod = StaticAnalyzer.getMethodNameFormLine(locateElement, causeLineNumber);
-            probeRange = StaticAnalyzer.getRangeOfStatement(locateElement, causeLineNumber).orElse(null);
-            probeStmt = JavaParserUtil.getStatementByLine(locateElement, causeLineNumber).get();
+            locateMethodElement = MethodElement.getMethodElementByName(locateMethodElementName);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
-        Pair<Integer, Integer> probeLines =
-                probeRange != null ?
-                Pair.of(probeRange.begin.line, probeRange.end.line) :
-                Pair.of(causeLineNumber, causeLineNumber);
+        StatementElement probeStmt = locateMethodElement.FindStatementByLine(causeLineNumber).get();
 
         ProbeResult result = new ProbeResult(vi, probeStmt);
-        result.setArgument(false);
-        result.setProbeMethod(probeMethod);
+        result.setProbeMethod(locateMethodElementName.getFullyQualifiedMethodName());
         result.setCreateAt(createAt);
         result.setWatchedAt(afterAssignedLineNumber);
         return result;
     }
 
-    private ProbeResult resultIfNotAssigned(int probeLine, String variableName, LocalDateTime createAt, int watchedAt, VariableInfo vi){
+    private ProbeResult resultIfNotAssigned(String variableName, LocalDateTime createAt, int watchedAt, VariableInfo vi){
         //代入以外の要因で変数がactualの値をとるようになったパターン
         //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
@@ -277,11 +265,10 @@ public abstract class AbstractProbe {
         Optional<VariableDeclarator> ovd = locateMethodElement.findLocalVarDeclaration(variableName);
         boolean isThereVariableDeclaration = ovd.isPresent() && ovd.get().getInitializer().isPresent();
         //この場合、probeLineは必ずmethod内にいる。
-        Statement probeStmt;
         if (isThereVariableDeclaration) {
             int varDeclarationLine = ovd.get().getBegin().get().line;
-            ProbeResult result = new ProbeResult(vi, locateMethodElement.FindStatementByLine(varDeclarationLine).get());
-            result.setArgument(false);
+            StatementElement probeStmt = locateMethodElement.FindStatementByLine(varDeclarationLine).get();
+            ProbeResult result = new ProbeResult(vi, probeStmt);
             result.setProbeMethod(locateMethodElementName.getFullyQualifiedMethodName());
             result.setCreateAt(createAt);
             result.setWatchedAt(watchedAt);
@@ -290,15 +277,9 @@ public abstract class AbstractProbe {
 
         //2. その変数が引数由来で、かつメソッド内で上書きされていない
         //暫定的にprobeLinesを設定
-        try {
-            probeStmt = JavaParserUtil.getStatementByLine(locateMethodElementName, probeLine).get();
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-        ProbeResult result = new ProbeResult(vi, probeStmt);
+        ProbeResult result = new ProbeResult(vi);
         result.setProbeMethod(locateMethodElementName.getFullyQualifiedMethodName());
         result.setWatchedAt(watchedAt);
-        result.setArgument(true);
         return result;
     }
 
@@ -343,18 +324,10 @@ public abstract class AbstractProbe {
 
     protected void printProbeStatement(ProbeResult result){
         System.out.println("    >> [PROBE LINES]");
-        if(result.isArgument()) {
+        if(result.isCausedByArgument()) {
             System.out.println("    >> Variable defect is derived from caller method. ");
         }
-
-        Pair<Integer, Integer> probeLines = result.getProbeLines();
-        if(result.getSrc() != null) {
-            String[] src = result.getSrc().split("\n");
-            int l = 0;
-            for (int i = probeLines.getLeft(); i <= probeLines.getRight(); i++) {
-                System.out.println("    >> " + i + ": " + src[l++]);
-            }
-        }
+        System.out.println("    >> " + result.getSrc());
     }
 
 

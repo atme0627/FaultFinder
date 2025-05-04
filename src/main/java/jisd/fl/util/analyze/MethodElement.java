@@ -31,9 +31,9 @@ public class MethodElement {
                 .findFirst();
     }
 
-    //指定された行を含むStatementを返す
+    //指定された行を含むStatementElementを返す
     //指定された行を含むStatementが存在しない場合はnull
-    public Optional<Statement> FindStatementByLine(int line){
+    public Optional<StatementElement> FindStatementByLine(int line){
         BlockStmt body = extractBodyOfMethod();
         return body.findAll(Statement.class).stream()
                 .filter(stmt -> stmt.getRange().isPresent())
@@ -46,7 +46,8 @@ public class MethodElement {
                     Range r = stmt.getRange().get();
                     // 範囲サイズを計算（行数差×1000 + 列数差）
                     return (r.end.line - r.begin.line) * 1000 + (r.end.column - r.begin.column);
-                }));
+                }))
+                .map(StatementElement::new);
     }
 
     private BlockStmt extractBodyOfMethod() {

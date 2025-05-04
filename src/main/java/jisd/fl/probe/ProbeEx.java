@@ -62,7 +62,7 @@ public class ProbeEx extends AbstractProbe {
                 printProbeExInfoHeader(target, depth);
                 ProbeResult pr = probing(sleepTime, target);
                 if(pr == null) continue;
-                if(pr.isArgument()){
+                if(pr.isCausedByArgument()){
                     //感染した変数が引数のものだった場合
                     Pair<Integer, String> caller = getCallerMethod(pr.getWatchedAt(), target);
                     int probeLine = caller.getLeft();
@@ -76,7 +76,7 @@ public class ProbeEx extends AbstractProbe {
                 printProbeExInfoFooter(pr, newTargets, markingMethods);
 
                 nextTargets.addAll(newTargets);
-                isArgument = pr.isArgument();
+                isArgument = pr.isCausedByArgument();
             }
 
             probingTargets = nextTargets;
@@ -88,7 +88,7 @@ public class ProbeEx extends AbstractProbe {
     public List<String> searchMarkingMethods(ProbeResult pr, String testMethod){
         List<String> markingMethods = new ArrayList<>();
         //引数が感染していた場合、呼び出しメソッドがマーキング対象
-        if(pr.isArgument()){
+        if(pr.isCausedByArgument()){
             Pair<Integer, String> caller = pr.getCallerMethod();
             if(caller != null) {
                 markingMethods.add(caller.getRight());
@@ -113,7 +113,7 @@ public class ProbeEx extends AbstractProbe {
     public List<VariableInfo> searchNextProbeTargets(ProbeResult pr) {
         List<VariableInfo> vis = new ArrayList<>();
         //感染した変数が引数のものだった場合
-        if(pr.isArgument()){
+        if(pr.isCausedByArgument()){
             if(pr.getCallerMethod() == null) return vis;
             if(!targetClasses.contains(pr.getCallerMethod().getRight().split("#")[0])) return vis;
             String argVariable = getArgumentVariable(pr);
