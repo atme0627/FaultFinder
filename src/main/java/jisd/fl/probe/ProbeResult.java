@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class ProbeResult {
-    private VariableInfo vi;
+    private final VariableInfo vi;
 
     //probeLineで観測された変数の値のペア
     private Map<String, String> valuesInLine;
-    private Statement stmt;
+    private final Statement stmt;
     private String probeMethod;
     //呼び出し側のメソッドと呼び出している行
     private Pair<Integer, String> callerMethod;
@@ -27,7 +27,8 @@ public class ProbeResult {
 
     //probeLineの特定ができなかったかどうか
     private boolean notFound = false;
-    public ProbeResult(Statement stmt){
+    public ProbeResult(VariableInfo vi, Statement stmt){
+        this.vi = vi;
         this.stmt = stmt;
     }
 
@@ -65,10 +66,6 @@ public class ProbeResult {
 
     public VariableInfo getVariableInfo() {
         return vi;
-    }
-
-    public void setVariableInfo(VariableInfo vi) {
-        this.vi = vi;
     }
 
     public Map<String, String> getValuesInLine() {

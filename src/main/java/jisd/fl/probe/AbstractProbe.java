@@ -16,6 +16,7 @@ import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueRecord;
 import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import jisd.fl.util.TestUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -111,7 +112,7 @@ public abstract class AbstractProbe {
         //fieldは代入以外での値の変更を特定できない
         if(vi.isField()){
             System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getVariableName());
-            ProbeResult result = new ProbeResult(null);
+            ProbeResult result = new ProbeResult(vi, null);
             result.setNotFound(true);
             return result;
         }
@@ -248,12 +249,11 @@ public abstract class AbstractProbe {
                 Pair.of(probeRange.begin.line, probeRange.end.line) :
                 Pair.of(causeLineNumber, causeLineNumber);
 
-        ProbeResult result = new ProbeResult(probeStmt);
+        ProbeResult result = new ProbeResult(vi, probeStmt);
         result.setArgument(false);
         result.setProbeMethod(probeMethod);
         result.setCreateAt(createAt);
         result.setWatchedAt(afterAssignedLineNumber);
-        result.setVariableInfo(vi);
         return result;
     }
 
@@ -262,44 +262,27 @@ public abstract class AbstractProbe {
         //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
         //3. throw内などブレークポイントが置けない行で、代入が行われている。 --> 未想定
-        String probeMethod;
-        CodeElementName locateMethodElementName = vi.getLocateMethodElement();
+
         //実行しているメソッドを取得
+        CodeElementName locateMethodElementName = vi.getLocateMethodElement();
+        MethodElement locateMethodElement;
         try {
-            probeMethod = StaticAnalyzer.getMethodNameFormLine(locateMethodElementName, probeLine);
+            locateMethodElement = MethodElement.getMethodElementByName(locateMethodElementName);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
 
         //1. 初期化の時点でその値が代入されている。
+        //変数が存在し、宣言と同時に初期化がされている時点で、これを満たすことにする
+        Optional<VariableDeclarator> ovd = locateMethodElement.findLocalVarDeclaration(variableName);
+        boolean isThereVariableDeclaration = ovd.isPresent() && ovd.get().getInitializer().isPresent();
         //この場合、probeLineは必ずmethod内にいる。
-        boolean isThereVariableDeclaration = false;
-        BlockStmt bs = null;
         Statement probeStmt;
-        int causeLineNumber = 0;
-        try {
-            bs = JavaParserUtil.extractBodyOfMethod(locateMethodElementName);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-        List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
-        for (VariableDeclarator vd : vds) {
-            if (vd.getNameAsString().equals(variableName) &&
-            vd.getBegin().get().line <= probeLine && probeLine <= vd.getEnd().get().line) {
-                isThereVariableDeclaration = true;
-                causeLineNumber = vd.getBegin().get().line;
-                break;
-            }
-        }
         if (isThereVariableDeclaration) {
-            try {
-                probeStmt = JavaParserUtil.getStatementByLine(locateMethodElementName, causeLineNumber).get();
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-            ProbeResult result = new ProbeResult(probeStmt);
+            int varDeclarationLine = ovd.get().getBegin().get().line;
+            ProbeResult result = new ProbeResult(vi, locateMethodElement.FindStatementByLine(varDeclarationLine).get());
             result.setArgument(false);
-            result.setProbeMethod(probeMethod);
+            result.setProbeMethod(locateMethodElementName.getFullyQualifiedMethodName());
             result.setCreateAt(createAt);
             result.setWatchedAt(watchedAt);
             return result;
@@ -312,11 +295,10 @@ public abstract class AbstractProbe {
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
-        ProbeResult result = new ProbeResult(probeStmt);
-        result.setProbeMethod(probeMethod);
+        ProbeResult result = new ProbeResult(vi, probeStmt);
+        result.setProbeMethod(locateMethodElementName.getFullyQualifiedMethodName());
         result.setWatchedAt(watchedAt);
         result.setArgument(true);
-        result.setVariableInfo(vi);
         return result;
     }
 
