@@ -12,10 +12,10 @@ public class ProbeResult {
     private VariableInfo vi;
 
     //これらはStatementNodeに置き換えられる
-    //private Pair<Integer, Integer> lines;
-    //private String src;
+    private Pair<Integer, Integer> lines;
+    private String src;
     //probeLineで観測された変数の値のペア
-    //private Map<String, String> valuesInLine;
+    private Map<String, String> valuesInLine;
     private Statement stmt;
     private String probeMethod;
     //呼び出し側のメソッドと呼び出している行
@@ -23,14 +23,15 @@ public class ProbeResult {
     //falseの場合はその変数の欠陥が引数由来
     private boolean isArgument = false;
 
-    //private LocalDateTime createAt;
+    private LocalDateTime createAt;
 
     //実際にactualとなっていたことが観測された行
     private int watchedAt;
 
     //probeLineの特定ができなかったかどうか
     private boolean notFound = false;
-    public ProbeResult(){
+    public ProbeResult(Statement stmt){
+        this.stmt = stmt;
     }
 
     public String getProbeMethod() {

@@ -111,7 +111,7 @@ public abstract class AbstractProbe {
         //fieldは代入以外での値の変更を特定できない
         if(vi.isField()){
             System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getVariableName());
-            ProbeResult result = new ProbeResult();
+            ProbeResult result = new ProbeResult(null);
             result.setNotFound(true);
             return result;
         }
@@ -236,9 +236,11 @@ public abstract class AbstractProbe {
         CodeElement locateElement = vi.getLocateMethodElement();
         String probeMethod;
         Range probeRange;
+        Statement probeStmt;
         try {
             probeMethod = StaticAnalyzer.getMethodNameFormLine(locateElement, causeLineNumber);
             probeRange = StaticAnalyzer.getRangeOfStatement(locateElement, causeLineNumber).orElse(null);
+            probeStmt = JavaParserUtil.getStatementByLine(locateElement, causeLineNumber).get();
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -247,7 +249,7 @@ public abstract class AbstractProbe {
                 Pair.of(probeRange.begin.line, probeRange.end.line) :
                 Pair.of(causeLineNumber, causeLineNumber);
 
-        ProbeResult result = new ProbeResult();
+        ProbeResult result = new ProbeResult(probeStmt);
         result.setArgument(false);
         result.setLines(probeLines);
         result.setProbeMethod(probeMethod);
@@ -263,7 +265,6 @@ public abstract class AbstractProbe {
         //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
         //3. throw内などブレークポイントが置けない行で、代入が行われている。 --> 未想定
-        ProbeResult result = new ProbeResult();
         String probeMethod;
         Pair<Integer, Integer> probeLines = null;
         CodeElement locateElement = vi.getLocateMethodElement();
@@ -278,6 +279,8 @@ public abstract class AbstractProbe {
         //この場合、probeLineは必ずmethod内にいる。
         boolean isThereVariableDeclaration = false;
         BlockStmt bs = null;
+        Statement probeStmt;
+        int causeLineNumber = 0;
         try {
             bs = JavaParserUtil.extractBodyOfMethod(probeMethod);
         } catch (NoSuchFileException e) {
@@ -289,10 +292,17 @@ public abstract class AbstractProbe {
             vd.getBegin().get().line <= probeLine && probeLine <= vd.getEnd().get().line) {
                 isThereVariableDeclaration = true;
                 probeLines = Pair.of(vd.getBegin().get().line, vd.getEnd().get().line);
+                causeLineNumber = vd.getBegin().get().line;
                 break;
             }
         }
         if (isThereVariableDeclaration) {
+            try {
+                probeStmt = JavaParserUtil.getStatementByLine(locateElement, causeLineNumber).get();
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+            ProbeResult result = new ProbeResult(probeStmt);
             result.setArgument(false);
             result.setLines(probeLines);
             result.setProbeMethod(probeMethod);
@@ -305,6 +315,12 @@ public abstract class AbstractProbe {
         //2. その変数が引数由来で、かつメソッド内で上書きされていない
         //暫定的にprobeLinesを設定
         probeLines = Pair.of(probeLine, probeLine);
+        try {
+            probeStmt = JavaParserUtil.getStatementByLine(locateElement, probeLine).get();
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+        ProbeResult result = new ProbeResult(probeStmt);
         result.setLines(probeLines);
         result.setProbeMethod(probeMethod);
         result.setWatchedAt(watchedAt);
