@@ -11,9 +11,6 @@ import java.util.Set;
 public class ProbeResult {
     private VariableInfo vi;
 
-    //これらはStatementNodeに置き換えられる
-    private Pair<Integer, Integer> lines;
-    private String src;
     //probeLineで観測された変数の値のペア
     private Map<String, String> valuesInLine;
     private Statement stmt;
@@ -51,19 +48,11 @@ public class ProbeResult {
     }
 
     public Pair<Integer, Integer> getProbeLines() {
-        return lines;
-    }
-
-    public void setLines(Pair<Integer, Integer> lines) {
-        this.lines = lines;
+        return Pair.of(stmt.getBegin().get().line, stmt.getEnd().get().line);
     }
 
     public String getSrc() {
-        return src;
-    }
-
-    public void setSrc(String src) {
-        this.src = src;
+        return stmt.toString();
     }
 
     public boolean isArgument() {
