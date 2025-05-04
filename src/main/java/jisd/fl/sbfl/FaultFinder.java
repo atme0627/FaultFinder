@@ -6,7 +6,7 @@ import jisd.fl.probe.ProbeEx;
 import jisd.fl.probe.ProbeExResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -87,7 +87,7 @@ public class FaultFinder {
 
         Set<String> contexts = null;
         try {
-            CodeElement context = new CodeElement(contextClass);
+            CodeElementName context = new CodeElementName(contextClass);
             contexts = StaticAnalyzer.getMethodNames(context);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
@@ -117,7 +117,7 @@ public class FaultFinder {
 
         Set<String> contexts = null;
         try {
-            CodeElement context = new CodeElement(contextClass);
+            CodeElementName context = new CodeElementName(contextClass);
             contexts = StaticAnalyzer.getMethodNames(context);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
@@ -275,7 +275,7 @@ public class FaultFinder {
 
                 Map<String, Pair<Integer, Integer>> rangeOfMethods;
                 try {
-                    CodeElement longClass = new CodeElement(longClassName);
+                    CodeElementName longClass = new CodeElementName(longClassName);
                     rangeOfMethods = getRangeOfAllMethods(longClass);
                 } catch (NoSuchFileException e) {
                     throw new RuntimeException(e);

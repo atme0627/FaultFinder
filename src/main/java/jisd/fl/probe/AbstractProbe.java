@@ -15,7 +15,7 @@ import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueRecord;
 import jisd.fl.util.analyze.JavaParserUtil;
-import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import jisd.fl.util.TestUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -93,10 +93,10 @@ public abstract class AbstractProbe {
 
     private ProbeResult searchProbeLine(List<TracedValue> tracedValues, VariableInfo vi){
         //対象の変数に値の変化が起きている行の特定
-        List<Integer> assignedLine = valueChangedLine(vi);
+        List<Integer> valueChangingLines = valueChangingLine(vi);
 
         //代入の実行後にactualの値に変化している行の特定(ない場合あり)
-        List<TracedValue> changeToActualLines = valueChangedToActualLine(tracedValues, assignedLine, vi.getActualValue());
+        List<TracedValue> changeToActualLines = valueChangedToActualLine(tracedValues, valueChangingLines, vi.getActualValue());
 
         //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
         if(!changeToActualLines.isEmpty()) {
@@ -124,7 +124,6 @@ public abstract class AbstractProbe {
             if (vi.getActualValue().equals(firstMatchedLine.value)) {
                 return resultIfNotAssigned(
                         tracedValues.get(i == 0 ? i : i-1).loc.getLineNumber(),
-                        vi.getLocateClass(),
                         vi.getVariableName(false, false),
                         firstMatchedLine.createAt,
                         firstMatchedLine.loc.getLineNumber(),
@@ -135,10 +134,10 @@ public abstract class AbstractProbe {
         throw new RuntimeException("There is no value which same to actual.");
     }
 
-    private List<Integer> valueChangedLine(VariableInfo vi){
+    private List<Integer> valueChangingLine(VariableInfo vi){
         //代入行の特定
         //unaryExpr(ex a++)も含める
-        CodeElement locateElement = vi.getLocateMethodElement();
+        CodeElementName locateElement = vi.getLocateMethodElement();
         List<Integer> result = new ArrayList<>();
         List<AssignExpr> aes;
         List<UnaryExpr> ues;
@@ -233,7 +232,7 @@ public abstract class AbstractProbe {
         int afterAssignedLineNumber = afterAssignedLineData.loc.getLineNumber();
         LocalDateTime createAt = causeLineData.createAt;
 
-        CodeElement locateElement = vi.getLocateMethodElement();
+        CodeElementName locateElement = vi.getLocateMethodElement();
         String probeMethod;
         Range probeRange;
         Statement probeStmt;
@@ -251,26 +250,23 @@ public abstract class AbstractProbe {
 
         ProbeResult result = new ProbeResult(probeStmt);
         result.setArgument(false);
-        result.setLines(probeLines);
         result.setProbeMethod(probeMethod);
-        result.setSrc(getProbeStatement(locateElement, probeLines));
         result.setCreateAt(createAt);
         result.setWatchedAt(afterAssignedLineNumber);
         result.setVariableInfo(vi);
         return result;
     }
 
-    private ProbeResult resultIfNotAssigned(int probeLine, String locationClass, String variableName, LocalDateTime createAt, int watchedAt, VariableInfo vi){
+    private ProbeResult resultIfNotAssigned(int probeLine, String variableName, LocalDateTime createAt, int watchedAt, VariableInfo vi){
         //代入以外の要因で変数がactualの値をとるようになったパターン
         //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
         //3. throw内などブレークポイントが置けない行で、代入が行われている。 --> 未想定
         String probeMethod;
-        Pair<Integer, Integer> probeLines = null;
-        CodeElement locateElement = vi.getLocateMethodElement();
+        CodeElementName locateMethodElementName = vi.getLocateMethodElement();
         //実行しているメソッドを取得
         try {
-            probeMethod = StaticAnalyzer.getMethodNameFormLine(locateElement, probeLine);
+            probeMethod = StaticAnalyzer.getMethodNameFormLine(locateMethodElementName, probeLine);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -282,7 +278,7 @@ public abstract class AbstractProbe {
         Statement probeStmt;
         int causeLineNumber = 0;
         try {
-            bs = JavaParserUtil.extractBodyOfMethod(probeMethod);
+            bs = JavaParserUtil.extractBodyOfMethod(locateMethodElementName);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -291,22 +287,19 @@ public abstract class AbstractProbe {
             if (vd.getNameAsString().equals(variableName) &&
             vd.getBegin().get().line <= probeLine && probeLine <= vd.getEnd().get().line) {
                 isThereVariableDeclaration = true;
-                probeLines = Pair.of(vd.getBegin().get().line, vd.getEnd().get().line);
                 causeLineNumber = vd.getBegin().get().line;
                 break;
             }
         }
         if (isThereVariableDeclaration) {
             try {
-                probeStmt = JavaParserUtil.getStatementByLine(locateElement, causeLineNumber).get();
+                probeStmt = JavaParserUtil.getStatementByLine(locateMethodElementName, causeLineNumber).get();
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }
             ProbeResult result = new ProbeResult(probeStmt);
             result.setArgument(false);
-            result.setLines(probeLines);
             result.setProbeMethod(probeMethod);
-            result.setSrc(getProbeStatement(locationClass, probeLines));
             result.setCreateAt(createAt);
             result.setWatchedAt(watchedAt);
             return result;
@@ -314,14 +307,12 @@ public abstract class AbstractProbe {
 
         //2. その変数が引数由来で、かつメソッド内で上書きされていない
         //暫定的にprobeLinesを設定
-        probeLines = Pair.of(probeLine, probeLine);
         try {
-            probeStmt = JavaParserUtil.getStatementByLine(locateElement, probeLine).get();
+            probeStmt = JavaParserUtil.getStatementByLine(locateMethodElementName, probeLine).get();
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
         ProbeResult result = new ProbeResult(probeStmt);
-        result.setLines(probeLines);
         result.setProbeMethod(probeMethod);
         result.setWatchedAt(watchedAt);
         result.setArgument(true);
@@ -330,10 +321,10 @@ public abstract class AbstractProbe {
     }
 
     protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines) {
-        return getProbeStatement(new CodeElement(locationClass), probeLines);
+        return getProbeStatement(new CodeElementName(locationClass), probeLines);
     }
     //Statementのソースコードを取得
-    protected String getProbeStatement(CodeElement locationClass, Pair<Integer, Integer> probeLines){
+    protected String getProbeStatement(CodeElementName locationClass, Pair<Integer, Integer> probeLines){
         Optional<Statement> stmt = null;
         try {
             stmt = JavaParserUtil.getStatementByLine(locationClass, probeLines.getLeft());
@@ -429,7 +420,7 @@ public abstract class AbstractProbe {
         Set<String> calleeMethods = new HashSet<>();
         String locateClass = locateMethod.split("#")[0];
         List<Integer> methodCallingLines = null;
-        CodeElement tmpCd = new CodeElement(locateMethod);
+        CodeElementName tmpCd = new CodeElementName(locateMethod);
         try {
             methodCallingLines = StaticAnalyzer.getMethodCallingLine(tmpCd);
         } catch (NoSuchFileException e) {

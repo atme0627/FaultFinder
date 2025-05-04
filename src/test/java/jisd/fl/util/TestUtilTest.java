@@ -1,8 +1,7 @@
 package jisd.fl.util;
 
-import experiment.defect4j.Defects4jUtil;
 import jisd.debug.Debugger;
-import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.CodeElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,9 +25,9 @@ class TestUtilTest {
 
         @Test
         void voidGaussNewtonOptimizerTest() {
-            CodeElement testClass = new CodeElement("TestUtilTest.getTestMethodsTest.d4jMath6.GaussNewtonOptimizerTest");
-            Set<CodeElement> testMethods = TestUtil.getTestMethods(testClass);
-            for(CodeElement ce : testMethods){
+            CodeElementName testClass = new CodeElementName("TestUtilTest.getTestMethodsTest.d4jMath6.GaussNewtonOptimizerTest");
+            Set<CodeElementName> testMethods = TestUtil.getTestMethods(testClass);
+            for(CodeElementName ce : testMethods){
                 System.out.println(ce);
             }
         }
@@ -74,8 +73,8 @@ class TestUtilTest {
 
         @Test
         void simpleCase(){
-            TestUtil.compileForDebug(new CodeElement("sample.SampleTest"));
-            CodeElement targetMethod = new CodeElement("sample.SampleTest#case2()");
+            TestUtil.compileForDebug(new CodeElementName("sample.SampleTest"));
+            CodeElementName targetMethod = new CodeElementName("sample.SampleTest#case2()");
             Debugger dbg = TestUtil.testDebuggerFactory(targetMethod);
             dbg.stopAt("sample.SampleTest", 19);
             dbg.run(1000);
@@ -96,7 +95,7 @@ class TestUtilTest {
 
        @Test
        void simpleCase(){
-           CodeElement targetMethod = new CodeElement("sample.SampleTest#case2()");
+           CodeElementName targetMethod = new CodeElementName("sample.SampleTest#case2()");
            TestUtil.compileForDebug(targetMethod);
        }
     }

@@ -1,9 +1,9 @@
 package jisd.fl.probe.assertinfo;
 
-import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.CodeElementName;
 
 public class VariableInfo { //ローカル変数の場合のみ
-    private final CodeElement locateMethod;
+    private final CodeElementName locateMethod;
     private final String variableName;
     private final boolean isPrimitive;
     private final boolean isField;
@@ -23,7 +23,7 @@ public class VariableInfo { //ローカル変数の場合のみ
                         String actualValue,
                         VariableInfo targetField){
 
-        this.locateMethod = new CodeElement(locateMethod);
+        this.locateMethod = new CodeElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
         this.isField = isField;
@@ -74,7 +74,7 @@ public class VariableInfo { //ローカル変数の場合のみ
         }
     }
 
-    public CodeElement getLocateMethodElement(){
+    public CodeElementName getLocateMethodElement(){
         return locateMethod;
     }
 

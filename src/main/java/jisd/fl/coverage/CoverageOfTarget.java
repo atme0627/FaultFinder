@@ -2,7 +2,7 @@ package jisd.fl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jisd.fl.sbfl.SbflStatus;
-import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,7 +28,7 @@ public class CoverageOfTarget {
 
     public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;
-        CodeElement targetClass = new CodeElement(targetClassName);
+        CodeElementName targetClass = new CodeElementName(targetClassName);
         this.targetMethodNames = StaticAnalyzer.getMethodNames(targetClass);
 
         lineCoverage = new TreeMap<>();
@@ -48,7 +48,7 @@ public class CoverageOfTarget {
         }
 
         //method coverage
-        CodeElement targetClass = new CodeElement(targetClassName);
+        CodeElementName targetClass = new CodeElementName(targetClassName);
         Map<String, Pair<Integer, Integer>> rangeOfMethod = StaticAnalyzer.getRangeOfAllMethods(targetClass);
         for(String targetMethodName : targetMethodNames){
             Pair<Integer, Integer> range = rangeOfMethod.get(targetMethodName);

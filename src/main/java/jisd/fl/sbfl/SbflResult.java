@@ -2,7 +2,7 @@ package jisd.fl.sbfl;
 
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
-import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.CodeElementName;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -121,7 +121,7 @@ public class SbflResult {
 
            Map<String, Pair<Integer, Integer>> rangeOfMethods;
            try {
-               CodeElement longClass = new CodeElement(longClassName);
+               CodeElementName longClass = new CodeElementName(longClassName);
                rangeOfMethods = getRangeOfAllMethods(longClass);
            } catch (NoSuchFileException e) {
                throw new RuntimeException(e);
@@ -259,7 +259,7 @@ public class SbflResult {
 
             Map<String, Pair<Integer, Integer>> rangeOfMethods;
             try {
-                CodeElement longClass = new CodeElement(longClassName);
+                CodeElementName longClass = new CodeElementName(longClassName);
                 rangeOfMethods = getRangeOfAllMethods(longClass);
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);

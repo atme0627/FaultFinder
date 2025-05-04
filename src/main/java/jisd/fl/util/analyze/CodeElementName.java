@@ -1,10 +1,8 @@
 package jisd.fl.util.analyze;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.Name;
 import jisd.fl.util.PropertyLoader;
 
 import javax.validation.constraints.NotBlank;
@@ -18,7 +16,7 @@ import java.util.stream.Collectors;
 
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
-public class CodeElement {
+public class CodeElementName {
     @NotNull
     final public String packageName;
     @NotBlank
@@ -29,7 +27,7 @@ public class CodeElement {
     //ex1.) sample.demo
     //ex2.) sample.demo#sample
     //ex3.) sample.demo#sample(int)
-    public CodeElement(String fullyQualifiedName){
+    public CodeElementName(String fullyQualifiedName){
         String fqClassName;
         final String packageName;
         final String className;
@@ -60,26 +58,26 @@ public class CodeElement {
         this.methodSignature = methodSignature;
     }
 
-    public CodeElement(String packageName, String className){
+    public CodeElementName(String packageName, String className){
         this.packageName = packageName;
         this.className = className;
         this.methodSignature = null;
     }
 
-    public CodeElement(String packageName, String className, @NotBlank String methodSignature){
+    public CodeElementName(String packageName, String className, @NotBlank String methodSignature){
         this.packageName = packageName;
         this.className = className;
         this.methodSignature = methodSignature;
     }
 
-    public CodeElement(ClassOrInterfaceDeclaration cd){
+    public CodeElementName(ClassOrInterfaceDeclaration cd){
         CompilationUnit unit = cd.findAncestor(CompilationUnit.class).orElseThrow();
         this.packageName = JavaParserUtil.getPackageName(unit);
         this.className = cd.getNameAsString();
         this.methodSignature = null;
     }
 
-    public CodeElement(MethodDeclaration md){
+    public CodeElementName(MethodDeclaration md){
         CompilationUnit unit = md.findAncestor(CompilationUnit.class).orElseThrow();
         this.packageName = JavaParserUtil.getPackageName(unit);
         this.className = JavaParserUtil.getParentOfMethod(md).getNameAsString();
@@ -89,9 +87,9 @@ public class CodeElement {
     @Override
     public boolean equals(Object obj){
         if(obj == null) return false;
-        if(!(obj instanceof CodeElement)) return false;
+        if(!(obj instanceof CodeElementName)) return false;
         if(this.getFullyQualifiedMethodName()
-                .equals(((CodeElement) obj).getFullyQualifiedMethodName())) return true;
+                .equals(((CodeElementName) obj).getFullyQualifiedMethodName())) return true;
         return false;
     }
 
@@ -122,15 +120,15 @@ public class CodeElement {
        return this.methodSignature.split("\\(")[0];
     }
 
-    public static Optional<CodeElement> generateFromSimpleClassName(String className){
+    public static Optional<CodeElementName> generateFromSimpleClassName(String className){
         return generateFromSimpleClassName(className, Paths.get(PropertyLoader.getProperty("targetSrcPath")));
     }
 
-    public static Optional<CodeElement> generateFromSimpleClassName(String className, Path targetSrcPath) {
-        List<CodeElement> candidates = StaticAnalyzer.getClassNames(targetSrcPath)
+    public static Optional<CodeElementName> generateFromSimpleClassName(String className, Path targetSrcPath) {
+        List<CodeElementName> candidates = StaticAnalyzer.getClassNames(targetSrcPath)
                 .stream()
                 .filter(cn -> cn.substring(cn.lastIndexOf(".") + 1).equals(className))
-                .map(CodeElement::new)
+                .map(CodeElementName::new)
                 .collect(Collectors.toList());
 
         //候補がない場合、複数候補がある場合はfail

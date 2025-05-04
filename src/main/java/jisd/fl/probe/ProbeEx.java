@@ -14,8 +14,7 @@ import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.analyze.JavaParserUtil;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -69,8 +68,6 @@ public class ProbeEx extends AbstractProbe {
                     int probeLine = caller.getLeft();
                     Pair<Integer, Integer> probeLines = Pair.of(probeLine, probeLine);
                     pr.setCallerMethod(caller);
-                    pr.setLines(probeLines);
-                    pr.setSrc(getProbeStatement(caller.getRight().split("#")[0], probeLines));
                 }
 
                 List<VariableInfo> newTargets = searchNextProbeTargets(pr);
@@ -236,7 +233,7 @@ public class ProbeEx extends AbstractProbe {
 //            }
 //        }
 
-        CodeElement tmpCd = new CodeElement(targetMethod);
+        CodeElementName tmpCd = new CodeElementName(targetMethod);
         try {
             bs = JavaParserUtil.extractBodyOfMethod(tmpCd);
             prms = JavaParserUtil.getCallableDeclarationByName(tmpCd).getParameters();
@@ -286,7 +283,7 @@ public class ProbeEx extends AbstractProbe {
             //親クラスを探す
             ClassOrInterfaceDeclaration classDecl = unit.findFirst(ClassOrInterfaceDeclaration.class).get();
             if(classDecl.getExtendedTypes().isEmpty()) break;
-            CodeElement cd = CodeElement.generateFromSimpleClassName(classDecl.getExtendedTypes(0).getNameAsString()).orElseThrow();
+            CodeElementName cd = CodeElementName.generateFromSimpleClassName(classDecl.getExtendedTypes(0).getNameAsString()).orElseThrow();
             System.out.println("parent: " + cd.getFullyQualifiedClassName());
         }
 
@@ -367,7 +364,7 @@ public class ProbeEx extends AbstractProbe {
         String locateMethod = callerNameAndCallLocation.getRight();
 
 //        Pair<Integer, Integer> lines = rangeOfStatements.getOrDefault(line, Pair.of(line, line));
-        CodeElement tmpCd = new CodeElement(locateMethod);
+        CodeElementName tmpCd = new CodeElementName(locateMethod);
         Range tmpRange = null;
         try {
             tmpRange = StaticAnalyzer.getRangeOfStatement(tmpCd, line).orElse(null);
@@ -441,7 +438,7 @@ public class ProbeEx extends AbstractProbe {
 //                return null;
 //            }
 //        }
-        CodeElement zzztmpCd = new CodeElement(locateMethod);
+        CodeElementName zzztmpCd = new CodeElementName(locateMethod);
         BlockStmt bs = null;
         try {
             bs = JavaParserUtil.extractBodyOfMethod(zzztmpCd);
@@ -469,7 +466,7 @@ public class ProbeEx extends AbstractProbe {
 //            }
 //        }
 
-        CodeElement tmpCd = new CodeElement(targetMethod);
+        CodeElementName tmpCd = new CodeElementName(targetMethod);
         try {
             prms = JavaParserUtil.getCallableDeclarationByName(tmpCd).getParameters();
         } catch (NoSuchFileException e) {

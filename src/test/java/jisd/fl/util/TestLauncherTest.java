@@ -1,6 +1,6 @@
 package jisd.fl.util;
 
-import jisd.fl.util.analyze.CodeElement;
+import jisd.fl.util.analyze.CodeElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,7 @@ class TestLauncherTest {
             PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/main");
             PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/test");
 
-            TestUtil.compileForDebug(new CodeElement("sample"));
+            TestUtil.compileForDebug(new CodeElementName("sample"));
         }
 
         @Test
