@@ -60,13 +60,12 @@ public class ProbeEx extends AbstractProbe {
                 addProbedValue(target);
 
                 printProbeExInfoHeader(target, depth);
+
                 ProbeResult pr = probing(sleepTime, target);
                 if(pr == null) continue;
                 if(pr.isCausedByArgument()){
                     //感染した変数が引数のものだった場合
                     Pair<Integer, String> caller = getCallerMethod(pr.getWatchedAt(), target);
-                    int probeLine = caller.getLeft();
-                    Pair<Integer, Integer> probeLines = Pair.of(probeLine, probeLine);
                     pr.setCallerMethod(caller);
                 }
 
