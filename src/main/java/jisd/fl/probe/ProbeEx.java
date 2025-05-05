@@ -63,8 +63,10 @@ public class ProbeEx extends AbstractProbe {
 
                 ProbeResult pr = probing(sleepTime, target);
                 if(pr == null) continue;
+                //感染した変数が引数のものだった場合
                 if(pr.isCausedByArgument()){
-                    //感染した変数が引数のものだった場合
+
+                    //呼び出しメソッド取得
                     Pair<Integer, String> caller = getCallerMethod(pr.getWatchedAt(), target);
                     pr.setCallerMethod(caller);
                 }

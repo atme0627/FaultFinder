@@ -57,15 +57,17 @@ public abstract class AbstractProbe {
         return result;
     }
 
+    //variableInfoに指定された変数のみを観測し、各行で取っている値を記録する
     protected TracedValueRecord traceVariableValues(VariableInfo variableInfo, int sleepTime){
         List<Integer> canSetLines = StaticAnalyzer.getCanSetLine(variableInfo);
         String dbgMain = variableInfo.getLocateClass();
         dbg = createDebugger();
+        String[] targetValueName = new String[]{variableInfo.getVariableName()};
         //set watchPoint
         dbg.setMain(dbgMain);
         List<Optional<Point>> watchPoints =
                 canSetLines.stream()
-                        .map(dbg::watch)
+                        .map(l -> dbg.watch(l, targetValueName))
                         .collect(Collectors.toList());
 
         //run Test debugger
@@ -85,6 +87,24 @@ public abstract class AbstractProbe {
         dbg.exit();
         dbg.clearResults();
         return watchedValues;
+    }
+
+    //wip
+    private TracedValueRecord traceAllValuesAtLine(CodeElementName targetClassName, int line, int sleepTime){
+        disableStdOut("");
+        dbg = createDebugger();
+        dbg.setMain(targetClassName.getFullyQualifiedClassName());
+        Optional<Point> watchPointAtLine = dbg.watch(line);
+
+        //run Test debugger
+        try {
+            dbg.run(sleepTime);
+        } catch (VMDisconnectedException | InvalidStackFrameException e) {
+            //throw new RuntimeException(e);
+            System.err.println(e);
+        }
+        enableStdOut();
+        return null;
     }
 
 

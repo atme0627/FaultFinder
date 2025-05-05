@@ -1,6 +1,9 @@
 package jisd.fl.probe.record;
 
+import jisd.debug.DebugResult;
 import jisd.debug.Location;
+import jisd.debug.Point;
+import jisd.fl.probe.assertinfo.VariableInfo;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDateTime;
@@ -9,7 +12,6 @@ import java.util.stream.Collectors;
 
 public class TracedValueRecord {
     public TracedValueRecord() {};
-    Map<String, List<TracedValue>> piCollection = new HashMap<>();
     List<TracedValue> record = new ArrayList<>();
 
     public void addElements(List<TracedValue> data){
@@ -30,7 +32,6 @@ public class TracedValueRecord {
         result.sort(TracedValue::compareTo);
         return result;
     }
-
 
     //TODO: 返り値をなんとかする
     public Map<String, String> filterByCreateAt(LocalDateTime createAt){
@@ -55,76 +56,24 @@ public class TracedValueRecord {
                 .collect(Collectors.toList());
     }
 
-
-    //値の宣言行など、実行はされているが値が定義されていない行も
-    //実行されていることを認識するために、定義されていない行の値は"not defined"として埋める。
-    public void considerNotDefinedVariable(){
-        Set<Pair<LocalDateTime, Integer>> executedLines = new HashSet<>();
-        for(TracedValue tv : record){
-            executedLines.add(Pair.of(tv.createAt, tv.loc.getLineNumber()));
+    public TracedValueRecord getInfoFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo variableInfo){
+        //get Values from debugResult
+        //実行されなかった行の情報は飛ばす。
+        //実行されたがnullのものは含む。
+        TracedValueRecord watchedValues = new TracedValueRecord();
+        for (Optional<Point> op : watchPoints) {
+            Point p;
+            if (op.isEmpty()) continue;
+            p = op.get();
+            HashMap<String, DebugResult> drs = p.getResults();
+            watchedValues.addElements(getValuesFromDebugResults(variableInfo, drs));
         }
 
-        for(List<TracedValue> pis : piCollection.values()){
-            String variableName = pis.get(0).variableName;
-            Set<Pair<LocalDateTime, Integer>> executedLinesInThisPis = new HashSet<>();
-            for(TracedValue pi : pis){
-                executedLinesInThisPis.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
-            }
 
-            Set<Pair<LocalDateTime, Integer>> notExecutedLines = new HashSet<>();
-            //変数が配列で、[]あり、なしのどちらかが存在するときは含めない
-            //[]ありの場合
-            if(variableName.contains("[")){
-                // continue;
-                Set<Pair<LocalDateTime, Integer>> executedLinesOfWithoutBracket = new HashSet<>();
-                if(filterByVariableName(variableName.split("\\[")[0]) != null) {
-                    for (TracedValue pi : filterByVariableName(variableName.split("\\[")[0])) {
-                        executedLinesOfWithoutBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
-                    }
-                }
-
-                for(Pair<LocalDateTime, Integer> execline : executedLines){
-                    if(!executedLinesInThisPis.contains(execline) &&
-                            !executedLinesOfWithoutBracket.contains(execline)) notExecutedLines.add(execline);
-                }
-            }
-            //[]なしの場合
-            else {
-                boolean isArray = false;
-                for(String varName : piCollection.keySet()){
-                    if(varName.contains("[") && varName.split("\\[")[0].equals(variableName)){
-                        isArray = true;
-                    }
-                }
-                if (isArray){
-                    // continue;
-                    Set<Pair<LocalDateTime, Integer>> executedLinesOfWithBracket = new HashSet<>();
-                    if(filterByVariableName(variableName + "[0]") != null) {
-                        for (TracedValue pi : filterByVariableName(variableName + "[0]")) {
-                            executedLinesOfWithBracket.add(Pair.of(pi.createAt, pi.loc.getLineNumber()));
-                        }
-                    }
-
-                    for(Pair<LocalDateTime, Integer> execline : executedLines){
-                        if(!executedLinesInThisPis.contains(execline) &&
-                                !executedLinesOfWithBracket.contains(execline)) notExecutedLines.add(execline);
-                    }
-                }
-                else {
-                    //配列でない場合
-                    for (Pair<LocalDateTime, Integer> execline : executedLines) {
-                        if (!executedLinesInThisPis.contains(execline)) notExecutedLines.add(execline);
-                    }
-                }
-            }
-
-            for(Pair<LocalDateTime, Integer> notExecline : notExecutedLines){
-                LocalDateTime createAt = notExecline.getLeft();
-                Location pisLoc = pis.get(0).loc;
-                Location loc = new Location(pisLoc.getClassName(), pisLoc.getMethodName(), notExecline.getRight(), "No defined");
-                pis.add(new TracedValue(createAt, loc, variableName, "Not defined"));
-            }
+        if (watchedValues.isEmpty()) {
+            throw new RuntimeException("there is not target value in watch point.");
         }
+        return watchedValues;
     }
 
     public void print(String varName){
