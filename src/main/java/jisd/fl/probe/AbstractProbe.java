@@ -42,7 +42,7 @@ public abstract class AbstractProbe {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
         TracedValueRecord tracedValues = traceVariableValues(variableInfo, sleepTime);
-
+        tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
         List<TracedValue> watchedValues = tracedValues.filterByVariableName(variableInfo.getVariableName(true, true));
         System.out.println("    >> Probe Info: Searching probe line.");
@@ -81,8 +81,7 @@ public abstract class AbstractProbe {
         }
 
         enableStdOut();
-        TracedValueRecord watchedValues = jiProcessor.getInfoFromWatchPoints(watchPoints, variableInfo);
-        watchedValues.considerNotDefinedVariable();
+        TracedValueRecord watchedValues = new TracedValueRecord(watchPoints, variableInfo);
         watchedValues.sort();
         dbg.exit();
         dbg.clearResults();

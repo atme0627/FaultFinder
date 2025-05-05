@@ -1,18 +1,26 @@
 package jisd.fl.probe.record;
 
+import com.sun.jdi.ArrayType;
+import com.sun.jdi.PrimitiveType;
+import com.sun.jdi.Type;
 import jisd.debug.DebugResult;
-import jisd.debug.Location;
 import jisd.debug.Point;
+import jisd.debug.value.ValueInfo;
+import jisd.fl.probe.JisdInfoProcessor;
 import jisd.fl.probe.assertinfo.VariableInfo;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class TracedValueRecord {
-    public TracedValueRecord() {};
-    List<TracedValue> record = new ArrayList<>();
+    List<TracedValue> record;
+
+    //viで指定された変数のみ記録
+    public TracedValueRecord(List<Optional<Point>> watchPoints, VariableInfo vi) {
+        record = new ArrayList<>();
+        extractTargetValueFromWatchPoints(watchPoints, vi);
+    };
 
     public void addElements(List<TracedValue> data){
         record.addAll(data);
@@ -27,7 +35,7 @@ public class TracedValueRecord {
         if(varName.contains("[")){
             record.stream()
                     .filter(tv -> tv.variableName.equals(varName.split("\\[")[0]))
-                    .forEach(record::add);
+                    .forEach(result::add);
         }
         result.sort(TracedValue::compareTo);
         return result;
@@ -45,35 +53,75 @@ public class TracedValueRecord {
         return record.isEmpty();
     }
 
-    public void sort(){
+    public void sort() {
         record.sort(TracedValue::compareTo);
     }
 
-    public List<String> getIncludedVariableNames(){
-        return record.stream()
-                .map(tv -> tv.variableName)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    public TracedValueRecord getInfoFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo variableInfo){
+    //variableInfoで指定された変数の値を抽出する
+    public void extractTargetValueFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo vi){
         //get Values from debugResult
         //実行されなかった行の情報は飛ばす。
         //実行されたがnullのものは含む。
-        TracedValueRecord watchedValues = new TracedValueRecord();
         for (Optional<Point> op : watchPoints) {
             Point p;
             if (op.isEmpty()) continue;
             p = op.get();
-            HashMap<String, DebugResult> drs = p.getResults();
-            watchedValues.addElements(getValuesFromDebugResults(variableInfo, drs));
+            Optional<DebugResult> odr = p.getResults(vi.getVariableName());
+            if(odr.isEmpty()) continue;
+            this.addElements(convertDebugResult(odr.get(), vi));
         }
 
-
-        if (watchedValues.isEmpty()) {
+        if (this.record.isEmpty()) {
             throw new RuntimeException("there is not target value in watch point.");
         }
-        return watchedValues;
+    }
+
+
+    //TODO: primitive型のラッパークラスを考慮
+    private List<TracedValue> convertDebugResult(DebugResult dr, VariableInfo vi){
+        List<TracedValue> result = new ArrayList<>();
+        List<ValueInfo> vis = dr.getValues();
+
+        //変数が配列の場合
+        if(vi.isArray()){
+            for(ValueInfo v : vis) {
+                List<ValueInfo> children = v.expand();
+                //配列は定義されているが要素がない場合、スキップ
+                if(children.isEmpty()) continue;
+                ValueInfo targetChild = children.get(vi.getArrayNth());
+                result.add(new TracedValue(
+                        targetChild.getCreatedAt(),
+                        dr.getLocation(),
+                        vi.getVariableName(false, true),
+                        targetChild.getValue()
+                ));
+            }
+            return result;
+        }
+
+        //変数がprimitive型の場合
+        if(vi.isPrimitive()){
+            for(ValueInfo v : vis) {
+                result.add(new TracedValue(
+                        v.getCreatedAt(),
+                        dr.getLocation(),
+                        vi.getVariableName(),
+                        v.getValue()
+                ));
+            }
+            return result;
+        }
+
+        //変数が参照型の場合
+        for(ValueInfo v : vis) {
+            result.add(new TracedValue(
+                    v.getCreatedAt(),
+                    dr.getLocation(),
+                    vi.getVariableName(),
+                    v.getValue()
+            ));
+        }
+        return result;
     }
 
     public void print(String varName){

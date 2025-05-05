@@ -14,37 +14,6 @@ import java.util.*;
 
 public class JisdInfoProcessor {
 
-    public TracedValueRecord getInfoFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo variableInfo){
-        //get Values from debugResult
-        //実行されなかった行の情報は飛ばす。
-        //実行されたがnullのものは含む。
-        TracedValueRecord watchedValues = new TracedValueRecord();
-        for (Optional<Point> op : watchPoints) {
-            Point p;
-            if (op.isEmpty()) continue;
-            p = op.get();
-            HashMap<String, DebugResult> drs = p.getResults();
-            watchedValues.addElements(getValuesFromDebugResults(variableInfo, drs));
-        }
-
-
-        if (watchedValues.isEmpty()) {
-            throw new RuntimeException("there is not target value in watch point.");
-        }
-        return watchedValues;
-    }
-
-    //primitive型の値のみを取得
-    //variableInfoが参照型の場合、fieldを取得してその中から目的のprimitive型の値を探す
-    public List<TracedValue> getValuesFromDebugResults(VariableInfo targetInfo, HashMap<String, DebugResult> drs){
-        List<TracedValue> pis = new ArrayList<>();
-        drs.forEach((variable, dr) -> {
-            VariableInfo variableInfo = variable.equals(targetInfo.getVariableName(true, false)) ? targetInfo : null;
-            pis.addAll(getValuesFromDebugResult(variableInfo, dr));
-        });
-        return pis;
-    }
-
     public List<TracedValue> getValuesFromDebugResult(VariableInfo variableInfo, DebugResult dr) {
         List<ValueInfo> vis = null;
         List<TracedValue> pis = new ArrayList<>();
