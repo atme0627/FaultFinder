@@ -1,12 +1,8 @@
 package jisd.fl.probe.record;
 
-import com.sun.jdi.ArrayType;
-import com.sun.jdi.PrimitiveType;
-import com.sun.jdi.Type;
 import jisd.debug.DebugResult;
 import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.JisdInfoProcessor;
 import jisd.fl.probe.assertinfo.VariableInfo;
 
 import java.time.LocalDateTime;
@@ -14,31 +10,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class TracedValueRecord {
-    List<TracedValue> record;
+    private final List<TracedValue> record;
 
     //viで指定された変数のみ記録
     public TracedValueRecord(List<Optional<Point>> watchPoints, VariableInfo vi) {
-        record = new ArrayList<>();
-        extractTargetValueFromWatchPoints(watchPoints, vi);
+        record = extractTargetValueFromWatchPoints(watchPoints, vi);
     };
 
-    public void addElements(List<TracedValue> data){
-        record.addAll(data);
-    }
-
     public List<TracedValue> filterByVariableName(String varName){
-        List<TracedValue> result = record.stream()
+        return record.stream()
                 .filter(tv -> tv.variableName.equals(varName))
+                .sorted(TracedValue::compareTo)
                 .collect(Collectors.toList());
-
-        //配列の場合[0]がついていないものも一緒に返す
-        if(varName.contains("[")){
-            record.stream()
-                    .filter(tv -> tv.variableName.equals(varName.split("\\[")[0]))
-                    .forEach(result::add);
-        }
-        result.sort(TracedValue::compareTo);
-        return result;
     }
 
     //TODO: 返り値をなんとかする
@@ -53,27 +36,27 @@ public class TracedValueRecord {
         return record.isEmpty();
     }
 
-    public void sort() {
-        record.sort(TracedValue::compareTo);
-    }
-
     //variableInfoで指定された変数の値を抽出する
-    public void extractTargetValueFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo vi){
-        //get Values from debugResult
-        //実行されなかった行の情報は飛ばす。
-        //実行されたがnullのものは含む。
-        for (Optional<Point> op : watchPoints) {
-            Point p;
-            if (op.isEmpty()) continue;
-            p = op.get();
-            Optional<DebugResult> odr = p.getResults(vi.getVariableName());
-            if(odr.isEmpty()) continue;
-            this.addElements(convertDebugResult(odr.get(), vi));
-        }
+    private List<TracedValue> extractTargetValueFromWatchPoints(List<Optional<Point>> watchPoints, VariableInfo vi){
+        List<TracedValue> result = watchPoints.stream()
+                //WatchPointからDebugResultを得る
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(wp -> wp.getResults(vi.getVariableName()))
+                //DebugResultからList<TracedValue>に変換
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(dr -> convertDebugResult(dr, vi))
+                //List<TracedValue>を一つにまとめる
+                .flatMap(Collection::stream)
+                .sorted(TracedValue::compareTo)
+                .collect(Collectors.toList());
 
-        if (this.record.isEmpty()) {
+        if (result.isEmpty()) {
             throw new RuntimeException("there is not target value in watch point.");
         }
+
+        return result;
     }
 
 
@@ -134,10 +117,5 @@ public class TracedValueRecord {
         for(TracedValue tv : record){
             System.out.println("    >> " + tv);
         }
-    }
-
-    //TODO: 必要ないかも
-    public void clear(){
-        record = null;
     }
 }

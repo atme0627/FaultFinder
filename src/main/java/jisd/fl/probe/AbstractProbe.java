@@ -82,7 +82,6 @@ public abstract class AbstractProbe {
 
         enableStdOut();
         TracedValueRecord watchedValues = new TracedValueRecord(watchPoints, variableInfo);
-        watchedValues.sort();
         dbg.exit();
         dbg.clearResults();
         return watchedValues;
