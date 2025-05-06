@@ -2,11 +2,9 @@ package jisd.fl.probe;
 
 import jisd.debug.DebugResult;
 import jisd.debug.Location;
-import jisd.debug.Point;
 import jisd.debug.value.PrimitiveInfo;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.record.TracedValue;
-import jisd.fl.probe.record.TracedValueRecord;
 import jisd.fl.probe.assertinfo.VariableInfo;
 
 import java.time.LocalDateTime;

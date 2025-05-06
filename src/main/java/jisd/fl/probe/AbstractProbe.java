@@ -14,7 +14,7 @@ import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.probe.record.TracedValue;
-import jisd.fl.probe.record.TracedValueRecord;
+import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.util.analyze.*;
 import jisd.fl.util.TestUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -43,7 +43,7 @@ public abstract class AbstractProbe {
     protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
-        TracedValueRecord tracedValues = traceVariableValues(variableInfo, sleepTime);
+        TracedValueCollection tracedValues = traceValuesOfTarget(variableInfo, sleepTime);
         tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
         List<TracedValue> watchedValues = tracedValues.filterByVariableName(variableInfo.getVariableName(true, true));
@@ -54,18 +54,18 @@ public abstract class AbstractProbe {
         if(result.isNotFound()) return null;
 
         //原因行で他に登場した値をセット
-        TracedValueRecord valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), 0, 2000);
+        TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), 0, 2000);
         if(!result.isCausedByArgument()) result.setValuesInLine(valuesAtLine);
 
         return result;
     }
 
     //variableInfoに指定された変数のみを観測し、各行で取っている値を記録する
-    protected TracedValueRecord traceVariableValues(VariableInfo variableInfo, int sleepTime){
-        List<Integer> canSetLines = StaticAnalyzer.getCanSetLine(variableInfo);
-        String dbgMain = variableInfo.getLocateClass();
+    protected TracedValueCollection traceValuesOfTarget(VariableInfo target, int sleepTime){
+        List<Integer> canSetLines = StaticAnalyzer.getCanSetLine(target);
+        String dbgMain = target.getLocateClass();
         dbg = createDebugger();
-        String[] targetValueName = new String[]{variableInfo.getVariableName()};
+        String[] targetValueName = new String[]{target.getVariableName()};
         //set watchPoint
         dbg.setMain(dbgMain);
         List<Optional<Point>> watchPoints =
@@ -84,7 +84,32 @@ public abstract class AbstractProbe {
         }
 
         enableStdOut();
-        TracedValueRecord watchedValues = new TracedValueRecord(watchPoints, variableInfo);
+        //各行でのデバッグ情報
+        List<DebugResult> drs = watchPoints.stream()
+                //WatchPointからDebugResultを得る
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(wp -> wp.getResults(targetValueName[0]))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        //各行での値の情報 (Location情報なし)
+        List<ValueInfo> valuesOfTarget = drs.stream()
+                .map(DebugResult::getValues)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        //LocalDateTime --> Locationのマップ
+        Map<LocalDateTime, Location> locationAtTime = new HashMap<>();
+        for(DebugResult dr : drs){
+            Location loc = dr.getLocation();
+            for(ValueInfo vi : dr.getValues()){
+                locationAtTime.put(vi.getCreatedAt(), loc);
+            }
+        }
+
+        TracedValueCollection watchedValues = new TracedValueCollection(target, valuesOfTarget, locationAtTime);
         dbg.exit();
         dbg.clearResults();
         return watchedValues;
@@ -92,7 +117,7 @@ public abstract class AbstractProbe {
 
     //viの原因行で、全ての変数が取っている値を記録する
     //何回目のループで観測された値かを入力する
-    private TracedValueRecord traceAllValuesAtLine(CodeElementName targetClassName, int line, int nthLoop, int sleepTime){
+    private TracedValueCollection traceAllValuesAtLine(CodeElementName targetClassName, int line, int nthLoop, int sleepTime){
         disableStdOut("");
         dbg = createDebugger();
         dbg.setMain(targetClassName.getFullyQualifiedClassName());
@@ -115,7 +140,7 @@ public abstract class AbstractProbe {
                 .map(vis -> vis.get(nthLoop))
                 .collect(Collectors.toList());
 
-        TracedValueRecord watchedValues = new TracedValueRecord(valuesAtLine, loc);
+        TracedValueCollection watchedValues = new TracedValueCollection(valuesAtLine, loc);
         dbg.exit();
         dbg.clearResults();
         return watchedValues;
@@ -347,7 +372,7 @@ public abstract class AbstractProbe {
         System.setOut(stdOut);
     }
 
-    protected void printWatchedValues(TracedValueRecord watchedValues, String variableName){
+    protected void printWatchedValues(TracedValueCollection watchedValues, String variableName){
         //System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
         if(variableName != null) {
             watchedValues.print(variableName);

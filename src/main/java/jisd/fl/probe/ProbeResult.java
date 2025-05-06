@@ -1,7 +1,7 @@
 package jisd.fl.probe;
 
 import jisd.fl.probe.assertinfo.VariableInfo;
-import jisd.fl.probe.record.TracedValueRecord;
+import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.StatementElement;
 import org.apache.commons.lang3.tuple.Pair;
@@ -20,7 +20,7 @@ public class ProbeResult {
     private final int probeIterateNum;
 
     //原因行で観測された他の変数とその値
-    private TracedValueRecord neighborVariables;
+    private TracedValueCollection neighborVariables;
 
     //呼び出し側のメソッドと呼び出している行
     private Pair<Integer, String> callerMethod;
@@ -96,7 +96,7 @@ public class ProbeResult {
                 .collect(Collectors.toMap(tv -> tv.variableName, tv -> tv.value));
     }
 
-    public void setValuesInLine(TracedValueRecord neighborVariables) {
+    public void setValuesInLine(TracedValueCollection neighborVariables) {
         this.neighborVariables = neighborVariables;
     }
 
