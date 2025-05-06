@@ -302,7 +302,6 @@ public abstract class AbstractProbe {
 
         ProbeResult result = new ProbeResult(vi, probeStmt);
         result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
-        result.setCreateAt(createAt);
         result.setWatchedAt(afterAssignedLineNumber);
         return result;
     }
@@ -332,7 +331,6 @@ public abstract class AbstractProbe {
             StatementElement probeStmt = locateMethodElement.FindStatementByLine(varDeclarationLine).get();
             ProbeResult result = new ProbeResult(vi, probeStmt);
             result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
-            result.setCreateAt(createAt);
             result.setWatchedAt(watchedAt);
             return result;
         }
@@ -425,77 +423,6 @@ public abstract class AbstractProbe {
     }
 
 
-    //動的解析
-    //メソッド実行時の実際に呼び出されているメソット群を返す
-    //locateMethodはフルネーム、シグニチャあり
-    //Assert文はなぜかミスる -> とりあえずはコメントアウトで対応
-    protected Set<String> getAllCalleeMethods(String testMethod, String locateMethod){
-        System.out.println("    >> Probe Info: Collecting all callee methods.");
-        System.out.println("    >> Probe Info: Target method --> " + locateMethod);
-        disableStdOut("");
-
-        Set<String> calleeMethods = new HashSet<>();
-        String locateClass = locateMethod.split("#")[0];
-        List<Integer> methodCallingLines = null;
-        CodeElementName tmpCd = new CodeElementName(locateMethod);
-        try {
-            methodCallingLines = StaticAnalyzer.getMethodCallingLine(tmpCd);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
-        Debugger dbg = createDebugger(testMethod);
-        dbg.setMain(locateClass);
-        for(int l : methodCallingLines){
-            dbg.stopAt(l);
-        }
-        try {
-            dbg.run(2000);
-        }
-        //メモリエラーなどでVMが止まる場合、calleeは取れない
-        catch (VMDisconnectedException e) {
-            System.err.println(e);
-            enableStdOut();
-            return calleeMethods;
-        }
-
-        //callerMethodを取得
-        String calleeMethod;
-        //>> Debugger Info: The target VM thread is not suspended now.の時　空のcalleeMethodsを返す
-        if(dbg.loc() == null) {
-            enableStdOut();
-            return calleeMethods;
-        }
-
-        for(int i = 0; i < methodCallingLines.size(); i++) {
-            if(dbg.loc() == null) break;
-            while (true) {
-                dbg.step();
-                calleeMethod = getMethodFromStackFrame(getStackFrame(dbg, 0));
-                dbg.stepOut();
-                calleeMethods.add(calleeMethod);
-
-                //終了判定
-                //ステップして新しいメソッド呼び出しが行われなければ終了
-                String nowLocateMethod = getMethodFromStackFrame(getStackFrame(dbg, 0));
-                if(nowLocateMethod.equals(locateMethod)) break;
-            }
-            //debugがbreakpointに達しなかった場合は終了
-            if(dbg.loc() == null) break;
-            //すでにbreakpointにいる場合はスキップしない
-            if(!methodCallingLines.contains(dbg.loc().getLineNumber())) {
-                dbg.cont(50);
-            }
-        }
-
-        enableStdOut();
-        return calleeMethods;
-    }
-
-    //動的解析
-    //メソッド実行時の実際に特定の行で呼び出されているメソット群を返す
-    //locateMethodはフルネーム、シグニチャあり
-    //Assert文はなぜかミスる -> とりあえずはコメントアウトで対応
     protected Set<String> getCalleeMethods(String testMethod, String locateMethod, Pair<Integer, Integer> lines){
         System.out.println("    >> Probe Info: Collecting callee methods.");
         System.out.println("    >> Probe Info: Target method --> " + locateMethod);
