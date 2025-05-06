@@ -15,6 +15,8 @@ import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
+import jisd.fl.probe.record.TracedValuesAtLine;
+import jisd.fl.probe.record.TracedValuesOfTarget;
 import jisd.fl.util.analyze.*;
 import jisd.fl.util.TestUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -109,7 +111,7 @@ public abstract class AbstractProbe {
             }
         }
 
-        TracedValueCollection watchedValues = new TracedValueCollection(target, valuesOfTarget, locationAtTime);
+        TracedValueCollection watchedValues = new TracedValuesOfTarget(target, valuesOfTarget, locationAtTime);
         dbg.exit();
         dbg.clearResults();
         return watchedValues;
@@ -140,7 +142,7 @@ public abstract class AbstractProbe {
                 .map(vis -> vis.get(nthLoop))
                 .collect(Collectors.toList());
 
-        TracedValueCollection watchedValues = new TracedValueCollection(valuesAtLine, loc);
+        TracedValueCollection watchedValues = new TracedValuesAtLine(valuesAtLine, loc);
         dbg.exit();
         dbg.clearResults();
         return watchedValues;
