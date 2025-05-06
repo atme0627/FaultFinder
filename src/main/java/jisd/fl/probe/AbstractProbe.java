@@ -8,7 +8,9 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.sun.jdi.*;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
+import jisd.debug.Location;
 import jisd.debug.Point;
+import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.probe.record.TracedValue;
@@ -52,7 +54,8 @@ public abstract class AbstractProbe {
         if(result.isNotFound()) return null;
 
         //原因行で他に登場した値をセット
-        if(!result.isCausedByArgument()) result.setValuesInLine(tracedValues.filterByCreateAt(result.getCreateAt()));
+        TracedValueRecord valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), 0, 2000);
+        if(!result.isCausedByArgument()) result.setValuesInLine(valuesAtLine);
 
         return result;
     }
@@ -87,8 +90,9 @@ public abstract class AbstractProbe {
         return watchedValues;
     }
 
-    //wip
-    private TracedValueRecord traceAllValuesAtLine(CodeElementName targetClassName, int line, int sleepTime){
+    //viの原因行で、全ての変数が取っている値を記録する
+    //何回目のループで観測された値かを入力する
+    private TracedValueRecord traceAllValuesAtLine(CodeElementName targetClassName, int line, int nthLoop, int sleepTime){
         disableStdOut("");
         dbg = createDebugger();
         dbg.setMain(targetClassName.getFullyQualifiedClassName());
@@ -98,14 +102,27 @@ public abstract class AbstractProbe {
         try {
             dbg.run(sleepTime);
         } catch (VMDisconnectedException | InvalidStackFrameException e) {
-            //throw new RuntimeException(e);
             System.err.println(e);
         }
         enableStdOut();
-        return null;
+
+        //この行で値が観測されることが保証されている
+        List<DebugResult> drs = new ArrayList<>(watchPointAtLine.get().getResults().values());
+        Location loc = drs.get(0).getLocation();
+        //行のnthLoop番目のvalueInfoを取得
+        List<ValueInfo> valuesAtLine = drs.stream()
+                .map(DebugResult::getValues)
+                .map(vis -> vis.get(nthLoop))
+                .collect(Collectors.toList());
+
+        TracedValueRecord watchedValues = new TracedValueRecord(valuesAtLine, loc);
+        dbg.exit();
+        dbg.clearResults();
+        return watchedValues;
     }
 
 
+    //TODO: 原因行が何回目のループのものかを取得し、probeResultに与える
     private ProbeResult searchProbeLine(List<TracedValue> tracedValues, VariableInfo vi){
         //対象の変数に値の変化が起きている行の特定
         List<Integer> valueChangingLines = valueChangingLine(vi);
@@ -257,7 +274,7 @@ public abstract class AbstractProbe {
         StatementElement probeStmt = locateMethodElement.FindStatementByLine(causeLineNumber).get();
 
         ProbeResult result = new ProbeResult(vi, probeStmt);
-        result.setProbeMethod(locateMethodElementName.getFullyQualifiedMethodName());
+        result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
         result.setCreateAt(createAt);
         result.setWatchedAt(afterAssignedLineNumber);
         return result;
@@ -287,7 +304,7 @@ public abstract class AbstractProbe {
             int varDeclarationLine = ovd.get().getBegin().get().line;
             StatementElement probeStmt = locateMethodElement.FindStatementByLine(varDeclarationLine).get();
             ProbeResult result = new ProbeResult(vi, probeStmt);
-            result.setProbeMethod(locateMethodElementName.getFullyQualifiedMethodName());
+            result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
             result.setCreateAt(createAt);
             result.setWatchedAt(watchedAt);
             return result;
@@ -296,7 +313,7 @@ public abstract class AbstractProbe {
         //2. その変数が引数由来で、かつメソッド内で上書きされていない
         //暫定的にprobeLinesを設定
         ProbeResult result = new ProbeResult(vi);
-        result.setProbeMethod(locateMethodElementName.getFullyQualifiedMethodName());
+        result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
         result.setWatchedAt(watchedAt);
         return result;
     }

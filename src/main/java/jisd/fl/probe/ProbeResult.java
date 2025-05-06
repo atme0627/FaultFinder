@@ -1,11 +1,14 @@
 package jisd.fl.probe;
 
 import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.record.TracedValueRecord;
+import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.StatementElement;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ProbeResult {
     //probe対象の変数
@@ -13,11 +16,12 @@ public class ProbeResult {
 
     //変数の原因行
     private final StatementElement stmt;
+    private String probeMethodName;
+    private final int probeIterateNum;
 
-    //probeLineで観測された変数の値のペア
-    private Map<String, String> valuesInLine;
+    //原因行で観測された他の変数とその値
+    private TracedValueRecord neighborVariables;
 
-    private String probeMethod;
     //呼び出し側のメソッドと呼び出している行
     private Pair<Integer, String> callerMethod;
     //falseの場合はその変数の欠陥が引数由来
@@ -36,24 +40,34 @@ public class ProbeResult {
         this.vi = vi;
         this.stmt = null;
         this.isCausedByArgument = true;
+        this.probeIterateNum = 0;
     }
 
     public ProbeResult(VariableInfo vi, StatementElement stmt){
         this.vi = vi;
         this.stmt = stmt;
         this.isCausedByArgument = false;
+        this.probeIterateNum = 0;
     }
 
-    public String getProbeMethod() {
-        return probeMethod;
+    public ProbeResult(VariableInfo vi, StatementElement stmt, int probeIterateNum){
+        this.vi = vi;
+        this.stmt = stmt;
+        this.isCausedByArgument = false;
+        this.probeIterateNum = probeIterateNum;
+    }
+
+
+    public String getProbeMethodName() {
+        return probeMethodName;
     }
 
     public Pair<Integer, String> getCallerMethod() {
         return callerMethod;
     }
 
-    void setProbeMethod(String probeMethod) {
-        this.probeMethod = probeMethod;
+    void setProbeMethodName(String probeMethodName) {
+        this.probeMethodName = probeMethodName;
     }
 
     void setCallerMethod(Pair<Integer, String> callerMethod) {
@@ -77,11 +91,13 @@ public class ProbeResult {
     }
 
     public Map<String, String> getValuesInLine() {
-        return valuesInLine;
+        return neighborVariables.getAll()
+                .stream()
+                .collect(Collectors.toMap(tv -> tv.variableName, tv -> tv.value));
     }
 
-    public void setValuesInLine(Map<String, String> valuesInLine) {
-        this.valuesInLine = valuesInLine;
+    public void setValuesInLine(TracedValueRecord neighborVariables) {
+        this.neighborVariables = neighborVariables;
     }
 
     public LocalDateTime getCreateAt() {
@@ -106,5 +122,18 @@ public class ProbeResult {
 
     public void setNotFound(boolean notFound) {
         this.notFound = notFound;
+    }
+
+    public CodeElementName probeMethod(){
+        return new CodeElementName(probeMethodName);
+    }
+
+    public int probeLine(){
+        return stmt.statement().getBegin().get().line;
+    }
+
+    //loop内に原因行がある場合、何回目のループのものかを返す必要がある
+    public int probeIterateNum(){
+        return probeIterateNum;
     }
 }

@@ -1,18 +1,32 @@
 package jisd.fl.probe.record;
 
+import com.sun.jdi.*;
 import jisd.debug.DebugResult;
+import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 
+import javax.lang.model.type.ReferenceType;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+//valueInfoを受け取って、TracedValueに変換する責務を持つ
 public class TracedValueRecord {
     private final List<TracedValue> record;
 
+    //特定の行の変数を全て記録
+    //次の探索対象を探すために使用
+    public TracedValueRecord(List<ValueInfo> valuesAtLine, Location loc){
+        record = valuesAtLine.stream()
+                .map(vi -> convertValueInfo(vi, loc))
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+    }
+
     //viで指定された変数のみ記録
+    //原因行特定のために使用
     public TracedValueRecord(List<Optional<Point>> watchPoints, VariableInfo vi) {
         record = extractTargetValueFromWatchPoints(watchPoints, vi);
     };
@@ -46,7 +60,7 @@ public class TracedValueRecord {
                 //DebugResultからList<TracedValue>に変換
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .map(dr -> convertDebugResult(dr, vi))
+                .map(dr -> convertDebugResultOfTarget(dr, vi))
                 //List<TracedValue>を一つにまとめる
                 .flatMap(Collection::stream)
                 .sorted(TracedValue::compareTo)
@@ -59,9 +73,8 @@ public class TracedValueRecord {
         return result;
     }
 
-
     //TODO: primitive型のラッパークラスを考慮
-    private List<TracedValue> convertDebugResult(DebugResult dr, VariableInfo vi){
+    private List<TracedValue> convertDebugResultOfTarget(DebugResult dr, VariableInfo vi){
         List<TracedValue> result = new ArrayList<>();
         List<ValueInfo> vis = dr.getValues();
 
@@ -107,6 +120,87 @@ public class TracedValueRecord {
         return result;
     }
 
+
+    private List<TracedValue> convertValueInfo(ValueInfo vi, Location loc){
+        Type typeOfValue = vi.getJValue().type();
+        //変数が配列の場合
+        if(typeOfValue instanceof ArrayType){
+            return convertArrayInfo(vi, loc);
+        }
+
+        //変数がプリミティブ型の場合
+        if(typeOfValue instanceof PrimitiveType){
+            return convertPrimitiveInfo(vi, loc);
+        }
+
+        //変数がプリミティブ型のラッパークラスの場合
+        if(isPrimitiveWrapper(typeOfValue)){
+            return convertPrimitiveWrapperInfo(vi, loc);
+        }
+
+        //変数が参照型の場合
+        return convertReferenceInfo(vi, loc);
+
+    }
+
+    private List<TracedValue> convertArrayInfo(ValueInfo vi, Location loc){
+        List<ValueInfo> children = vi.expand();
+        List<TracedValue> result = new ArrayList<>();
+        for(int i = 0; i < children.size(); i++){
+            result.add(new TracedValue(
+                    children.get(i).getCreatedAt(),
+                    loc,
+                    children.get(i).getName() + "[" + i + "]",
+                    children.get(i).getValue()
+            ));
+        }
+        return result;
+    }
+
+    private List<TracedValue> convertPrimitiveInfo(ValueInfo vi, Location loc){
+        return List.of(new TracedValue(
+                vi.getCreatedAt(),
+                loc,
+                vi.getName(),
+                vi.getValue()
+        ));
+    }
+
+    private List<TracedValue> convertPrimitiveWrapperInfo(ValueInfo vi, Location loc){
+        ValueInfo primitiveValue = vi.getField("value");
+        return convertPrimitiveInfo(primitiveValue, loc);
+    }
+
+    //暫定
+    private List<TracedValue> convertReferenceInfo(ValueInfo vi, Location loc){
+        return List.of(new TracedValue(
+                vi.getCreatedAt(),
+                loc,
+                vi.getName(),
+                vi.getValue()
+        ));
+    }
+
+    private boolean isPrimitiveWrapper(Type type) {
+        //プリミティブ型のラッパークラスの名前
+        final Set<String> WRAPPER_CLASS_NAMES = new HashSet<>(Arrays.asList(
+                Boolean.class.getName(),
+                Byte.class.getName(),
+                Character.class.getName(),
+                Short.class.getName(),
+                Integer.class.getName(),
+                Long.class.getName(),
+                Float.class.getName(),
+                Double.class.getName(),
+                Void.class.getName()
+        ));
+
+        if (type instanceof ClassType) {
+            return WRAPPER_CLASS_NAMES.contains(type.name());
+        }
+        return false;
+    }
+
     public void print(String varName){
         for(TracedValue tv : filterByVariableName(varName)) {
             System.out.println("    >> " + tv);
@@ -117,5 +211,9 @@ public class TracedValueRecord {
         for(TracedValue tv : record){
             System.out.println("    >> " + tv);
         }
+    }
+
+    public List<TracedValue> getAll(){
+        return record;
     }
 }

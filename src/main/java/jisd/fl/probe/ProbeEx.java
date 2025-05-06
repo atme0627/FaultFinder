@@ -65,10 +65,12 @@ public class ProbeEx extends AbstractProbe {
                 if(pr == null) continue;
                 //感染した変数が引数のものだった場合
                 if(pr.isCausedByArgument()){
-
                     //呼び出しメソッド取得
                     Pair<Integer, String> caller = getCallerMethod(pr.getWatchedAt(), target);
                     pr.setCallerMethod(caller);
+                }
+                else {
+
                 }
 
                 List<VariableInfo> newTargets = searchNextProbeTargets(pr);
@@ -98,12 +100,12 @@ public class ProbeEx extends AbstractProbe {
         }
 
         //probe lineが所属するmethodをmarking methodに追加
-        if(targetClasses.contains(pr.getProbeMethod().split("#")[0])) {
-            markingMethods.add(pr.getProbeMethod());
+        if(targetClasses.contains(pr.getProbeMethodName().split("#")[0])) {
+            markingMethods.add(pr.getProbeMethodName());
         }
 
         Pair<Integer, Integer> lines = pr.getProbeLines();
-        Set<String> calledMethods = getCalleeMethods(testMethod, pr.getProbeMethod(), lines);
+        Set<String> calledMethods = getCalleeMethods(testMethod, pr.getProbeMethodName(), lines);
         for(String called : calledMethods){
             if(targetClasses.contains(called.split("#")[0])) markingMethods.add(called);
         }
@@ -153,7 +155,7 @@ public class ProbeEx extends AbstractProbe {
                     //thisなしのものが観測されている場合はスキップ
                     if(neighborVariables.contains(variableName)) continue;
 
-                    Pair<Boolean, String> isFieldVarInfo = isFieldVariable(variableName, pr.getProbeMethod());
+                    Pair<Boolean, String> isFieldVarInfo = isFieldVariable(variableName, pr.getProbeMethodName());
                     locateClass = isFieldVarInfo.getRight();
                 }
                 //配列かどうか判定
@@ -183,7 +185,7 @@ public class ProbeEx extends AbstractProbe {
                 if(pr.getValuesInLine().get(n).equals("Not defined")) continue;
 
                 VariableInfo vi = new VariableInfo(
-                        isField ? locateClass : pr.getProbeMethod(),
+                        isField ? locateClass : pr.getProbeMethodName(),
                         variableName,
                         pr.getVariableInfo().isPrimitive(),
                         isField,
@@ -373,7 +375,7 @@ public class ProbeEx extends AbstractProbe {
             throw new RuntimeException(e);
         }
         Pair<Integer, Integer> lines = tmpRange != null ? Pair.of(tmpRange.begin.line, tmpRange.end.line) : Pair.of(line, line);
-        String calledMethod = pr.getProbeMethod();
+        String calledMethod = pr.getProbeMethodName();
         calledMethod = calledMethod.substring(calledMethod.indexOf("#")+1, calledMethod.indexOf("("));
 
         int finalIndex = index;
@@ -450,7 +452,7 @@ public class ProbeEx extends AbstractProbe {
     }
 
     private int getIndexOfArgument(ProbeResult pr){
-        String targetMethod = pr.getProbeMethod();
+        String targetMethod = pr.getProbeMethodName();
         String variable = pr.getVariableInfo().getVariableName();
         int index = -1;
         NodeList<Parameter> prms;
