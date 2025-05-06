@@ -80,7 +80,7 @@ public class ProbeEx extends AbstractProbe {
         //感染した変数が引数のものだった場合
         if(result.isCausedByArgument()){
             //呼び出しメソッド取得
-            Pair<Integer, String> caller = getCallerMethod(result.getWatchedAt(), target);
+            Pair<Integer, String> caller = getCallerMethod(target.getLocateMethodElement());
             result.setCallerMethod(caller);
         }
         else {
@@ -108,8 +108,7 @@ public class ProbeEx extends AbstractProbe {
             markingMethods.add(pr.getProbeMethodName());
         }
 
-        Pair<Integer, Integer> lines = pr.getProbeLines();
-        Set<String> calledMethods = getCalleeMethods(testMethod, pr.getProbeMethodName(), lines);
+        Set<String> calledMethods = getCalleeMethods(pr.probeMethod(), pr.probeLine());
         for(String called : calledMethods){
             if(targetClasses.contains(called.split("#")[0])) markingMethods.add(called);
         }

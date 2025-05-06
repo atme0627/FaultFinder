@@ -1,12 +1,21 @@
 package jisd.fl.probe;
 
+import com.sun.jdi.*;
+import com.sun.jdi.event.*;
+import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.MethodEntryRequest;
+import jisd.debug.Debugger;
+import jisd.debug.JDIManager;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 class ProbeExTest {
     @Nested
@@ -86,6 +95,7 @@ class ProbeExTest {
                 testMethodName,
                 actual,
                 probeVariable);
+
         @BeforeEach
         void initProperty() {
             PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/main");
@@ -99,6 +109,70 @@ class ProbeExTest {
             ProbeEx prbEx = new ProbeEx(fai);
             ProbeExResult pr = prbEx.run(2000);
             pr.print();
+        }
+
+        //特定のメソッドの呼び出しメソッドの一覧を取得
+        @Test
+        void getCallerDemo() throws InterruptedException {
+            Debugger dbg = TestUtil.testDebuggerFactory(probeVariable.getLocateMethodElement());
+            JDIManager jdi = (JDIManager) dbg.getVmManager();
+            VirtualMachine vm = jdi.getJDI().vm();
+
+            EventRequestManager manager = vm.eventRequestManager();
+            MethodEntryRequest methodEntryRequest = manager.createMethodEntryRequest();
+            methodEntryRequest.addClassFilter("sample.*");
+            methodEntryRequest.enable();
+            Thread testExec = new Thread(() -> {
+                dbg.run(2000);
+            });
+
+            testExec.start();
+            EventQueue queue = vm.eventQueue();
+            while (true) {
+                try {
+                    EventSet eventSet = queue.remove();
+                    for (Event ev : eventSet) {
+                        if (ev instanceof MethodEntryEvent) {
+                            handleMethodEntry((MethodEntryEvent) ev);
+                        }
+                    }
+                    eventSet.resume();
+                }
+                catch (VMDisconnectedException e){
+                    System.out.println("VM disconnected.");
+                    break;
+                }
+            }
+        }
+
+        private void handleMethodEntry(MethodEntryEvent mEntry) {
+            try {
+                ThreadReference thread = mEntry.thread();
+                List<StackFrame> frames = thread.frames();  // 0: 現在のメソッド, 1: 呼び出し元
+                if (frames.size() > 1) {
+                    // 呼び出し元フレームのロケーションを取得
+                    Location callerLoc = frames.get(1).location();
+                    Method callerMethod = callerLoc.method();
+
+                    System.out.printf(
+                            "== MethodEntry: %s.%s() called by %s.%s() [at %s:%d]%n",
+                            mEntry.method().declaringType().name(),
+                            mEntry.method().name(),
+                            callerMethod.declaringType().name(),
+                            callerMethod.name(),
+                            callerLoc.sourceName(),
+                            callerLoc.lineNumber()
+                    );
+                } else {
+                    System.out.printf(
+                            "== MethodEntry: %s.%s() called from native or bootstrap thread%n",
+                            mEntry.method().declaringType().name(),
+                            mEntry.method().name()
+                    );
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

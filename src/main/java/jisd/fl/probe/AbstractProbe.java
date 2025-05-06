@@ -5,10 +5,10 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.*;
-import jisd.debug.DebugResult;
-import jisd.debug.Debugger;
+import com.sun.jdi.event.*;
+import com.sun.jdi.request.*;
+import jisd.debug.*;
 import jisd.debug.Location;
-import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
@@ -398,116 +398,127 @@ public abstract class AbstractProbe {
     }
 
 
-    protected Set<String> getCalleeMethods(String testMethod, String locateMethod, Pair<Integer, Integer> lines){
-        System.out.println("    >> Probe Info: Collecting callee methods.");
-        System.out.println("    >> Probe Info: Target method --> " + locateMethod);
-        disableStdOut("");
-
-        Set<String> calleeMethods = new HashSet<>();
-        String locateClass = locateMethod.split("#")[0];
-        Set<Integer> linesStopAt = new HashSet<>();
-        for(int i = lines.getLeft(); i <= lines.getRight(); i++){
-            linesStopAt.add(i);
-        }
-
-        Debugger dbg = createDebugger(testMethod);
-        dbg.setMain(locateClass);
-        for(int l : linesStopAt){
-            dbg.stopAt(l);
-        }
-        try {
+    protected Set<String> getCalleeMethods(CodeElementName targetClass, int line){
+        Set<String> result = new HashSet<>();
+        dbg = createDebugger();
+        JDIManager jdi = (JDIManager) dbg.getVmManager();
+        VirtualMachine vm = jdi.getJDI().vm();
+        EventRequestManager manager = vm.eventRequestManager();
+        Thread testExec = new Thread(() -> {
             dbg.run(2000);
-        }
-        //メモリエラーなどでVMが止まる場合、calleeは取れない
-        catch (VMDisconnectedException e) {
-            System.err.println(e);
-            enableStdOut();
-            return calleeMethods;
-        }
-        //callerMethodを取得
-        String calleeMethod;
-        StackFrame sf;
-        //>> Debugger Info: The target VM thread is not suspended now.の時　空のcalleeMethodsを返す
-        if(dbg.loc() == null) {
-            enableStdOut();
-            return calleeMethods;
-        }
-        for(int i = 0; i < linesStopAt.size(); i++) {
-            //最大で20まで
-            int j = 0;
-            while (true) {
-                if(j >= 20) break;
-                //終了判定
-                //stepで元の行に戻った場合、ステップして新しいメソッド呼び出しが行われなければ終了
-                dbg.step();
-                if(dbg.loc() == null) break;
-                String nowLocateMethod = getMethodFromStackFrame(getStackFrame(dbg, 0));
-                if(nowLocateMethod.equals(locateMethod)) break;
+        });
 
-                calleeMethod = getMethodFromStackFrame(getStackFrame(dbg, 0));
-                dbg.stepOut();
-                calleeMethods.add(calleeMethod);
-                j += 1;
+        //breakPointを設定
+        ReferenceType refType = vm.classesByName(targetClass.getFullyQualifiedClassName()).get(0);
+        com.sun.jdi.Location bpLocation;
+        try {
+            bpLocation = refType.locationsOfLine(line).get(0);
+        } catch (AbsentInformationException e) {
+            throw new RuntimeException(e);
+        }
+        BreakpointRequest bpReq = manager.createBreakpointRequest(bpLocation);
+        bpReq.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
+        bpReq.enable();
+
+
+
+        testExec.start();
+        EventQueue queue = vm.eventQueue();
+        while (true) {
+            try {
+                EventSet eventSet = queue.remove();
+                for (Event ev : eventSet) {
+                    if (ev instanceof BreakpointEvent) {
+                        BreakpointEvent be = (BreakpointEvent) ev;
+                        ThreadReference thread = be.thread();
+                        //このスレッドでの MethodEntry を記録するリクエストを作成
+                        MethodEntryRequest meReq = manager.createMethodEntryRequest();
+                        meReq.addThreadFilter(thread);
+                        meReq.setSuspendPolicy(EventRequest.SUSPEND_NONE);
+                        meReq.enable();
+
+                        //この行の実行が終わったことを検知するステップリクエスト
+                        StepRequest stepReq = manager.createStepRequest(
+                                thread,
+                                StepRequest.STEP_LINE,
+                                StepRequest.STEP_OVER
+                        );
+                        stepReq.addCountFilter(1);  // 次の１ステップで止まる
+                        stepReq.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
+                        stepReq.enable();
+
+                        //一旦 resume して、内部ループで MethodEntry／Step を待つ
+                        vm.resume();
+                        boolean done = false;
+                        while (!done) {
+                            EventSet es2 = vm.eventQueue().remove();
+                            for (Event ev2 : es2) {
+                                if (ev2 instanceof MethodEntryEvent) {
+                                    MethodEntryEvent mee = (MethodEntryEvent) ev2;
+                                    if (mee.thread().equals(thread)) {
+                                        result.add(mee.method().name());
+                                    }
+                                }
+                                else if (ev2 instanceof StepEvent) {
+                                    done = true;
+                                }
+                                ev2.request().virtualMachine().resume();
+                            }
+                        }
+
+                        //動的に作ったリクエストは不要になったら無効化しておく
+                        meReq.disable();
+                        stepReq.disable();
+                    }
+                }
+                eventSet.resume();
             }
-            //debugがbreakpointに達しなかった場合は終了
-            if(dbg.loc() == null) break;
-            //すでにbreakpointにいる場合はスキップしない
-            if(!linesStopAt.contains(dbg.loc().getLineNumber())) {
-                dbg.cont(50);
-                i++;
+            catch (VMDisconnectedException | InterruptedException e) {
+                break;
             }
         }
-
-
-        try{
-            dbg.cont(10);
-        }
-        catch (InvalidStackFrameException ignored){}
-        dbg.exit();
-        enableStdOut();
-        return calleeMethods;
+        return result;
     }
 
 
-    protected Pair<Integer, String> getCallerMethod(int watchedAt, VariableInfo vi) {
+    protected Pair<Integer, String> getCallerMethod(CodeElementName targetMethod) {
+        Pair<Integer, String> result = null;
         dbg = createDebugger();
-        dbg.setMain(vi.getLocateClass());
-        disableStdOut("    >> Probe Info: Search caller method.");
-        Optional<Point> p = dbg.stopAt(watchedAt);
-        dbg.run(2000);
-        // probe対象がactualの値を取っているか確認
-        while(true) {
-            if (p.isPresent() && p.get().getResults(vi.getVariableName(true, false)).isPresent()) {
-                DebugResult dr = p.get().getResults(vi.getVariableName(true, false)).get();
-                List<TracedValue> pis = jiProcessor.getValuesFromDebugResult(vi, dr);
-                int index = 0;
-                if (vi.isArray()) index = vi.getArrayNth();
-                if (pis.get(index).value.equals(vi.getActualValue())) {
-                    break;
+        JDIManager jdi = (JDIManager) dbg.getVmManager();
+        VirtualMachine vm = jdi.getJDI().vm();
+
+        EventRequestManager manager = vm.eventRequestManager();
+        MethodEntryRequest methodEntryRequest = manager.createMethodEntryRequest();
+        methodEntryRequest.addClassFilter(targetMethod.getFullyQualifiedClassName());
+        methodEntryRequest.enable();
+        Thread testExec = new Thread(() -> {
+            dbg.run(2000);
+        });
+
+        testExec.start();
+        EventQueue queue = vm.eventQueue();
+        while (true) {
+            try {
+                EventSet eventSet = queue.remove();
+                for (Event ev : eventSet) {
+                    if (ev instanceof MethodEntryEvent) {
+                        MethodEntryEvent mEntry = (MethodEntryEvent) ev;
+                        ThreadReference thread = mEntry.thread();
+                        List<StackFrame> frames = thread.frames();
+                        com.sun.jdi.Location callerLoc = frames.get(1).location();
+                        Method callerMethod = callerLoc.method();
+                        result = Pair.of(callerLoc.lineNumber(), callerMethod.declaringType().name() + "#" + callerMethod.name());
+                    }
                 }
-                else {
-                    p.get().clearDebugResults();
-                    dbg.cont(50);
-                }
-            } else {
-                //throw new RuntimeException("Cannot watch Probe target.");
-                System.err.println("Cannot watch Probe target.");
-                dbg.cont(50);
+                eventSet.resume();
+            }
+            catch (VMDisconnectedException | InterruptedException e){
+                break;
+            } catch (IncompatibleThreadStateException e) {
+                throw new RuntimeException(e);
             }
         }
-//        //callerMethodをシグニチャ付きで取得する
-        StackFrame sf = getStackFrame(dbg, 1);
-        int callLine = sf.location().lineNumber();
-        String callerMethod = getMethodFromStackFrame(sf);
-        Pair<Integer, String> caller
-                = Pair.of(callLine, callerMethod);
-        System.out.println("    >> [ CALLER METHOD ]");
-        System.out.println("    >> " + caller.getRight());
-
-        dbg.cont(10);
-        dbg.exit();
-        enableStdOut();
-        return caller;
+        return result;
     }
 
     private StackFrame getStackFrame(Debugger dbg, int depth){
