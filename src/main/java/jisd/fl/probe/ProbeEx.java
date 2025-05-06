@@ -13,6 +13,7 @@ import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
@@ -43,11 +44,7 @@ public class ProbeEx extends AbstractProbe {
 
         //初めのprobe対象変数がローカル変数の場合、変数が所属するmethodをdepth1でマーキングメソッドに含める。
         if(!firstTarget.isField()){
-            System.out.println("    >> ============================================================================================================");
-            System.out.println("    >> Probe Ex     DEPTH: 1");
-            System.out.println("    >> [MARKING METHODS]");
-            System.out.println("    >> " + firstTarget.getLocateMethod(true));
-
+            printProbeInfoIfLocal(firstTarget);
             result.addElement(firstTarget.getLocateMethod(true), 1, 1);
         }
 
@@ -56,28 +53,14 @@ public class ProbeEx extends AbstractProbe {
             if(!isArgument) depth += 1;
             if(depth > 10) break;
             for (VariableInfo target : probingTargets) {
-                if(isProbed(target))continue;
-                addProbedValue(target);
-
                 printProbeExInfoHeader(target, depth);
-
                 ProbeResult pr = probing(sleepTime, target);
-                if(pr == null) continue;
-                //感染した変数が引数のものだった場合
-                if(pr.isCausedByArgument()){
-                    //呼び出しメソッド取得
-                    Pair<Integer, String> caller = getCallerMethod(pr.getWatchedAt(), target);
-                    pr.setCallerMethod(caller);
-                }
-                else {
-
-                }
 
                 List<VariableInfo> newTargets = searchNextProbeTargets(pr);
                 List<String> markingMethods = searchMarkingMethods(pr, assertInfo.getTestMethodName());
-                result.addAll(markingMethods, depth);
                 printProbeExInfoFooter(pr, newTargets, markingMethods);
 
+                result.addAll(markingMethods, depth);
                 nextTargets.addAll(newTargets);
                 isArgument = pr.isCausedByArgument();
             }
@@ -87,6 +70,27 @@ public class ProbeEx extends AbstractProbe {
         }
         return result;
     }
+
+    @Override
+    protected ProbeResult probing(int sleepTime, VariableInfo target) {
+        if(isProbed(target)) return null;
+        addProbedValue(target);
+        ProbeResult result = super.probing(sleepTime, target);
+        if(result == null) return null;
+        //感染した変数が引数のものだった場合
+        if(result.isCausedByArgument()){
+            //呼び出しメソッド取得
+            Pair<Integer, String> caller = getCallerMethod(result.getWatchedAt(), target);
+            result.setCallerMethod(caller);
+        }
+        else {
+            //原因行で他に登場した値をセット
+            TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), result.probeIterateNum(), 2000);
+            result.setValuesInLine(valuesAtLine);
+        }
+        return result;
+    }
+
     //probeLine内で呼び出されたメソッド群を返す
     public List<String> searchMarkingMethods(ProbeResult pr, String testMethod){
         List<String> markingMethods = new ArrayList<>();
@@ -326,28 +330,28 @@ public class ProbeEx extends AbstractProbe {
         return neighbor;
     }
 
-    private void printProbeExInfoHeader(VariableInfo variableInfo, int depth){
-        System.out.println("    >> ============================================================================================================");
-        System.out.println("    >> Probe Ex     DEPTH: " + depth
-                + "    [PROBE TARGET] "
-                + variableInfo.getVariableName(true, true)
-                + "   [ACTUAL] "
-                + variableInfo.getActualValue());
-        System.out.println(
-                "                                [CLASS] "
-                + variableInfo.getLocateClass());
-        System.out.println("    >> ============================================================================================================");
+    private void printProbeInfoIfLocal(VariableInfo firstTarget) {
+        System.out.println("============================================================================================================");
+        System.out.println(" Probe Ex     DEPTH: 1");
+        System.out.println(" [MARKING METHODS] " + firstTarget.getLocateMethod(true));
+    }
+
+    private void printProbeExInfoHeader(VariableInfo target, int depth){
+        System.out.println("============================================================================================================");
+        System.out.println(" Probe Ex     DEPTH: " + depth);
+        System.out.println(target.toInfoString());
+        System.out.println("============================================================================================================");
     }
 
     private void printProbeExInfoFooter(ProbeResult pr, List<VariableInfo> nextTarget, List<String> markingMethods){
         printProbeStatement(pr);
-        System.out.println("    >> [MARKING METHODS]");
+        System.out.println(" [MARKING METHODS]");
         for(String m : markingMethods){
-            System.out.println("    >> " + m);
+            System.out.println(" " + m);
         }
-        System.out.println("    >> [NEXT TARGET]");
+        System.out.println(" [NEXT TARGET]");
         for(VariableInfo vi : nextTarget){
-            System.out.println("    >> [VARIABLE] " + vi.getVariableName(true, true) + "    [ACTUAL] " + vi.getActualValue());
+            System.out.println(" [VARIABLE] " + vi.getVariableName(true, true) + "    [ACTUAL] " + vi.getActualValue());
         }
     }
 

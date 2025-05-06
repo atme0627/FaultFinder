@@ -102,4 +102,10 @@ public class VariableInfo { //ローカル変数の場合のみ
     public String getActualValue() {
         return actualValue;
     }
+
+    public String toInfoString(){
+         return " [PROBE TARGET] " + getVariableName(true, true)  + "\n" +
+                "       [ACTUAL] " + getActualValue() + "\n" +
+                "     [LOCATION] " + getLocateClass();
+    }
 }

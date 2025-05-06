@@ -4,7 +4,6 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.Statement;
 import com.sun.jdi.*;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
@@ -54,11 +53,6 @@ public abstract class AbstractProbe {
 
         //probe lineが特定できなかった場合nullを返す
         if(result.isNotFound()) return null;
-
-        //原因行で他に登場した値をセット
-        TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), result.probeIterateNum(), 2000);
-        if(!result.isCausedByArgument()) result.setValuesInLine(valuesAtLine);
-
         return result;
     }
 
@@ -119,7 +113,7 @@ public abstract class AbstractProbe {
 
     //viの原因行で、全ての変数が取っている値を記録する
     //何回目のループで観測された値かを入力する
-    private TracedValueCollection traceAllValuesAtLine(CodeElementName targetClassName, int line, int nthLoop, int sleepTime){
+    protected TracedValueCollection traceAllValuesAtLine(CodeElementName targetClassName, int line, int nthLoop, int sleepTime){
         disableStdOut("");
         dbg = createDebugger();
         dbg.setMain(targetClassName.getFullyQualifiedClassName());
@@ -164,7 +158,7 @@ public abstract class AbstractProbe {
             //原因行の次に実行された行
             TracedValue afterAssignedLine = tracedValues.get(tracedValues.indexOf(causeLine));
 
-            return resultIfAssigned(causeLine, afterAssignedLine, vi);
+            return resultIfAssigned(causeLine, vi);
         }
 
         //fieldは代入以外での値の変更を特定できない
@@ -183,7 +177,6 @@ public abstract class AbstractProbe {
             if (vi.getActualValue().equals(firstMatchedLine.value)) {
                 return resultIfNotAssigned(
                         vi.getVariableName(false, false),
-                        firstMatchedLine.createAt,
                         firstMatchedLine.loc.getLineNumber(),
                         vi);
             }
@@ -283,11 +276,10 @@ public abstract class AbstractProbe {
 
 
 
-    private ProbeResult resultIfAssigned(TracedValue causeLineData, TracedValue afterAssignedLineData, VariableInfo vi){
+    private ProbeResult resultIfAssigned(TracedValue causeLineData, VariableInfo vi){
         //代入によって変数がactualの値を取るようになったパターン
         //値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
         int causeLineNumber = causeLineData.loc.getLineNumber();
-        int afterAssignedLineNumber = afterAssignedLineData.loc.getLineNumber();
         LocalDateTime createAt = causeLineData.createAt;
 
         //実行しているメソッドを取得
@@ -302,11 +294,10 @@ public abstract class AbstractProbe {
 
         ProbeResult result = new ProbeResult(vi, probeStmt);
         result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
-        result.setWatchedAt(afterAssignedLineNumber);
         return result;
     }
 
-    private ProbeResult resultIfNotAssigned(String variableName, LocalDateTime createAt, int watchedAt, VariableInfo vi){
+    private ProbeResult resultIfNotAssigned(String variableName, int watchedAt, VariableInfo vi){
         //代入以外の要因で変数がactualの値をとるようになったパターン
         //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
@@ -331,7 +322,6 @@ public abstract class AbstractProbe {
             StatementElement probeStmt = locateMethodElement.FindStatementByLine(varDeclarationLine).get();
             ProbeResult result = new ProbeResult(vi, probeStmt);
             result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
-            result.setWatchedAt(watchedAt);
             return result;
         }
 
@@ -341,21 +331,6 @@ public abstract class AbstractProbe {
         result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
         result.setWatchedAt(watchedAt);
         return result;
-    }
-
-    protected String getProbeStatement(String locationClass, Pair<Integer, Integer> probeLines) {
-        return getProbeStatement(new CodeElementName(locationClass), probeLines);
-    }
-    //Statementのソースコードを取得
-    protected String getProbeStatement(CodeElementName locationClass, Pair<Integer, Integer> probeLines){
-        Optional<Statement> stmt = null;
-        try {
-            stmt = JavaParserUtil.getStatementByLine(locationClass, probeLines.getLeft());
-        } catch (NoSuchFileException e) {
-            return "not found";
-        }
-        if(stmt.isEmpty()) throw new RuntimeException();
-        return stmt.get().toString();
     }
 
     protected void disableStdOut(String msg){
