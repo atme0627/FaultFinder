@@ -27,7 +27,6 @@ public class ProbeResult {
     //falseの場合はその変数の欠陥が引数由来
     private final boolean isCausedByArgument;
 
-    private LocalDateTime createAt;
 
     //実際にactualとなっていたことが観測された行
     private int watchedAt;
@@ -98,14 +97,6 @@ public class ProbeResult {
 
     public void setValuesInLine(TracedValueCollection neighborVariables) {
         this.neighborVariables = neighborVariables;
-    }
-
-    public LocalDateTime getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(LocalDateTime createAt) {
-        this.createAt = createAt;
     }
 
     public int getWatchedAt() {
