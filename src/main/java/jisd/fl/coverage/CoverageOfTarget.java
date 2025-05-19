@@ -8,14 +8,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
+import org.jacoco.core.analysis.IMethodCoverage;
+import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CoverageOfTarget {
     public String targetClassName;
-    public Set<String> targetMethodNames;
 
     //各行のカバレッジ情報 (行番号, メソッド名, クラス名) --> lineCoverage status
     public Map<String, SbflStatus> lineCoverage;
@@ -28,8 +30,6 @@ public class CoverageOfTarget {
 
     public CoverageOfTarget(String targetClassName) throws IOException {
         this.targetClassName = targetClassName;
-        CodeElementName targetClass = new CodeElementName(targetClassName);
-        this.targetMethodNames = StaticAnalyzer.getMethodNames(targetClass);
 
         lineCoverage = new TreeMap<>();
         classCoverage = new TreeMap<>();
@@ -48,19 +48,21 @@ public class CoverageOfTarget {
         }
 
         //method coverage
-        CodeElementName targetClass = new CodeElementName(targetClassName);
-        Map<String, Pair<Integer, Integer>> rangeOfMethod = StaticAnalyzer.getRangeOfAllMethods(targetClass);
-        for(String targetMethodName : targetMethodNames){
-            Pair<Integer, Integer> range = rangeOfMethod.get(targetMethodName);
-            putCoverageStatus(targetMethodName, getMethodSbflStatus(cc, range, isTestPassed), Granularity.METHOD);
+        for(IMethodCoverage mc : cc.getMethods()){
+            boolean isTestExecuted = mc.getMethodCounter().getCoveredCount() == 1;
+            String methodSignature = Arrays.stream(Type.getArgumentTypes(mc.getDesc()))
+                    .map(Type::getClassName)
+                    .collect(Collectors.joining(", "));
+            String targetMethodName = targetClassName + "#" + mc.getName() + "(" + methodSignature + ")";
+            putCoverageStatus(targetMethodName, new SbflStatus(isTestExecuted, isTestPassed), Granularity.METHOD);
         }
 
         //class coverage
         putCoverageStatus(targetClassName, getClassSbflStatus(cc, isTestPassed), Granularity.CLASS);
     }
 
-    protected void putCoverageStatus(String element, SbflStatus status, Granularity granularity){
-        switch (granularity){
+    protected void putCoverageStatus(String element, SbflStatus status, Granularity granularity) {
+        switch (granularity) {
             case LINE:
                 lineCoverage.put(element, status);
                 break;
@@ -71,20 +73,6 @@ public class CoverageOfTarget {
                 classCoverage.put(element, status);
                 break;
         }
-    }
-
-    protected SbflStatus getMethodSbflStatus(IClassCoverage cc, Pair<Integer, Integer> range, boolean isTestPassed){
-        int methodBegin = range.getLeft();
-        int methodEnd = range.getRight();
-        boolean isTestExecuted = false;
-        for(int i = methodBegin; i <= methodEnd; i++){
-            int status = cc.getLine(i).getStatus();
-            if(status == ICounter.PARTLY_COVERED || status == ICounter.FULLY_COVERED) {
-                isTestExecuted = true;
-                break;
-            }
-        }
-        return new SbflStatus(isTestExecuted, isTestPassed);
     }
 
     protected SbflStatus getClassSbflStatus(IClassCoverage cc, boolean isTestPassed){

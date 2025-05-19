@@ -70,7 +70,7 @@ public  class TestUtil {
     public static boolean execTestCaseWithJacocoAgent(CodeElementName testMethod, String execFileName) throws IOException, InterruptedException {
         final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
         final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-        final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
+        final String debugBinDir = PropertyLoader.getDebugBinDir();
         final String junitClassPath = PropertyLoader.getJunitClassPaths();
         String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
 
@@ -80,9 +80,8 @@ public  class TestUtil {
         // 0: それ以外
         String cmd =
                 "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
-                " -cp " + ":./.probe_test_classes"
-                        + "./build/classes/java/main"
-                        + ":" + targetBinDir
+                " -cp " + "./build/classes/java/main"
+                        + ":" + debugBinDir
                         + ":" + junitClassPath
                 + " jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
         Process proc = Runtime.getRuntime().exec(cmd);

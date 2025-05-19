@@ -6,6 +6,7 @@ import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.ProbeExResult;
 import jisd.fl.util.TestUtil;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.NoSuchFileException;
@@ -15,6 +16,8 @@ import java.util.List;
 import java.util.Set;
 
 class CoverageGeneratorTest {
+    @BeforeEach
+
     @Test
     void genTest(){
         String project = "Math";

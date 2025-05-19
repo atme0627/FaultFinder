@@ -28,7 +28,11 @@ public class MyCoverageVisiter implements ICoverageVisitor {
 
         //ターゲットのクラスに含まれないクラスの場合
         String targetClassName = coverage.getName().replace("/", ".");
-        if(!coverageCollection.isContainsTargetClass(targetClassName)){
+        //内部クラスを考慮
+        if(!coverageCollection.isContainsTargetClass(
+                targetClassName.contains("$")
+                ? targetClassName.split("\\$")[0]
+                : targetClassName)){
             return;
         }
 

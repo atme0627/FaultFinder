@@ -44,6 +44,12 @@ public class CoverageCollection {
         printCoverages(System.out, granularity);
     }
 
+    public void printCoverages(Granularity granularity, boolean onlyCovered){
+        for(CoverageOfTarget cov : getCoverages().values()){
+            cov.printCoverage(System.out, granularity);
+        }
+    }
+
     public void printCoverages(PrintStream out, Granularity granularity){
         for(CoverageOfTarget cov : getCoverages().values()){
             cov.printCoverage(out, granularity);
