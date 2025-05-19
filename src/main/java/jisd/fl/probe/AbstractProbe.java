@@ -485,9 +485,12 @@ public abstract class AbstractProbe {
                             for (Event ev2 : es2) {
                                 if (ev2 instanceof MethodEntryEvent) {
                                     MethodEntryEvent mee = (MethodEntryEvent) ev2;
-                                    if (mee.thread().equals(thread)) {
+                                    StackFrame sf = mee.thread().frame(1);
+                                    //指定した行で直接呼ばれたメソッドのみ対象
+                                    if (mee.thread().equals(thread) && sf.location().method().equals(be.location().method())) {
                                         result.add(mee.method().toString());
                                     }
+
                                 }
                                 else if (ev2 instanceof StepEvent) {
                                     done = true;
@@ -505,8 +508,8 @@ public abstract class AbstractProbe {
                 vm.resume();
             }
         }
-        catch (VMDisconnectedException ignored) {;
-        } catch (InterruptedException e) {
+        catch (VMDisconnectedException ignored) {}
+        catch (InterruptedException | IncompatibleThreadStateException e) {
             throw new RuntimeException(e);
         }
         //package.class.method() --> package.class#method()
@@ -514,6 +517,10 @@ public abstract class AbstractProbe {
                 .map(StringBuilder::new)
                 .map(n -> {
                     n.setCharAt(n.lastIndexOf("."), '#');
+                    if(n.toString().contains("<init>")){
+                        String constructorName = n.substring(n.lastIndexOf("."), n.indexOf("#"));
+                        n.replace(n.indexOf("#"), n.indexOf("("), constructorName);
+                    }
                     return n.toString();
                 })
                 .collect(Collectors.toSet());
