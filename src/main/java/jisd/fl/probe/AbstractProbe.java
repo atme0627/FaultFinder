@@ -490,7 +490,6 @@ public abstract class AbstractProbe {
                                     if (mee.thread().equals(thread) && sf.location().method().equals(be.location().method())) {
                                         result.add(mee.method().toString());
                                     }
-
                                 }
                                 else if (ev2 instanceof StepEvent) {
                                     done = true;
@@ -584,57 +583,4 @@ public abstract class AbstractProbe {
         }
         return result;
     }
-
-    private StackFrame getStackFrame(Debugger dbg, int depth){
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            return dbg.thread().frame(depth);
-        } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException(e);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private String getMethodFromStackFrame(StackFrame sf){
-        String methodName = sf.location().method().toString();
-        if(methodName.contains("<init>")){
-            String shortName = methodName.substring(0, methodName.lastIndexOf("<") - 1);
-            shortName = shortName.substring(shortName.lastIndexOf(".") + 1);
-            methodName =  methodName.replace("<init>", shortName);
-        }
-        methodName = shortMethodName(methodName);
-        StringBuilder sb = new StringBuilder(methodName);
-        sb.setCharAt(sb.lastIndexOf("."), '#');
-        return sb.toString();
-    }
-
-    public static String shortMethodName(String fullMethodName){
-        String name = fullMethodName.split("\\(")[0];
-        String args = fullMethodName.substring(fullMethodName.indexOf("(")+1, fullMethodName.indexOf(")"));
-        List<String> argList = new ArrayList<>(List.of(args.split(", ")));
-        List<String> shortArgList = new ArrayList<>();
-        for(String arg : argList){
-            if(arg.contains(".") || arg.contains("/")) {
-                String[] splitArgs = arg.split("[./]");
-                shortArgList.add(splitArgs[splitArgs.length - 1]);
-            }
-            else {
-                shortArgList.add(arg);
-            }
-        }
-        StringBuilder shortMethod = new StringBuilder(name + "(");
-        for(int i = 0; i < shortArgList.size(); i++){
-            String shortArg = shortArgList.get(i);
-            shortMethod.append(shortArg);
-            if (i != shortArgList.size() - 1) shortMethod.append(", ");
-        }
-        shortMethod.append(")");
-        return shortMethod.toString();
-    }
-
 }
