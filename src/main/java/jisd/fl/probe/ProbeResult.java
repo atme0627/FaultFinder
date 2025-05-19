@@ -127,4 +127,10 @@ public class ProbeResult {
     public int probeIterateNum(){
         return probeIterateNum;
     }
+
+    static public ProbeResult notFound(){
+        ProbeResult notFound = new ProbeResult(null);
+        notFound.setNotFound(true);
+        return notFound;
+    }
 }

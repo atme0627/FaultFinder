@@ -76,7 +76,19 @@ public class ProbeEx extends AbstractProbe {
         if(isProbed(target)) return null;
         addProbedValue(target);
         ProbeResult result = super.probing(sleepTime, target);
-        if(result == null) return null;
+        int loop = 0;
+        int LOOP_LIMIT = 5;
+        while(result == null) {
+            loop++;
+            System.err.println("[Probe] Cannot get enough information.");
+            System.err.println("[Probe] Retry to collect information.");
+            sleepTime += 2000;
+            result = super.probing(sleepTime, target);
+            if (loop == LOOP_LIMIT) {
+                System.err.println("[Probe] Failed to collect information.");
+                return ProbeResult.notFound();
+            }
+        }
         //感染した変数が引数のものだった場合
         if(result.isCausedByArgument()){
             //呼び出しメソッド取得

@@ -186,7 +186,10 @@ public abstract class AbstractProbe {
             }
         }
 
-        throw new RuntimeException("There is no value which same to actual.");
+        System.err.println("There is no value which same to actual.");
+        ProbeResult result = new ProbeResult(vi, null);
+        result.setNotFound(true);
+        return result;
     }
 
     private List<Integer> valueChangingLine(VariableInfo vi){
@@ -344,7 +347,6 @@ public abstract class AbstractProbe {
             public void write(int b) { /* noop */ }
         });
         System.setOut(nop);
-        System.setErr(nop);
     }
 
     protected void enableStdOut(){
