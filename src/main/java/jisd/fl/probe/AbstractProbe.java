@@ -5,6 +5,10 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.*;
+import com.sun.jdi.connect.Connector;
+import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+import com.sun.jdi.connect.LaunchingConnector;
+import com.sun.jdi.connect.VMStartException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
 import jisd.debug.*;
@@ -398,43 +402,69 @@ public abstract class AbstractProbe {
     }
 
 
-    protected Set<String> getCalleeMethods(CodeElementName targetClass, int line){
-        Set<String> result = new HashSet<>();
-        dbg = createDebugger();
-        JDIManager jdi = (JDIManager) dbg.getVmManager();
-        VirtualMachine vm = jdi.getJDI().vm();
-        EventRequestManager manager = vm.eventRequestManager();
-        Thread testExec = new Thread(() -> {
-            dbg.run(2000);
-        });
+    public Set<String> getCalleeMethods(CodeElementName targetClass, int line){
+        //vm生成
+        String main = TestUtil.getJVMMain(new CodeElementName(assertInfo.getTestMethodName()));
+        String options = TestUtil.getJVMOption();
+        VirtualMachine vm;
 
-        //breakPointを設定
-        ReferenceType refType = vm.classesByName(targetClass.getFullyQualifiedClassName()).get(0);
-        com.sun.jdi.Location bpLocation;
         try {
-            bpLocation = refType.locationsOfLine(line).get(0);
-        } catch (AbsentInformationException e) {
+            VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
+            LaunchingConnector connector = vmm.defaultConnector();
+            Map<String, Connector.Argument> cArgs = connector.defaultArguments();
+            cArgs.get("options").setValue(options);
+            cArgs.get("main").setValue(main);
+            //起動後すぐにsuspendされるはず
+            vm = connector.launch(cArgs);
+        }
+        catch (IllegalConnectorArgumentsException | VMStartException | IOException e) {
             throw new RuntimeException(e);
         }
-        BreakpointRequest bpReq = manager.createBreakpointRequest(bpLocation);
-        bpReq.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
-        bpReq.enable();
 
 
+        //リクエストを先に立てる
+        //ロード済みのクラスに対しbreakPointを設定
+        EventRequestManager manager = vm.eventRequestManager();
+        List<ReferenceType> loaded = vm.classesByName(targetClass.getFullyQualifiedClassName());
+        for(ReferenceType rt : loaded) {
+            setBreakpoint(rt, manager, line);
+        }
 
-        testExec.start();
+        //未ロードのクラスがロードされたタイミングを監視
+        ClassPrepareRequest cpr = manager.createClassPrepareRequest();
+        cpr.addClassFilter(targetClass.getFullyQualifiedClassName());
+        cpr.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        cpr.enable();
+
+        //リクエストが立ったらVMを再開
+        vm.resume();
+
+        Set<String> result = new HashSet<>();
         EventQueue queue = vm.eventQueue();
-        while (true) {
-            try {
-                EventSet eventSet = queue.remove();
+        EventSet eventSet = null;
+        try {
+            while ((eventSet = queue.remove()) != null) {
                 for (Event ev : eventSet) {
+                    if (ev instanceof VMStartEvent) {
+                        continue;
+                    }
+                    if (ev instanceof ClassPrepareEvent) {
+                        //System.out.println("ClassPrepareEvent");
+                        ReferenceType ref = ((ClassPrepareEvent) ev).referenceType();
+                        // クラスロード直後にブレークポイントを設定
+                        if(ref.name().equals(targetClass.getFullyQualifiedClassName())) {
+                            setBreakpoint(ref, manager, line);
+                        }
+                        continue;
+                    }
                     if (ev instanceof BreakpointEvent) {
+                        //System.out.println("BreakPointEvent");
                         BreakpointEvent be = (BreakpointEvent) ev;
                         ThreadReference thread = be.thread();
                         //このスレッドでの MethodEntry を記録するリクエストを作成
                         MethodEntryRequest meReq = manager.createMethodEntryRequest();
                         meReq.addThreadFilter(thread);
-                        meReq.setSuspendPolicy(EventRequest.SUSPEND_NONE);
+                        meReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
                         meReq.enable();
 
                         //この行の実行が終わったことを検知するステップリクエスト
@@ -444,7 +474,7 @@ public abstract class AbstractProbe {
                                 StepRequest.STEP_OVER
                         );
                         stepReq.addCountFilter(1);  // 次の１ステップで止まる
-                        stepReq.setSuspendPolicy(EventRequest.SUSPEND_EVENT_THREAD);
+                        stepReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
                         stepReq.enable();
 
                         //一旦 resume して、内部ループで MethodEntry／Step を待つ
@@ -456,7 +486,7 @@ public abstract class AbstractProbe {
                                 if (ev2 instanceof MethodEntryEvent) {
                                     MethodEntryEvent mee = (MethodEntryEvent) ev2;
                                     if (mee.thread().equals(thread)) {
-                                        result.add(mee.method().name());
+                                        result.add(mee.method().toString());
                                     }
                                 }
                                 else if (ev2 instanceof StepEvent) {
@@ -471,15 +501,42 @@ public abstract class AbstractProbe {
                         stepReq.disable();
                     }
                 }
-                eventSet.resume();
-            }
-            catch (VMDisconnectedException | InterruptedException e) {
-                break;
+
+                vm.resume();
             }
         }
+        catch (VMDisconnectedException ignored) {;
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        //package.class.method() --> package.class#method()
+        result = result.stream()
+                .map(StringBuilder::new)
+                .map(n -> {
+                    n.setCharAt(n.lastIndexOf("."), '#');
+                    return n.toString();
+                })
+                .collect(Collectors.toSet());
+
         return result;
     }
 
+    private void setBreakpoint(ReferenceType rt, EventRequestManager manager, int line){
+        try {
+            List<com.sun.jdi.Location> bpLocs = rt.locationsOfLine(line);
+            if(bpLocs.isEmpty()) {
+                System.err.println("line " + line + " at " + rt.name() + " is not found.");
+            }
+            else {
+                BreakpointRequest bpReq = manager.createBreakpointRequest(bpLocs.get(0));
+                bpReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+                bpReq.enable();
+            }
+        } catch (AbsentInformationException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
     protected Pair<Integer, String> getCallerMethod(CodeElementName targetMethod) {
         Pair<Integer, String> result = null;

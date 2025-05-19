@@ -18,6 +18,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public  class TestUtil {
+    public static String getJVMMain(CodeElementName testMethod){
+        return "jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
+    }
+
+    public static String getJVMOption(){
+        return "-cp " + "./build/classes/java/main"
+                + ":" + PropertyLoader.getDebugBinDir()
+                + ":" + PropertyLoader.getJunitClassPaths();
+    }
+
     @Deprecated
     public static void compileForDebug(String testClassName) {
         compileForDebug(new CodeElementName(testClassName));
@@ -108,7 +118,17 @@ public  class TestUtil {
     public static Debugger testDebuggerFactory(String testMethodName) {
         return testDebuggerFactory(new CodeElementName(testMethodName));
     }
-    public static Debugger testDebuggerFactory(CodeElementName testMethod) {
+
+    @Deprecated
+    public static Debugger testDebuggerFactory(String testMethodName, String option) {
+        return testDebuggerFactory(new CodeElementName(testMethodName), option);
+    }
+
+    public static Debugger testDebuggerFactory(CodeElementName testMethod){
+        return testDebuggerFactory(testMethod, "");
+    }
+
+    public static Debugger testDebuggerFactory(CodeElementName testMethod, String option) {
         compileForDebug(testMethod);
         Debugger dbg;
         while(true) {
@@ -119,6 +139,7 @@ public  class TestUtil {
                         "-cp " + "./build/classes/java/main"
                                 + ":" + PropertyLoader.getDebugBinDir()
                                 + ":" + PropertyLoader.getJunitClassPaths()
+                                + " " + option
                 );
 
                 break;

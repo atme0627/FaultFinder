@@ -1,6 +1,10 @@
 package jisd.fl.probe;
 
 import com.sun.jdi.*;
+import com.sun.jdi.connect.Connector;
+import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+import com.sun.jdi.connect.LaunchingConnector;
+import com.sun.jdi.connect.VMStartException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
@@ -11,11 +15,16 @@ import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
+import jisd.fl.util.analyze.CodeElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Map;
 
 class ProbeExTest {
     @Nested
@@ -64,6 +73,42 @@ class ProbeExTest {
             ProbeExResult pr = prbEx.run(3000);
             pr.print();
         }
+
+        @Test
+        void VMLaunchDemo() throws IOException {
+            //vm生成
+            String main = TestUtil.getJVMMain(new CodeElementName(testMethodName));
+            String options = TestUtil.getJVMOption();
+            VirtualMachine vm;
+
+            try {
+                VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
+                LaunchingConnector connector = vmm.defaultConnector();
+                Map<String, Connector.Argument> cArgs = connector.defaultArguments();
+                cArgs.get("options").setValue(options);
+                cArgs.get("main").setValue(main);
+                //起動後すぐにsuspendされるはず
+                vm = connector.launch(cArgs);
+            } catch (IllegalConnectorArgumentsException e) {
+                throw new RuntimeException(e);
+            } catch (VMStartException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            Process proc = vm.process();
+            vm.resume();
+            String line = null;
+            System.out.println("STDOUT---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) System.out.println(line);
+            }
+            System.out.println("STDERR---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = buf.readLine()) != null) System.err.println(line);
+            }
+        }
     }
 
     @Nested
@@ -98,10 +143,10 @@ class ProbeExTest {
 
         @BeforeEach
         void initProperty() {
-            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/main");
-            PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/test");
-            PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/main");
-            PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/test");
+            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/src/main/java");
+            PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/src/test/java");
+            PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/main");
+            PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/test");
         }
 
         @Test
@@ -173,6 +218,90 @@ class ProbeExTest {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+
+        @Test
+        void VMLaunchDemo() throws IOException {
+            //vm生成
+            String main = TestUtil.getJVMMain(new CodeElementName(testMethodName));
+            String options = TestUtil.getJVMOption();
+            VirtualMachine vm;
+
+            try {
+                VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
+                LaunchingConnector connector = vmm.defaultConnector();
+                Map<String, Connector.Argument> cArgs = connector.defaultArguments();
+                cArgs.get("options").setValue(options);
+                cArgs.get("main").setValue(main);
+                //起動後すぐにsuspendされるはず
+                vm = connector.launch(cArgs);
+            } catch (IllegalConnectorArgumentsException e) {
+                throw new RuntimeException(e);
+            } catch (VMStartException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            Process proc = vm.process();
+            vm.resume();
+            String line = null;
+            System.out.println("STDOUT---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) System.out.println(line);
+            }
+            System.out.println("STDERR---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = buf.readLine()) != null) System.err.println(line);
+            }
+        }
+    }
+
+    @Nested
+    class methodCallTest {
+        String testClassName = "sample.MethodCallTest";
+        String shortTestMethodName = "methodCall1";
+        String testMethodName = testClassName + "#" + shortTestMethodName + "()";
+
+        String variableName = "result";
+        boolean isPrimitive = true;
+        boolean isField = false;
+        boolean isArray = false;
+        int arrayNth = -1;
+        String actual = "11";
+        String locate = "sample.MethodCall#methodCalling(int, int)";
+
+        VariableInfo probeVariable = new VariableInfo(
+                locate,
+                variableName,
+                isPrimitive,
+                isField,
+                isArray,
+                arrayNth,
+                actual,
+                null
+        );
+
+        FailedAssertInfo fai = new FailedAssertEqualInfo(
+                testMethodName,
+                actual,
+                probeVariable);
+
+        @BeforeEach
+        void initProperty() {
+            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/src/main/java");
+            PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/src/test/java");
+            PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/main");
+            PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/test");
+
+            TestUtil.compileForDebug(new CodeElementName("sample.MethodCallTest"));
+        }
+
+        @Test
+        void runTest() {
+            ProbeEx prbEx = new ProbeEx(fai);
+            ProbeExResult pr = prbEx.run(2000);
+            pr.print();
         }
     }
 }

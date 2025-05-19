@@ -1,2 +1,2 @@
 rootProject.name = 'MyFaultFinder'
-
+includeBuild('src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject')
