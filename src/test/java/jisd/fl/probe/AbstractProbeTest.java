@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import jisd.debug.EnhancedDebugger;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.assertinfo.VariableInfo;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,9 +56,21 @@ class AbstractProbeTest {
     }
 
     @Test
-    void getCalleeMethods() {
-        ProbeEx pex = new ProbeEx(fai);
-        Set<String> result = pex.getCalleeMethods(new CodeElementName(locate), 9);
+    void getCalleeMethodsTest() {
+        String main = TestUtil.getJVMMain(new CodeElementName(fai.getTestMethodName()));
+        String options = TestUtil.getJVMOption();
+        EnhancedDebugger dbg = new EnhancedDebugger(main, options);
+        Set<String> result = dbg.getCalleeMethods(new CodeElementName(locate).getFullyQualifiedClassName(), 9);
         result.forEach(System.out::println);
+    }
+
+    @Test
+    void getReturnLineOfCalleeMethodTest() {
+        String main = TestUtil.getJVMMain(new CodeElementName(fai.getTestMethodName()));
+        String options = TestUtil.getJVMOption();
+        EnhancedDebugger dbg = new EnhancedDebugger(main, options);
+        Map<String, Integer> result =
+                dbg.getReturnLineOfCalleeMethod(new CodeElementName(locate).getFullyQualifiedClassName(), 9);
+        result.forEach((name, line) -> System.out.println("method: " + name + " line: " + line));
     }
 }

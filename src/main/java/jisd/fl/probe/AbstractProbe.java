@@ -5,10 +5,6 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.*;
-import com.sun.jdi.connect.Connector;
-import com.sun.jdi.connect.IllegalConnectorArgumentsException;
-import com.sun.jdi.connect.LaunchingConnector;
-import com.sun.jdi.connect.VMStartException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
 import jisd.debug.*;
@@ -408,7 +404,7 @@ public abstract class AbstractProbe {
         String main = TestUtil.getJVMMain(new CodeElementName(assertInfo.getTestMethodName()));
         String options = TestUtil.getJVMOption();
         EnhancedDebugger edbg = new EnhancedDebugger(main, options);
-        return edbg.getCallerMethod(targetClass.getFullyQualifiedClassName(), line);
+        return edbg.getCalleeMethods(targetClass.getFullyQualifiedClassName(), line);
     }
 
     protected Pair<Integer, String> getCallerMethod(CodeElementName targetMethod) {
