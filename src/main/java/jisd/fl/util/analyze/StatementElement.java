@@ -2,6 +2,7 @@ package jisd.fl.util.analyze;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.Statement;
 
 import java.util.Optional;
@@ -30,7 +31,4 @@ public class StatementElement {
         }
         return Optional.empty();
     }
-
-
-
 }

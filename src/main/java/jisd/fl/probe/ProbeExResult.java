@@ -24,6 +24,10 @@ public class ProbeExResult implements Serializable {
         per.add(new Element(methodName, depth, countInLine));
     }
 
+    public void addElement(String methodName, int lineNumber, int depth, int countInLine){
+        per.add(new Element(methodName, lineNumber, depth, countInLine));
+    }
+
     private boolean exists(String method, int depth){
         for(Element e : per){
             if(e.methodName.equals(method) && e.depth == depth) return true;
@@ -111,18 +115,25 @@ public class ProbeExResult implements Serializable {
     }
 
     public static class Element implements Comparable<Element>, Serializable{
-        public String methodName;
-        public int depth;
+        public final String methodName;
+        public final int depth;
+        public final int lineNumber;
         //同じprobeLine中で出現したメソッドの数
         //(同時に多く出現するほど疑いが弱くなるという仮定)
         public int countInLine;
 
         @JsonCreator
         public Element(){
+            this(null, 0, 0, 0);
         }
 
         public Element(String methodName, int depth, int countInLine){
+            this(methodName, 0, depth, countInLine);
+        }
+
+        public Element(String methodName, int lineNumber, int depth, int countInLine){
             this.methodName = methodName;
+            this.lineNumber = lineNumber;
             this.depth = depth;
             this.countInLine = countInLine;
         }
@@ -133,12 +144,17 @@ public class ProbeExResult implements Serializable {
             if(c != 0) return c;
             c = this.depth - o.depth;
             if(c != 0) return c;
-            return this.countInLine - o.countInLine;
+            c = this.countInLine - o.countInLine;
+            if(c != 0) return c;
+            return this.lineNumber - o.lineNumber;
         }
 
         @Override
         public String toString(){
-            return "[METHOD] " + methodName + "   [DEPTH] " + depth + "  [COUNT] " + countInLine;
+            if(lineNumber == 0) {
+                return "[METHOD] " + methodName + "   [DEPTH] " + depth;
+            }
+            return "[METHOD] " + methodName + "   [DEPTH] " + depth + "  [LINE] " + lineNumber;
         }
     }
 

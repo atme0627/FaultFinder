@@ -7,6 +7,7 @@ import jisd.fl.util.analyze.MethodElement;
 import jisd.fl.util.analyze.StatementElement;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,49 +18,45 @@ public class ProbeResult {
 
     //変数の原因行
     private final StatementElement stmt;
-    private String probeMethodName;
+    private final CodeElementName probeMethodName;
     private final int probeIterateNum;
 
     //原因行で観測された他の変数とその値
     private TracedValueCollection neighborVariables;
 
-    //呼び出し側のメソッドと呼び出している行
-    private Pair<Integer, MethodElement> callerMethod;
+
     //trueの場合はその変数の欠陥が引数由来
     private boolean isCausedByArgument;
-
-
-    //実際にactualとなっていたことが観測された行
-    private int watchedAt;
+    //呼び出し側のメソッドと呼び出している行
+    private Pair<Integer, MethodElement> callerMethod;
+    private CodeElementName calleeMethodName;
 
     //probeLineの特定ができなかったかどうか
     private boolean notFound = false;
 
-    public ProbeResult(VariableInfo vi, StatementElement stmt){
+    public ProbeResult(VariableInfo vi, StatementElement stmt, CodeElementName probeMethodName){
         this.vi = vi;
         this.stmt = stmt;
+        this.probeMethodName = probeMethodName;
         this.isCausedByArgument = false;
         this.probeIterateNum = 0;
     }
 
-    public ProbeResult(VariableInfo vi, StatementElement stmt, int probeIterateNum){
+    public ProbeResult(VariableInfo vi, StatementElement stmt, CodeElementName probeMethodName, int probeIterateNum){
         this.vi = vi;
         this.stmt = stmt;
+        this.probeMethodName = probeMethodName;
         this.isCausedByArgument = false;
         this.probeIterateNum = probeIterateNum;
     }
 
 
     public String getProbeMethodName() {
-        return probeMethodName;
+        return probeMethodName.getFullyQualifiedMethodName();
     }
 
-    public Pair<Integer, String> getCallerMethod() {
-        return Pair.of(callerMethod.getLeft(), callerMethod.getRight().fqmn()) ;
-    }
-
-    void setProbeMethodName(String probeMethodName) {
-        this.probeMethodName = probeMethodName;
+    public Pair<Integer, MethodElement> getCallerMethod() {
+        return Pair.of(callerMethod.getLeft(), callerMethod.getRight());
     }
 
     void setCallerMethod(Pair<Integer, MethodElement> callerMethod) {
@@ -92,11 +89,6 @@ public class ProbeResult {
         this.neighborVariables = neighborVariables;
     }
 
-
-    public void setWatchedAt(int watchedAt) {
-        this.watchedAt = watchedAt;
-    }
-
     public boolean isNotFound() {
         return notFound;
     }
@@ -106,7 +98,7 @@ public class ProbeResult {
     }
 
     public CodeElementName probeMethod(){
-        return new CodeElementName(probeMethodName);
+        return probeMethodName;
     }
 
     public int probeLine(){
@@ -119,8 +111,24 @@ public class ProbeResult {
     }
 
     static public ProbeResult notFound(){
-        ProbeResult notFound = new ProbeResult(null, null);
+        ProbeResult notFound = new ProbeResult(null, null, null);
         notFound.setNotFound(true);
         return notFound;
+    }
+
+    public CodeElementName getCalleeMethodName() {
+        return calleeMethodName;
+    }
+
+    public int getCallLocationLine(){
+        return callerMethod.getLeft();
+    }
+
+    public StatementElement getProbeStmt(){
+        return stmt;
+    }
+
+    public void setCalleeMethodName(CodeElementName calleeMethodName) {
+        this.calleeMethodName = calleeMethodName;
     }
 }

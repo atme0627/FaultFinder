@@ -165,9 +165,7 @@ public abstract class AbstractProbe {
         //fieldは代入以外での値の変更を特定できない
         if(vi.isField()){
             System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getVariableName());
-            ProbeResult result = new ProbeResult(vi, null);
-            result.setNotFound(true);
-            return result;
+            return ProbeResult.notFound();
         }
 
         //実行された代入行がないパターン
@@ -183,9 +181,7 @@ public abstract class AbstractProbe {
         }
 
         System.err.println("There is no value which same to actual.");
-        ProbeResult result = new ProbeResult(vi, null);
-        result.setNotFound(true);
-        return result;
+        return ProbeResult.notFound();
     }
 
     private List<Integer> valueChangingLine(VariableInfo vi){
@@ -293,10 +289,12 @@ public abstract class AbstractProbe {
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
-        StatementElement probeStmt = locateMethodElement.FindStatementByLine(causeLineNumber).get();
+        StatementElement probeStmt = locateMethodElement.findStatementByLine(causeLineNumber).get();
 
-        ProbeResult result = new ProbeResult(vi, probeStmt);
-        result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
+        ProbeResult result = new ProbeResult(vi, probeStmt, locateMethodElementName);
+        //原因行で他に登場した値をセット
+        TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), result.probeIterateNum(), 2000);
+        result.setValuesInLine(valuesAtLine);
         return result;
     }
 
@@ -322,19 +320,22 @@ public abstract class AbstractProbe {
         //この場合、probeLineは必ずmethod内にいる。
         if (isThereVariableDeclaration) {
             int varDeclarationLine = ovd.get().getBegin().get().line;
-            StatementElement probeStmt = locateMethodElement.FindStatementByLine(varDeclarationLine).get();
-            ProbeResult result = new ProbeResult(vi, probeStmt);
-            result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
+            StatementElement probeStmt = locateMethodElement.findStatementByLine(varDeclarationLine).get();
+            ProbeResult result = new ProbeResult(vi, probeStmt, locateMethodElementName);
+            //原因行で他に登場した値をセット
+            TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), result.probeIterateNum(), 2000);
+            result.setValuesInLine(valuesAtLine);
             return result;
         }
 
         //2. その変数が引数由来で、かつメソッド内で上書きされていない
         Pair<Integer, MethodElement> caller = getCallerMethod(vi.getLocateMethodElement());
-        StatementElement probeStmt = caller.getRight().FindStatementByLine(caller.getLeft()).get();
-        ProbeResult result = new ProbeResult(vi, probeStmt);
+        StatementElement probeStmt = caller.getRight().findStatementByLine(caller.getLeft()).get();
+        //probeMethodは呼び出し側のメソッド
+        ProbeResult result = new ProbeResult(vi, probeStmt, caller.getRight().name());
         result.setCallerMethod(caller);
-        result.setWatchedAt(watchedAt);
         result.setCausedByArgument(true);
+        result.setCalleeMethodName(locateMethodElementName);
         return result;
     }
 
@@ -414,64 +415,9 @@ public abstract class AbstractProbe {
     //TODO: そのメソッドの呼び出しメソッドが一つしかない場合しか考慮できてない
     protected Pair<Integer, MethodElement> getCallerMethod(CodeElementName targetMethod) {
         Pair<Integer, MethodElement> result = null;
-        dbg = createDebugger();
-        JDIManager jdi = (JDIManager) dbg.getVmManager();
-        VirtualMachine vm = jdi.getJDI().vm();
-
-        EventRequestManager manager = vm.eventRequestManager();
-        MethodEntryRequest methodEntryRequest = manager.createMethodEntryRequest();
-        methodEntryRequest.addClassFilter(targetMethod.getFullyQualifiedClassName());
-        methodEntryRequest.enable();
-        Thread testExec = new Thread(() -> {
-            dbg.run(2000);
-        });
-
-        testExec.start();
-        EventQueue queue = vm.eventQueue();
-        while (true) {
-            try {
-                EventSet eventSet = queue.remove();
-                for (Event ev : eventSet) {
-                    if (ev instanceof MethodEntryEvent) {
-                        MethodEntryEvent mEntry = (MethodEntryEvent) ev;
-                        //ターゲットのメソッドでない場合continue
-                        String targetFqmn = getFQMN(mEntry.method());
-                        if (!targetFqmn.equals(targetMethod.getFullyQualifiedMethodName())) continue;
-
-                        //呼び出しメソッドを取得
-                        ThreadReference thread = mEntry.thread();
-                        List<StackFrame> frames = thread.frames();
-                        com.sun.jdi.Location callerLoc = frames.get(1).location();
-                        CodeElementName callerMethodElementName = new CodeElementName(getFQMN(callerLoc.method()));
-                        MethodElement callerMethodElement;
-                        try {
-                            callerMethodElement = MethodElement.getMethodElementByName(callerMethodElementName);
-                        } catch (NoSuchFileException e) {
-                            throw new RuntimeException(e);
-                        }
-                        result = Pair.of(callerLoc.lineNumber(), callerMethodElement);
-                        methodEntryRequest.disable();
-                        break;
-                    }
-                }
-                eventSet.resume();
-            }
-            catch (VMDisconnectedException | InterruptedException e){
-                break;
-            } catch (IncompatibleThreadStateException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return result;
-    }
-
-    static private String getFQMN(Method m){
-        StringBuilder n = new StringBuilder(m.toString());
-        n.setCharAt(m.toString().lastIndexOf("."), '#');
-        if(n.toString().contains("<init>")){
-            String constructorName = n.substring(n.lastIndexOf("."), n.indexOf("#"));
-            n.replace(n.indexOf("#"), n.indexOf("("), constructorName);
-        }
-        return n.toString();
+        String main = TestUtil.getJVMMain(new CodeElementName(assertInfo.getTestMethodName()));
+        String options = TestUtil.getJVMOption();
+        EnhancedDebugger edbg = new EnhancedDebugger(main, options);
+        return edbg.getCallerMethod(targetMethod.getFullyQualifiedMethodName());
     }
 }

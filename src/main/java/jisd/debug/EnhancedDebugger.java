@@ -7,8 +7,12 @@ import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
+import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElement;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,13 +40,62 @@ public class EnhancedDebugger {
         }
     }
 
+    //TODO: そのメソッドの呼び出しメソッドが一つしかない場合しか考慮できてない
+    public Pair<Integer, MethodElement> getCallerMethod(String fqmn) {
+
+        Pair<Integer, MethodElement> result = null;
+        EventRequestManager manager = vm.eventRequestManager();
+        MethodEntryRequest methodEntryRequest = manager.createMethodEntryRequest();
+        methodEntryRequest.addClassFilter(fqmn.split("#")[0]);
+        methodEntryRequest.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        methodEntryRequest.enable();
+
+        vm.resume();
+        EventQueue queue = vm.eventQueue();
+        while (true) {
+            try {
+                EventSet eventSet = queue.remove();
+                for (Event ev : eventSet) {
+                    if (ev instanceof MethodEntryEvent) {
+                        MethodEntryEvent mEntry = (MethodEntryEvent) ev;
+                        //ターゲットのメソッドでない場合continue
+                        String targetFqmn = getFQMN(mEntry.method());
+                        if (!targetFqmn.equals(fqmn)) continue;
+
+                        //呼び出しメソッドを取得
+                        ThreadReference thread = mEntry.thread();
+                        List<StackFrame> frames = thread.frames();
+                        com.sun.jdi.Location callerLoc = frames.get(1).location();
+                        CodeElementName callerMethodElementName = new CodeElementName(getFQMN(callerLoc.method()));
+                        MethodElement callerMethodElement;
+                        try {
+                            callerMethodElement = MethodElement.getMethodElementByName(callerMethodElementName);
+                        } catch (NoSuchFileException e) {
+                            throw new RuntimeException(e);
+                        }
+                        result = Pair.of(callerLoc.lineNumber(), callerMethodElement);
+                        methodEntryRequest.disable();
+                        break;
+                    }
+                }
+                eventSet.resume();
+            }
+            catch (VMDisconnectedException | InterruptedException e){
+                break;
+            } catch (IncompatibleThreadStateException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
+    }
+
     //fqcn -> FullyQualifiedClassName
      public Set<String> getCalleeMethods(String fqcn, int line){
         return getReturnLineOfCalleeMethod(fqcn, line).keySet();
 
      }
 
-     
+
 
     private void setBreakpoint(ReferenceType rt, EventRequestManager manager, int line){
         try {
@@ -63,6 +116,7 @@ public class EnhancedDebugger {
 
     //line行で呼び出されているメソッドに対し、その実装とreturnされた行を返す
     //return: fqmn --> line number
+
     public Map<String, Integer> getReturnLineOfCalleeMethod(String fqcn, int line){
         //リクエストを先に立てる
         //ロード済みのクラスに対しbreakPointを設定
@@ -168,4 +222,13 @@ public class EnhancedDebugger {
         return result;
     }
 
+    static private String getFQMN(Method m) {
+        StringBuilder n = new StringBuilder(m.toString());
+        n.setCharAt(m.toString().lastIndexOf("."), '#');
+        if (n.toString().contains("<init>")) {
+            String constructorName = n.substring(n.lastIndexOf("."), n.indexOf("#"));
+            n.replace(n.indexOf("#"), n.indexOf("("), constructorName);
+        }
+        return n.toString();
+    }
 }

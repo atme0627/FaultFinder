@@ -16,9 +16,11 @@ import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElement;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.lang.reflect.Method;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 
@@ -89,12 +91,6 @@ public class ProbeEx extends AbstractProbe {
                 return ProbeResult.notFound();
             }
         }
-        //感染した変数が引数のものでない場合
-        if(!result.isCausedByArgument()){
-            //原因行で他に登場した値をセット
-            TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), result.probeIterateNum(), 2000);
-            result.setValuesInLine(valuesAtLine);
-        }
         return result;
     }
 
@@ -103,9 +99,9 @@ public class ProbeEx extends AbstractProbe {
         List<String> markingMethods = new ArrayList<>();
         //引数が感染していた場合、呼び出しメソッドがマーキング対象
         if(pr.isCausedByArgument()){
-            Pair<Integer, String> caller = pr.getCallerMethod();
+            Pair<Integer, MethodElement> caller = pr.getCallerMethod();
             if(caller != null) {
-                markingMethods.add(caller.getRight());
+                markingMethods.add(caller.getRight().fqmn());
             }
             return markingMethods;
         }
@@ -128,15 +124,15 @@ public class ProbeEx extends AbstractProbe {
         //感染した変数が引数のものだった場合
         if(pr.isCausedByArgument()){
             if(pr.getCallerMethod() == null) return vis;
-            if(!targetClasses.contains(pr.getCallerMethod().getRight().split("#")[0])) return vis;
+            if(!targetClasses.contains(pr.getCallerMethod().getRight().fqmn().split("#")[0])) return vis;
             String argVariable = getArgumentVariable(pr);
             if(argVariable == null) return vis;
             //argVariableが純粋な変数でない（関数呼び出しなどを行っている）場合、probeは行わない
             if(!argVariable.matches("[A-Za-z][A-Za-z0-9]*") || argVariable.equals("null")) return vis;
 
-            Pair<Boolean, String> isFieldVarInfo =  isFieldVariable(argVariable, pr.getCallerMethod().getRight());
+            Pair<Boolean, String> isFieldVarInfo =  isFieldVariable(argVariable, pr.getCallerMethod().getRight().fqmn());
             boolean isField = isFieldVarInfo.getLeft();
-            String locateClass = (isField) ? isFieldVarInfo.getRight() : pr.getCallerMethod().getRight();
+            String locateClass = (isField) ? isFieldVarInfo.getRight() : pr.getCallerMethod().getRight().fqmn();
 
             VariableInfo vi = new VariableInfo(
                     locateClass,
@@ -148,7 +144,10 @@ public class ProbeEx extends AbstractProbe {
                     pr.getVariableInfo().getActualValue(),
                     pr.getVariableInfo().getTargetField()
                     );
-            vis.add(vi);
+            if(!isProbed(vi)) {
+                vis.add(vi);
+                addProbedValue(vi);
+            }
         }
         else {
             Set<String> neighborVariables = getNeighborVariables(pr);
@@ -204,7 +203,10 @@ public class ProbeEx extends AbstractProbe {
                         pr.getValuesInLine().get(n),
                         null
                 );
-                vis.add(vi);
+                if(!isProbed(vi)) {
+                    vis.add(vi);
+                    addProbedValue(vi);
+                }
             }
         }
         return vis;
@@ -227,24 +229,6 @@ public class ProbeEx extends AbstractProbe {
         BlockStmt bs;
         NodeList<Parameter> prms;
         String fieldLocateClass = null;
-
-
-//        try {
-//            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(targetMethod);
-//            bs = md.getBody().get();
-//            prms = md.getParameters();
-//        } catch (NoSuchFileException e) {
-//            //メソッドがコンストラクタの場合
-//            try{
-//                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(targetMethod);
-//                bs = cd.getBody();
-//                prms = cd.getParameters();
-//            }
-//            catch (NoSuchFileException ex){
-//                throw new RuntimeException(e);
-//
-//            }
-//        }
 
         CodeElementName tmpCd = new CodeElementName(targetMethod);
         try {
@@ -363,7 +347,7 @@ public class ProbeEx extends AbstractProbe {
 
     //メソッド呼び出しで使われた変数名を返す
     protected String getArgumentVariable(ProbeResult pr) {
-        Pair<Integer, String> callerNameAndCallLocation = pr.getCallerMethod();
+        Pair<Integer, MethodElement> callerNameAndCallLocation = pr.getCallerMethod();
         int index = 0;
         try {
             index = getIndexOfArgument(pr);
@@ -374,7 +358,7 @@ public class ProbeEx extends AbstractProbe {
             return null;
         }
         int line = callerNameAndCallLocation.getLeft();
-        String locateMethod = callerNameAndCallLocation.getRight();
+        String locateMethod = callerNameAndCallLocation.getRight().fqmn();
 
 //        Pair<Integer, Integer> lines = rangeOfStatements.getOrDefault(line, Pair.of(line, line));
         CodeElementName tmpCd = new CodeElementName(locateMethod);
@@ -466,18 +450,6 @@ public class ProbeEx extends AbstractProbe {
         String variable = pr.getVariableInfo().getVariableName();
         int index = -1;
         NodeList<Parameter> prms;
-//        try {
-//            MethodDeclaration md = JavaParserUtil.getMethodDeclarationByName(targetMethod);
-//            prms = md.getParameters();
-//        } catch (NoSuchFileException e) {
-//            //targetMethodがコンストラクタの場合
-//            try {
-//                ConstructorDeclaration cd = JavaParserUtil.getConstructorDeclarationByName(targetMethod);
-//                prms = cd.getParameters();
-//            } catch (NoSuchFileException ex) {
-//                throw new RuntimeException(ex);
-//            }
-//        }
 
         CodeElementName tmpCd = new CodeElementName(targetMethod);
         try {
