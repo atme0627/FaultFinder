@@ -42,6 +42,8 @@ public class EnhancedDebugger {
 
      }
 
+     
+
     private void setBreakpoint(ReferenceType rt, EventRequestManager manager, int line){
         try {
             List<com.sun.jdi.Location> bpLocs = rt.locationsOfLine(line);

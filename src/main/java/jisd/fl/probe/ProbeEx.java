@@ -89,13 +89,8 @@ public class ProbeEx extends AbstractProbe {
                 return ProbeResult.notFound();
             }
         }
-        //感染した変数が引数のものだった場合
-        if(result.isCausedByArgument()){
-            //呼び出しメソッド取得
-            Pair<Integer, String> caller = getCallerMethod(target.getLocateMethodElement());
-            result.setCallerMethod(caller);
-        }
-        else {
+        //感染した変数が引数のものでない場合
+        if(!result.isCausedByArgument()){
             //原因行で他に登場した値をセット
             TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), result.probeIterateNum(), 2000);
             result.setValuesInLine(valuesAtLine);

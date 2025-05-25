@@ -3,6 +3,7 @@ package jisd.fl.probe;
 import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElement;
 import jisd.fl.util.analyze.StatementElement;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -23,9 +24,9 @@ public class ProbeResult {
     private TracedValueCollection neighborVariables;
 
     //呼び出し側のメソッドと呼び出している行
-    private Pair<Integer, String> callerMethod;
-    //falseの場合はその変数の欠陥が引数由来
-    private final boolean isCausedByArgument;
+    private Pair<Integer, MethodElement> callerMethod;
+    //trueの場合はその変数の欠陥が引数由来
+    private boolean isCausedByArgument;
 
 
     //実際にactualとなっていたことが観測された行
@@ -33,14 +34,6 @@ public class ProbeResult {
 
     //probeLineの特定ができなかったかどうか
     private boolean notFound = false;
-
-    //probeの結果、原因がパラメータとして渡された変数にある場合
-    public ProbeResult(VariableInfo vi){
-        this.vi = vi;
-        this.stmt = null;
-        this.isCausedByArgument = true;
-        this.probeIterateNum = 0;
-    }
 
     public ProbeResult(VariableInfo vi, StatementElement stmt){
         this.vi = vi;
@@ -62,23 +55,23 @@ public class ProbeResult {
     }
 
     public Pair<Integer, String> getCallerMethod() {
-        return callerMethod;
+        return Pair.of(callerMethod.getLeft(), callerMethod.getRight().fqmn()) ;
     }
 
     void setProbeMethodName(String probeMethodName) {
         this.probeMethodName = probeMethodName;
     }
 
-    void setCallerMethod(Pair<Integer, String> callerMethod) {
+    void setCallerMethod(Pair<Integer, MethodElement> callerMethod) {
         this.callerMethod = callerMethod;
-    }
-
-    public Pair<Integer, Integer> getProbeLines() {
-        return Pair.of(stmt.statement().getBegin().get().line, stmt.statement().getEnd().get().line);
     }
 
     public String getSrc() {
         return stmt == null ? "" : stmt.statement().toString();
+    }
+
+    public void setCausedByArgument(boolean isCausedByArgument) {
+        this.isCausedByArgument = isCausedByArgument;
     }
 
     public boolean isCausedByArgument() {
@@ -99,9 +92,6 @@ public class ProbeResult {
         this.neighborVariables = neighborVariables;
     }
 
-    public int getWatchedAt() {
-        return watchedAt;
-    }
 
     public void setWatchedAt(int watchedAt) {
         this.watchedAt = watchedAt;
@@ -129,7 +119,7 @@ public class ProbeResult {
     }
 
     static public ProbeResult notFound(){
-        ProbeResult notFound = new ProbeResult(null);
+        ProbeResult notFound = new ProbeResult(null, null);
         notFound.setNotFound(true);
         return notFound;
     }

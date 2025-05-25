@@ -1,7 +1,9 @@
 package jisd.fl.util.analyze;
 
 import com.github.javaparser.Range;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
@@ -15,9 +17,15 @@ import java.util.Optional;
 //constructorも含む
 public class MethodElement {
     private final CallableDeclaration cd;
+    private final CodeElementName ce;
 
     public MethodElement(CallableDeclaration cd){
         this.cd = cd;
+        this.ce = new CodeElementName(cd);
+    }
+
+    public String fqmn(){
+        return ce.getFullyQualifiedMethodName();
     }
 
     //指定されたローカル変数のvariableDeclaratorを返す

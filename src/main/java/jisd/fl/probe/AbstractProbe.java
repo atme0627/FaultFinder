@@ -32,6 +32,7 @@ public abstract class AbstractProbe {
     Debugger dbg;
     JisdInfoProcessor jiProcessor;
     static PrintStream stdOut = System.out;
+    static PrintStream stdErr = System.err;
 
     public AbstractProbe(FailedAssertInfo assertInfo) {
         this.assertInfo = assertInfo;
@@ -45,12 +46,13 @@ public abstract class AbstractProbe {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
         TracedValueCollection tracedValues = traceValuesOfTarget(variableInfo, sleepTime);
+        enableStdOut();
         tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
         List<TracedValue> watchedValues = tracedValues.filterByVariableName(variableInfo.getVariableName(true, true));
-        System.out.println("    >> Probe Info: Searching probe line.");
+        disableStdOut("    >> Probe Info: Searching probe line.");
         ProbeResult result = searchProbeLine(watchedValues, variableInfo);
-
+        enableStdOut();
         //probe lineが特定できなかった場合nullを返す
         if(result.isNotFound()) return null;
         return result;
@@ -79,7 +81,6 @@ public abstract class AbstractProbe {
         catch (NullPointerException ignored){
         }
 
-        enableStdOut();
         //各行でのデバッグ情報
         List<DebugResult> drs = watchPoints.stream()
                 //WatchPointからDebugResultを得る
@@ -170,7 +171,6 @@ public abstract class AbstractProbe {
         }
 
         //実行された代入行がないパターン
-        //初めて値がactualと一致した行の前に実行された行を暫定的にprobe lineとする。
         TracedValue firstMatchedLine;
         for (TracedValue tracedValue : tracedValues) {
             firstMatchedLine = tracedValue;
@@ -329,10 +329,12 @@ public abstract class AbstractProbe {
         }
 
         //2. その変数が引数由来で、かつメソッド内で上書きされていない
-        //暫定的にprobeLinesを設定
-        ProbeResult result = new ProbeResult(vi);
-        result.setProbeMethodName(locateMethodElementName.getFullyQualifiedMethodName());
+        Pair<Integer, MethodElement> caller = getCallerMethod(vi.getLocateMethodElement());
+        StatementElement probeStmt = caller.getRight().FindStatementByLine(caller.getLeft()).get();
+        ProbeResult result = new ProbeResult(vi, probeStmt);
+        result.setCallerMethod(caller);
         result.setWatchedAt(watchedAt);
+        result.setCausedByArgument(true);
         return result;
     }
 
@@ -343,10 +345,12 @@ public abstract class AbstractProbe {
             public void write(int b) { /* noop */ }
         });
         System.setOut(nop);
+        System.setErr(nop);
     }
 
     protected void enableStdOut(){
         System.setOut(stdOut);
+        System.setErr(stdErr);
     }
 
     protected void printWatchedValues(TracedValueCollection watchedValues, String variableName){
@@ -407,8 +411,9 @@ public abstract class AbstractProbe {
         return edbg.getCalleeMethods(targetClass.getFullyQualifiedClassName(), line);
     }
 
-    protected Pair<Integer, String> getCallerMethod(CodeElementName targetMethod) {
-        Pair<Integer, String> result = null;
+    //TODO: そのメソッドの呼び出しメソッドが一つしかない場合しか考慮できてない
+    protected Pair<Integer, MethodElement> getCallerMethod(CodeElementName targetMethod) {
+        Pair<Integer, MethodElement> result = null;
         dbg = createDebugger();
         JDIManager jdi = (JDIManager) dbg.getVmManager();
         VirtualMachine vm = jdi.getJDI().vm();
@@ -429,11 +434,24 @@ public abstract class AbstractProbe {
                 for (Event ev : eventSet) {
                     if (ev instanceof MethodEntryEvent) {
                         MethodEntryEvent mEntry = (MethodEntryEvent) ev;
+                        //ターゲットのメソッドでない場合continue
+                        String targetFqmn = getFQMN(mEntry.method());
+                        if (!targetFqmn.equals(targetMethod.getFullyQualifiedMethodName())) continue;
+
+                        //呼び出しメソッドを取得
                         ThreadReference thread = mEntry.thread();
                         List<StackFrame> frames = thread.frames();
                         com.sun.jdi.Location callerLoc = frames.get(1).location();
-                        Method callerMethod = callerLoc.method();
-                        result = Pair.of(callerLoc.lineNumber(), callerMethod.declaringType().name() + "#" + callerMethod.name());
+                        CodeElementName callerMethodElementName = new CodeElementName(getFQMN(callerLoc.method()));
+                        MethodElement callerMethodElement;
+                        try {
+                            callerMethodElement = MethodElement.getMethodElementByName(callerMethodElementName);
+                        } catch (NoSuchFileException e) {
+                            throw new RuntimeException(e);
+                        }
+                        result = Pair.of(callerLoc.lineNumber(), callerMethodElement);
+                        methodEntryRequest.disable();
+                        break;
                     }
                 }
                 eventSet.resume();
@@ -445,5 +463,15 @@ public abstract class AbstractProbe {
             }
         }
         return result;
+    }
+
+    static private String getFQMN(Method m){
+        StringBuilder n = new StringBuilder(m.toString());
+        n.setCharAt(m.toString().lastIndexOf("."), '#');
+        if(n.toString().contains("<init>")){
+            String constructorName = n.substring(n.lastIndexOf("."), n.indexOf("#"));
+            n.replace(n.indexOf("#"), n.indexOf("("), constructorName);
+        }
+        return n.toString();
     }
 }

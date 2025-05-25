@@ -110,8 +110,8 @@ public class JavaParserUtil {
                 .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
     }
 
-    public static ClassOrInterfaceDeclaration getParentOfMethod(MethodDeclaration md){
-        Node parent = md.getParentNode().orElse(null);
+    public static ClassOrInterfaceDeclaration getParentOfMethod(CallableDeclaration cd){
+        Node parent = cd.getParentNode().orElse(null);
         return (ClassOrInterfaceDeclaration) parent;
     }
 

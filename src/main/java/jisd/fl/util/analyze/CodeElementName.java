@@ -1,7 +1,9 @@
 package jisd.fl.util.analyze;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import jisd.fl.util.PropertyLoader;
 
@@ -77,11 +79,11 @@ public class CodeElementName {
         this.methodSignature = null;
     }
 
-    public CodeElementName(MethodDeclaration md){
-        CompilationUnit unit = md.findAncestor(CompilationUnit.class).orElseThrow();
+    public CodeElementName(CallableDeclaration cd){
+        CompilationUnit unit = (CompilationUnit) cd.findAncestor(CompilationUnit.class).orElseThrow();
         this.packageName = JavaParserUtil.getPackageName(unit);
-        this.className = JavaParserUtil.getParentOfMethod(md).getNameAsString();
-        this.methodSignature = md.getSignature().toString();
+        this.className = JavaParserUtil.getParentOfMethod(cd).getNameAsString();
+        this.methodSignature = cd.getSignature().toString();
     }
 
     @Override
