@@ -26,6 +26,10 @@ public class EnhancedDebugger {
         this.vm = createVM(main, options);
     }
 
+    public void run(){
+        vm.resume();
+    }
+
     VirtualMachine createVM(String main, String options){
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         LaunchingConnector connector = vmm.defaultConnector();
@@ -50,7 +54,8 @@ public class EnhancedDebugger {
         methodEntryRequest.setSuspendPolicy(EventRequest.SUSPEND_ALL);
         methodEntryRequest.enable();
 
-        vm.resume();
+        run();
+
         EventQueue queue = vm.eventQueue();
         while (true) {
             try {
@@ -133,7 +138,7 @@ public class EnhancedDebugger {
         cpr.enable();
 
         //リクエストが立ったらVMを再開
-        vm.resume();
+        run();
 
         Map<String, Integer> result = new HashMap<>();
         EventQueue queue = vm.eventQueue();

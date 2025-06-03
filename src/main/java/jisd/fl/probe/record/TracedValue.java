@@ -9,6 +9,8 @@ public class TracedValue implements Comparable<TracedValue>{
     public Location loc;
     public String variableName;
     public String value;
+    public long objectID = 0;
+    public int timesOfExecution = 0;
 
     public TracedValue(LocalDateTime createAt,
                        Location loc,
@@ -27,9 +29,9 @@ public class TracedValue implements Comparable<TracedValue>{
 
     @Override
     public String toString(){
-        return   "[CreateAt] " + createAt +
-                " [Variable] " + variableName +
-                " [Line] " + loc.getLineNumber() +
-                " [value] " + value;
+        return
+                "[ObjectID] " + objectID +
+                " [Location] " + loc.getClassName() + ":" + loc.getLineNumber() +
+                " [Variable] " + variableName + " = " + value;
     }
 }

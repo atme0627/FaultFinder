@@ -12,7 +12,6 @@ import com.github.javaparser.ast.nodeTypes.NodeWithArguments;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import jisd.fl.probe.ProbeResult;
 
 import java.nio.file.NoSuchFileException;
 import java.util.Comparator;
@@ -22,7 +21,7 @@ import java.util.Optional;
 //JavaParserのCallableDeclarationを保持し、メソッド内の情報を得るためのメソッドを加えたクラス
 //constructorも含む
 public class MethodElement {
-    private final CallableDeclaration cd;
+    protected final CallableDeclaration cd;
     private final CodeElementName ce;
 
     public MethodElement(CallableDeclaration cd){
