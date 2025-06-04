@@ -5,13 +5,12 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.*;
-import com.sun.jdi.event.*;
-import com.sun.jdi.request.*;
 import jisd.debug.*;
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.probe.info.ProbeResult;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
@@ -30,28 +29,26 @@ public abstract class AbstractProbe {
 
     FailedAssertInfo assertInfo;
     Debugger dbg;
-    JisdInfoProcessor jiProcessor;
     static PrintStream stdOut = System.out;
     static PrintStream stdErr = System.err;
 
     public AbstractProbe(FailedAssertInfo assertInfo) {
         this.assertInfo = assertInfo;
         this.dbg = createDebugger();
-        this.jiProcessor = new JisdInfoProcessor();
     }
 
     //一回のprobeを行う
     //条件を満たす行の情報を返す
-    protected ProbeResult probing(int sleepTime, VariableInfo variableInfo){
+    protected ProbeResult probing(int sleepTime, SuspiciousVariable suspiciousVariable){
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
-        TracedValueCollection tracedValues = traceValuesOfTarget(variableInfo, sleepTime);
+        TracedValueCollection tracedValues = traceValuesOfTarget(suspiciousVariable, sleepTime);
         enableStdOut();
         tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
-        List<TracedValue> watchedValues = tracedValues.filterByVariableName(variableInfo.getVariableName(true, true));
+        List<TracedValue> watchedValues = tracedValues.filterByVariableName(suspiciousVariable.getVariableName(true, true));
         disableStdOut("    >> Probe Info: Searching probe line.");
-        ProbeResult result = searchProbeLine(watchedValues, variableInfo);
+        ProbeResult result = searchProbeLine(watchedValues, suspiciousVariable);
         enableStdOut();
         //probe lineが特定できなかった場合nullを返す
         if(result.isNotFound()) return null;
@@ -59,11 +56,11 @@ public abstract class AbstractProbe {
     }
 
     //variableInfoに指定された変数のみを観測し、各行で取っている値を記録する
-    protected TracedValueCollection traceValuesOfTarget(VariableInfo target, int sleepTime){
+    protected TracedValueCollection traceValuesOfTarget(SuspiciousVariable target, int sleepTime){
         List<Integer> canSetLines = StaticAnalyzer.getCanSetLine(target);
         String dbgMain = target.getLocateClass();
         dbg = createDebugger();
-        String[] targetValueName = new String[]{target.getVariableName()};
+        String[] targetValueName = new String[]{target.getSimpleVariableName()};
         //set watchPoint
         dbg.setMain(dbgMain);
         List<Optional<Point>> watchPoints =
@@ -114,6 +111,7 @@ public abstract class AbstractProbe {
 
     //viの原因行で、全ての変数が取っている値を記録する
     //何回目のループで観測された値かを入力する
+    //TODO: viと一致するかを調べるシステムにする。
     protected TracedValueCollection traceAllValuesAtLine(CodeElementName targetClassName, int line, int nthLoop, int sleepTime){
         disableStdOut("");
         dbg = createDebugger();
@@ -145,7 +143,7 @@ public abstract class AbstractProbe {
 
 
     //TODO: 原因行が何回目のループのものかを取得し、probeResultに与える
-    private ProbeResult searchProbeLine(List<TracedValue> tracedValues, VariableInfo vi){
+    private ProbeResult searchProbeLine(List<TracedValue> tracedValues, SuspiciousVariable vi){
         //対象の変数に値の変化が起きている行の特定
         List<Integer> valueChangingLines = valueChangingLine(vi);
 
@@ -164,7 +162,7 @@ public abstract class AbstractProbe {
 
         //fieldは代入以外での値の変更を特定できない
         if(vi.isField()){
-            System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getVariableName());
+            System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getSimpleVariableName());
             return ProbeResult.notFound();
         }
 
@@ -184,7 +182,7 @@ public abstract class AbstractProbe {
         return ProbeResult.notFound();
     }
 
-    private List<Integer> valueChangingLine(VariableInfo vi){
+    private List<Integer> valueChangingLine(SuspiciousVariable vi){
         //代入行の特定
         //unaryExpr(ex a++)も含める
         CodeElementName locateElement = vi.getLocateMethodElement();
@@ -237,7 +235,7 @@ public abstract class AbstractProbe {
                 targetName = target.toString();
             }
 
-            if(targetName.equals(vi.getVariableName())) {
+            if(targetName.equals(vi.getSimpleVariableName())) {
                 if(vi.isField() == target.isFieldAccessExpr())
                     for(int i = ae.getBegin().get().line; i <= ae.getEnd().get().line; i++) {
                         result.add(i);
@@ -249,7 +247,7 @@ public abstract class AbstractProbe {
             Expression target = ue.getExpression();
             String targetName = target.toString();
 
-            if(targetName.equals(vi.getVariableName())) {
+            if(targetName.equals(vi.getSimpleVariableName())) {
                 if(vi.isField() == target.isFieldAccessExpr())
                     for(int i = ue.getBegin().get().line; i <= ue.getEnd().get().line; i++) {
                         result.add(i);
@@ -275,7 +273,7 @@ public abstract class AbstractProbe {
 
 
 
-    private ProbeResult resultIfAssigned(TracedValue causeLineData, VariableInfo vi){
+    private ProbeResult resultIfAssigned(TracedValue causeLineData, SuspiciousVariable vi){
         //代入によって変数がactualの値を取るようになったパターン
         //値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
         int causeLineNumber = causeLineData.loc.getLineNumber();
@@ -298,7 +296,7 @@ public abstract class AbstractProbe {
         return result;
     }
 
-    private ProbeResult resultIfNotAssigned(String variableName, int watchedAt, VariableInfo vi){
+    private ProbeResult resultIfNotAssigned(String variableName, int watchedAt, SuspiciousVariable vi){
         //代入以外の要因で変数がactualの値をとるようになったパターン
         //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
@@ -409,7 +407,9 @@ public abstract class AbstractProbe {
         String main = TestUtil.getJVMMain(new CodeElementName(assertInfo.getTestMethodName()));
         String options = TestUtil.getJVMOption();
         EnhancedDebugger edbg = new EnhancedDebugger(main, options);
-        return edbg.getCalleeMethods(targetClass.getFullyQualifiedClassName(), line);
+        //return edbg.getCalleeMethods(targetClass.getFullyQualifiedClassName(), line);
+        //TODO: あとで直す
+        return Set.of();
     }
 
     //TODO: そのメソッドの呼び出しメソッドが一つしかない場合しか考慮できてない

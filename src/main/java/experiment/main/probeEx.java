@@ -1,9 +1,11 @@
-package jisd.fl.probe;
+package experiment.main;
 
 import experiment.defect4j.Defects4jUtil;
+import jisd.fl.probe.ProbeEx;
+import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.FileUtil;
 //import org.junit.jupiter.api.Test;
 
@@ -37,16 +39,24 @@ class ProbeExTest {
     String dir = "src/main/resources/probeExResult/Math/" + project + bugId + "_buggy";
     String fileName = testMethodName + "_" + variableName;
 
-    VariableInfo probeVariable = new VariableInfo(
+    SuspiciousVariable probeVariable =
+            isArray ?
+            new SuspiciousVariable(
+                    locate,
+                    variableName,
+                    actual,
+                    isPrimitive,
+                    isField,
+                    arrayNth
+            )
+            :
+            new SuspiciousVariable(
             locate,
             variableName,
-            isPrimitive,
-            isField,
-            isArray,
-            arrayNth,
             actual,
-            null
-    );
+            isPrimitive,
+            isField
+            );
 
     FailedAssertInfo fai = new FailedAssertEqualInfo(
             testMethodName,

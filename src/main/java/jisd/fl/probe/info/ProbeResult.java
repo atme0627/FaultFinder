@@ -1,20 +1,17 @@
-package jisd.fl.probe;
+package jisd.fl.probe.info;
 
-import jisd.fl.probe.assertinfo.VariableInfo;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.MethodElement;
 import jisd.fl.util.analyze.StatementElement;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ProbeResult {
     //probe対象の変数
-    private final VariableInfo vi;
+    private final SuspiciousVariable vi;
 
     //変数の原因行
     private final StatementElement stmt;
@@ -34,7 +31,7 @@ public class ProbeResult {
     //probeLineの特定ができなかったかどうか
     private boolean notFound = false;
 
-    public ProbeResult(VariableInfo vi, StatementElement stmt, CodeElementName probeMethodName){
+    public ProbeResult(SuspiciousVariable vi, StatementElement stmt, CodeElementName probeMethodName){
         this.vi = vi;
         this.stmt = stmt;
         this.probeMethodName = probeMethodName;
@@ -42,7 +39,7 @@ public class ProbeResult {
         this.probeIterateNum = 0;
     }
 
-    public ProbeResult(VariableInfo vi, StatementElement stmt, CodeElementName probeMethodName, int probeIterateNum){
+    public ProbeResult(SuspiciousVariable vi, StatementElement stmt, CodeElementName probeMethodName, int probeIterateNum){
         this.vi = vi;
         this.stmt = stmt;
         this.probeMethodName = probeMethodName;
@@ -59,7 +56,7 @@ public class ProbeResult {
         return Pair.of(callerMethod.getLeft(), callerMethod.getRight());
     }
 
-    void setCallerMethod(Pair<Integer, MethodElement> callerMethod) {
+    public void setCallerMethod(Pair<Integer, MethodElement> callerMethod) {
         this.callerMethod = callerMethod;
     }
 
@@ -75,7 +72,7 @@ public class ProbeResult {
         return isCausedByArgument;
     }
 
-    public VariableInfo getVariableInfo() {
+    public SuspiciousVariable getVariableInfo() {
         return vi;
     }
 

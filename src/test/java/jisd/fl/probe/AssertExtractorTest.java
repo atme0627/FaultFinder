@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import jisd.fl.probe.assertinfo.AssertExtractor;
 import jisd.fl.probe.assertinfo.AssertType;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.util.PropertyLoader;

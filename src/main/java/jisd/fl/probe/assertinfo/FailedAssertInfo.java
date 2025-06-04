@@ -1,20 +1,22 @@
 package jisd.fl.probe.assertinfo;
 
+import jisd.fl.probe.info.SuspiciousVariable;
+
 public abstract class FailedAssertInfo {
     private final AssertType assertType;
     private final String testClassName;
     private final String testMethodName;
-    private final VariableInfo variableInfo;
+    private final SuspiciousVariable suspiciousVariable;
 
     //testMethodNameはフルネーム、シグニチャあり
     public FailedAssertInfo(AssertType assertType,
                             String testMethodName,
-                            VariableInfo variableInfo) {
+                            SuspiciousVariable suspiciousVariable) {
 
         this.assertType = assertType;
         this.testClassName = testMethodName.split("#")[0];
         this.testMethodName = testMethodName;
-        this.variableInfo = variableInfo;
+        this.suspiciousVariable = suspiciousVariable;
     }
 
     public abstract Boolean eval(String variable);
@@ -31,7 +33,7 @@ public abstract class FailedAssertInfo {
         return  testMethodName;
     }
 
-    public VariableInfo getVariableInfo() {
-        return variableInfo;
+    public SuspiciousVariable getVariableInfo() {
+        return suspiciousVariable;
     }
 }

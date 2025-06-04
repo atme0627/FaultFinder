@@ -1,10 +1,9 @@
-package jisd.fl.probe;
+package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.util.FileUtil;
 
 import java.io.*;

@@ -1,23 +1,28 @@
 package jisd.debug;
 
 import com.sun.jdi.*;
+import com.sun.jdi.Location;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
+import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.MethodElement;
 import org.apache.commons.lang3.tuple.Pair;
-
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 public class EnhancedDebugger {
     public VirtualMachine vm;
+
     public EnhancedDebugger(String main, String options) {
         init(main, options);
     }
@@ -26,11 +31,20 @@ public class EnhancedDebugger {
         this.vm = createVM(main, options);
     }
 
-    public void run(){
+    public void run() {
         vm.resume();
     }
 
-    VirtualMachine createVM(String main, String options){
+    public void enableOutput(){
+        Process process = vm.process();
+        Thread stdoutThread = new Thread(new StreamGobbler(process.getInputStream(), "[stdout]"));
+        Thread stderrThread = new Thread(new StreamGobbler(process.getErrorStream(), "[stderr]"));
+
+        stdoutThread.start();
+        stderrThread.start();
+    }
+
+    VirtualMachine createVM(String main, String options) {
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         LaunchingConnector connector = vmm.defaultConnector();
         Map<String, Connector.Argument> cArgs = connector.defaultArguments();
@@ -64,14 +78,14 @@ public class EnhancedDebugger {
                     if (ev instanceof MethodEntryEvent) {
                         MethodEntryEvent mEntry = (MethodEntryEvent) ev;
                         //ターゲットのメソッドでない場合continue
-                        String targetFqmn = getFQMN(mEntry.method());
+                        String targetFqmn = getFqmn(mEntry.method());
                         if (!targetFqmn.equals(fqmn)) continue;
 
                         //呼び出しメソッドを取得
                         ThreadReference thread = mEntry.thread();
                         List<StackFrame> frames = thread.frames();
                         com.sun.jdi.Location callerLoc = frames.get(1).location();
-                        CodeElementName callerMethodElementName = new CodeElementName(getFQMN(callerLoc.method()));
+                        CodeElementName callerMethodElementName = new CodeElementName(getFqmn(callerLoc.method()));
                         MethodElement callerMethodElement;
                         try {
                             callerMethodElement = MethodElement.getMethodElementByName(callerMethodElementName);
@@ -84,8 +98,7 @@ public class EnhancedDebugger {
                     }
                 }
                 eventSet.resume();
-            }
-            catch (VMDisconnectedException | InterruptedException e){
+            } catch (VMDisconnectedException | InterruptedException e) {
                 break;
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
@@ -94,140 +107,113 @@ public class EnhancedDebugger {
         return result;
     }
 
-    //fqcn -> FullyQualifiedClassName
-     public Set<String> getCalleeMethods(String fqcn, int line){
-        return getReturnLineOfCalleeMethod(fqcn, line).keySet();
+    /**
+     * プレークポイントを行で指定し、ヒットした場合handlerで指定された処理を行う
+     *
+     * @param fqcn    対象の行が属するクラスの完全修飾名
+     * @param line    対象の行
+     * @param handler プレークポイントがヒットした場合の処理
+     */
+    public void handleAtBreakPoint(String fqcn, int line, BreakpointHandler handler) {
+        //ロード済みのクラスに対しbreakPointを設定
+        EventRequestManager manager = vm.eventRequestManager();
+        //通常は一つのはず
+        List<ReferenceType> loaded = vm.classesByName(fqcn);
+        for (ReferenceType rt : loaded) {
+            setBreakpointIfLoaded(rt, manager, line);
+        }
 
-     }
+        //未ロードのクラスがロードされたタイミングを監視
+        //ロードされたらbreakpointをセットする予定
+        ClassPrepareRequest cpr = manager.createClassPrepareRequest();
+        cpr.addClassFilter(fqcn);
+        cpr.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        cpr.enable();
 
+        //リクエストが立ったらVMをスタート
+        run();
 
+        //イベントループ
+        EventQueue queue = vm.eventQueue();
+        EventSet eventSet = null;
+        try {
+            while ((eventSet = queue.remove()) != null) {
+                for (Event ev : eventSet) {
+                    //VMStartEventは無視
+                    if (ev instanceof VMStartEvent) {
+                        continue;
+                    }
+                    //ブレークポイントを設置したいクラスがロードされたら対象の行にBPを置く
+                    if (ev instanceof ClassPrepareEvent) {
+                        ReferenceType ref = ((ClassPrepareEvent) ev).referenceType();
+                        if (ref.name().equals(fqcn)) {
+                            setBreakpointIfLoaded(ref, manager, line);
+                        }
+                        continue;
+                    }
+                    //ブレークポイントがヒット
+                    if (ev instanceof BreakpointEvent) {
+                        handler.handle(vm, (BreakpointEvent) ev);
+                    }
+                }
+                vm.resume();
+            }
+        } catch (VMDisconnectedException ignored) {
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-    private void setBreakpoint(ReferenceType rt, EventRequestManager manager, int line){
+    private void setBreakpointIfLoaded(ReferenceType rt, EventRequestManager manager, int line) {
         try {
             List<com.sun.jdi.Location> bpLocs = rt.locationsOfLine(line);
-            if(bpLocs.isEmpty()) {
-                System.err.println("line " + line + " at " + rt.name() + " is not found.");
-            }
-            else {
-                BreakpointRequest bpReq = manager.createBreakpointRequest(bpLocs.get(0));
+            if (bpLocs.isEmpty()) {
+                throw new IllegalArgumentException("line " + line + " at " + rt.name() + " is not found.");
+            } else {
+                //bpLocsには指定した行に属する要素が複数含まれ、
+                //先頭の要素が行内で一番初めに実行されるものとは限らない
+                //そのためcodeIndexが最小のものを選び、それに対してbreakPointをおかなければならない
+                com.sun.jdi.Location earliestLocation = bpLocs.stream()
+                        .min(Comparator.comparingLong(Location::codeIndex))
+                        .get();
+                System.out.println("[SOURCE]" + earliestLocation.sourceName());
+                BreakpointRequest bpReq = manager.createBreakpointRequest(earliestLocation);
                 bpReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
                 bpReq.enable();
             }
         } catch (AbsentInformationException e) {
             throw new RuntimeException(e);
         }
-
     }
 
-    //line行で呼び出されているメソッドに対し、その実装とreturnされた行を返す
-    //return: fqmn --> line number
-
-    public Map<String, Integer> getReturnLineOfCalleeMethod(String fqcn, int line){
-        //リクエストを先に立てる
-        //ロード済みのクラスに対しbreakPointを設定
-        EventRequestManager manager = vm.eventRequestManager();
-        List<ReferenceType> loaded = vm.classesByName(fqcn);
-        for(ReferenceType rt : loaded) {
-            setBreakpoint(rt, manager, line);
-        }
-
-        //未ロードのクラスがロードされたタイミングを監視
-        ClassPrepareRequest cpr = manager.createClassPrepareRequest();
-        cpr.addClassFilter(fqcn);
-        cpr.setSuspendPolicy(EventRequest.SUSPEND_ALL);
-        cpr.enable();
-
-        //リクエストが立ったらVMを再開
-        run();
-
-        Map<String, Integer> result = new HashMap<>();
-        EventQueue queue = vm.eventQueue();
-        EventSet eventSet = null;
-        try {
-            while ((eventSet = queue.remove()) != null) {
-                for (Event ev : eventSet) {
-                    if (ev instanceof VMStartEvent) {
-                        continue;
-                    }
-                    if (ev instanceof ClassPrepareEvent) {
-                        //System.out.println("ClassPrepareEvent");
-                        ReferenceType ref = ((ClassPrepareEvent) ev).referenceType();
-                        // クラスロード直後にブレークポイントを設定
-                        if(ref.name().equals(fqcn)){
-                            setBreakpoint(ref, manager, line);
-                        }
-                        continue;
-                    }
-                    if (ev instanceof BreakpointEvent) {
-                        //System.out.println("BreakPointEvent");
-                        BreakpointEvent be = (BreakpointEvent) ev;
-                        ThreadReference thread = be.thread();
-                        //このスレッドでの MethodExit を記録するリクエストを作成
-                        MethodExitRequest meReq = manager.createMethodExitRequest();
-                        meReq.addThreadFilter(thread);
-                        meReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
-                        meReq.enable();
-
-                        //この行の実行が終わったことを検知するステップリクエスト
-                        StepRequest stepReq = manager.createStepRequest(
-                                thread,
-                                StepRequest.STEP_LINE,
-                                StepRequest.STEP_OVER
-                        );
-                        stepReq.addCountFilter(1);  // 次の１ステップで止まる
-                        stepReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
-                        stepReq.enable();
-
-                        //一旦 resume して、内部ループで MethodEntry／Step を待つ
-                        vm.resume();
-                        boolean done = false;
-                        while (!done) {
-                            EventSet es2 = vm.eventQueue().remove();
-                            for (Event ev2 : es2) {
-                                if (ev2 instanceof MethodExitEvent) {
-                                    MethodExitEvent mee = (MethodExitEvent) ev2;
-                                    StackFrame caller = mee.thread().frame(1);
-                                    //指定した行で直接呼ばれたメソッドのみ対象
-                                    if (mee.thread().equals(thread) && caller.location().method().equals(be.location().method())) {
-                                        result.put(mee.method().toString(), mee.location().lineNumber());
-                                    }
-                                }
-                                else if (ev2 instanceof StepEvent) {
-                                    done = true;
-                                }
-                                ev2.request().virtualMachine().resume();
-                            }
-                        }
-
-                        //動的に作ったリクエストは不要になったら無効化しておく
-                        meReq.disable();
-                        stepReq.disable();
-                    }
-                }
-
-                vm.resume();
-            }
-        }
-        catch (VMDisconnectedException ignored) {}
-        catch (InterruptedException | IncompatibleThreadStateException e) {
-            throw new RuntimeException(e);
-        }
-        result = result.entrySet()
-                .stream()
-                .map(e -> {
-                    StringBuilder n = new StringBuilder(e.getKey());
-                    n.setCharAt(n.lastIndexOf("."), '#');
-                    if(n.toString().contains("<init>")){
-                        String constructorName = n.substring(n.lastIndexOf("."), n.indexOf("#"));
-                        n.replace(n.indexOf("#"), n.indexOf("("), constructorName);
-                    }
-                 return Map.entry(n.toString(), e.getValue());
-                })
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        return result;
+    /**
+     * Breakpointにヒットした際に行う処理を記述
+     */
+    public interface BreakpointHandler {
+        void handle(VirtualMachine vm, BreakpointEvent event) throws InterruptedException;
     }
 
-    static private String getFQMN(Method m) {
+    static public MethodExitRequest createMethodExitRequest(EventRequestManager manager, ThreadReference thread) {
+        MethodExitRequest meReq = manager.createMethodExitRequest();
+        meReq.addThreadFilter(thread);
+        meReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        meReq.enable();
+        return meReq;
+    }
+
+    static public StepRequest createStepRequest(EventRequestManager manager, ThreadReference thread){
+        StepRequest stepReq = manager.createStepRequest(
+                thread,
+                StepRequest.STEP_LINE,
+                StepRequest.STEP_OVER
+        );
+        stepReq.addCountFilter(1);  // 次の１ステップで止まる
+        stepReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        stepReq.enable();
+        return stepReq;
+    }
+
+    static public String getFqmn(Method m) {
         StringBuilder n = new StringBuilder(m.toString());
         n.setCharAt(m.toString().lastIndexOf("."), '#');
         if (n.toString().contains("<init>")) {
@@ -235,5 +221,37 @@ public class EnhancedDebugger {
             n.replace(n.indexOf("#"), n.indexOf("("), constructorName);
         }
         return n.toString();
+    }
+
+
+    /**
+     * サブプロセスの標準（エラー）出力を
+     * 別スレッドで逐次読み込み、任意の処理を行うためのヘルパークラス
+     */
+    private static class StreamGobbler implements Runnable {
+        private final InputStream is;
+        private final String prefix;
+
+        /**
+         * @param is     読み込む InputStream（プロセスの stdout か stderr）
+         * @param prefix ログの先頭に付けるプレフィックス（例: "[stdout]" や "[stderr]"）
+         */
+        public StreamGobbler(InputStream is, String prefix) {
+            this.is = is;
+            this.prefix = prefix;
+        }
+
+        @Override
+        public void run() {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    // 必要に応じてログ出力や別の処理に渡す
+                    System.out.println(prefix + " " + line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

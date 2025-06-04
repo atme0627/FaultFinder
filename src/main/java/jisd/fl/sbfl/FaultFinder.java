@@ -3,9 +3,9 @@ package jisd.fl.sbfl;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.ProbeEx;
-import jisd.fl.probe.ProbeExResult;
+import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
@@ -140,8 +140,8 @@ public class FaultFinder {
     }
 
     public void probeEx(FailedAssertInfo fai, int sleepTime){
-        VariableInfo variableInfo = fai.getVariableInfo();
-        System.out.println("[  PROBE EX  ] " + fai.getTestMethodName() + ": " + variableInfo);
+        SuspiciousVariable suspiciousVariable = fai.getVariableInfo();
+        System.out.println("[  PROBE EX  ] " + fai.getTestMethodName() + ": " + suspiciousVariable);
         ProbeEx prbEx = new ProbeEx(fai);
         ProbeExResult probeExResult = null;
 

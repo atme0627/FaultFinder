@@ -2,7 +2,7 @@ package jisd.fl.probe.record;
 
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 //viで指定された変数のみ記録
 //原因行特定のために使用
 public class TracedValuesOfTarget extends TracedValueCollection {
-    final VariableInfo target;
+    final SuspiciousVariable target;
 
-    public TracedValuesOfTarget(VariableInfo target, List<ValueInfo> valuesOfTarget, Map<LocalDateTime, Location> locationAtTime) {
+    public TracedValuesOfTarget(SuspiciousVariable target, List<ValueInfo> valuesOfTarget, Map<LocalDateTime, Location> locationAtTime) {
         this.target = target;
         this.record = convertValuesOfTarget(valuesOfTarget, locationAtTime);
     }

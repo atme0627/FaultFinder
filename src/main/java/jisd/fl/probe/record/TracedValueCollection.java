@@ -3,7 +3,6 @@ package jisd.fl.probe.record;
 import com.sun.jdi.*;
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
 
 import java.time.LocalDateTime;
 import java.util.*;

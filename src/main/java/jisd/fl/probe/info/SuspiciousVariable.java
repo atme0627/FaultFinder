@@ -1,8 +1,8 @@
-package jisd.fl.probe.assertinfo;
+package jisd.fl.probe.info;
 
 import jisd.fl.util.analyze.CodeElementName;
 
-public class VariableInfo { //ローカル変数の場合のみ
+public class SuspiciousVariable { //ローカル変数の場合のみ
     private final CodeElementName locateMethod;
     private final String variableName;
     private final boolean isPrimitive;
@@ -10,26 +10,39 @@ public class VariableInfo { //ローカル変数の場合のみ
     private final boolean isArray;
     private final int arrayNth;
     private final String actualValue;
-    private final VariableInfo targetField;
 
     //locateはローカル変数の場合はメソッド名まで(フルネーム、シグニチャあり)
     //フィールドの場合はクラス名まで
-    public VariableInfo(String locateMethod,
-                        String variableName,
-                        boolean isPrimitive,
-                        boolean isField,
-                        boolean isArray,
-                        int arrayNth,
-                        String actualValue,
-                        VariableInfo targetField){
+    //配列の場合
+    public SuspiciousVariable(String locateMethod,
+                              String variableName,
+                              String actualValue,
+                              boolean isPrimitive,
+                              boolean isField,
+                              int arrayNth){
 
         this.locateMethod = new CodeElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
         this.isField = isField;
         this.arrayNth = arrayNth;
-        this.isArray = isArray;
-        this.targetField = targetField;
+        this.isArray = true;
+        this.actualValue = actualValue;
+    }
+
+    //配列でない場合
+    public SuspiciousVariable(String locateMethod,
+                              String variableName,
+                              String actualValue,
+                              boolean isPrimitive,
+                              boolean isField){
+
+        this.locateMethod = new CodeElementName(locateMethod);
+        this.variableName = variableName;
+        this.isPrimitive = isPrimitive;
+        this.isField = isField;
+        this.arrayNth = -1;
+        this.isArray = false;
         this.actualValue = actualValue;
     }
 
@@ -37,7 +50,7 @@ public class VariableInfo { //ローカル変数の場合のみ
         return locateMethod.getFullyQualifiedClassName();
     }
 
-    public String getVariableName(){
+    public String getSimpleVariableName(){
         return getVariableName(false, false);
     }
 
@@ -61,10 +74,6 @@ public class VariableInfo { //ローカル変数の場合のみ
         return arrayNth;
     }
 
-    public VariableInfo getTargetField() {
-        return targetField;
-    }
-
     public String getLocateMethod(boolean withClass) {
         if(withClass){
             return locateMethod.getFullyQualifiedMethodName();
@@ -79,15 +88,10 @@ public class VariableInfo { //ローカル変数の場合のみ
     }
 
     @Override
-    public String toString(){
-        return this.variableName + ((this.targetField != null) ? "." + this.targetField.variableName : "");
-    }
-
-    @Override
     public boolean equals(Object obj){
         if(obj == null) return false;
-        if(!(obj instanceof VariableInfo)) return false;
-        VariableInfo vi = (VariableInfo) obj;
+        if(!(obj instanceof SuspiciousVariable)) return false;
+        SuspiciousVariable vi = (SuspiciousVariable) obj;
 
         return
             this.variableName.equals(vi.variableName) &&
@@ -95,7 +99,6 @@ public class VariableInfo { //ローカル変数の場合のみ
             this.isField == vi.isField &&
             this.arrayNth == vi.arrayNth &&
             this.isArray == vi.isArray &&
-            ((this.targetField == null && vi.targetField == null) || this.targetField.equals(vi.targetField)) &&
             this.actualValue.equals(vi.actualValue);
     }
 
@@ -103,7 +106,8 @@ public class VariableInfo { //ローカル変数の場合のみ
         return actualValue;
     }
 
-    public String toInfoString(){
+    @Override
+    public String toString(){
          return " [PROBE TARGET] " + getVariableName(true, true)  + "\n" +
                 "       [ACTUAL] " + getActualValue() + "\n" +
                 "     [LOCATION] " + locateMethod;

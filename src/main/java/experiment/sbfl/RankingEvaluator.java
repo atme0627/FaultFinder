@@ -2,13 +2,12 @@ package experiment.sbfl;
 
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
-import jisd.fl.probe.ProbeExResult;
+import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.sbfl.FaultFinder;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.util.FileUtil;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

@@ -1,18 +1,13 @@
 package experiment.util;
 
-import jisd.fl.probe.ProbeEx;
-import jisd.fl.probe.ProbeExResult;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.NoSuchFileException;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SuspiciousVariableFinderTest {
 
@@ -26,8 +21,8 @@ class SuspiciousVariableFinderTest {
         TestUtil.compileForDebug(new CodeElementName("sample.MethodCallTest"));
         SuspiciousVariableFinder finder
                 = new SuspiciousVariableFinder(new CodeElementName("sample.MethodCallTest#methodCall1()"));
-        List<VariableInfo> result = finder.find();
-        result.forEach(vi -> System.out.println(vi.toInfoString()));
+        List<SuspiciousVariable> result = finder.find();
+        result.forEach(vi -> System.out.println(vi.toString()));
     }
 
     @Test
@@ -43,7 +38,7 @@ class SuspiciousVariableFinderTest {
         TestUtil.compileForDebug(new CodeElementName("org.apache.commons.math3.distribution.HypergeometricDistributionTest"));
         SuspiciousVariableFinder finder
                 = new SuspiciousVariableFinder(new CodeElementName(testMethodName));
-        List<VariableInfo> result = finder.find();
-        result.forEach(vi -> System.out.println(vi.toInfoString()));
+        List<SuspiciousVariable> result = finder.find();
+        result.forEach(vi -> System.out.println(vi.toString()));
     }
 }

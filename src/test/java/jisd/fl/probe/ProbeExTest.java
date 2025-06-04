@@ -12,7 +12,8 @@ import jisd.debug.Debugger;
 import jisd.debug.JDIManager;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
@@ -44,15 +45,12 @@ class ProbeExTest {
         String actual = "-50";
         String locate = "org.apache.commons.math3.distribution.AbstractIntegerDistribution#inverseCumulativeProbability(double)";
 
-        VariableInfo probeVariable = new VariableInfo(
+        SuspiciousVariable probeVariable = new SuspiciousVariable(
                 locate,
                 variableName,
-                isPrimitive,
-                isField,
-                isArray,
-                arrayNth,
                 actual,
-                null
+                isPrimitive,
+                isField
         );
 
         FailedAssertInfo fai = new FailedAssertEqualInfo(
@@ -125,15 +123,13 @@ class ProbeExTest {
         String actual = "3";
         String locate = testMethodName;
 
-        VariableInfo probeVariable = new VariableInfo(
+        SuspiciousVariable probeVariable = new SuspiciousVariable(
                 locate,
                 variableName,
+                actual,
                 isPrimitive,
                 isField,
-                isArray,
-                arrayNth,
-                actual,
-                null
+                arrayNth
         );
 
         FailedAssertInfo fai = new FailedAssertEqualInfo(
@@ -271,15 +267,12 @@ class ProbeExTest {
         String actual = "11";
         String locate = "sample.MethodCall#methodCalling(int, int)";
 
-        VariableInfo probeVariable = new VariableInfo(
+        SuspiciousVariable probeVariable = new SuspiciousVariable(
                 locate,
                 variableName,
-                isPrimitive,
-                isField,
-                isArray,
-                arrayNth,
                 actual,
-                null
+                isPrimitive,
+                isField
         );
 
         FailedAssertInfo fai = new FailedAssertEqualInfo(

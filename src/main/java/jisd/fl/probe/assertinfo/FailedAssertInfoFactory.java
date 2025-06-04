@@ -1,10 +1,8 @@
-package jisd.fl.probe;
+package jisd.fl.probe.assertinfo;
 
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.Statement;
-import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
-import jisd.fl.probe.assertinfo.FailedAssertInfo;
 
 public class FailedAssertInfoFactory {
     public FailedAssertInfoFactory() {

@@ -7,7 +7,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -127,12 +127,12 @@ public class StaticAnalyzer {
                         .collect(Collectors.toList());
     }
 
-    public static List<Integer> getCanSetLine(VariableInfo variableInfo) {
-        if(variableInfo.isField()) {
-            return StaticAnalyzer.canSetLineOfClass(variableInfo.getLocateMethodElement(), variableInfo.getVariableName());
+    public static List<Integer> getCanSetLine(SuspiciousVariable suspiciousVariable) {
+        if(suspiciousVariable.isField()) {
+            return StaticAnalyzer.canSetLineOfClass(suspiciousVariable.getLocateMethodElement(), suspiciousVariable.getSimpleVariableName());
         }
         else {
-            return StaticAnalyzer.canSetLineOfMethod(variableInfo.getLocateMethodElement(), variableInfo.getVariableName());
+            return StaticAnalyzer.canSetLineOfMethod(suspiciousVariable.getLocateMethodElement(), suspiciousVariable.getSimpleVariableName());
         }
     }
 

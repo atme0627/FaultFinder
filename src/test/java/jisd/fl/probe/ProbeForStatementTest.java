@@ -2,7 +2,9 @@ package jisd.fl.probe;
 
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.probe.info.ProbeExResult;
+import jisd.fl.probe.info.ProbeResult;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
@@ -27,15 +29,12 @@ class ProbeForStatementTest {
 
     @Test
     void searchCalleeProbeTargets() {
-        VariableInfo vi = new VariableInfo(
+        SuspiciousVariable vi = new SuspiciousVariable(
                 "sample.MethodCall#methodCalling()",
                 "result",
-                true,
-                false,
-                false,
-                -1,
                 "11",
-                null
+                true,
+                false
         );
 
         FailedAssertInfo fai = new FailedAssertEqualInfo("sample.MethodCallTest#methodCall1()", vi);
@@ -49,24 +48,21 @@ class ProbeForStatementTest {
         StatementElement probeStmt = locateMethodElement.findStatementByLine(9).get();
         ProbeResult pr = new ProbeResult(vi, probeStmt, targetFqmn);
         ProbeForStatement pfs = new ProbeForStatement(fai);
-        List<VariableInfo> vis = pfs.searchCalleeProbeTargets(pr);
+        List<SuspiciousVariable> vis = pfs.searchCalleeProbeTargets(pr);
 
-        for(VariableInfo v : vis){
-            System.out.println(v.toInfoString());
+        for(SuspiciousVariable v : vis){
+            System.out.println(v.toString());
         }
     }
 
     @Test
     void runTest() {
-        VariableInfo vi = new VariableInfo(
+        SuspiciousVariable vi = new SuspiciousVariable(
                 "sample.MethodCallTest#methodCall1()",
                 "actual",
-                true,
-                false,
-                false,
-                -1,
                 "11",
-                null
+                true,
+                false
         );
 
         FailedAssertInfo fai = new FailedAssertEqualInfo("sample.MethodCallTest#methodCall1()", vi);

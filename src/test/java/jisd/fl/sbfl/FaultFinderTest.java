@@ -8,7 +8,7 @@ import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -22,15 +22,12 @@ class FaultFinderTest {
     String actual = "0.0";
     String rootDir = "src/main/resources/coverages";
 
-    VariableInfo field = new VariableInfo(
+    SuspiciousVariable field = new SuspiciousVariable(
             variableType,
             fieldName,
-            false,
-            true,
-            true,
-            0,
             actual,
-            null
+            false,
+            true
     );
 
     FailedAssertInfo fai = new FailedAssertEqualInfo(

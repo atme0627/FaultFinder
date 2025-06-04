@@ -13,7 +13,9 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.probe.info.ProbeExResult;
+import jisd.fl.probe.info.ProbeResult;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.*;
@@ -23,7 +25,7 @@ import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 public class ProbeForStatement extends AbstractProbe{
-    Set<VariableInfo> probedValue;
+    Set<SuspiciousVariable> probedValue;
     Set<String> targetClasses;
 
     public ProbeForStatement(FailedAssertInfo assertInfo) {
@@ -35,9 +37,9 @@ public class ProbeForStatement extends AbstractProbe{
 
     public ProbeExResult run(int sleepTime) {
         ProbeExResult result = new ProbeExResult();
-        VariableInfo firstTarget = assertInfo.getVariableInfo();
-        List<VariableInfo> probingTargets = new ArrayList<>();
-        List<VariableInfo> nextTargets = new ArrayList<>();
+        SuspiciousVariable firstTarget = assertInfo.getVariableInfo();
+        List<SuspiciousVariable> probingTargets = new ArrayList<>();
+        List<SuspiciousVariable> nextTargets = new ArrayList<>();
         probingTargets.add(firstTarget);
         boolean isArgument = false;
 
@@ -45,11 +47,11 @@ public class ProbeForStatement extends AbstractProbe{
         while(!probingTargets.isEmpty()) {
             if(!isArgument) depth += 1;
             if(depth > 10) break;
-            for (VariableInfo target : probingTargets) {
+            for (SuspiciousVariable target : probingTargets) {
                 printProbeExInfoHeader(target, depth);
                 ProbeResult pr = probing(sleepTime, target);
 
-                List<VariableInfo> newTargets = searchNextProbeTargets(pr);
+                List<SuspiciousVariable> newTargets = searchNextProbeTargets(pr);
                 newTargets.addAll(searchCalleeProbeTargets(pr));
                 result.addElement(pr.getProbeMethodName().split("#")[0], pr.probeLine(), 0, 1);
                 printProbeExInfoFooter(pr, newTargets);
@@ -64,7 +66,7 @@ public class ProbeForStatement extends AbstractProbe{
     }
 
     @Override
-    protected ProbeResult probing(int sleepTime, VariableInfo target) {
+    protected ProbeResult probing(int sleepTime, SuspiciousVariable target) {
         ProbeResult result = super.probing(sleepTime, target);
         int loop = 0;
         int LOOP_LIMIT = 5;
@@ -82,20 +84,20 @@ public class ProbeForStatement extends AbstractProbe{
         return result;
     }
 
-    private boolean isProbed(VariableInfo vi){
-        for(VariableInfo e : probedValue){
+    private boolean isProbed(SuspiciousVariable vi){
+        for(SuspiciousVariable e : probedValue){
             if(vi.equals(e)) return true;
         }
         return false;
     }
 
-    private void addProbedValue(VariableInfo vi){
+    private void addProbedValue(SuspiciousVariable vi){
         probedValue.add(vi);
     }
 
     //次のprobe対象のVariableInfoを返す
-    public List<VariableInfo> searchNextProbeTargets(ProbeResult pr) {
-        List<VariableInfo> vis = new ArrayList<>();
+    public List<SuspiciousVariable> searchNextProbeTargets(ProbeResult pr) {
+        List<SuspiciousVariable> vis = new ArrayList<>();
         //感染した変数が引数のものだった場合
         if(pr.isCausedByArgument()){
             int targetArgIndex;
@@ -103,7 +105,7 @@ public class ProbeForStatement extends AbstractProbe{
             if(!targetClasses.contains(callerMethod.name().getFullyQualifiedClassName())) return vis;
             try {
                 MethodElement calleeMethod = new MethodElement(JavaParserUtil.getCallableDeclarationByName(pr.getCalleeMethodName()));
-                targetArgIndex = calleeMethod.getIndexOfArgument(pr.getVariableInfo().getVariableName());
+                targetArgIndex = calleeMethod.getIndexOfArgument(pr.getVariableInfo().getSimpleVariableName());
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }
@@ -117,15 +119,13 @@ public class ProbeForStatement extends AbstractProbe{
             boolean isField = isFieldVarInfo.getLeft();
             String locateClass = (isField) ? isFieldVarInfo.getRight() : pr.getCallerMethod().getRight().fqmn();
 
-            VariableInfo vi = new VariableInfo(
+            SuspiciousVariable vi = new SuspiciousVariable(
                     locateClass,
                     argVariable.getNameAsString(),
+                    pr.getVariableInfo().getActualValue(),
                     pr.getVariableInfo().isPrimitive(),
                     isField,
-                    pr.getVariableInfo().isArray(),
-                    pr.getVariableInfo().getArrayNth(),
-                    pr.getVariableInfo().getActualValue(),
-                    pr.getVariableInfo().getTargetField()
+                    pr.getVariableInfo().getArrayNth()
             );
             if(!isProbed(vi)) {
                 vis.add(vi);
@@ -165,7 +165,7 @@ public class ProbeForStatement extends AbstractProbe{
             }
 
             //元のprobe対象と同じ変数の場合スキップ
-            VariableInfo probedVi = pr.getVariableInfo();
+            SuspiciousVariable probedVi = pr.getVariableInfo();
             if(probedVi.getVariableName(false, false).equals(variableName)
                     && probedVi.isField() == isField){
                 continue;
@@ -177,16 +177,27 @@ public class ProbeForStatement extends AbstractProbe{
             //値がNot definedの場合はスキップ
             if(pr.getValuesInLine().get(n).equals("Not defined")) continue;
 
-            VariableInfo vi = new VariableInfo(
-                    isField ? locateClass : pr.getProbeMethodName(),
-                    variableName,
-                    pr.getVariableInfo().isPrimitive(),
-                    isField,
-                    isArray,
-                    arrayNth,
-                    pr.getValuesInLine().get(n),
-                    null
-            );
+
+            SuspiciousVariable vi;
+            if(isArray) {
+                vi = new SuspiciousVariable(
+                        isField ? locateClass : pr.getProbeMethodName(),
+                        pr.getValuesInLine().get(n),
+                        variableName,
+                        pr.getVariableInfo().isPrimitive(),
+                        isField,
+                        arrayNth
+                );
+            }
+            else {
+                vi = new SuspiciousVariable(
+                        isField ? locateClass : pr.getProbeMethodName(),
+                        variableName,
+                        pr.getValuesInLine().get(n),
+                        pr.getVariableInfo().isPrimitive(),
+                        isField
+                );
+            }
             if(!isProbed(vi)) {
                 vis.add(vi);
                 addProbedValue(vi);
@@ -200,17 +211,18 @@ public class ProbeForStatement extends AbstractProbe{
     //probeLine中で呼び出されているメソッドに対して
     //その返り値(return)を次のprobeの対象とするためのVariableInfoを返す
     //TODO: return内のprimitive型のみ一旦考える。
-    public List<VariableInfo> searchCalleeProbeTargets(ProbeResult pr){
-        List<VariableInfo> result = new ArrayList<>();
+    public List<SuspiciousVariable> searchCalleeProbeTargets(ProbeResult pr){
+        List<SuspiciousVariable> result = new ArrayList<>();
         String main = TestUtil.getJVMMain(new CodeElementName(assertInfo.getTestMethodName()));
         String options = TestUtil.getJVMOption();
         EnhancedDebugger edbg = new EnhancedDebugger(main, options);
-        Map<String, Integer> returnLineOfCalleeMethod
-                = edbg.getReturnLineOfCalleeMethod(pr.probeMethod().getFullyQualifiedClassName(), pr.probeLine());
-
+        //TODO: あとで直す
+//        Map<String, Pair<Integer, String>> returnLineOfCalleeMethod
+//                = edbg.getReturnLineOfCalleeMethod(pr.probeMethod().getFullyQualifiedClassName(), pr.probeLine(), 1);
+        Map<String, Pair<Integer, String>> returnLineOfCalleeMethod = Map.of();
         for(String callee : returnLineOfCalleeMethod.keySet()) {
             CodeElementName calleeElement = new CodeElementName(callee);
-            int returnLine = returnLineOfCalleeMethod.get(callee);
+            int returnLine = returnLineOfCalleeMethod.get(callee).getLeft();
             //TODO: ループ回数は考えない
             TracedValueCollection watchedValuesInReturn
                     = traceAllValuesAtLine(
@@ -323,16 +335,16 @@ public class ProbeForStatement extends AbstractProbe{
         throw new RuntimeException("Variable [" + variable + "] is not found in " + targetClass);
     }
 
-    private void printProbeExInfoHeader(VariableInfo target, int depth){
+    private void printProbeExInfoHeader(SuspiciousVariable target, int depth){
         System.out.println("============================================================================================================");
         System.out.println(" Probe For STATEMENT      DEPTH: " + depth);
-        System.out.println(target.toInfoString());
+        System.out.println(target.toString());
         System.out.println("============================================================================================================");
     }
 
-    private void printProbeExInfoFooter(ProbeResult pr, List<VariableInfo> nextTarget){
+    private void printProbeExInfoFooter(ProbeResult pr, List<SuspiciousVariable> nextTarget){
         printProbeStatement(pr);
         System.out.println(" [NEXT TARGET]");
-        nextTarget.forEach(v -> System.out.println(v.toInfoString()));
+        nextTarget.forEach(v -> System.out.println(v.toString()));
     }
 }

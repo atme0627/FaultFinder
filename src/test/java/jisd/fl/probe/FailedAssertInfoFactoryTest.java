@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import jisd.fl.probe.assertinfo.FailedAssertInfoFactory;
 import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.Test;
 

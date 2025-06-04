@@ -13,8 +13,8 @@ import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.VMDisconnectedException;
 import jisd.debug.*;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.ProbeResult;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import jisd.fl.probe.info.ProbeResult;
+import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
@@ -35,8 +35,8 @@ public class SuspiciousVariableFinder {
         this.targetTestCase = TestMethodElement.getTestMethodElementByName(targetTestCaseName);
     }
 
-    public List<VariableInfo> find(){
-        List<VariableInfo> result = new ArrayList<>();
+    public List<SuspiciousVariable> find(){
+        List<SuspiciousVariable> result = new ArrayList<>();
         List<Expression> assertActualExpr = targetTestCase.findAssertActualExpr();
 
         for(Expression actualExpr : assertActualExpr){
@@ -80,8 +80,8 @@ public class SuspiciousVariableFinder {
     }
 
     //次のprobe対象のVariableInfoを返す
-    private List<VariableInfo> searchProbeTargets(TracedValueCollection watchedValuesInLine, Expression actualExpr) {
-        List<VariableInfo> result = new ArrayList<>();
+    private List<SuspiciousVariable> searchProbeTargets(TracedValueCollection watchedValuesInLine, Expression actualExpr) {
+        List<SuspiciousVariable> result = new ArrayList<>();
 
         Set<String> neighborVariables = getNeighborVariables(watchedValuesInLine, actualExpr);
         for(String n : neighborVariables){
@@ -121,16 +121,26 @@ public class SuspiciousVariableFinder {
             //値がNot definedの場合はスキップ
             if(nextTargetActualValue.equals("Not defined")) continue;
 
-            VariableInfo vi = new VariableInfo(
-                    isField ? locateClass : targetTestCaseName.getFullyQualifiedMethodName(),
-                    variableName,
-                    true,
-                    isField,
-                    isArray,
-                    arrayNth,
-                    nextTargetActualValue,
-                    null
-            );
+            SuspiciousVariable vi;
+            if(isArray){
+                vi = new SuspiciousVariable(
+                        isField ? locateClass : targetTestCaseName.getFullyQualifiedMethodName(),
+                        variableName,
+                        nextTargetActualValue,
+                        true,
+                        isField,
+                        arrayNth
+                );
+            }
+            else {
+                vi = new SuspiciousVariable(
+                        isField ? locateClass : targetTestCaseName.getFullyQualifiedMethodName(),
+                        variableName,
+                        nextTargetActualValue,
+                        true,
+                        isField
+                );
+            }
             result.add(vi);
         }
         return result;
@@ -139,17 +149,18 @@ public class SuspiciousVariableFinder {
     //probeLine中で呼び出されているメソッドに対して
     //その返り値(return)を次のprobeの対象とするためのVariableInfoを返す
     //TODO: return内のprimitive型のみ一旦考える。
-    private List<VariableInfo> searchCalleeProbeTargets(ProbeResult pr) {
-        List<VariableInfo> result = new ArrayList<>();
+    private List<SuspiciousVariable> searchCalleeProbeTargets(ProbeResult pr) {
+        List<SuspiciousVariable> result = new ArrayList<>();
         String main = TestUtil.getJVMMain(targetTestCaseName);
         String options = TestUtil.getJVMOption();
         EnhancedDebugger edbg = new EnhancedDebugger(main, options);
-        Map<String, Integer> returnLineOfCalleeMethod
-                = edbg.getReturnLineOfCalleeMethod(pr.probeMethod().getFullyQualifiedClassName(), pr.probeLine());
-
+        //TODO: あとで直す
+//        Map<String, Pair<Integer, String>> returnLineOfCalleeMethod
+//                = edbg.getReturnLineOfCalleeMethod(pr.probeMethod().getFullyQualifiedClassName(), pr.probeLine(), 1);
+        Map<String, Pair<Integer, String>> returnLineOfCalleeMethod = Map.of();
         for (String callee : returnLineOfCalleeMethod.keySet()) {
             CodeElementName calleeElement = new CodeElementName(callee);
-            int returnLine = returnLineOfCalleeMethod.get(callee);
+            int returnLine = returnLineOfCalleeMethod.get(callee).getLeft();
             //TODO: ループ回数は考えない
             TracedValueCollection watchedValuesInReturn
                     = traceAllValuesAtLine(returnLine);

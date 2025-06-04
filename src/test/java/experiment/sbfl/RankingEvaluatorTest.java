@@ -2,10 +2,9 @@ package experiment.sbfl;
 
 import experiment.coverage.CoverageGenerator;
 import experiment.defect4j.Defects4jUtil;
-import jisd.fl.coverage.CoverageAnalyzer;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
-import jisd.fl.probe.ProbeExResult;
+import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.sbfl.Formula;
 import org.junit.jupiter.api.Test;
 
