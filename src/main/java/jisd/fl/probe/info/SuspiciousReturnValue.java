@@ -40,6 +40,6 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
 
     @Override
     public String toString(){
-        return "[INVOKED METHOD] " + invokedMethodName + "\n" + super.toString();
+        return "    " + invokedMethodName.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
     }
 }

@@ -72,7 +72,7 @@ public abstract class SuspiciousExpression {
 
     @Override
     public String toString(){
-        return  "    | " + locateLine + ": " + String.format("%-50s |", stmt.toString()) +
+        return  "    " + locateLine + ": " + String.format("%-50s", stmt.toString()) +
                 String.format(" == %-8s", actualValue) +
                 "    At " + locateClass;
     }
