@@ -64,6 +64,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                         try {
                             //thread()がsuspendされていないと例外を投げる
                             //普通は成功するはず
+                            //waitForThreadPreparation(mee.thread());
                             caller = mee.thread().frame(1);
                         } catch (IncompatibleThreadStateException e) {
                             throw new RuntimeException("Target thread must be suspended.");
@@ -84,6 +85,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                             );
                             resultCandidate.add(suspReturn);
                         }
+                        vm.resume();
                     }
                     //調査対象の行の実行が終了
                     //ここで、調査した行が目的のものであったかチェック
@@ -91,9 +93,9 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                         done = true;
                         StepEvent se = (StepEvent) ev;
                         if(validateIsTargetExecution(se, this.assignTarget)) result.addAll(resultCandidate);
+                        //vmをresumeしない
                     }
                 }
-                vm.resume();
             }
             //動的に作ったリクエストを無効化
             meReq.disable();
@@ -140,9 +142,10 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
             } else {
                 //ローカル変数を取り出す
+                //waitForThreadPreparation(se.thread());
                 StackFrame frame = se.thread().frame(0);
-                LocalVariable lvalue = frame.visibleVariables()
-                        .stream().filter(lv -> lv.name().equals(assignTarget.getSimpleVariableName()))
+                List<LocalVariable> lvs = frame.visibleVariables();
+                LocalVariable lvalue = lvs.stream().filter(lv -> lv.name().equals(assignTarget.getSimpleVariableName()))
                         .findFirst()
                         .orElseThrow();
 
@@ -177,6 +180,15 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             return var.getInitializer().orElseThrow();
         } catch (NoSuchElementException e){
             throw new RuntimeException("Cannot extract expression from [" + locateClass + ":" + locateLine + "].");
+        }
+    }
+
+    static private void waitForThreadPreparation(ThreadReference thread){
+        try {
+            while(!thread.isSuspended()){
+                    Thread.sleep(10);
+            }
+        } catch (InterruptedException ignored) {
         }
     }
 }

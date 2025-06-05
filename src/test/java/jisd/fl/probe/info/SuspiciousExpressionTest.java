@@ -30,7 +30,6 @@ class SuspiciousExpressionTest {
 
         @Test
         void polymorphism(){
-
             String testMethodName = "polymorphism";
             CodeElementName locateClass = new CodeElementName(testFqcn);
             int locateLine = 19;
@@ -55,8 +54,28 @@ class SuspiciousExpressionTest {
 
         @Test
         void polymorphismLoop(){
+            String testMethodName = "polymorphismLoop";
+            CodeElementName locateClass = new CodeElementName(testFqcn);
+            int locateLine = 34;
+            SuspiciousVariable suspVariable = new SuspiciousVariable(
+                    getFqmn(testMethodName),
+                    "totalArea",
+                    "32.0",
+                    true,
+                    false
+            );
 
+            SuspiciousAssignment suspAssignment = new SuspiciousAssignment(
+                    new CodeElementName(getFqmn(testMethodName)),
+                    locateClass,
+                    locateLine,
+                    suspVariable
+            );
+
+            List<SuspiciousReturnValue> result = suspAssignment.searchSuspiciousReturns();
+            result.forEach(System.out::println);
         }
+
         @Test
         void chaining(){
 

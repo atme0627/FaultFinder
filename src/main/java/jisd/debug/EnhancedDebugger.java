@@ -149,14 +149,15 @@ public class EnhancedDebugger {
                         if (ref.name().equals(fqcn)) {
                             setBreakpointIfLoaded(ref, manager, line);
                         }
+                        vm.resume();
                         continue;
                     }
                     //ブレークポイントがヒット
                     if (ev instanceof BreakpointEvent) {
                         handler.handle(vm, (BreakpointEvent) ev);
+                        vm.resume();
                     }
                 }
-                vm.resume();
             }
         } catch (VMDisconnectedException ignored) {
         } catch (InterruptedException e) {
@@ -176,7 +177,6 @@ public class EnhancedDebugger {
                 com.sun.jdi.Location earliestLocation = bpLocs.stream()
                         .min(Comparator.comparingLong(Location::codeIndex))
                         .get();
-                System.out.println("[SOURCE]" + earliestLocation.sourceName());
                 BreakpointRequest bpReq = manager.createBreakpointRequest(earliestLocation);
                 bpReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
                 bpReq.enable();
@@ -188,6 +188,8 @@ public class EnhancedDebugger {
 
     /**
      * Breakpointにヒットした際に行う処理を記述
+     * 内部でvmをresume()して返してはいけない
+     * 必ずvmがsuspendされた状態で返すこと
      */
     public interface BreakpointHandler {
         void handle(VirtualMachine vm, BreakpointEvent event) throws InterruptedException;
