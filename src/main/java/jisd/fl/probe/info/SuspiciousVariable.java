@@ -152,9 +152,9 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
 
     @Override
     public String toString() {
-        return " [PROBE TARGET] " + getVariableName(true, true) + "\n" +
-                "       [ACTUAL] " + getActualValue() + "\n" +
-                "     [LOCATION] " + locateMethod;
+        return  "     [LOCATION] " + locateMethod + "\n" +
+                " [PROBE TARGET] " + getVariableName(true, true) + " == " + getActualValue();
+
     }
 
     public CodeElementName getFailedTest() {

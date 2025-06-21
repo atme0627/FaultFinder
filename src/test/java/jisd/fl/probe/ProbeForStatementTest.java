@@ -54,6 +54,7 @@ class ProbeForStatementTest {
     @Test
     void runTest() {
         SuspiciousVariable vi = new SuspiciousVariable(
+                new CodeElementName("org.sample.CalcTest#methodCall1()"),
                 "org.sample.util.Calc#methodCalling(int, int)",
                 "result",
                 "11",
@@ -65,10 +66,5 @@ class ProbeForStatementTest {
         ProbeForStatement pfs = new ProbeForStatement(fai);
         ProbeExResult pr = pfs.run(2000);
         pr.print();
-    }
-
-    @Test
-    void suspiciousArgumentTest(){
-
     }
 }

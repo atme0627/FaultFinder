@@ -255,7 +255,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
         int[] locateLine = new int[1];
         int[] argIndex = new int[1];
 
-
         //調査対象の行実行に到達した時に行う処理を定義
         EnhancedDebugger.MethodEntryHandler handler = (vm, mEntry) -> {
             try {
@@ -292,8 +291,13 @@ public class SuspiciousArgument extends SuspiciousExpression {
             }
         };
 
+        eDbg.enableOutput();
         eDbg.handleAtMethodEntry(calleeMethodName.getFullyQualifiedMethodName(), handler);
 
+        //nullチェック
+        if(locateMethod[0] == null || locateLine[0] == 0 || argIndex[0] == -1){
+            throw new RuntimeException("Cannot find target argument of caller method. \n" + suspVar);
+        }
         return new SuspiciousArgument(
                 suspVar.getFailedTest(),
                 locateMethod[0],
