@@ -4,7 +4,6 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.VariableDeclarationExpr;
-import com.github.javaparser.ast.stmt.Statement;
 import com.sun.jdi.*;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
@@ -16,9 +15,7 @@ import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.JavaParserUtil;
 
-import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 public class SuspiciousAssignment extends SuspiciousExpression {
@@ -26,21 +23,25 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     private final SuspiciousVariable assignTarget;
     protected SuspiciousAssignment(CodeElementName failedTest, CodeElementName locateClass, int locateLine, SuspiciousVariable assignTarget) {
         super(failedTest, locateClass, locateLine, assignTarget.getActualValue());
+        this.expr = extractExpr();
         this.assignTarget = assignTarget;
     }
 
     @Override
     //TODO: 今はオブジェクトの違いを考慮していない
-    public List<SuspiciousReturnValue> searchSuspiciousReturns() {
+    public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
 
         //Debugger生成
         String main = TestUtil.getJVMMain(this.failedTest);
         String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
-        //ブレークポイントにヒットした時に行う処理を定義
+        //対象の引数が属する行にたどり着いた時に行う処理を定義
         //ここではその行で呼ばれてるメソッド情報を抽出
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
+            //既に情報が取得できている場合は終了
+            if(!result.isEmpty()) return;
+
             List<SuspiciousReturnValue> resultCandidate = new ArrayList<>();
             EventRequestManager manager = vm.eventRequestManager();
 
@@ -49,7 +50,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             MethodExitRequest meReq = EnhancedDebugger.createMethodExitRequest(manager, thread);
             //この行の実行が終わったことを検知するステップリクエストを作成
             //この具象クラスではステップイベントの通知タイミングで、今調査していた行が調べたい行だったかを確認
-            StepRequest stepReq = EnhancedDebugger.createStepRequest(manager, thread);
+            StepRequest stepReq = EnhancedDebugger.createStepOverRequest(manager, thread);
 
             //一旦 resume して、内部ループで MethodExit／Step を待つ
             vm.resume();
@@ -103,7 +104,12 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(this.failedTest.getFullyQualifiedClassName(), this.locateLine, handler);
+        eDbg.handleAtBreakPoint(this.locateClass.getFullyQualifiedClassName(), this.locateLine, handler);
+        if(result.isEmpty()){
+            throw new NoSuchElementException("Could not confirm [ "
+                    + assignTarget.getSimpleVariableName() + " == " + assignTarget.getActualValue()
+                    + " ] on " + this.locateClass + " line:" + this.locateLine);
+        }
         return result;
     }
 

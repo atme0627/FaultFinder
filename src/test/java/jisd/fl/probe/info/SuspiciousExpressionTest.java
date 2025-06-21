@@ -77,6 +77,44 @@ class SuspiciousExpressionTest {
         }
 
         @Test
+        void polymorphismLoopReturn(){
+            String testMethodName = "polymorphismLoopReturn";
+            CodeElementName locateClass = new CodeElementName("org.sample.shape.Shape");
+            int locateLine = 30;
+
+            SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
+                    new CodeElementName(getFqmn(testMethodName)),
+                    locateClass,
+                    locateLine,
+                    "8",
+                    new CodeElementName("org.sample.shape.Rectangle")
+            );
+
+            List<SuspiciousReturnValue> result = suspReturn.searchSuspiciousReturns();
+            result.forEach(System.out::println);
+        }
+
+        @Test
+            //メソッド呼び出しの引数で呼ばれているメソッドの特定
+        void polymorphismLoopArgument() {
+            String testMethodName = "polymorphismLoopArgument";
+            CodeElementName locateClass = new CodeElementName("org.sample.MethodCallingTest");
+            int locateLine = 70;
+
+            SuspiciousArgument suspArg = new SuspiciousArgument(
+                    new CodeElementName(getFqmn(testMethodName)),
+                    locateClass,
+                    locateLine,
+                    "18.0",
+                    "max",
+                    1
+            );
+
+            List<SuspiciousReturnValue> result = suspArg.searchSuspiciousReturns();
+            result.forEach(System.out::println);
+        }
+
+        @Test
         void chaining(){
 
         }

@@ -7,6 +7,7 @@ import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
+import javax.validation.constraints.NotNull;
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -19,7 +20,7 @@ public abstract class SuspiciousExpression {
     protected final CodeElementName locateClass;
     protected final int locateLine;
     protected final Statement stmt;
-    protected final Expression expr;
+    @NotNull protected  Expression expr;
     protected final String actualValue;
 
     protected SuspiciousExpression(CodeElementName failedTest, CodeElementName locateClass, int locateLine, String actualValue) {
@@ -27,9 +28,7 @@ public abstract class SuspiciousExpression {
         this.locateClass = locateClass;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
-
         this.stmt = getStmt();
-        this.expr = extractExpr();
     }
 
     /**
@@ -41,7 +40,7 @@ public abstract class SuspiciousExpression {
      *
      * @return return文を表すSuspiciousReturnValueのリスト
      */
-    abstract public List<SuspiciousReturnValue> searchSuspiciousReturns();
+    abstract public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException;
 
 
     abstract public List<SuspiciousVariable> neighborSuspiciousVariables();

@@ -8,7 +8,6 @@ import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
-import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.MethodElement;
 import org.apache.commons.lang3.tuple.Pair;
@@ -203,11 +202,43 @@ public class EnhancedDebugger {
         return meReq;
     }
 
-    static public StepRequest createStepRequest(EventRequestManager manager, ThreadReference thread){
+    static public MethodEntryRequest createMethodEntryRequest(EventRequestManager manager, ThreadReference thread) {
+        MethodEntryRequest meReq = manager.createMethodEntryRequest();
+        meReq.addThreadFilter(thread);
+        meReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        meReq.enable();
+        return meReq;
+    }
+
+    static public StepRequest createStepOverRequest(EventRequestManager manager, ThreadReference thread){
         StepRequest stepReq = manager.createStepRequest(
                 thread,
                 StepRequest.STEP_LINE,
                 StepRequest.STEP_OVER
+        );
+        stepReq.addCountFilter(1);  // 次の１ステップで止まる
+        stepReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        stepReq.enable();
+        return stepReq;
+    }
+
+    static public StepRequest createStepOutRequest(EventRequestManager manager, ThreadReference thread){
+        StepRequest stepReq = manager.createStepRequest(
+                thread,
+                StepRequest.STEP_LINE,
+                StepRequest.STEP_OUT
+        );
+        stepReq.addCountFilter(1);  // 次の１ステップで止まる
+        stepReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        stepReq.enable();
+        return stepReq;
+    }
+
+    static public StepRequest createStepInRequest(EventRequestManager manager, ThreadReference thread){
+        StepRequest stepReq = manager.createStepRequest(
+                thread,
+                StepRequest.STEP_LINE,
+                StepRequest.STEP_INTO
         );
         stepReq.addCountFilter(1);  // 次の１ステップで止まる
         stepReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
