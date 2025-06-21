@@ -131,11 +131,20 @@ public class ProbeResult {
 
     //TODO: ProbeResultをSuspiciousExpressionに置き換える変更を行うための一時的なメソッド
     @Deprecated
-    static public ProbeResult convertSuspExpr(SuspiciousAssignment se){
+    static public ProbeResult convertSuspExpr(SuspiciousAssignment sa){
         return new ProbeResult(
-                se.getAssignTarget(),
-                new StatementElement(se.getStmt()),
-                se.locateClass
+                sa.getAssignTarget(),
+                new StatementElement(sa.getStmt()),
+                sa.locateClass
+        );
+    }
+
+    @Deprecated
+    static public ProbeResult convertSuspArg(SuspiciousArgument sa){
+        return new ProbeResult(
+                null,
+                new StatementElement(sa.getStmt()),
+                sa.locateClass
         );
     }
 }

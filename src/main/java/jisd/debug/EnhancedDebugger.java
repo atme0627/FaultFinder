@@ -164,6 +164,45 @@ public class EnhancedDebugger {
         }
     }
 
+    /**
+     * 指定されたMethodが呼び出された時点でSuspendし、指定された処理を行う
+     *
+     * @param fqmn    suspend対象の完全修飾メソッド名
+     * @param handler プレークポイントがヒットした場合の処理
+     */
+    public void handleAtMethodEntry(String fqmn, MethodEntryHandler handler) {
+        //MethodEntryRequestを有効化
+        EventRequestManager manager = vm.eventRequestManager();
+        MethodEntryRequest methodEntryRequest = manager.createMethodEntryRequest();
+        methodEntryRequest.addClassFilter(fqmn.split("#")[0]);
+        methodEntryRequest.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        methodEntryRequest.enable();
+
+        //Requestが経ったらDebuggeeスレッドを再開
+        run();
+
+        EventQueue queue = vm.eventQueue();
+        while (true) {
+            try {
+                EventSet eventSet = queue.remove();
+                for (Event ev : eventSet) {
+                    if (ev instanceof MethodEntryEvent) {
+                        MethodEntryEvent mEntry = (MethodEntryEvent) ev;
+                        //ターゲットのメソッドでない場合continue
+                        String targetFqmn = getFqmn(mEntry.method());
+                        if (!targetFqmn.equals(fqmn)) continue;
+
+                        //ハンドラを実行
+                        handler.handle(vm, mEntry);
+                    }
+                }
+                eventSet.resume();
+            } catch (VMDisconnectedException | InterruptedException e) {
+                break;
+            }
+        }
+    }
+
     private void setBreakpointIfLoaded(ReferenceType rt, EventRequestManager manager, int line) {
         try {
             List<com.sun.jdi.Location> bpLocs = rt.locationsOfLine(line);
@@ -192,6 +231,15 @@ public class EnhancedDebugger {
      */
     public interface BreakpointHandler {
         void handle(VirtualMachine vm, BreakpointEvent event) throws InterruptedException;
+    }
+
+    /**
+     * 目的のメソッドが呼ばれた際に実行するハンドラを記述
+     * 内部でvmをresume()して返してはいけない
+     * 必ずvmがsuspendされた状態で返すこと
+     */
+    public interface MethodEntryHandler {
+        void handle(VirtualMachine vm, MethodEntryEvent event) throws InterruptedException;
     }
 
     static public MethodExitRequest createMethodExitRequest(EventRequestManager manager, ThreadReference thread) {
@@ -252,6 +300,9 @@ public class EnhancedDebugger {
         if (n.toString().contains("<init>")) {
             String constructorName = n.substring(n.lastIndexOf("."), n.indexOf("#"));
             n.replace(n.indexOf("#"), n.indexOf("("), constructorName);
+        }
+        if((n.toString().contains("<clinit>"))){
+            return n.substring(0, '#');
         }
         return n.toString();
     }

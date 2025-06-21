@@ -9,9 +9,7 @@ import jisd.debug.*;
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.info.SuspiciousAssignment;
-import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.probe.info.ProbeResult;
+import jisd.fl.probe.info.*;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
@@ -340,18 +338,12 @@ public abstract class AbstractProbe {
      *     }
      *
      */
-    private ProbeResult resultIfNotAssigned(SuspiciousVariable vi){
+    private ProbeResult resultIfNotAssigned(SuspiciousVariable suspVar){
         //実行しているメソッド名を取得
-        CodeElementName locateMethodElementName = vi.getLocateMethodElement();
+        CodeElementName locateMethodElementName = suspVar.getLocateMethodElement();
 
-        //2. その変数が引数由来で、かつメソッド内で上書きされていない
-        Pair<Integer, MethodElement> caller = getCallerMethod(vi.getLocateMethodElement());
-        StatementElement probeStmt = caller.getRight().findStatementByLine(caller.getLeft()).get();
-        //probeMethodは呼び出し側のメソッド
-        ProbeResult result = new ProbeResult(vi, probeStmt, caller.getRight().name());
-        result.setCallerMethod(caller);
-        result.setCausedByArgument(true);
-        result.setCalleeMethodName(locateMethodElementName);
+        SuspiciousArgument suspArg = SuspiciousArgument.searchSuspiciousArgument(locateMethodElementName, suspVar);
+        ProbeResult result = ProbeResult.convertSuspArg(suspArg);
         return result;
     }
 
@@ -428,14 +420,5 @@ public abstract class AbstractProbe {
         //return edbg.getCalleeMethods(targetClass.getFullyQualifiedClassName(), line);
         //TODO: あとで直す
         return Set.of();
-    }
-
-    //TODO: そのメソッドの呼び出しメソッドが一つしかない場合しか考慮できてない
-    protected Pair<Integer, MethodElement> getCallerMethod(CodeElementName targetMethod) {
-        Pair<Integer, MethodElement> result = null;
-        String main = TestUtil.getJVMMain(new CodeElementName(assertInfo.getTestMethodName()));
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger edbg = new EnhancedDebugger(main, options);
-        return edbg.getCallerMethod(targetMethod.getFullyQualifiedMethodName());
     }
 }

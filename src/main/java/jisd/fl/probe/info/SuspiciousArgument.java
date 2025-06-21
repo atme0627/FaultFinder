@@ -21,14 +21,14 @@ import java.util.stream.Collectors;
 
 public class SuspiciousArgument extends SuspiciousExpression {
     //引数を与え実行しようとしているメソッド
-    private final String calleeMethodName;
+    private final CodeElementName calleeMethodName;
     //何番目の引数に与えられたexprかを指定
     private final int argIndex;
     protected SuspiciousArgument(CodeElementName failedTest,
                                  CodeElementName locateClass,
                                  int locateLine,
                                  String actualValue,
-                                 String calleeMethodName,
+                                 CodeElementName calleeMethodName,
                                  int argIndex) {
         super(failedTest, locateClass, locateLine, actualValue);
         this.argIndex = argIndex;
@@ -87,7 +87,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
                         //かつ対象の引数が目的の値を取っている場合、目的の行実行であったとし探索終了
                         MethodEntryEvent mEntry = (MethodEntryEvent) ev;
                         //entryしたメソッドが目的のcalleeメソッドでない
-                        if(mEntry.method().name().equals(calleeMethodName)) {
+                        if(mEntry.method().name().equals(calleeMethodName.getShortMethodName())) {
                             if (validateIsTargetExecution(mEntry, actualValue, argIndex)) {
                                 done = true;
                                 result.addAll(resultCandidate);
@@ -239,5 +239,68 @@ public class SuspiciousArgument extends SuspiciousExpression {
         } catch (NoSuchElementException | IndexOutOfBoundsException e){
             throw new RuntimeException("Cannot extract expression from [" + locateClass + ":" + locateLine + "].");
         }
+    }
+
+    /**
+     * ある変数がその値を取る原因が呼び出し元の引数のあると判明した場合に使用
+     */
+    static public SuspiciousArgument searchSuspiciousArgument(CodeElementName calleeMethodName, SuspiciousVariable suspVar){
+        //Debugger生成
+        String main = TestUtil.getJVMMain(suspVar.getFailedTest());
+        String options = TestUtil.getJVMOption();
+        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+
+        //探索によって求める値
+        CodeElementName[] locateMethod = new CodeElementName[1];
+        int[] locateLine = new int[1];
+        int[] argIndex = new int[1];
+
+
+        //調査対象の行実行に到達した時に行う処理を定義
+        EnhancedDebugger.MethodEntryHandler handler = (vm, mEntry) -> {
+            try {
+                //呼び出しメソッドを取得
+                ThreadReference thread = mEntry.thread();
+                StackFrame topFrame = null;
+                StackFrame callerFrame = null;
+                try {
+                    topFrame = thread.frame(0);
+                    callerFrame = thread.frame(1);
+                } catch (IncompatibleThreadStateException e) {
+                    throw new RuntimeException(e);
+                }
+
+                //調査対象の変数がactualValueをとっているか確認
+                Value argValue = topFrame.getValue(topFrame.visibleVariableByName(suspVar.getSimpleVariableName()));
+                if(!argValue.toString().equals(suspVar.getActualValue())) return;
+
+                //対象の引数のインデックスを取得
+                List<LocalVariable> vars = topFrame.visibleVariables();
+                for(int idx = 0; idx < vars.size(); idx++){
+                    if(vars.get(idx).name().equals(suspVar.getSimpleVariableName())){
+                        //   static: スロット 0～(argCount-1)
+                        // 非static:  スロット 0 = this, 引数は 1～argCount
+                        argIndex[0] = idx - ((mEntry.method().isStatic()) ? 1 : 0);
+                    }
+                }
+
+                com.sun.jdi.Location callerLoc = callerFrame.location();
+                locateMethod[0] = new CodeElementName(EnhancedDebugger.getFqmn(callerLoc.method()));
+                locateLine[0] = callerLoc.lineNumber();
+            } catch (AbsentInformationException e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        eDbg.handleAtMethodEntry(calleeMethodName.getFullyQualifiedMethodName(), handler);
+
+        return new SuspiciousArgument(
+                suspVar.getFailedTest(),
+                locateMethod[0],
+                locateLine[0],
+                suspVar.getActualValue(),
+                calleeMethodName,
+                argIndex[0]
+        );
     }
 }
