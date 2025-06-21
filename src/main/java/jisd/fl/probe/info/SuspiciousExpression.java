@@ -26,7 +26,6 @@ import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-//木構造にしてvisualizationをできるようにしたい
 public abstract class SuspiciousExpression {
     //どのテスト実行時の話かを指定
     protected final CodeElementName failedTest;
@@ -35,6 +34,10 @@ public abstract class SuspiciousExpression {
     protected final Statement stmt;
     @NotNull protected  Expression expr;
     protected final String actualValue;
+
+    //木構造にしてvisualizationをできるようにする
+    //保持するのは自分の子要素のみ
+    List<SuspiciousExpression> childSuspExprs = new ArrayList<>();
 
     static PrintStream stdOut = System.out;
     static PrintStream stdErr = System.err;
@@ -170,7 +173,8 @@ public abstract class SuspiciousExpression {
                         t.variableName,
                         t.value,
                         true,
-                        t.variableName.contains("[")
+                        t.variableName.contains("["),
+                        null
                 )).collect(Collectors.toList());
     }
 
@@ -187,5 +191,9 @@ public abstract class SuspiciousExpression {
     protected void enableStdOut(){
         System.setOut(stdOut);
         System.setErr(stdErr);
+    }
+
+    public void addChild(SuspiciousExpression ch){
+        this.childSuspExprs.add(ch);
     }
 }

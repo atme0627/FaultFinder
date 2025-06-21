@@ -32,12 +32,14 @@ public class ProbeForStatement extends AbstractProbe{
     public ProbeForStatement(FailedAssertInfo assertInfo) {
         super(assertInfo);
         probedValue = new HashSet<>();
-
         targetClasses = StaticAnalyzer.getClassNames();
     }
 
     public ProbeExResult run(int sleepTime) {
         ProbeExResult result = new ProbeExResult();
+        SuspiciousExpression root = null;
+        SuspiciousExpression nowAnalyzing = null;
+
         SuspiciousVariable firstTarget = assertInfo.getVariableInfo();
         List<SuspiciousVariable> probingTargets = new ArrayList<>();
         List<SuspiciousVariable> nextTargets = new ArrayList<>();
@@ -52,6 +54,12 @@ public class ProbeForStatement extends AbstractProbe{
 
                 SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
                 List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime);
+
+                if(root == null) {
+                    root = suspExpr;
+                }
+                else {
+                }
 
                 ProbeResult pr = ProbeResult.convertSuspExpr(suspExpr);
                 result.addElement(pr.getProbeMethodName().split("#")[0], pr.probeLine(), 0, 1);
@@ -127,7 +135,9 @@ public class ProbeForStatement extends AbstractProbe{
                     pr.getVariableInfo().getActualValue(),
                     pr.getVariableInfo().isPrimitive(),
                     isField,
-                    pr.getVariableInfo().getArrayNth()
+                    pr.getVariableInfo().getArrayNth(),
+                    null
+
             );
             if(!isProbed(vi)) {
                 vis.add(vi);
@@ -189,7 +199,8 @@ public class ProbeForStatement extends AbstractProbe{
                         variableName,
                         pr.getVariableInfo().isPrimitive(),
                         isField,
-                        arrayNth
+                        arrayNth,
+                        null
                 );
             }
             else {
@@ -199,7 +210,8 @@ public class ProbeForStatement extends AbstractProbe{
                         variableName,
                         pr.getValuesInLine().get(n),
                         pr.getVariableInfo().isPrimitive(),
-                        isField
+                        isField,
+                        null
                 );
             }
             if(!isProbed(vi)) {

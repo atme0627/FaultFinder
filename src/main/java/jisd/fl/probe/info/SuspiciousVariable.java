@@ -12,6 +12,9 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
     private final int arrayNth;
     private final String actualValue;
 
+    //木構造でスライスを表すため、このSuspVarの親の参照を保持する。
+    private CodeElementName parent = null;
+
     //locateはローカル変数の場合はメソッド名まで(フルネーム、シグニチャあり)
     //フィールドの場合はクラス名まで
     //配列の場合
@@ -59,7 +62,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
             String actualValue,
             boolean isPrimitive,
             boolean isField,
-            int arrayNth) {
+            int arrayNth, CodeElementName parent) {
 
         this.failedTest = failedTest;
         this.locateMethod = new CodeElementName(locateMethod);
@@ -67,6 +70,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
         this.isPrimitive = isPrimitive;
         this.isField = isField;
         this.arrayNth = arrayNth;
+        this.parent = parent;
         this.isArray = true;
         this.actualValue = actualValue;
     }
@@ -78,13 +82,14 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
             String variableName,
             String actualValue,
             boolean isPrimitive,
-            boolean isField) {
+            boolean isField, CodeElementName parent) {
 
         this.failedTest = failedTest;
         this.locateMethod = new CodeElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
         this.isField = isField;
+        this.parent = parent;
         this.arrayNth = -1;
         this.isArray = false;
         this.actualValue = actualValue;
