@@ -47,11 +47,18 @@ public abstract class AbstractProbe {
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
         List<TracedValue> watchedValues = tracedValues.filterByVariableName(suspiciousVariable.getVariableName(true, true));
         //disableStdOut("    >> Probe Info: Searching probe line.");
-        ProbeResult result = searchProbeLine(watchedValues, suspiciousVariable);
-        enableStdOut();
+        Optional<SuspiciousExpression> result = searchProbeLine(watchedValues, suspiciousVariable);
         //probe lineが特定できなかった場合nullを返す
-        if(result.isNotFound()) return null;
-        return result;
+        if(result.isEmpty()) return null;
+        ProbeResult pr = ProbeResult.convertSuspExpr(result.get());
+        if(!pr.isCausedByArgument()){
+            //原因行で他に登場した値をセット
+            TracedValueCollection valuesAtLine = traceAllValuesAtLine(pr.probeMethod(), pr.probeLine(), 0, 2000);
+            pr.setValuesInLine(valuesAtLine);
+        }
+        enableStdOut();
+
+        return pr;
     }
 
     //variableInfoに指定された変数のみを観測し、各行で取っている値を記録する
@@ -151,7 +158,7 @@ public abstract class AbstractProbe {
      * @param vi
      * @return
      */
-    private ProbeResult searchProbeLine(List<TracedValue> tracedValues, SuspiciousVariable vi){
+    private Optional<SuspiciousExpression> searchProbeLine(List<TracedValue> tracedValues, SuspiciousVariable vi){
 
         //対象の変数に値の変化が起きている行の特定
         List<Integer> valueChangingLines = valueChangingLine(vi);
@@ -164,13 +171,13 @@ public abstract class AbstractProbe {
             //原因行
             TracedValue causeLine = changeToActualLines.get(changeToActualLines.size() - 1);
             int causeLineNumber = causeLine.loc.getLineNumber();
-            return resultIfAssigned(causeLineNumber, vi);
+            return Optional.of(resultIfAssigned(causeLineNumber, vi));
         }
 
         //fieldは代入以外での値の変更を特定できない
         if(vi.isField()){
             System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getSimpleVariableName());
-            return ProbeResult.notFound();
+            return Optional.empty();
         }
 
         /* 1b. 宣言と同時に行われた初期化によってactualの値を取るパターン */
@@ -190,19 +197,19 @@ public abstract class AbstractProbe {
         boolean isThereVariableDeclaration = ovd.isPresent() && ovd.get().getInitializer().isPresent();
         if (isThereVariableDeclaration) {
             int varDeclarationLine = ovd.get().getBegin().get().line;
-            return resultIfAssigned(varDeclarationLine, vi);
+            return Optional.of(resultIfAssigned(varDeclarationLine, vi));
         }
 
         /* 2. その変数が引数由来で、かつメソッド内で上書きされていないパターン */
         //初めて変数が観測された時点ですでにactualの値を取っている
         TracedValue firstMatchedLine = tracedValues.get(0);
         if (vi.getActualValue().equals(firstMatchedLine.value)) {
-            return resultIfNotAssigned(vi);
+            return Optional.of(resultIfNotAssigned(vi));
         }
 
         /* 3. throw内などブレークポイントが置けない行で、代入が行われているパターン */
         System.err.println("There is no value which same to actual.");
-        return ProbeResult.notFound();
+        return Optional.empty();
     }
 
     //TODO: refactor
@@ -308,15 +315,11 @@ public abstract class AbstractProbe {
      *     調査対象の変数がfieldの場合もあるので必ずしもsuspicious assignmentは対象の変数と同じメソッドでは起きない
      *     が、同じクラスであることは保証される
      */
-    private ProbeResult resultIfAssigned(int causeLineNumber, SuspiciousVariable vi){
+    private SuspiciousAssignment resultIfAssigned(int causeLineNumber, SuspiciousVariable vi){
         //原因行のStatementを取得
         CodeElementName locateClassElementName = vi.getLocateMethodElement();
-        SuspiciousAssignment suspAssignment = new SuspiciousAssignment(vi.getFailedTest(), locateClassElementName, causeLineNumber, vi);
-        ProbeResult result = ProbeResult.convertSuspExpr(suspAssignment);
-        //原因行で他に登場した値をセット
-        TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), 0, 2000);
-        result.setValuesInLine(valuesAtLine);
-        return result;
+        return new SuspiciousAssignment(vi.getFailedTest(), locateClassElementName, causeLineNumber, vi);
+
     }
 
     /** 探索対象の変数が現在実行中のメソッドの引数であり、メソッド呼び出しの時点でその値を取っていたパターン
@@ -338,13 +341,10 @@ public abstract class AbstractProbe {
      *     }
      *
      */
-    private ProbeResult resultIfNotAssigned(SuspiciousVariable suspVar){
+    private SuspiciousArgument resultIfNotAssigned(SuspiciousVariable suspVar){
         //実行しているメソッド名を取得
         CodeElementName locateMethodElementName = suspVar.getLocateMethodElement();
-
-        SuspiciousArgument suspArg = SuspiciousArgument.searchSuspiciousArgument(locateMethodElementName, suspVar);
-        ProbeResult result = ProbeResult.convertSuspArg(suspArg);
-        return result;
+        return SuspiciousArgument.searchSuspiciousArgument(locateMethodElementName, suspVar);
     }
 
     protected void disableStdOut(String msg){

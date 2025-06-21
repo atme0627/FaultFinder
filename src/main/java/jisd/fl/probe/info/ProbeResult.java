@@ -124,7 +124,18 @@ public class ProbeResult {
 
     //TODO: ProbeResultをSuspiciousExpressionに置き換える変更を行うための一時的なメソッド
     @Deprecated
-    static public ProbeResult convertSuspExpr(SuspiciousAssignment sa){
+    static public ProbeResult convertSuspExpr(SuspiciousExpression se){
+        if(se instanceof SuspiciousAssignment){
+            return convertSuspAssign((SuspiciousAssignment) se);
+        }
+        if(se instanceof SuspiciousArgument){
+            return convertSuspArg((SuspiciousArgument) se);
+        }
+
+        throw new RuntimeException("Something is wrong.");
+    }
+    @Deprecated
+    static private ProbeResult convertSuspAssign(SuspiciousAssignment sa){
         return new ProbeResult(
                 sa.failedTest,
                 sa.getAssignTarget(),
@@ -134,7 +145,7 @@ public class ProbeResult {
     }
 
     @Deprecated
-    static public ProbeResult convertSuspArg(SuspiciousArgument sa){
+    static private ProbeResult convertSuspArg(SuspiciousArgument sa){
         return new ProbeResult(
                 sa.failedTest,
                 null,
