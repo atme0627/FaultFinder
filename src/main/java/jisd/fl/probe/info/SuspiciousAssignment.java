@@ -36,6 +36,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         String main = TestUtil.getJVMMain(this.failedTest);
         String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+
         //対象の引数が属する行にたどり着いた時に行う処理を定義
         //ここではその行で呼ばれてるメソッド情報を抽出
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
@@ -51,6 +52,11 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             //この行の実行が終わったことを検知するステップリクエストを作成
             //この具象クラスではステップイベントの通知タイミングで、今調査していた行が調べたい行だったかを確認
             StepRequest stepReq = EnhancedDebugger.createStepOverRequest(manager, thread);
+
+            // ブレークポイント地点でのコールスタックの深さを取得
+            // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
+            // 再帰呼び出し含め、その行で直接呼ばれたメソッドのみ取ってこれる
+            int depthBeforeCall = getCallStackDepth(thread);
 
             //一旦 resume して、内部ループで MethodExit／Step を待つ
             vm.resume();
@@ -72,7 +78,8 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                         }
 
                         //収集するのは指定した行で直接呼び出したメソッドのみ
-                        if (mee.thread().equals(thread) && caller.location().method().equals(bpe.location().method())) {
+                        //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
+                        if (mee.thread().equals(thread) && getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
                             CodeElementName invokedMethod = new CodeElementName(EnhancedDebugger.getFqmn(mee.method()));
                             CodeElementName locateClass = new CodeElementName(invokedMethod.getFullyQualifiedClassName());
                             int locateLine = mee.location().lineNumber();

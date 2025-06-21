@@ -58,6 +58,11 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
             //StepEventでreturnから返った時にこのMEEを使ってreturnのactualValueを手にいれる。
             MethodExitEvent recentMee = null;
 
+            // ブレークポイント地点でのコールスタックの深さを取得
+            // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
+            // 再帰呼び出し含め、その行で直接呼ばれたメソッドのみ取ってこれる
+            int depthBeforeCall = getCallStackDepth(thread);
+
             boolean done = false;
             while (!done) {
                 EventSet es = vm.eventQueue().remove();
@@ -77,7 +82,8 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
                         }
 
                         //収集するのは指定した行で直接呼び出したメソッドのみ
-                        if (mee.thread().equals(thread) && caller.location().method().equals(bpe.location().method())) {
+                        //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
+                        if (mee.thread().equals(thread) && getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
                             CodeElementName invokedMethod = new CodeElementName(EnhancedDebugger.getFqmn(mee.method()));
                             CodeElementName locateClass = new CodeElementName(invokedMethod.getFullyQualifiedClassName());
                             int locateLine = mee.location().lineNumber();
@@ -144,6 +150,6 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
 
     @Override
     public String toString(){
-        return "    " + invokedMethodName.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
+        return "[ SUSPICIOUS RETURN VALUE ]\n" + "    " + invokedMethodName.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
     }
 }
