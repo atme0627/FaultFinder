@@ -54,7 +54,6 @@ public class ProbeForStatement extends AbstractProbe{
                 List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime);
 
                 ProbeResult pr = ProbeResult.convertSuspExpr(suspExpr);
-                newTargets.addAll(searchCalleeProbeTargets(pr));
                 result.addElement(pr.getProbeMethodName().split("#")[0], pr.probeLine(), 0, 1);
                 printProbeExInfoFooter(pr, newTargets);
                 nextTargets.addAll(newTargets);

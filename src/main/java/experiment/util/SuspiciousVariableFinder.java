@@ -13,7 +13,6 @@ import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.VMDisconnectedException;
 import jisd.debug.*;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.info.ProbeResult;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
@@ -142,39 +141,6 @@ public class SuspiciousVariableFinder {
                 );
             }
             result.add(vi);
-        }
-        return result;
-    }
-
-    //probeLine中で呼び出されているメソッドに対して
-    //その返り値(return)を次のprobeの対象とするためのVariableInfoを返す
-    //TODO: return内のprimitive型のみ一旦考える。
-    private List<SuspiciousVariable> searchCalleeProbeTargets(ProbeResult pr) {
-        List<SuspiciousVariable> result = new ArrayList<>();
-        String main = TestUtil.getJVMMain(targetTestCaseName);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger edbg = new EnhancedDebugger(main, options);
-        //TODO: あとで直す
-//        Map<String, Pair<Integer, String>> returnLineOfCalleeMethod
-//                = edbg.getReturnLineOfCalleeMethod(pr.probeMethod().getFullyQualifiedClassName(), pr.probeLine(), 1);
-        Map<String, Pair<Integer, String>> returnLineOfCalleeMethod = Map.of();
-        for (String callee : returnLineOfCalleeMethod.keySet()) {
-            CodeElementName calleeElement = new CodeElementName(callee);
-            int returnLine = returnLineOfCalleeMethod.get(callee).getLeft();
-            //TODO: ループ回数は考えない
-            TracedValueCollection watchedValuesInReturn
-                    = traceAllValuesAtLine(returnLine);
-
-            MethodElement locateMethodElement;
-            try {
-                locateMethodElement = MethodElement.getMethodElementByName(calleeElement);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-            Expression returnExpr =
-                    locateMethodElement.findStatementByLine(returnLine).get()
-                    .statement().asReturnStmt().getExpression().get();
-            result.addAll(searchProbeTargets(watchedValuesInReturn, returnExpr));
         }
         return result;
     }
