@@ -4,6 +4,7 @@ import jisd.debug.Location;
 
 import java.time.LocalDateTime;
 
+//TODO: これを継承した配列バージョンのクラスを作る
 public class TracedValue implements Comparable<TracedValue>{
     public LocalDateTime createAt;
     public Location loc;

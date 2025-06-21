@@ -217,12 +217,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
     }
 
     @Override
-    public List<SuspiciousVariable> neighborSuspiciousVariables() {
-        return List.of();
-    }
-
-    @Override
-
     protected Expression extractExpr() {
         return extractExpr(true);
     }

@@ -134,11 +134,6 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
 
 
     @Override
-    public List<SuspiciousVariable> neighborSuspiciousVariables() {
-        return List.of();
-    }
-
-    @Override
     protected Expression extractExpr() {
         try {
             if(!stmt.isReturnStmt()) throw new NoSuchElementException();
