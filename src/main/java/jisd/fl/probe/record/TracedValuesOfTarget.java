@@ -34,9 +34,9 @@ public class TracedValuesOfTarget extends TracedValueCollection {
         return List.of(
                     new TracedValue(
                     children.get(targetIndex).getCreatedAt(),
-                    loc,
                     vi.getName() + "[" + targetIndex + "]",
-                    children.get(targetIndex).getValue()
-            ));
+                    children.get(targetIndex).getValue(),
+                            loc.getLineNumber()
+                    ));
     }
 }

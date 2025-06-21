@@ -7,18 +7,16 @@ import java.time.LocalDateTime;
 //TODO: これを継承した配列バージョンのクラスを作る
 public class TracedValue implements Comparable<TracedValue>{
     public LocalDateTime createAt;
-    public Location loc;
+    public int lineNumber;
     public String variableName;
     public String value;
     public long objectID = 0;
-    public int timesOfExecution = 0;
 
     public TracedValue(LocalDateTime createAt,
-                       Location loc,
                        String variableName,
-                       String value){
+                       String value, int lineNumber){
         this.createAt = createAt;
-        this.loc = loc;
+        this.lineNumber = lineNumber;
         this.variableName = variableName;
         this.value = value;
     }
@@ -32,7 +30,7 @@ public class TracedValue implements Comparable<TracedValue>{
     public String toString(){
         return
                 "[ObjectID] " + objectID +
-                " [Location] " + loc.getClassName() + ":" + loc.getLineNumber() +
-                " [Variable] " + variableName + " = " + value;
+                " [Line] " + lineNumber +
+                " [Variable] " + variableName + " == " + value;
     }
 }

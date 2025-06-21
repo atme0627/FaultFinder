@@ -166,7 +166,7 @@ public abstract class AbstractProbe {
         if(!changeToActualLines.isEmpty()) {
             //原因行
             TracedValue causeLine = changeToActualLines.get(changeToActualLines.size() - 1);
-            int causeLineNumber = causeLine.loc.getLineNumber();
+            int causeLineNumber = causeLine.lineNumber;
             return Optional.of(resultIfAssigned(causeLineNumber, vi));
         }
 
@@ -289,7 +289,7 @@ public abstract class AbstractProbe {
         for(int i = 0; i < tracedValues.size() - 1; i++){
             TracedValue watchingLine = tracedValues.get(i);
             //watchingLineでは代入が行われていない -> 原因行ではない
-            if(!assignedLine.contains(watchingLine.loc.getLineNumber())) continue;
+            if(!assignedLine.contains(watchingLine.lineNumber)) continue;
             //次の行で値がactualに変わっている -> その行が原因行の候補
             TracedValue afterAssignLine = tracedValues.get(i+1);
             if(afterAssignLine.value.equals(actual)) changedToActualLines.add(watchingLine);

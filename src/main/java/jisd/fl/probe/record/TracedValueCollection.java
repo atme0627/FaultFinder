@@ -61,9 +61,9 @@ public abstract class TracedValueCollection {
         for(int i = 0; i < children.size(); i++){
             result.add(new TracedValue(
                     children.get(i).getCreatedAt(),
-                    loc,
                     vi.getName() + "[" + i + "]",
-                    children.get(i).getValue()
+                    children.get(i).getValue(),
+                    loc.getLineNumber()
             ));
         }
         return result;
@@ -72,9 +72,9 @@ public abstract class TracedValueCollection {
     protected List<TracedValue> convertPrimitiveInfo(ValueInfo vi, Location loc){
         return List.of(new TracedValue(
                 vi.getCreatedAt(),
-                loc,
                 vi.getName(),
-                vi.getValue()
+                vi.getValue(),
+                loc.getLineNumber()
         ));
     }
 
@@ -87,9 +87,9 @@ public abstract class TracedValueCollection {
     protected List<TracedValue> convertReferenceInfo(ValueInfo vi, Location loc){
         return List.of(new TracedValue(
                 vi.getCreatedAt(),
-                loc,
                 vi.getName(),
-                vi.getValue()
+                vi.getValue(),
+                loc.getLineNumber()
         ));
     }
 
