@@ -21,7 +21,7 @@ import java.util.*;
 public class SuspiciousAssignment extends SuspiciousExpression {
     //左辺で値が代入されている変数の情報
     private final SuspiciousVariable assignTarget;
-    protected SuspiciousAssignment(CodeElementName failedTest, CodeElementName locateClass, int locateLine, SuspiciousVariable assignTarget) {
+    public SuspiciousAssignment(CodeElementName failedTest, CodeElementName locateClass, int locateLine, SuspiciousVariable assignTarget) {
         super(failedTest, locateClass, locateLine, assignTarget.getActualValue());
         this.expr = extractExpr();
         this.assignTarget = assignTarget;

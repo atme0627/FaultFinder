@@ -4,11 +4,13 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.Statement;
 import com.sun.jdi.*;
 import jisd.debug.*;
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
+import jisd.fl.probe.info.SuspiciousAssignment;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.probe.info.ProbeResult;
 import jisd.fl.probe.record.TracedValue;
@@ -181,6 +183,7 @@ public abstract class AbstractProbe {
         return ProbeResult.notFound();
     }
 
+    //TODO: refactor
     private List<Integer> valueChangingLine(SuspiciousVariable vi){
         //代入行の特定
         //unaryExpr(ex a++)も含める
@@ -271,24 +274,35 @@ public abstract class AbstractProbe {
     }
 
 
+    /** 代入によって変数がactualの値を取るようになったパターン
+     * 値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
+     *  ex.)
+     *      suspClass#suspMethod(){
+     *        ...
+     *  18: suspVar = a + 10; // <-- suspicious assignment
+     *        ...
+     *     }
+     *
+     *     調査対象の変数がfieldの場合もあるので必ずしもsuspicious assignmentは対象の変数と同じメソッドでは起きない
+     *     が、同じクラスであることは保証される
+     */
 
     private ProbeResult resultIfAssigned(TracedValue causeLineData, SuspiciousVariable vi){
-        //代入によって変数がactualの値を取るようになったパターン
-        //値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
         int causeLineNumber = causeLineData.loc.getLineNumber();
-        LocalDateTime createAt = causeLineData.createAt;
 
-        //実行しているメソッドを取得
-        CodeElementName locateMethodElementName = vi.getLocateMethodElement();
-        MethodElement locateMethodElement;
+        //原因行のStatementを取得
+        CodeElementName locateClassElementName = vi.getLocateMethodElement();
+        Statement suspStmt;
         try {
-            locateMethodElement = MethodElement.getMethodElementByName(locateMethodElementName);
+            suspStmt = JavaParserUtil.getStatementByLine(locateClassElementName, causeLineNumber).orElseThrow();
         } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(locateClassElementName.getFilePath().toString() + "is not found.");
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException("Statement of line: " + causeLineData + "at " + locateClassElementName + "is not found.");
         }
-        StatementElement probeStmt = locateMethodElement.findStatementByLine(causeLineNumber).get();
 
-        ProbeResult result = new ProbeResult(vi, probeStmt, locateMethodElementName);
+        SuspiciousAssignment suspAssignment = new SuspiciousAssignment(vi.getFailedTest(), locateClassElementName, causeLineNumber, vi);
+        ProbeResult result = ProbeResult.convertSuspExpr(suspAssignment);
         //原因行で他に登場した値をセット
         TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), result.probeIterateNum(), 2000);
         result.setValuesInLine(valuesAtLine);
