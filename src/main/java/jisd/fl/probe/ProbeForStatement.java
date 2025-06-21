@@ -13,6 +13,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
+import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.probe.info.ProbeResult;
@@ -48,7 +49,15 @@ public class ProbeForStatement extends AbstractProbe{
             if(!isArgument) depth += 1;
             for (SuspiciousVariable target : probingTargets) {
                 printProbeExInfoHeader(target, depth);
-                ProbeResult pr = probing(sleepTime, target);
+
+                Optional<SuspiciousExpression> ose = probing(sleepTime, target);
+                ProbeResult pr = ProbeResult.convertSuspExpr(ose.orElseThrow(() -> new RuntimeException("Cause line is not found.")));
+
+                if(!pr.isCausedByArgument()){
+                    //原因行で他に登場した値をセット
+                    TracedValueCollection valuesAtLine = traceAllValuesAtLine(pr.probeMethod(), pr.probeLine(), 0, 2000);
+                    pr.setValuesInLine(valuesAtLine);
+                }
 
                 List<SuspiciousVariable> newTargets = searchNextProbeTargets(pr);
                 newTargets.addAll(searchCalleeProbeTargets(pr));
@@ -65,19 +74,19 @@ public class ProbeForStatement extends AbstractProbe{
     }
 
     @Override
-    protected ProbeResult probing(int sleepTime, SuspiciousVariable target) {
-        ProbeResult result = super.probing(sleepTime, target);
+    protected Optional<SuspiciousExpression> probing(int sleepTime, SuspiciousVariable suspVar) {
+        Optional<SuspiciousExpression> result = super.probing(sleepTime, suspVar);
         int loop = 0;
         int LOOP_LIMIT = 5;
-        while(result == null) {
+        while(result.isEmpty()) {
             loop++;
             System.err.println("[Probe For STATEMENT] Cannot get enough information.");
             System.err.println("[Probe For STATEMENT] Retry to collect information.");
             sleepTime += 2000;
-            result = super.probing(sleepTime, target);
+            result = super.probing(sleepTime, suspVar);
             if (loop == LOOP_LIMIT) {
                 System.err.println("[Probe For STATEMENT] Failed to collect information.");
-                return ProbeResult.notFound();
+                return Optional.empty();
             }
         }
         return result;

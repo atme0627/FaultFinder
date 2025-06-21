@@ -36,29 +36,25 @@ public abstract class AbstractProbe {
         this.dbg = createDebugger();
     }
 
-    //一回のprobeを行う
-    //条件を満たす行の情報を返す
-    protected ProbeResult probing(int sleepTime, SuspiciousVariable suspiciousVariable){
+    /**
+     * 与えられたSuspiciousVariableに対して、その直接的な原因となるExpressionをSuspiciousExpressionとして返す
+     * 原因が呼び出し元の引数にある場合は、その引数のExprに対応するものを返す
+     * @param sleepTime
+     * @param suspVar
+     * @return
+     */
+    protected Optional<SuspiciousExpression> probing(int sleepTime, SuspiciousVariable suspVar){
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
-        TracedValueCollection tracedValues = traceValuesOfTarget(suspiciousVariable, sleepTime);
+        TracedValueCollection tracedValues = traceValuesOfTarget(suspVar, sleepTime);
         enableStdOut();
         tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
-        List<TracedValue> watchedValues = tracedValues.filterByVariableName(suspiciousVariable.getVariableName(true, true));
+        List<TracedValue> watchedValues = tracedValues.filterByVariableName(suspVar.getVariableName(true, true));
         //disableStdOut("    >> Probe Info: Searching probe line.");
-        Optional<SuspiciousExpression> result = searchProbeLine(watchedValues, suspiciousVariable);
-        //probe lineが特定できなかった場合nullを返す
-        if(result.isEmpty()) return null;
-        ProbeResult pr = ProbeResult.convertSuspExpr(result.get());
-        if(!pr.isCausedByArgument()){
-            //原因行で他に登場した値をセット
-            TracedValueCollection valuesAtLine = traceAllValuesAtLine(pr.probeMethod(), pr.probeLine(), 0, 2000);
-            pr.setValuesInLine(valuesAtLine);
-        }
+        Optional<SuspiciousExpression> result = searchProbeLine(watchedValues, suspVar);
         enableStdOut();
-
-        return pr;
+        return result;
     }
 
     //variableInfoに指定された変数のみを観測し、各行で取っている値を記録する
