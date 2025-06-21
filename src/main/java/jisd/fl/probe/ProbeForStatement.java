@@ -46,7 +46,6 @@ public class ProbeForStatement extends AbstractProbe{
         int depth = 0;
         while(!probingTargets.isEmpty()) {
             if(!isArgument) depth += 1;
-            if(depth > 10) break;
             for (SuspiciousVariable target : probingTargets) {
                 printProbeExInfoHeader(target, depth);
                 ProbeResult pr = probing(sleepTime, target);

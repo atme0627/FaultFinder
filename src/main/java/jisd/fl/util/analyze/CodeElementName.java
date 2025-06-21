@@ -42,7 +42,7 @@ public class CodeElementName {
         }
         else {
             fqClassName = fullyQualifiedName;
-            methodSignature = null;
+            methodSignature = "<NO METHOD DATA>";
         }
 
         //with package
@@ -63,7 +63,7 @@ public class CodeElementName {
     public CodeElementName(String packageName, String className){
         this.packageName = packageName;
         this.className = className;
-        this.methodSignature = null;
+        this.methodSignature =  "<NO METHOD DATA>";
     }
 
     public CodeElementName(String packageName, String className, @NotBlank String methodSignature){
@@ -76,7 +76,7 @@ public class CodeElementName {
         CompilationUnit unit = cd.findAncestor(CompilationUnit.class).orElseThrow();
         this.packageName = JavaParserUtil.getPackageName(unit);
         this.className = cd.getNameAsString();
-        this.methodSignature = null;
+        this.methodSignature =  "<NO METHOD DATA>";
     }
 
     public CodeElementName(CallableDeclaration cd){

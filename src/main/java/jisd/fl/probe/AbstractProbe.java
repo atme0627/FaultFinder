@@ -142,7 +142,6 @@ public abstract class AbstractProbe {
     }
 
 
-    //TODO: 原因行が何回目のループのものかを取得し、probeResultに与える
     private ProbeResult searchProbeLine(List<TracedValue> tracedValues, SuspiciousVariable vi){
         //対象の変数に値の変化が起きている行の特定
         List<Integer> valueChangingLines = valueChangingLine(vi);

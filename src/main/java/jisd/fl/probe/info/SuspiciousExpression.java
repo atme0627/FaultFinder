@@ -30,7 +30,7 @@ public abstract class SuspiciousExpression {
         this.locateClass = locateClass;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
-        this.stmt = getStmt();
+        this.stmt = extractStmt();
     }
 
     /**
@@ -61,7 +61,7 @@ public abstract class SuspiciousExpression {
                 .collect(Collectors.toList());
     }
 
-    private Statement getStmt(){
+    private Statement extractStmt(){
         try {
             return JavaParserUtil.getStatementByLine(locateClass, locateLine).orElseThrow();
         } catch (NoSuchFileException e) {
@@ -69,6 +69,10 @@ public abstract class SuspiciousExpression {
         } catch (NoSuchElementException e){
             throw new RuntimeException("Cannot extract Statement from [" + locateClass + ":" + locateLine + "].");
         }
+    }
+
+    public Statement getStmt(){
+        return stmt;
     }
 
     @Override

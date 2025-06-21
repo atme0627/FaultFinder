@@ -100,7 +100,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                     if (ev instanceof StepEvent) {
                         done = true;
                         StepEvent se = (StepEvent) ev;
-                        if(validateIsTargetExecution(se, this.assignTarget)) result.addAll(resultCandidate);
+                        if(validateIsTargetExecution(se, this.getAssignTarget())) result.addAll(resultCandidate);
                         //vmをresumeしない
                     }
                 }
@@ -114,7 +114,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         eDbg.handleAtBreakPoint(this.locateClass.getFullyQualifiedClassName(), this.locateLine, handler);
         if(result.isEmpty()){
             throw new NoSuchElementException("Could not confirm [ "
-                    + assignTarget.getSimpleVariableName() + " == " + assignTarget.getActualValue()
+                    + getAssignTarget().getSimpleVariableName() + " == " + getAssignTarget().getActualValue()
                     + " ] on " + this.locateClass + " line:" + this.locateLine);
         }
         return result;
@@ -203,5 +203,9 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             }
         } catch (InterruptedException ignored) {
         }
+    }
+
+    public SuspiciousVariable getAssignTarget() {
+        return assignTarget;
     }
 }
