@@ -62,7 +62,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
             String actualValue,
             boolean isPrimitive,
             boolean isField,
-            int arrayNth, CodeElementName parent) {
+            int arrayNth) {
 
         this.failedTest = failedTest;
         this.locateMethod = new CodeElementName(locateMethod);
@@ -70,7 +70,6 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
         this.isPrimitive = isPrimitive;
         this.isField = isField;
         this.arrayNth = arrayNth;
-        this.parent = parent;
         this.isArray = true;
         this.actualValue = actualValue;
     }
@@ -82,14 +81,13 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
             String variableName,
             String actualValue,
             boolean isPrimitive,
-            boolean isField, CodeElementName parent) {
+            boolean isField) {
 
         this.failedTest = failedTest;
         this.locateMethod = new CodeElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
         this.isField = isField;
-        this.parent = parent;
         this.arrayNth = -1;
         this.isArray = false;
         this.actualValue = actualValue;
@@ -164,5 +162,13 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
 
     public CodeElementName getFailedTest() {
         return failedTest;
+    }
+
+    public CodeElementName getParent() {
+        return parent;
+    }
+
+    public void setParent(CodeElementName parent) {
+        this.parent = parent;
     }
 }
