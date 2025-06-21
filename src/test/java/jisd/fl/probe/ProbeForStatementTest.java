@@ -26,6 +26,7 @@ class ProbeForStatementTest {
     @Test
     void searchCalleeProbeTargets() {
         SuspiciousVariable vi = new SuspiciousVariable(
+                new CodeElementName("org.sample.CalcTest#methodCall1()"),
                 "org.sample.util.Calc#methodCalling(int, int)",
                 "result",
                 "11",
@@ -42,7 +43,7 @@ class ProbeForStatementTest {
             throw new RuntimeException(e);
         }
         StatementElement probeStmt = locateMethodElement.findStatementByLine(9).get();
-        ProbeResult pr = new ProbeResult(vi, probeStmt, targetFqmn);
+        ProbeResult pr = new ProbeResult(vi.getFailedTest(), vi, probeStmt, targetFqmn);
         ProbeForStatement pfs = new ProbeForStatement(fai);
         List<SuspiciousVariable> vis = pfs.searchCalleeProbeTargets(pr);
 

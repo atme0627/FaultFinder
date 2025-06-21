@@ -238,7 +238,7 @@ public class ProbeForStatement extends AbstractProbe{
             }
             StatementElement probeStmt = locateMethodElement.findStatementByLine(returnLine).get();
 
-            ProbeResult calleePr = new ProbeResult(pr.getVariableInfo(), probeStmt, calleeElement);
+            ProbeResult calleePr = new ProbeResult(pr.getFailedTest(), pr.getVariableInfo(), probeStmt, calleeElement);
             calleePr.setValuesInLine(watchedValuesInReturn);
             result.addAll(searchNextProbeTargets(calleePr));
         }
