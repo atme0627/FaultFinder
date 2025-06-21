@@ -19,26 +19,22 @@ import java.util.List;
 class ProbeForStatementTest {
     @BeforeEach
     void initProperty() {
-        PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/src/main/java");
-        PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/src/test/java");
-        PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/main");
-        PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/test");
-
-        TestUtil.compileForDebug(new CodeElementName("sample.MethodCallTest"));
+        PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
+        PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/test/java");
     }
 
     @Test
     void searchCalleeProbeTargets() {
         SuspiciousVariable vi = new SuspiciousVariable(
-                "sample.MethodCall#methodCalling()",
+                "org.sample.util.Calc#methodCalling(int, int)",
                 "result",
                 "11",
                 true,
                 false
         );
 
-        FailedAssertInfo fai = new FailedAssertEqualInfo("sample.MethodCallTest#methodCall1()", vi);
-        CodeElementName targetFqmn = new CodeElementName("sample.MethodCall#methodCalling(int, int)");
+        FailedAssertInfo fai = new FailedAssertEqualInfo("org.sample.CalcTest#methodCall1()", vi);
+        CodeElementName targetFqmn = new CodeElementName("org.sample.util.Calc#methodCalling(int, int)");
         MethodElement locateMethodElement;
         try {
             locateMethodElement = MethodElement.getMethodElementByName(targetFqmn);
@@ -58,14 +54,14 @@ class ProbeForStatementTest {
     @Test
     void runTest() {
         SuspiciousVariable vi = new SuspiciousVariable(
-                "sample.MethodCallTest#methodCall1()",
-                "actual",
+                "org.sample.util.Calc#methodCalling(int, int)",
+                "result",
                 "11",
                 true,
                 false
         );
 
-        FailedAssertInfo fai = new FailedAssertEqualInfo("sample.MethodCallTest#methodCall1()", vi);
+        FailedAssertInfo fai = new FailedAssertEqualInfo("org.sample.CalcTest#methodCall1()", vi);
         ProbeForStatement pfs = new ProbeForStatement(fai);
         ProbeExResult pr = pfs.run(2000);
         pr.print();
