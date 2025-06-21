@@ -3,7 +3,7 @@ package jisd.fl.probe.info;
 import jisd.fl.util.analyze.CodeElementName;
 
 public class SuspiciousVariable { //ローカル変数の場合のみ
-    private CodeElementName failedTest = new CodeElementName("ENPTY");
+    private CodeElementName failedTest = new CodeElementName("EMPTY");
     private final CodeElementName locateMethod;
     private final String variableName;
     private final boolean isPrimitive;

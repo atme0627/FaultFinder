@@ -161,7 +161,7 @@ class SuspiciousExpressionTest {
                     locateClass,
                     locateLine,
                     "18.0",
-                    "max",
+                    new CodeElementName("max"),
                     1
             );
 
