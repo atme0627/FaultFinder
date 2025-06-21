@@ -4,7 +4,6 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.Statement;
 import com.sun.jdi.*;
 import jisd.debug.*;
 import jisd.debug.Location;
@@ -196,19 +195,14 @@ public abstract class AbstractProbe {
             return resultIfAssigned(varDeclarationLine, vi);
         }
 
-
-        //実行された代入行がないパターン
-        TracedValue firstMatchedLine;
-        for (TracedValue tracedValue : tracedValues) {
-            firstMatchedLine = tracedValue;
-            if (vi.getActualValue().equals(firstMatchedLine.value)) {
-                return resultIfNotAssigned(
-                        vi.getVariableName(false, false),
-                        firstMatchedLine.loc.getLineNumber(),
-                        vi);
-            }
+        /* 2. その変数が引数由来で、かつメソッド内で上書きされていないパターン */
+        //初めて変数が観測された時点ですでにactualの値を取っている
+        TracedValue firstMatchedLine = tracedValues.get(0);
+        if (vi.getActualValue().equals(firstMatchedLine.value)) {
+            return resultIfNotAssigned(vi);
         }
 
+        /* 3. throw内などブレークポイントが置けない行で、代入が行われているパターン */
         System.err.println("There is no value which same to actual.");
         return ProbeResult.notFound();
     }
@@ -307,7 +301,7 @@ public abstract class AbstractProbe {
     /** 代入によって変数がactualの値を取るようになったパターン(初期化含む)
      * 値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
      *  ex.)
-     *      suspClass#suspMethod(){
+     *      SuspClass#suspMethod(){
      *        ...
      *  18: suspVar = a + 10; // <-- suspicious assignment
      *        ...
@@ -316,7 +310,6 @@ public abstract class AbstractProbe {
      *     調査対象の変数がfieldの場合もあるので必ずしもsuspicious assignmentは対象の変数と同じメソッドでは起きない
      *     が、同じクラスであることは保証される
      */
-
     private ProbeResult resultIfAssigned(int causeLineNumber, SuspiciousVariable vi){
         //原因行のStatementを取得
         CodeElementName locateClassElementName = vi.getLocateMethodElement();
@@ -328,12 +321,27 @@ public abstract class AbstractProbe {
         return result;
     }
 
-    private ProbeResult resultIfNotAssigned(String variableName, int watchedAt, SuspiciousVariable vi){
-        //代入以外の要因で変数がactualの値をとるようになったパターン
-        //2. その変数が引数由来で、かつメソッド内で上書きされていない。
-        //3. throw内などブレークポイントが置けない行で、代入が行われている。 --> 未想定
-
-        //実行しているメソッド名　を取得
+    /** 探索対象の変数が現在実行中のメソッドの引数であり、メソッド呼び出しの時点でその値を取っていたパターン
+     * メソッドの呼び出し元での対象の変数に対応する引数のExprを特定し、SuspiciousArgumentを取得する
+     *
+     *  ex.)
+     *      CallerClass#callerMethod(){
+     *        ...
+     *      18: foo = calleeMethod(a + b, c);
+     *      //                     ^^^^^
+     *      //             suspicious argument
+     *        ...
+     *     }
+     *
+     *     CalleeClass#CalleeMethod(x, y){
+     *    //                       ^^^
+     *    //                 target variable
+     *         ...
+     *     }
+     *
+     */
+    private ProbeResult resultIfNotAssigned(SuspiciousVariable vi){
+        //実行しているメソッド名を取得
         CodeElementName locateMethodElementName = vi.getLocateMethodElement();
 
         //2. その変数が引数由来で、かつメソッド内で上書きされていない

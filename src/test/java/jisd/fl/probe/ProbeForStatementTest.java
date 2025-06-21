@@ -66,4 +66,9 @@ class ProbeForStatementTest {
         ProbeExResult pr = pfs.run(2000);
         pr.print();
     }
+
+    @Test
+    void suspiciousArgumentTest(){
+
+    }
 }
