@@ -56,6 +56,7 @@ class SuspiciousExpressionTest {
             CodeElementName locateClass = new CodeElementName(testFqcn);
             int locateLine = 19;
             SuspiciousVariable suspVariable = new SuspiciousVariable(
+                    new CodeElementName(getFqmn(testMethodName)),
                     getFqmn(testMethodName),
                     "totalArea",
                     "32.0",
@@ -113,6 +114,7 @@ class SuspiciousExpressionTest {
             CodeElementName locateClass = new CodeElementName(testFqcn);
             int locateLine = 34;
             SuspiciousVariable suspVariable = new SuspiciousVariable(
+                    new CodeElementName(getFqmn(testMethodName)),
                     getFqmn(testMethodName),
                     "totalArea",
                     "32.0",

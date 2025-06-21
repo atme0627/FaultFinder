@@ -119,6 +119,7 @@ public class ProbeForStatement extends AbstractProbe{
             String locateClass = (isField) ? isFieldVarInfo.getRight() : pr.getCallerMethod().getRight().fqmn();
 
             SuspiciousVariable vi = new SuspiciousVariable(
+                    pr.getFailedTest(),
                     locateClass,
                     argVariable.getNameAsString(),
                     pr.getVariableInfo().getActualValue(),
@@ -180,6 +181,7 @@ public class ProbeForStatement extends AbstractProbe{
             SuspiciousVariable vi;
             if(isArray) {
                 vi = new SuspiciousVariable(
+                        pr.getFailedTest(),
                         isField ? locateClass : pr.getProbeMethodName(),
                         pr.getValuesInLine().get(n),
                         variableName,
@@ -190,6 +192,7 @@ public class ProbeForStatement extends AbstractProbe{
             }
             else {
                 vi = new SuspiciousVariable(
+                        pr.getFailedTest(),
                         isField ? locateClass : pr.getProbeMethodName(),
                         variableName,
                         pr.getValuesInLine().get(n),

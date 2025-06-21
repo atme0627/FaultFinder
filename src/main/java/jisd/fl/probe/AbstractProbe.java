@@ -314,7 +314,7 @@ public abstract class AbstractProbe {
         SuspiciousAssignment suspAssignment = new SuspiciousAssignment(vi.getFailedTest(), locateClassElementName, causeLineNumber, vi);
         ProbeResult result = ProbeResult.convertSuspExpr(suspAssignment);
         //原因行で他に登場した値をセット
-        TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), result.probeIterateNum(), 2000);
+        TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), 0, 2000);
         result.setValuesInLine(valuesAtLine);
         return result;
     }

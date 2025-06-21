@@ -3,7 +3,7 @@ package jisd.fl.probe.info;
 import jisd.fl.util.analyze.CodeElementName;
 
 public class SuspiciousVariable { //ローカル変数の場合のみ
-    private CodeElementName failedTest = new CodeElementName("EMPTY");
+    private final CodeElementName failedTest;
     private final CodeElementName locateMethod;
     private final String variableName;
     private final boolean isPrimitive;
@@ -22,7 +22,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
                               boolean isPrimitive,
                               boolean isField,
                               int arrayNth) {
-
+        failedTest = new CodeElementName("EMPTY");
         this.locateMethod = new CodeElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
@@ -39,7 +39,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
                               String actualValue,
                               boolean isPrimitive,
                               boolean isField) {
-
+        failedTest = new CodeElementName("EMPTY");
         this.locateMethod = new CodeElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
