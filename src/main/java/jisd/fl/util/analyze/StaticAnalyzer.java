@@ -74,7 +74,7 @@ public class StaticAnalyzer {
     }
 
     public static String getMethodNameFormLine(CodeElementName targetClass, int line) throws NoSuchFileException {
-        CallableDeclaration cd = JavaParserUtil.getCallableDeclarationByLine(targetClass, line).orElseThrow();
+        CallableDeclaration<?> cd = JavaParserUtil.getCallableDeclarationByLine(targetClass, line).orElseThrow();
         return targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature();
     }
 

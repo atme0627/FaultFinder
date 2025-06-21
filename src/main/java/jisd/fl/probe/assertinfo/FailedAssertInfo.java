@@ -2,6 +2,7 @@ package jisd.fl.probe.assertinfo;
 
 import jisd.fl.probe.info.SuspiciousVariable;
 
+@Deprecated
 public abstract class FailedAssertInfo {
     private final AssertType assertType;
     private final String testClassName;

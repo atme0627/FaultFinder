@@ -131,7 +131,7 @@ public class ProbeResult {
 
     //TODO: ProbeResultをSuspiciousExpressionに置き換える変更を行うための一時的なメソッド
     @Deprecated
-    public ProbeResult convertSuspExpr(SuspiciousAssignment se){
+    static public ProbeResult convertSuspExpr(SuspiciousAssignment se){
         return new ProbeResult(
                 se.getAssignTarget(),
                 new StatementElement(se.getStmt()),
