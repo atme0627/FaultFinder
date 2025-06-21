@@ -143,22 +143,31 @@ public abstract class AbstractProbe {
         return watchedValues;
     }
 
-
+    /**
+     *
+     *  1. 代入によって変数がactualの値を取るようになったパターン
+     *      1a. すでに定義されていた変数に代入が行われたパターン
+     *      1b. 宣言と同時に行われた初期化によってactualの値を取るパターン
+     *  2. その変数が引数由来で、かつメソッド内で上書きされていないパターン
+     *  3. throw内などブレークポイントが置けない行で、代入が行われているパターン --> 未想定
+     * @param tracedValues
+     * @param vi
+     * @return
+     */
     private ProbeResult searchProbeLine(List<TracedValue> tracedValues, SuspiciousVariable vi){
+
         //対象の変数に値の変化が起きている行の特定
         List<Integer> valueChangingLines = valueChangingLine(vi);
 
+        /* 1a. すでに定義されていた変数に代入が行われたパターン */
         //代入の実行後にactualの値に変化している行の特定(ない場合あり)
         List<TracedValue> changeToActualLines = valueChangedToActualLine(tracedValues, valueChangingLines, vi.getActualValue());
-
         //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
         if(!changeToActualLines.isEmpty()) {
             //原因行
             TracedValue causeLine = changeToActualLines.get(changeToActualLines.size() - 1);
-            //原因行の次に実行された行
-            TracedValue afterAssignedLine = tracedValues.get(tracedValues.indexOf(causeLine));
-
-            return resultIfAssigned(causeLine, vi);
+            int causeLineNumber = causeLine.loc.getLineNumber();
+            return resultIfAssigned(causeLineNumber, vi);
         }
 
         //fieldは代入以外での値の変更を特定できない
@@ -166,6 +175,27 @@ public abstract class AbstractProbe {
             System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getSimpleVariableName());
             return ProbeResult.notFound();
         }
+
+        /* 1b. 宣言と同時に行われた初期化によってactualの値を取るパターン */
+        //初期化の時点でその値が代入されている
+        //変数が存在し、宣言と同時に初期化がされている時点で、これを満たすことにする
+
+        //実行しているメソッドを取得
+        MethodElement locateMethodElement;
+        try {
+            locateMethodElement = MethodElement.getMethodElementByName(vi.getLocateMethodElement());
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+
+        //targetVariableのVariableDeclaratorを特定
+        Optional<VariableDeclarator> ovd = locateMethodElement.findLocalVarDeclaration(vi.getSimpleVariableName());
+        boolean isThereVariableDeclaration = ovd.isPresent() && ovd.get().getInitializer().isPresent();
+        if (isThereVariableDeclaration) {
+            int varDeclarationLine = ovd.get().getBegin().get().line;
+            return resultIfAssigned(varDeclarationLine, vi);
+        }
+
 
         //実行された代入行がないパターン
         TracedValue firstMatchedLine;
@@ -274,7 +304,7 @@ public abstract class AbstractProbe {
     }
 
 
-    /** 代入によって変数がactualの値を取るようになったパターン
+    /** 代入によって変数がactualの値を取るようになったパターン(初期化含む)
      * 値がactualになった行の前に観測した行が、実際に値を変更した行(probe line)
      *  ex.)
      *      suspClass#suspMethod(){
@@ -287,20 +317,9 @@ public abstract class AbstractProbe {
      *     が、同じクラスであることは保証される
      */
 
-    private ProbeResult resultIfAssigned(TracedValue causeLineData, SuspiciousVariable vi){
-        int causeLineNumber = causeLineData.loc.getLineNumber();
-
+    private ProbeResult resultIfAssigned(int causeLineNumber, SuspiciousVariable vi){
         //原因行のStatementを取得
         CodeElementName locateClassElementName = vi.getLocateMethodElement();
-        Statement suspStmt;
-        try {
-            suspStmt = JavaParserUtil.getStatementByLine(locateClassElementName, causeLineNumber).orElseThrow();
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(locateClassElementName.getFilePath().toString() + "is not found.");
-        } catch (NoSuchElementException e) {
-            throw new RuntimeException("Statement of line: " + causeLineData + "at " + locateClassElementName + "is not found.");
-        }
-
         SuspiciousAssignment suspAssignment = new SuspiciousAssignment(vi.getFailedTest(), locateClassElementName, causeLineNumber, vi);
         ProbeResult result = ProbeResult.convertSuspExpr(suspAssignment);
         //原因行で他に登場した値をセット
@@ -311,33 +330,11 @@ public abstract class AbstractProbe {
 
     private ProbeResult resultIfNotAssigned(String variableName, int watchedAt, SuspiciousVariable vi){
         //代入以外の要因で変数がactualの値をとるようになったパターン
-        //1. 初期化の時点でその値が代入されている。
         //2. その変数が引数由来で、かつメソッド内で上書きされていない。
         //3. throw内などブレークポイントが置けない行で、代入が行われている。 --> 未想定
 
-        //実行しているメソッドを取得
+        //実行しているメソッド名　を取得
         CodeElementName locateMethodElementName = vi.getLocateMethodElement();
-        MethodElement locateMethodElement;
-        try {
-            locateMethodElement = MethodElement.getMethodElementByName(locateMethodElementName);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
-        //1. 初期化の時点でその値が代入されている。
-        //変数が存在し、宣言と同時に初期化がされている時点で、これを満たすことにする
-        Optional<VariableDeclarator> ovd = locateMethodElement.findLocalVarDeclaration(variableName);
-        boolean isThereVariableDeclaration = ovd.isPresent() && ovd.get().getInitializer().isPresent();
-        //この場合、probeLineは必ずmethod内にいる。
-        if (isThereVariableDeclaration) {
-            int varDeclarationLine = ovd.get().getBegin().get().line;
-            StatementElement probeStmt = locateMethodElement.findStatementByLine(varDeclarationLine).get();
-            ProbeResult result = new ProbeResult(vi, probeStmt, locateMethodElementName);
-            //原因行で他に登場した値をセット
-            TracedValueCollection valuesAtLine = traceAllValuesAtLine(result.probeMethod(), result.probeLine(), result.probeIterateNum(), 2000);
-            result.setValuesInLine(valuesAtLine);
-            return result;
-        }
 
         //2. その変数が引数由来で、かつメソッド内で上書きされていない
         Pair<Integer, MethodElement> caller = getCallerMethod(vi.getLocateMethodElement());
