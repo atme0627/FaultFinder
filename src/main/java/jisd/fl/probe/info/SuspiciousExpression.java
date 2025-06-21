@@ -4,6 +4,8 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.ThreadReference;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
@@ -70,9 +72,24 @@ public abstract class SuspiciousExpression {
     }
 
     @Override
-    public String toString(){
-        return  "    " + locateLine + ": " + String.format("%-50s", stmt.toString()) +
-                String.format(" == %-8s", actualValue) +
-                "    At " + locateClass;
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("        // At ");
+        sb.append(locateClass);
+        sb.append("\n");
+        sb.append(String.format(
+                locateLine + ": " + "    " + String.format("%-50s", stmt.toString()) +
+                        String.format(" == %-8s", actualValue)
+        ));
+        sb.append("\n");
+        return sb.toString();
+    }
+
+    protected int getCallStackDepth(ThreadReference th){
+        try {
+            return th.frameCount();
+        } catch (IncompatibleThreadStateException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

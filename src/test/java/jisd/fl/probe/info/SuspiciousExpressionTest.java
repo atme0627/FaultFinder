@@ -1,19 +1,41 @@
 package jisd.fl.probe.info;
 
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.stmt.Statement;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.CodeElementName;
 import org.apache.commons.lang3.tuple.Pair;
+import org.hamcrest.FeatureMatcher;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SuspiciousExpressionTest {
+    /**
+     * SuspiciousExpression.toString()がexpectedと同じである要素がリスト内にあるかを確かめるMatcher
+     */
+    private static Matcher<SuspiciousExpression> hasToString(final String expected) {
+        return new FeatureMatcher<>(
+                equalTo(expected),
+                "SuspiciousReturnValue whose toString()",
+                "toString()"
+        ) {
+            @Override
+            protected String featureValueOf(SuspiciousExpression actual) {
+                return actual.toString();
+            }
+        };
+    }
 
     @Nested
     class searchSuspiciousReturns {
@@ -48,8 +70,41 @@ class SuspiciousExpressionTest {
                     suspVariable
             );
 
-            List<SuspiciousReturnValue> result = suspAssignment.searchSuspiciousReturns();
-            result.forEach(System.out::println);
+            List<SuspiciousReturnValue> actualResult = suspAssignment.searchSuspiciousReturns();
+            //actualResult.forEach(System.out::println);
+            assertThat(actualResult, hasSize(3));
+            assertThat(actualResult, hasItems(
+                hasToString(
+                "[ SUSPICIOUS RETURN VALUE ]\n" +
+                        "    getArea(){\n" +
+                        "       ...\n" +
+                        "        // At org.sample.shape.Rectangle\n" +
+                        "18:     return height * width;                             == 4.0     \n" +
+                        "\n" +
+                        "       ...\n" +
+                        "    }"
+                ),
+                hasToString(
+               "[ SUSPICIOUS RETURN VALUE ]\n" +
+                        "    getArea(){\n" +
+                        "       ...\n" +
+                        "        // At org.sample.shape.Rectangle\n" +
+                        "18:     return height * width;                             == 18.0    \n" +
+                        "\n" +
+                        "       ...\n" +
+                        "    }"
+                ),
+                hasToString(
+               "[ SUSPICIOUS RETURN VALUE ]\n" +
+                        "    getArea(){\n" +
+                        "       ...\n" +
+                        "        // At org.sample.shape.Triangle\n" +
+                        "18:     return (double) (base * height) / 2;               == 10.0    \n" +
+                        "\n" +
+                        "       ...\n" +
+                        "    }"
+                )
+            ));
         }
 
         @Test
