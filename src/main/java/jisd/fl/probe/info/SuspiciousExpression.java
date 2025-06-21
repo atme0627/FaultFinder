@@ -5,14 +5,25 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
+import jisd.debug.DebugResult;
+import jisd.debug.Debugger;
+import jisd.debug.Location;
+import jisd.debug.Point;
+import jisd.debug.value.ValueInfo;
+import jisd.fl.probe.record.TracedValueCollection;
+import jisd.fl.probe.record.TracedValuesAtLine;
+import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import javax.validation.constraints.NotNull;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.NoSuchFileException;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 //木構造にしてvisualizationをできるようにしたい
@@ -24,6 +35,9 @@ public abstract class SuspiciousExpression {
     protected final Statement stmt;
     @NotNull protected  Expression expr;
     protected final String actualValue;
+
+    static PrintStream stdOut = System.out;
+    static PrintStream stdErr = System.err;
 
     protected SuspiciousExpression(CodeElementName failedTest, CodeElementName locateClass, int locateLine, String actualValue) {
         this.failedTest = failedTest;
@@ -44,8 +58,6 @@ public abstract class SuspiciousExpression {
      */
     abstract public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException;
 
-
-    abstract public List<SuspiciousVariable> neighborSuspiciousVariables();
     abstract protected Expression extractExpr();
 
     /**
@@ -95,5 +107,85 @@ public abstract class SuspiciousExpression {
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * このSuspiciousExprで観測できる全ての変数とその値の情報をJISDを用いて取得
+     * 複数回SuspiciousExpressionが実行されているときは、最後に実行された時の値を使用する
+     * @param sleepTime
+     * @return
+     */
+    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime){
+        //デバッガ生成
+        disableStdOut("");
+        Debugger dbg = TestUtil.testDebuggerFactory(failedTest);
+        dbg.setMain(this.locateClass.getFullyQualifiedClassName());
+        Optional<Point> watchPointAtLine = dbg.watch(this.locateLine);
+
+        //locateLineで観測できる全ての変数を取得
+        try {
+            dbg.run(sleepTime);
+        } catch (VMDisconnectedException | InvalidStackFrameException ignored) {
+        }
+        enableStdOut();
+
+        Map<String, DebugResult> drs = watchPointAtLine.get().getResults();
+
+        //SuspExpr内で使用されている変数の情報のみ取り出す
+        //SuspiciousVariableがActualValueをとっている瞬間のものを取得するのは面倒なため
+        //SuspExprが複数回実行されているときは最後に観測された値を採用する。
+        List<ValueInfo> valuesAtLine = drs.entrySet().stream()
+                .map(Map.Entry::getValue)
+                .map(DebugResult::getValues)
+                .map(vis -> vis.get(vis.size() - 1))
+                .collect(Collectors.toList());
+
+        //TODO: Locationに依存しない形にしたい
+        Location loc = drs.values().stream().findFirst().get().getLocation();
+        TracedValueCollection watchedValues = new TracedValuesAtLine(valuesAtLine, loc);
+        dbg.exit();
+        dbg.clearResults();
+        enableStdOut();
+        return watchedValues;
+    }
+
+    /**
+     * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得
+     * @param sleepTime
+     * @return
+     */
+    public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime){
+        //SuspExprで観測できる全ての変数
+        TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime);
+
+        //SuspExpr内で使用されている変数を静的解析により取得
+        List<String> neighborVariableNames = extractNeighborVariableNames();
+
+        //TODO: 今の実装だと配列のフィルタリングがうまくいかない
+        return tracedNeighborValue.getAll().stream()
+                .filter(t -> neighborVariableNames.contains(t.variableName))
+                .map(t -> new SuspiciousVariable(
+                        failedTest,
+                        locateClass.getFullyQualifiedMethodName(),
+                        t.variableName,
+                        t.value,
+                        true,
+                        t.variableName.contains("[")
+                )).collect(Collectors.toList());
+    }
+
+    protected void disableStdOut(String msg){
+        enableStdOut();
+        if(!msg.isEmpty()) System.out.println(msg);
+        PrintStream nop = new PrintStream(new OutputStream() {
+            public void write(int b) { /* noop */ }
+        });
+        System.setOut(nop);
+        System.setErr(nop);
+    }
+
+    protected void enableStdOut(){
+        System.setOut(stdOut);
+        System.setErr(stdErr);
     }
 }

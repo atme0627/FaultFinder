@@ -1,9 +1,7 @@
 package jisd.fl.probe.info;
 
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.VariableDeclarationExpr;
+import com.github.javaparser.ast.expr.*;
 import com.sun.jdi.*;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
@@ -17,6 +15,9 @@ import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 public class SuspiciousAssignment extends SuspiciousExpression {
     //左辺で値が代入されている変数の情報
@@ -176,21 +177,42 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         }
     }
 
-    @Override
-    public List<SuspiciousVariable> neighborSuspiciousVariables() {
-        return List.of();
+    /**
+     * exprから次に探索の対象となる変数の名前を取得する。
+     * exprの演算に直接用いられている変数のみが対象で、引数やメソッド呼び出しの対象となる変数は除外する。
+     * @return 変数名のリスト
+     */
+    protected List<String> extractNeighborVariableNames(){
+        return expr.findAll(NameExpr.class).stream()
+                //引数やメソッド呼び出しに用いられる変数を除外
+                .filter(nameExpr -> nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
+                .map(NameExpr::toString)
+                //このSuspExprが原因となっている変数を除外
+                .filter(n -> !n.equals(assignTarget.getSimpleVariableName()))
+                .collect(Collectors.toList());
     }
 
     @Override
     protected Expression extractExpr() {
+        return extractExpr(true);
+    }
+    protected Expression extractExpr(boolean deleteParentNode) {
         try {
+            Expression result = null;
             Optional<AssignExpr> assignExpr = stmt.findFirst(AssignExpr.class);
-            if(assignExpr.isPresent()) return assignExpr.get().getValue();
+            if(assignExpr.isPresent()) result = assignExpr.get().getValue();
 
             VariableDeclarationExpr vdExpr = stmt.findFirst(VariableDeclarationExpr.class).orElseThrow();
             //代入文がひとつであると仮定
             VariableDeclarator var = vdExpr.getVariable(0);
-            return var.getInitializer().orElseThrow();
+            result =  var.getInitializer().orElseThrow();
+
+            if(!deleteParentNode) return result;
+            result = result.clone();
+            //親ノードの情報を消す
+            result.setParentNode(null);
+            return result;
+
         } catch (NoSuchElementException e){
             throw new RuntimeException("Cannot extract expression from [" + locateClass + ":" + locateLine + "].");
         }

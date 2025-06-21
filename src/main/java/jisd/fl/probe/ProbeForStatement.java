@@ -50,16 +50,10 @@ public class ProbeForStatement extends AbstractProbe{
             for (SuspiciousVariable target : probingTargets) {
                 printProbeExInfoHeader(target, depth);
 
-                Optional<SuspiciousExpression> ose = probing(sleepTime, target);
-                ProbeResult pr = ProbeResult.convertSuspExpr(ose.orElseThrow(() -> new RuntimeException("Cause line is not found.")));
+                SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
+                List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime);
 
-                if(!pr.isCausedByArgument()){
-                    //原因行で他に登場した値をセット
-                    TracedValueCollection valuesAtLine = traceAllValuesAtLine(pr.probeMethod(), pr.probeLine(), 0, 2000);
-                    pr.setValuesInLine(valuesAtLine);
-                }
-
-                List<SuspiciousVariable> newTargets = searchNextProbeTargets(pr);
+                ProbeResult pr = ProbeResult.convertSuspExpr(suspExpr);
                 newTargets.addAll(searchCalleeProbeTargets(pr));
                 result.addElement(pr.getProbeMethodName().split("#")[0], pr.probeLine(), 0, 1);
                 printProbeExInfoFooter(pr, newTargets);
