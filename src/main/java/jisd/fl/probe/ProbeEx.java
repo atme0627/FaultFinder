@@ -45,7 +45,7 @@ public class ProbeEx extends AbstractProbe {
                 printProbeExInfoHeader(target, depth);
 
                 SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
-                List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime);
+                List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
 
                 ProbeResult pr = ProbeResult.convertSuspExpr(suspExpr);
 

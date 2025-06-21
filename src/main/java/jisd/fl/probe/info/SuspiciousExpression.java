@@ -13,6 +13,7 @@ import jisd.debug.Debugger;
 import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
+import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
 import jisd.fl.util.TestUtil;
@@ -157,7 +158,7 @@ public abstract class SuspiciousExpression {
      * @param sleepTime
      * @return
      */
-    public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime){
+    public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable){
         //SuspExprで観測できる全ての変数
         TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime);
 
@@ -166,15 +167,14 @@ public abstract class SuspiciousExpression {
 
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         return tracedNeighborValue.getAll().stream()
-                .filter(t -> neighborVariableNames.contains(t.variableName))
+                .filter(t -> includeIndirectUsedVariable || neighborVariableNames.contains(t.variableName))
                 .map(t -> new SuspiciousVariable(
                         failedTest,
                         locateClass.getFullyQualifiedMethodName(),
                         t.variableName,
                         t.value,
                         true,
-                        t.variableName.contains("["),
-                        null
+                        t.variableName.contains("[")
                 )).collect(Collectors.toList());
     }
 

@@ -22,7 +22,6 @@ public class ProbeForStatement extends AbstractProbe{
     public ProbeExResult run(int sleepTime) {
         ProbeExResult result = new ProbeExResult();
         SuspiciousExpression root = null;
-        SuspiciousExpression nowAnalyzing = null;
 
         SuspiciousVariable firstTarget = assertInfo.getVariableInfo();
         List<SuspiciousVariable> probingTargets = new ArrayList<>();
@@ -37,7 +36,7 @@ public class ProbeForStatement extends AbstractProbe{
                 printProbeExInfoHeader(target, depth);
 
                 SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
-                List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime);
+                List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
 
                 if(root == null) {
                     root = suspExpr;
