@@ -163,8 +163,10 @@ public abstract class SuspiciousExpression {
         TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime);
         //SuspExpr内で使用されている変数を静的解析により取得
         List<String> neighborVariableNames = extractNeighborVariableNames(includeIndirectUsedVariable);
+        
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
-        return tracedNeighborValue.getAll().stream()
+        List<SuspiciousVariable> result =
+                tracedNeighborValue.getAll().stream()
                 .filter(t -> neighborVariableNames.contains(t.variableName))
                 .filter(t -> !t.isReference)
                 .map(t -> new SuspiciousVariable(
@@ -175,6 +177,9 @@ public abstract class SuspiciousExpression {
                         true,
                         t.variableName.contains("[")
                 )).collect(Collectors.toList());
+
+        result.forEach(sv -> sv.setParent(this));
+        return result;
     }
 
     public void addChild(SuspiciousExpression ch){

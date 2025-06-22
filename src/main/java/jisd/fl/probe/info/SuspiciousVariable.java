@@ -15,7 +15,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
     private final String actualValue;
 
     //木構造でスライスを表すため、このSuspVarの親の参照を保持する。
-    private CodeElementName parent = null;
+    private SuspiciousExpression parent = null;
 
     //locateはローカル変数の場合はメソッド名まで(フルネーム、シグニチャあり)
     //フィールドの場合はクラス名まで
@@ -179,11 +179,11 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
         return failedTest;
     }
 
-    public CodeElementName getParent() {
+    public SuspiciousExpression getParent() {
         return parent;
     }
 
-    public void setParent(CodeElementName parent) {
+    public void setParent(SuspiciousExpression parent) {
         this.parent = parent;
     }
 }

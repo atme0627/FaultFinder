@@ -12,6 +12,8 @@ import java.util.*;
 public class ProbeForStatement extends AbstractProbe{
     Set<SuspiciousVariable> probedValue;
     Set<String> targetClasses;
+    SuspiciousExpression suspiciousExprTreeRoot = null;
+
 
     public ProbeForStatement(FailedAssertInfo assertInfo) {
         super(assertInfo);
@@ -19,10 +21,8 @@ public class ProbeForStatement extends AbstractProbe{
         targetClasses = StaticAnalyzer.getClassNames();
     }
 
-    public ProbeExResult run(int sleepTime) {
-        ProbeExResult result = new ProbeExResult();
-        SuspiciousExpression root = null;
-
+    //調査結果の木構造のルートノードに対応するSuspExprを返す
+    public SuspiciousExpression run(int sleepTime) {
         SuspiciousVariable firstTarget = assertInfo.getVariableInfo();
         List<SuspiciousVariable> probingTargets = new ArrayList<>();
         List<SuspiciousVariable> nextTargets = new ArrayList<>();
@@ -42,14 +42,9 @@ public class ProbeForStatement extends AbstractProbe{
                 nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
                 nextTargets.removeAll(investigatedTargets);
 
-                if(root == null) {
-                    root = suspExpr;
-                }
-                else {
-                }
+                addTreeElement(suspExpr, target);
 
                 ProbeResult pr = ProbeResult.convertSuspExpr(suspExpr);
-                result.addElement(pr.getProbeMethodName().split("#")[0], pr.probeLine(), 0, 1);
                 printProbeExInfoFooter(pr, nextTargets);
                 isArgument = pr.isCausedByArgument();
             }
@@ -57,7 +52,7 @@ public class ProbeForStatement extends AbstractProbe{
             probingTargets = nextTargets;
             nextTargets = new ArrayList<>();
         }
-        return result;
+        return suspiciousExprTreeRoot;
     }
 
     @Override
@@ -90,5 +85,16 @@ public class ProbeForStatement extends AbstractProbe{
         printProbeStatement(pr);
         System.out.println(" [NEXT TARGET]");
         nextTarget.forEach(v -> System.out.println(v.toString()));
+    }
+
+    private void addTreeElement(SuspiciousExpression suspExpr, SuspiciousVariable targetSuspVar){
+        if(suspiciousExprTreeRoot == null){
+            suspiciousExprTreeRoot = suspExpr;
+            return;
+        }
+        if(targetSuspVar.getParent() == null){
+            System.out.println("Something is wrong");
+        }
+        targetSuspVar.getParent().addChild(suspExpr);
     }
 }
