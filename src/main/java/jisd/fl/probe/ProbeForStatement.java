@@ -105,6 +105,9 @@ public class ProbeForStatement extends AbstractProbe{
         System.out.println("============================================================================================================");
         System.out.println(" Probe For STATEMENT      DEPTH: " + depth);
         System.out.println(target.toString());
+        if(target.getParent() != null) {
+            System.out.println(target.getParent().toString());
+        }
         System.out.println("============================================================================================================");
     }
 
