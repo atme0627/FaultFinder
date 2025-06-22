@@ -163,7 +163,7 @@ class SuspiciousExpressionTest {
                     locateLine,
                     "18.0",
                     new CodeElementName("max"),
-                    1
+                    1,-1
             );
 
             List<SuspiciousReturnValue> result = suspArg.searchSuspiciousReturns();

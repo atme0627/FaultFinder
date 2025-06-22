@@ -52,8 +52,11 @@ public class EnhancedDebugger {
         //起動後すぐにsuspendされるはず
         try {
             return connector.launch(cArgs);
-        } catch (IOException | IllegalConnectorArgumentsException | VMStartException e) {
+        } catch (IOException | IllegalConnectorArgumentsException e ) {
             throw new RuntimeException(e);
+        }
+        catch (VMStartException e){
+            return createVM(main, options);
         }
     }
 
