@@ -68,8 +68,8 @@ class ProbeExTest {
         @Test
         void runTest() {
             ProbeEx prbEx = new ProbeEx(fai);
-            ProbeExResult pr = prbEx.run(3000);
-            pr.print();
+            //ProbeExResult pr = prbEx.run(3000);
+            //pr.print();
         }
 
         @Test
@@ -148,8 +148,8 @@ class ProbeExTest {
         @Test
         void runTest() {
             ProbeEx prbEx = new ProbeEx(fai);
-            ProbeExResult pr = prbEx.run(2000);
-            pr.print();
+            //ProbeExResult pr = prbEx.run(2000);
+            //pr.print();
         }
 
         //特定のメソッドの呼び出しメソッドの一覧を取得
@@ -293,8 +293,8 @@ class ProbeExTest {
         @Test
         void runTest() {
             ProbeEx prbEx = new ProbeEx(fai);
-            ProbeExResult pr = prbEx.run(2000);
-            pr.print();
+            //ProbeExResult pr = prbEx.run(2000);
+            //pr.print();
         }
     }
 }

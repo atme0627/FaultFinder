@@ -8,7 +8,6 @@ import com.sun.jdi.*;
 import jisd.debug.*;
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.*;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
@@ -24,11 +23,13 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractProbe {
 
-    FailedAssertInfo assertInfo;
+    SuspiciousVariable firstTarget;
+    CodeElementName failedTest;
     Debugger dbg;
 
-    public AbstractProbe(FailedAssertInfo assertInfo) {
-        this.assertInfo = assertInfo;
+    public AbstractProbe(SuspiciousVariable target) {
+        this.firstTarget = target;
+        this.failedTest = firstTarget.getFailedTest();
         this.dbg = createDebugger();
     }
 
@@ -331,7 +332,7 @@ public abstract class AbstractProbe {
 
 
     protected Debugger createDebugger() {
-        return createDebugger(assertInfo.getTestMethodName());
+        return createDebugger(failedTest.getFullyQualifiedMethodName());
     }
 
     protected  Debugger createDebugger(String targetMethod){
@@ -362,7 +363,7 @@ public abstract class AbstractProbe {
 
 
     public Set<String> getCalleeMethods(CodeElementName targetClass, int line){
-        String main = TestUtil.getJVMMain(new CodeElementName(assertInfo.getTestMethodName()));
+        String main = TestUtil.getJVMMain(failedTest);
         String options = TestUtil.getJVMOption();
         EnhancedDebugger edbg = new EnhancedDebugger(main, options);
         //return edbg.getCalleeMethods(targetClass.getFullyQualifiedClassName(), line);

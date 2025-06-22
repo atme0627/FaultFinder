@@ -5,6 +5,7 @@ import jisd.fl.probe.ProbeEx;
 import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
+import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.FileUtil;
 //import org.junit.jupiter.api.Test;
@@ -68,14 +69,13 @@ class ProbeExTest {
     void runTest() {
         Defects4jUtil.changeTargetVersion(project, bugId);
         ProbeEx prbEx = new ProbeEx(fai);
-        ProbeExResult pr = prbEx.run(5000);
-        pr.print();
-        ;
+        SuspiciousExpression root = prbEx.run(5000);
+        //pr.print();
 
         if(!FileUtil.isExist("src/main/resources/probeExResult/Math",  project + bugId + "_buggy")){
             FileUtil.createDirectory("src/main/resources/probeExResult/Math/" +  project + bugId + "_buggy");
         }
-        pr.save(dir, fileName);
+        //pr.save(dir, fileName);
         Path src = Paths.get("src/test/java/jisd/fl/probe/ProbeExTest.java");
         Path target = Paths.get(dir + "/" + fileName + ".java_data");
         try {

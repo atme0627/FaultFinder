@@ -145,8 +145,9 @@ public class FaultFinder {
         ProbeEx prbEx = new ProbeEx(fai);
         ProbeExResult probeExResult = null;
 
-        probeExResult = prbEx.run(sleepTime);
-        probeEx(probeExResult);
+        //TODO: SuspiciousStatementに変換
+        //probeExResult = prbEx.run(sleepTime);
+        //probeEx(probeExResult);
     }
 
     public void probeEx(ProbeExResult probeExResult){

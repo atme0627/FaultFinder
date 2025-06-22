@@ -4,7 +4,6 @@ import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.CodeElementName;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +18,7 @@ class ProbeForStatementTest {
 
     @Test
     void runTest() {
-        SuspiciousVariable vi = new SuspiciousVariable(
+        SuspiciousVariable target = new SuspiciousVariable(
                 new CodeElementName("org.sample.CalcTest#methodCall1()"),
                 "org.sample.util.Calc#methodCalling(int, int)",
                 "result",
@@ -28,8 +27,7 @@ class ProbeForStatementTest {
                 false
         );
 
-        FailedAssertInfo fai = new FailedAssertEqualInfo("org.sample.CalcTest#methodCall1()", vi);
-        ProbeForStatement pfs = new ProbeForStatement(fai);
+        ProbeForStatement pfs = new ProbeForStatement(target);
         SuspiciousExpression treeRoot = pfs.run(2000);
     }
 }

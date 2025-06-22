@@ -13,75 +13,49 @@ import java.util.*;
 
 //値のStringを比較して一致かどうかを判定
 //理想的には、"==" と同じ方法で判定したいが、型の問題で難しそう
-public class ProbeEx extends AbstractProbe {
+
+/**
+ * 卒論での実装
+ */
+public class ProbeEx extends ProbeForStatement {
     Set<SuspiciousVariable> probedValue;
     Set<String> targetClasses;
+    SuspiciousExpression suspiciousExprTreeRoot = null;
 
     public ProbeEx(FailedAssertInfo assertInfo) {
-        super(assertInfo);
+        super(assertInfo.getVariableInfo());
         probedValue = new HashSet<>();
         targetClasses = StaticAnalyzer.getClassNames();
     }
 
-    public ProbeExResult run(int sleepTime) {
-        ProbeExResult result = new ProbeExResult();
-        SuspiciousVariable firstTarget = assertInfo.getVariableInfo();
+    //調査結果の木構造のルートノードに対応するSuspExprを返す
+    public SuspiciousExpression run(int sleepTime) {
         List<SuspiciousVariable> probingTargets = new ArrayList<>();
         List<SuspiciousVariable> nextTargets = new ArrayList<>();
-        probingTargets.add(firstTarget);
-        boolean isArgument = false;
+        List<SuspiciousVariable> investigatedTargets = new ArrayList<>();
 
-        //初めのprobe対象変数がローカル変数の場合、変数が所属するmethodをdepth1でマーキングメソッドに含める。
-        if(!firstTarget.isField()){
-            printProbeInfoIfLocal(firstTarget);
-            result.addElement(firstTarget.getLocateMethod(true), 1, 1);
-        }
+        probingTargets.add(firstTarget);
+        investigatedTargets.add(firstTarget);
 
         int depth = 0;
         while(!probingTargets.isEmpty()) {
-            if(!isArgument) depth += 1;
-            if(depth > 10) break;
             for (SuspiciousVariable target : probingTargets) {
                 printProbeExInfoHeader(target, depth);
-
                 SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
-                List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
 
-                ProbeResult pr = ProbeResult.convertSuspExpr(suspExpr);
+                nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
+                nextTargets.removeAll(investigatedTargets);
 
-                List<String> markingMethods = searchMarkingMethods(pr, assertInfo.getTestMethodName());
-                printProbeExInfoFooter(pr, newTargets, markingMethods);
-
-                result.addAll(markingMethods, depth);
-                nextTargets.addAll(newTargets);
-                isArgument = pr.isCausedByArgument();
+                addTreeElement(suspExpr, target);
+                printProbeExInfoFooter(suspExpr, nextTargets);
             }
 
             probingTargets = nextTargets;
             nextTargets = new ArrayList<>();
         }
-        return result;
+        return suspiciousExprTreeRoot;
     }
 
-    protected Optional<SuspiciousExpression> probing(int sleepTime, SuspiciousVariable suspVar) {
-        if(isProbed(suspVar)) return Optional.empty();
-        addProbedValue(suspVar);
-        Optional<SuspiciousExpression> result = super.probing(sleepTime, suspVar);
-        int loop = 0;
-        int LOOP_LIMIT = 5;
-        while(result.isEmpty()) {
-            loop++;
-            System.err.println("[Probe] Cannot get enough information.");
-            System.err.println("[Probe] Retry to collect information.");
-            sleepTime += 2000;
-            result = super.probing(sleepTime, suspVar);
-            if (loop == LOOP_LIMIT) {
-                System.err.println("[Probe] Failed to collect information.");
-                return Optional.empty();
-            }
-        }
-        return result;
-    }
 
     //probeLine内で呼び出されたメソッド群を返す
     public List<String> searchMarkingMethods(ProbeResult pr, String testMethod){
@@ -106,41 +80,4 @@ public class ProbeEx extends AbstractProbe {
         }
         return markingMethods;
     }
-
-    private boolean isProbed(SuspiciousVariable vi){
-        for(SuspiciousVariable e : probedValue){
-            if(vi.equals(e)) return true;
-        }
-        return false;
-    }
-
-    private void addProbedValue(SuspiciousVariable vi){
-        probedValue.add(vi);
-    }
-
-    private void printProbeInfoIfLocal(SuspiciousVariable firstTarget) {
-        System.out.println("============================================================================================================");
-        System.out.println(" Probe Ex     DEPTH: 1");
-        System.out.println(" [MARKING METHODS] " + firstTarget.getLocateMethod(true));
-    }
-
-    private void printProbeExInfoHeader(SuspiciousVariable target, int depth){
-        System.out.println("============================================================================================================");
-        System.out.println(" Probe Ex     DEPTH: " + depth);
-        System.out.println(target.toString());
-        System.out.println("============================================================================================================");
-    }
-
-    private void printProbeExInfoFooter(ProbeResult pr, List<SuspiciousVariable> nextTarget, List<String> markingMethods){
-        printProbeStatement(pr);
-        System.out.println(" [MARKING METHODS]");
-        for(String m : markingMethods){
-            System.out.println(" " + m);
-        }
-        System.out.println(" [NEXT TARGET]");
-        for(SuspiciousVariable vi : nextTarget){
-            System.out.println(" [VARIABLE] " + vi.getVariableName(true, true) + "    [ACTUAL] " + vi.getActualValue());
-        }
-    }
-
 }
