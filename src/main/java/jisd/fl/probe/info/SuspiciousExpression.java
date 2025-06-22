@@ -16,6 +16,7 @@ import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
+import jisd.fl.util.QuietStdOut;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
@@ -40,8 +41,8 @@ public abstract class SuspiciousExpression {
     //保持するのは自分の子要素のみ
     List<SuspiciousExpression> childSuspExprs = new ArrayList<>();
 
-    static PrintStream stdOut = System.out;
-    static PrintStream stdErr = System.err;
+    final PrintStream stdOut = System.out;
+    final PrintStream stdErr = System.err;
 
     protected SuspiciousExpression(CodeElementName failedTest, CodeElementName locateClass, int locateLine, String actualValue) {
         this.failedTest = failedTest;
@@ -120,37 +121,42 @@ public abstract class SuspiciousExpression {
      * @return
      */
     protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime){
-        //デバッガ生成
-        disableStdOut("");
-        Debugger dbg = TestUtil.testDebuggerFactory(failedTest);
-        dbg.setMain(this.locateClass.getFullyQualifiedClassName());
-        Optional<Point> watchPointAtLine = dbg.watch(this.locateLine);
+        try (QuietStdOut q = QuietStdOut.suppress()) {
+            System.out.println("[[[TEST 1]]]");
 
-        //locateLineで観測できる全ての変数を取得
-        try {
-            dbg.run(sleepTime);
-        } catch (VMDisconnectedException | InvalidStackFrameException ignored) {
+            //デバッガ生成
+            Debugger dbg = TestUtil.testDebuggerFactory(failedTest);
+            dbg.setMain(this.locateClass.getFullyQualifiedClassName());
+            Optional<Point> watchPointAtLine = dbg.watch(this.locateLine);
+            System.out.println("[[[TEST 2]]]");
+
+            //locateLineで観測できる全ての変数を取得
+            try {
+                dbg.run(sleepTime);
+            } catch (VMDisconnectedException | InvalidStackFrameException ignored) {
+            }
+            System.out.println("[[[TEST 3]]]");
+            System.out.println("[[[TEST 4]]]");
+
+            Map<String, DebugResult> drs = watchPointAtLine.get().getResults();
+
+            //SuspExpr内で使用されている変数の情報のみ取り出す
+            //SuspiciousVariableがActualValueをとっている瞬間のものを取得するのは面倒なため
+            //SuspExprが複数回実行されているときは最後に観測された値を採用する。
+            List<ValueInfo> valuesAtLine = drs.entrySet().stream()
+                    .map(Map.Entry::getValue)
+                    .map(DebugResult::getValues)
+                    .map(vis -> vis.get(vis.size() - 1))
+                    .collect(Collectors.toList());
+
+            //TODO: Locationに依存しない形にしたい
+            Location loc = drs.values().stream().findFirst().get().getLocation();
+            TracedValueCollection watchedValues = new TracedValuesAtLine(valuesAtLine, loc);
+            dbg.exit();
+            dbg.clearResults();
+            System.out.println("[[[TEST 5]]]");
+            return watchedValues;
         }
-        enableStdOut();
-
-        Map<String, DebugResult> drs = watchPointAtLine.get().getResults();
-
-        //SuspExpr内で使用されている変数の情報のみ取り出す
-        //SuspiciousVariableがActualValueをとっている瞬間のものを取得するのは面倒なため
-        //SuspExprが複数回実行されているときは最後に観測された値を採用する。
-        List<ValueInfo> valuesAtLine = drs.entrySet().stream()
-                .map(Map.Entry::getValue)
-                .map(DebugResult::getValues)
-                .map(vis -> vis.get(vis.size() - 1))
-                .collect(Collectors.toList());
-
-        //TODO: Locationに依存しない形にしたい
-        Location loc = drs.values().stream().findFirst().get().getLocation();
-        TracedValueCollection watchedValues = new TracedValuesAtLine(valuesAtLine, loc);
-        dbg.exit();
-        dbg.clearResults();
-        enableStdOut();
-        return watchedValues;
     }
 
     /**
@@ -161,10 +167,8 @@ public abstract class SuspiciousExpression {
     public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable){
         //SuspExprで観測できる全ての変数
         TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime);
-
         //SuspExpr内で使用されている変数を静的解析により取得
         List<String> neighborVariableNames = extractNeighborVariableNames();
-
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         return tracedNeighborValue.getAll().stream()
                 .filter(t -> includeIndirectUsedVariable || neighborVariableNames.contains(t.variableName))

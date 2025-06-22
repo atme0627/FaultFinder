@@ -14,6 +14,7 @@ import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
 import jisd.fl.probe.record.TracedValuesOfTarget;
+import jisd.fl.util.QuietStdOut;
 import jisd.fl.util.analyze.*;
 import jisd.fl.util.TestUtil;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,8 +29,8 @@ public abstract class AbstractProbe {
 
     FailedAssertInfo assertInfo;
     Debugger dbg;
-    static PrintStream stdOut = System.out;
-    static PrintStream stdErr = System.err;
+    final PrintStream stdOut = System.out;
+    final PrintStream stdErr = System.err;
 
     public AbstractProbe(FailedAssertInfo assertInfo) {
         this.assertInfo = assertInfo;
@@ -45,70 +46,72 @@ public abstract class AbstractProbe {
      */
     protected Optional<SuspiciousExpression> probing(int sleepTime, SuspiciousVariable suspVar){
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
-        disableStdOut("    >> Probe Info: Running debugger and extract watched info.");
+        System.out.println("    >> Probe Info: Running debugger and extract watched info.");
         TracedValueCollection tracedValues = traceValuesOfTarget(suspVar, sleepTime);
-        enableStdOut();
+
         tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
         List<TracedValue> watchedValues = tracedValues.filterByVariableName(suspVar.getVariableName(true, true));
-        //disableStdOut("    >> Probe Info: Searching probe line.");
+
+        System.out.println("    >> Probe Info: Searching probe line.");
         Optional<SuspiciousExpression> result = searchProbeLine(watchedValues, suspVar);
-        enableStdOut();
         return result;
     }
 
     //variableInfoに指定された変数のみを観測し、各行で取っている値を記録する
     protected TracedValueCollection traceValuesOfTarget(SuspiciousVariable target, int sleepTime){
-        List<Integer> canSetLines = StaticAnalyzer.getCanSetLine(target);
-        String dbgMain = target.getLocateClass();
-        dbg = createDebugger();
-        String[] targetValueName = new String[]{target.getSimpleVariableName()};
-        //set watchPoint
-        dbg.setMain(dbgMain);
-        List<Optional<Point>> watchPoints =
-                canSetLines.stream()
-                        .map(l -> dbg.watch(l, targetValueName))
-                        .collect(Collectors.toList());
+        //disable output
+        try (QuietStdOut q = QuietStdOut.suppress()) {
+            List<Integer> canSetLines = StaticAnalyzer.getCanSetLine(target);
+            String dbgMain = target.getLocateClass();
+            dbg = createDebugger();
+            String[] targetValueName = new String[]{target.getSimpleVariableName()};
+            //set watchPoint
+            dbg.setMain(dbgMain);
+            List<Optional<Point>> watchPoints =
+                    canSetLines.stream()
+                            .map(l -> dbg.watch(l, targetValueName))
+                            .collect(Collectors.toList());
 
-        //run Test debugger
-        try {
-            dbg.run(sleepTime);
-        } catch (VMDisconnectedException | InvalidStackFrameException e) {
-            //throw new RuntimeException(e);
-            System.err.println(e);
-        }
-        catch (NullPointerException ignored){
-        }
-
-        //各行でのデバッグ情報
-        List<DebugResult> drs = watchPoints.stream()
-                //WatchPointからDebugResultを得る
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(wp -> wp.getResults(targetValueName[0]))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
-
-        //各行での値の情報 (Location情報なし)
-        List<ValueInfo> valuesOfTarget = drs.stream()
-                .map(DebugResult::getValues)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-
-        //LocalDateTime --> Locationのマップ
-        Map<LocalDateTime, Location> locationAtTime = new HashMap<>();
-        for(DebugResult dr : drs){
-            Location loc = dr.getLocation();
-            for(ValueInfo vi : dr.getValues()){
-                locationAtTime.put(vi.getCreatedAt(), loc);
+            //run Test debugger
+            try {
+                dbg.run(sleepTime);
+            } catch (VMDisconnectedException | InvalidStackFrameException e) {
+                //throw new RuntimeException(e);
+                System.err.println(e);
+            } catch (NullPointerException ignored) {
             }
-        }
 
-        TracedValueCollection watchedValues = new TracedValuesOfTarget(target, valuesOfTarget, locationAtTime);
-        dbg.exit();
-        dbg.clearResults();
-        return watchedValues;
+            //各行でのデバッグ情報
+            List<DebugResult> drs = watchPoints.stream()
+                    //WatchPointからDebugResultを得る
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(wp -> wp.getResults(targetValueName[0]))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toList());
+
+            //各行での値の情報 (Location情報なし)
+            List<ValueInfo> valuesOfTarget = drs.stream()
+                    .map(DebugResult::getValues)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
+
+            //LocalDateTime --> Locationのマップ
+            Map<LocalDateTime, Location> locationAtTime = new HashMap<>();
+            for (DebugResult dr : drs) {
+                Location loc = dr.getLocation();
+                for (ValueInfo vi : dr.getValues()) {
+                    locationAtTime.put(vi.getCreatedAt(), loc);
+                }
+            }
+
+            TracedValueCollection watchedValues = new TracedValuesOfTarget(target, valuesOfTarget, locationAtTime);
+            dbg.exit();
+            dbg.clearResults();
+            return watchedValues;
+        }
     }
 
     //viの原因行で、全ての変数が取っている値を記録する
@@ -155,57 +158,58 @@ public abstract class AbstractProbe {
      * @return
      */
     private Optional<SuspiciousExpression> searchProbeLine(List<TracedValue> tracedValues, SuspiciousVariable vi){
+        try (QuietStdOut q = QuietStdOut.suppress()) {
+            //対象の変数に値の変化が起きている行の特定
+            List<Integer> valueChangingLines = valueChangingLine(vi);
 
-        //対象の変数に値の変化が起きている行の特定
-        List<Integer> valueChangingLines = valueChangingLine(vi);
+            /* 1a. すでに定義されていた変数に代入が行われたパターン */
+            //代入の実行後にactualの値に変化している行の特定(ない場合あり)
+            List<TracedValue> changeToActualLines = valueChangedToActualLine(tracedValues, valueChangingLines, vi.getActualValue());
+            //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
+            if (!changeToActualLines.isEmpty()) {
+                //原因行
+                TracedValue causeLine = changeToActualLines.get(changeToActualLines.size() - 1);
+                int causeLineNumber = causeLine.lineNumber;
+                return Optional.of(resultIfAssigned(causeLineNumber, vi));
+            }
 
-        /* 1a. すでに定義されていた変数に代入が行われたパターン */
-        //代入の実行後にactualの値に変化している行の特定(ない場合あり)
-        List<TracedValue> changeToActualLines = valueChangedToActualLine(tracedValues, valueChangingLines, vi.getActualValue());
-        //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
-        if(!changeToActualLines.isEmpty()) {
-            //原因行
-            TracedValue causeLine = changeToActualLines.get(changeToActualLines.size() - 1);
-            int causeLineNumber = causeLine.lineNumber;
-            return Optional.of(resultIfAssigned(causeLineNumber, vi));
-        }
+            //fieldは代入以外での値の変更を特定できない
+            if (vi.isField()) {
+                System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getSimpleVariableName());
+                return Optional.empty();
+            }
 
-        //fieldは代入以外での値の変更を特定できない
-        if(vi.isField()){
-            System.err.println("Cannot find probe line of field. [FIELD NAME] " + vi.getSimpleVariableName());
+            /* 1b. 宣言と同時に行われた初期化によってactualの値を取るパターン */
+            //初期化の時点でその値が代入されている
+            //変数が存在し、宣言と同時に初期化がされている時点で、これを満たすことにする
+
+            //実行しているメソッドを取得
+            MethodElement locateMethodElement;
+            try {
+                locateMethodElement = MethodElement.getMethodElementByName(vi.getLocateMethodElement());
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+
+            //targetVariableのVariableDeclaratorを特定
+            Optional<VariableDeclarator> ovd = locateMethodElement.findLocalVarDeclaration(vi.getSimpleVariableName());
+            boolean isThereVariableDeclaration = ovd.isPresent() && ovd.get().getInitializer().isPresent();
+            if (isThereVariableDeclaration) {
+                int varDeclarationLine = ovd.get().getBegin().get().line;
+                return Optional.of(resultIfAssigned(varDeclarationLine, vi));
+            }
+
+            /* 2. その変数が引数由来で、かつメソッド内で上書きされていないパターン */
+            //初めて変数が観測された時点ですでにactualの値を取っている
+            TracedValue firstMatchedLine = tracedValues.get(0);
+            if (vi.getActualValue().equals(firstMatchedLine.value)) {
+                return Optional.of(resultIfNotAssigned(vi));
+            }
+
+            /* 3. throw内などブレークポイントが置けない行で、代入が行われているパターン */
+            System.err.println("There is no value which same to actual.");
             return Optional.empty();
         }
-
-        /* 1b. 宣言と同時に行われた初期化によってactualの値を取るパターン */
-        //初期化の時点でその値が代入されている
-        //変数が存在し、宣言と同時に初期化がされている時点で、これを満たすことにする
-
-        //実行しているメソッドを取得
-        MethodElement locateMethodElement;
-        try {
-            locateMethodElement = MethodElement.getMethodElementByName(vi.getLocateMethodElement());
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
-        //targetVariableのVariableDeclaratorを特定
-        Optional<VariableDeclarator> ovd = locateMethodElement.findLocalVarDeclaration(vi.getSimpleVariableName());
-        boolean isThereVariableDeclaration = ovd.isPresent() && ovd.get().getInitializer().isPresent();
-        if (isThereVariableDeclaration) {
-            int varDeclarationLine = ovd.get().getBegin().get().line;
-            return Optional.of(resultIfAssigned(varDeclarationLine, vi));
-        }
-
-        /* 2. その変数が引数由来で、かつメソッド内で上書きされていないパターン */
-        //初めて変数が観測された時点ですでにactualの値を取っている
-        TracedValue firstMatchedLine = tracedValues.get(0);
-        if (vi.getActualValue().equals(firstMatchedLine.value)) {
-            return Optional.of(resultIfNotAssigned(vi));
-        }
-
-        /* 3. throw内などブレークポイントが置けない行で、代入が行われているパターン */
-        System.err.println("There is no value which same to actual.");
-        return Optional.empty();
     }
 
     //TODO: refactor
