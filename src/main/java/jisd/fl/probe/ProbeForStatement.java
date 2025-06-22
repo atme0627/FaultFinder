@@ -1,6 +1,7 @@
 package jisd.fl.probe;
 
 import jisd.fl.probe.info.SuspiciousExpression;
+import jisd.fl.probe.info.SuspiciousReturnValue;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.analyze.*;
 
@@ -30,10 +31,23 @@ public class ProbeForStatement extends AbstractProbe{
         while(!probingTargets.isEmpty()) {
             SuspiciousVariable target = probingTargets.removeFirst();
             printProbeExInfoHeader(target, depth);
-            SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
 
-            List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
+            //search cause line
+            SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
+;
+
+            //include return line of callee method to cause lines
+            List<SuspiciousExpression> causeExprs = searchSuspiciousReturns(suspExpr);
+
+            //search next target
+            List<SuspiciousVariable> newTargets = new ArrayList<>();
+            for (SuspiciousExpression ce : causeExprs) {
+                List<SuspiciousVariable> neighbor = ce.neighborSuspiciousVariables(sleepTime, false);
+                neighbor.removeAll(investigatedTargets);
+                newTargets.addAll(neighbor);
+            }
             newTargets.removeAll(investigatedTargets);
+
             investigatedTargets.addAll(newTargets);
             probingTargets.addAll(newTargets);
 
@@ -58,6 +72,28 @@ public class ProbeForStatement extends AbstractProbe{
                 System.err.println("[Probe For STATEMENT] Failed to collect information.");
                 return Optional.empty();
             }
+        }
+        return result;
+    }
+
+    private List<SuspiciousExpression> searchSuspiciousReturns(SuspiciousExpression targetCauseExpr){
+        List<SuspiciousExpression> result = new ArrayList<>();
+        Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>();
+        suspExprQueue.add(targetCauseExpr);
+
+        while(!suspExprQueue.isEmpty()){
+            System.out.println("------------------------------------------------------------------------------------------------------------");
+            SuspiciousExpression target = suspExprQueue.removeFirst();
+            System.out.println(" >>> search return line");
+            System.out.println(" >>> target: " + target);
+            List<SuspiciousReturnValue> returnsOfTarget = target.searchSuspiciousReturns();
+            System.out.println(" >>> ");
+            System.out.println(" >>> return lines");
+            for(SuspiciousReturnValue r : returnsOfTarget){
+                System.out.println(" >>> " + r);
+            }
+            suspExprQueue.addAll(returnsOfTarget);
+            result.add(target);
         }
         return result;
     }
