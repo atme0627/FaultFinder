@@ -6,19 +6,35 @@ import java.time.LocalDateTime;
 
 //TODO: これを継承した配列バージョンのクラスを作る
 public class TracedValue implements Comparable<TracedValue>{
-    public LocalDateTime createAt;
-    public int lineNumber;
-    public String variableName;
-    public String value;
+    public final LocalDateTime createAt;
+    public final int lineNumber;
+    public final String variableName;
+    public final String value;
+    public final boolean isReference;
     public long objectID = 0;
 
     public TracedValue(LocalDateTime createAt,
                        String variableName,
-                       String value, int lineNumber){
+                       String value,
+                       int lineNumber){
         this.createAt = createAt;
         this.lineNumber = lineNumber;
         this.variableName = variableName;
         this.value = value;
+        this.isReference = false;
+    }
+
+    public TracedValue(LocalDateTime createAt,
+                       String variableName,
+                       String value,
+                       int lineNumber,
+                       boolean isReference){
+
+        this.createAt = createAt;
+        this.lineNumber = lineNumber;
+        this.variableName = variableName;
+        this.value = value;
+        this.isReference = isReference;
     }
 
     @Override

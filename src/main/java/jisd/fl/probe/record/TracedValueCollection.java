@@ -89,7 +89,8 @@ public abstract class TracedValueCollection {
                 vi.getCreatedAt(),
                 vi.getName(),
                 vi.getValue(),
-                loc.getLineNumber()
+                loc.getLineNumber(),
+                true
         ));
     }
 

@@ -168,6 +168,7 @@ public abstract class SuspiciousExpression {
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         return tracedNeighborValue.getAll().stream()
                 .filter(t -> includeIndirectUsedVariable || neighborVariableNames.contains(t.variableName))
+                .filter(t -> !t.isReference)
                 .map(t -> new SuspiciousVariable(
                         failedTest,
                         locateClass.getFullyQualifiedMethodName(),
