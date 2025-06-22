@@ -4,6 +4,7 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.sun.jdi.*;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequestManager;
@@ -24,16 +25,21 @@ public class SuspiciousArgument extends SuspiciousExpression {
     private final CodeElementName calleeMethodName;
     //何番目の引数に与えられたexprかを指定
     private final int argIndex;
+    //その行の中で呼び出し元のメソッドの後に何回他のメソッドが呼ばれるか
+    private final int CallCountAfterTargetInLine;
+
     protected SuspiciousArgument(CodeElementName failedTest,
                                  CodeElementName locateMethod,
                                  int locateLine,
                                  String actualValue,
                                  CodeElementName calleeMethodName,
-                                 int argIndex) {
+                                 int argIndex,
+                                 int CallCountAfterTargetInLine) {
         super(failedTest, locateMethod, locateLine, actualValue);
         this.argIndex = argIndex;
-        this.expr = extractExpr();
         this.calleeMethodName = calleeMethodName;
+        this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
+        this.expr = extractExpr();
     }
 
     @Override
@@ -216,25 +222,30 @@ public class SuspiciousArgument extends SuspiciousExpression {
         }
     }
 
-    @Override
+
     protected Expression extractExpr() {
         return extractExpr(true);
     }
 
-
     protected Expression extractExpr(boolean deleteParentNode) {
-        try {
-            List<Expression> args = stmt.findFirst(MethodCallExpr.class).orElseThrow().getArguments();
-            if(deleteParentNode){
-                Expression result = args.get(argIndex).clone();
-                //親ノードの情報を消す
-                result.setParentNode(null);
-                return result;
-            }
-            return args.get(argIndex);
-        } catch (NoSuchElementException | IndexOutOfBoundsException e){
-            throw new RuntimeException("Cannot extract expression from [" + locateMethod + ":" + locateLine + "].");
+        int methodCallCount = stmt.findAll(MethodCallExpr.class).size();
+        int nthCallInLine = methodCallCount - this.CallCountAfterTargetInLine;
+        if(nthCallInLine <= 0) throw new RuntimeException("something is wrong");
+
+        List<MethodCallExpr> calls = new ArrayList<>();
+        stmt.accept(new EvalOrderVisitor(), calls);
+        if(!calls.get(nthCallInLine - 1).getNameAsString().equals(this.calleeMethodName.getShortMethodName())) {
+            throw new RuntimeException("something is wrong");
         }
+
+        Expression result = calls.get(nthCallInLine - 1).getArgument(argIndex);
+        if(deleteParentNode) {
+            result = result.clone();
+            //親ノードの情報を消す
+            result.setParentNode(null);
+            return result;
+        }
+        return result;
     }
 
     /**
@@ -307,7 +318,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
                 locateLine[0],
                 suspVar.getActualValue(),
                 calleeMethodName,
-                argIndex[0]
+                argIndex[0],
+                callCountAfterTarget[0]
         );
     }
 
@@ -366,6 +378,21 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
     @Override
     public String toString(){
-        return "[ SUSPICIOUS ARGUMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + StringHighlighter.highlight(super.toString(), this.expr.toString()) + "\n       ...\n    }";
+        final String BG_GREEN = "\u001B[42m";
+        final String RESET    = "\u001B[0m";
+
+        LexicalPreservingPrinter.setup(stmt);
+        extractExpr(false).getTokenRange().ifPresent(tokenRange -> {
+            // 子ノードに属するすべてのトークンに色付け
+            tokenRange.forEach(token -> {
+                String original = token.getText();
+                // ANSI エスケープシーケンスで背景黄色
+                token.setText(BG_GREEN + original + RESET);
+            });
+            }
+        );
+
+        return "[ SUSPICIOUS ARGUMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + LexicalPreservingPrinter.print(stmt) + "\n       ...\n    }";
     }
+
 }
