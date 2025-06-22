@@ -81,18 +81,21 @@ public class ProbeForStatement extends AbstractProbe{
         Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>();
         suspExprQueue.add(targetCauseExpr);
 
+        System.out.println("------------------------------------------------------------------------------------------------------------");
         while(!suspExprQueue.isEmpty()){
-            System.out.println("------------------------------------------------------------------------------------------------------------");
             SuspiciousExpression target = suspExprQueue.removeFirst();
-            System.out.println(" >>> search return line");
-            System.out.println(" >>> target: " + target);
+
             List<SuspiciousReturnValue> returnsOfTarget = target.searchSuspiciousReturns();
-            System.out.println(" >>> ");
-            System.out.println(" >>> return lines");
-            for(SuspiciousReturnValue r : returnsOfTarget){
-                System.out.println(" >>> " + r);
+            if(!returnsOfTarget.isEmpty()) {
+                System.out.println(" >>> search return line");
+                System.out.println(" >>> target: " + target);
+                System.out.println(" >>> ");
+                System.out.println(" >>> return lines");
+                for (SuspiciousReturnValue r : returnsOfTarget) {
+                    System.out.println(" >>> " + r);
+                }
+                suspExprQueue.addAll(returnsOfTarget);
             }
-            suspExprQueue.addAll(returnsOfTarget);
             result.add(target);
         }
         return result;

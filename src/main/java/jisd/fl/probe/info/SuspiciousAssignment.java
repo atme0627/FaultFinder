@@ -16,14 +16,13 @@ import jisd.fl.util.analyze.CodeElementName;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 public class SuspiciousAssignment extends SuspiciousExpression {
     //左辺で値が代入されている変数の情報
     private final SuspiciousVariable assignTarget;
-    public SuspiciousAssignment(CodeElementName failedTest, CodeElementName locateClass, int locateLine, SuspiciousVariable assignTarget) {
-        super(failedTest, locateClass, locateLine, assignTarget.getActualValue());
+    public SuspiciousAssignment(CodeElementName failedTest, CodeElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
+        super(failedTest, locateMethod, locateLine, assignTarget.getActualValue());
         this.expr = extractExpr();
         this.assignTarget = assignTarget;
     }
@@ -83,15 +82,13 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                         //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
                         if (mee.thread().equals(thread) && getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
                             CodeElementName invokedMethod = new CodeElementName(EnhancedDebugger.getFqmn(mee.method()));
-                            CodeElementName locateClass = new CodeElementName(invokedMethod.getFullyQualifiedClassName());
                             int locateLine = mee.location().lineNumber();
                             String actualValue = mee.returnValue().toString();
                             SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                                     this.failedTest,
-                                    locateClass,
+                                    invokedMethod,
                                     locateLine,
-                                    actualValue,
-                                    invokedMethod
+                                    actualValue
                             );
                             resultCandidate.add(suspReturn);
                         }
@@ -113,11 +110,11 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(this.locateClass.getFullyQualifiedClassName(), this.locateLine, handler);
+        eDbg.handleAtBreakPoint(this.locateMethod.getFullyQualifiedClassName(), this.locateLine, handler);
         if(result.isEmpty()){
             throw new NoSuchElementException("Could not confirm [ "
                     + getAssignTarget().getSimpleVariableName() + " == " + getAssignTarget().getActualValue()
-                    + " ] on " + this.locateClass + " line:" + this.locateLine);
+                    + " ] on " + this.locateMethod + " line:" + this.locateLine);
         }
         return result;
     }
@@ -215,7 +212,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             return result;
 
         } catch (NoSuchElementException e){
-            throw new RuntimeException("Cannot extract expression from [" + locateClass + ":" + locateLine + "].");
+            throw new RuntimeException("Cannot extract expression from [" + locateMethod + ":" + locateLine + "].");
         }
     }
 
@@ -230,5 +227,10 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
     public SuspiciousVariable getAssignTarget() {
         return assignTarget;
+    }
+
+    @Override
+    public String toString(){
+        return "[ SUSPICIOUS ASSIGNMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
     }
 }

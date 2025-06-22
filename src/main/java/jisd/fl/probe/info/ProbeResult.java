@@ -140,7 +140,7 @@ public class ProbeResult {
                 sa.failedTest,
                 sa.getAssignTarget(),
                 new StatementElement(sa.getStmt()),
-                sa.locateClass
+                sa.locateMethod
         );
     }
 
@@ -150,7 +150,7 @@ public class ProbeResult {
                 sa.failedTest,
                 null,
                 new StatementElement(sa.getStmt()),
-                sa.locateClass
+                sa.locateMethod
         );
     }
 }

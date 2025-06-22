@@ -143,8 +143,7 @@ class SuspiciousExpressionTest {
                     new CodeElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
-                    "8",
-                    new CodeElementName("org.sample.shape.Rectangle")
+                    "8"
             );
 
             List<SuspiciousReturnValue> result = suspReturn.searchSuspiciousReturns();

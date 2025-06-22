@@ -20,11 +20,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class SuspiciousReturnValue extends SuspiciousExpression {
-    private final CodeElementName invokedMethodName;
-    protected SuspiciousReturnValue(CodeElementName failedTest, CodeElementName locateClass, int locateLine, String actualValue, CodeElementName invokedMethodName) {
-        super(failedTest, locateClass, locateLine, actualValue);
+    protected SuspiciousReturnValue(CodeElementName failedTest, CodeElementName locateMethod, int locateLine, String actualValue) {
+        super(failedTest, locateMethod, locateLine, actualValue);
         this.expr = extractExpr();
-        this.invokedMethodName = invokedMethodName;
     }
 
     @Override
@@ -86,15 +84,13 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
                         //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
                         if (mee.thread().equals(thread) && getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
                             CodeElementName invokedMethod = new CodeElementName(EnhancedDebugger.getFqmn(mee.method()));
-                            CodeElementName locateClass = new CodeElementName(invokedMethod.getFullyQualifiedClassName());
                             int locateLine = mee.location().lineNumber();
                             String actualValue = mee.returnValue().toString();
                             SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                                     this.failedTest,
-                                    locateClass,
+                                    invokedMethod,
                                     locateLine,
-                                    actualValue,
-                                    invokedMethod
+                                    actualValue
                             );
                             resultCandidate.add(suspReturn);
                         }
@@ -120,11 +116,11 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(this.locateClass.getFullyQualifiedClassName(), this.locateLine, handler);
+        eDbg.handleAtBreakPoint(this.locateMethod.getFullyQualifiedClassName(), this.locateLine, handler);
         if(result.isEmpty()){
             throw new NoSuchElementException("Could not confirm [ "
                     + "(return value) == " + this.actualValue
-                    + " ] on " + this.locateClass + " line:" + this.locateLine);
+                    + " ] on " + this.locateMethod + " line:" + this.locateLine);
         }
         return result;
     }
@@ -140,12 +136,12 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
             if(!stmt.isReturnStmt()) throw new NoSuchElementException();
             return stmt.asReturnStmt().getExpression().orElseThrow();
         } catch (NoSuchElementException e){
-            throw new RuntimeException("Cannot extract expression from [" + locateClass + ":" + locateLine + "].");
+            throw new RuntimeException("Cannot extract expression from [" + locateMethod + ":" + locateLine + "].");
         }
     }
 
     @Override
     public String toString(){
-        return "[ SUSPICIOUS RETURN VALUE ]\n" + "    " + invokedMethodName.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
+        return "[ SUSPICIOUS RETURN VALUE ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
     }
 }

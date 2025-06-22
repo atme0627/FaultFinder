@@ -26,7 +26,7 @@ public class CodeElementName {
     final public String className;
     final public String methodSignature;
 
-    //メソッド名はあってもなくても良い
+    //メソッド名は一応あってもなくても良い
     //ex1.) sample.demo
     //ex2.) sample.demo#sample
     //ex3.) sample.demo#sample(int)

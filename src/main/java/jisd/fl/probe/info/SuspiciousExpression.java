@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
 public abstract class SuspiciousExpression {
     //どのテスト実行時の話かを指定
     protected final CodeElementName failedTest;
-    protected final CodeElementName locateClass;
+    //フィールドの場合は<ulinit>で良い
+    protected final CodeElementName locateMethod;
     protected final int locateLine;
     protected final Statement stmt;
     @NotNull protected  Expression expr;
@@ -37,9 +38,9 @@ public abstract class SuspiciousExpression {
     //保持するのは自分の子要素のみ
     List<SuspiciousExpression> childSuspExprs = new ArrayList<>();
 
-    protected SuspiciousExpression(CodeElementName failedTest, CodeElementName locateClass, int locateLine, String actualValue) {
+    protected SuspiciousExpression(CodeElementName failedTest, CodeElementName locateMethod, int locateLine, String actualValue) {
         this.failedTest = failedTest;
-        this.locateClass = locateClass;
+        this.locateMethod = locateMethod;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
         this.stmt = extractStmt();
@@ -80,11 +81,11 @@ public abstract class SuspiciousExpression {
 
     private Statement extractStmt(){
         try {
-            return JavaParserUtil.getStatementByLine(locateClass, locateLine).orElseThrow();
+            return JavaParserUtil.getStatementByLine(locateMethod, locateLine).orElseThrow();
         } catch (NoSuchFileException e) {
-            throw new RuntimeException("Class [" + locateClass + "] is not found.");
+            throw new RuntimeException("Class [" + locateMethod + "] is not found.");
         } catch (NoSuchElementException e){
-            throw new RuntimeException("Cannot extract Statement from [" + locateClass + ":" + locateLine + "].");
+            throw new RuntimeException("Cannot extract Statement from [" + locateMethod + ":" + locateLine + "].");
         }
     }
 
@@ -96,7 +97,7 @@ public abstract class SuspiciousExpression {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("        // At ");
-        sb.append(locateClass);
+        sb.append(locateMethod);
         sb.append("\n");
         sb.append(String.format(
                 locateLine + ": " + "    " + String.format("%-50s", stmt.toString()) +
@@ -106,7 +107,7 @@ public abstract class SuspiciousExpression {
         return sb.toString();
     }
 
-    protected int getCallStackDepth(ThreadReference th){
+    protected static int getCallStackDepth(ThreadReference th){
         try {
             return th.frameCount();
         } catch (IncompatibleThreadStateException e) {
@@ -125,7 +126,7 @@ public abstract class SuspiciousExpression {
 
             //デバッガ生成
             Debugger dbg = TestUtil.testDebuggerFactory(failedTest);
-            dbg.setMain(this.locateClass.getFullyQualifiedClassName());
+            dbg.setMain(this.locateMethod.getFullyQualifiedClassName());
             Optional<Point> watchPointAtLine = dbg.watch(this.locateLine);
 
             //locateLineで観測できる全ての変数を取得
@@ -173,7 +174,7 @@ public abstract class SuspiciousExpression {
                 .filter(t -> !t.isReference)
                 .map(t -> new SuspiciousVariable(
                         failedTest,
-                        locateClass.getFullyQualifiedMethodName(),
+                        locateMethod.getFullyQualifiedMethodName(),
                         t.variableName,
                         t.value,
                         true,
