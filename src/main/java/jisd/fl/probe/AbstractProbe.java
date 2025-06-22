@@ -45,7 +45,7 @@ public abstract class AbstractProbe {
         System.out.println("    >> Probe Info: Running debugger and extract watched info.");
         TracedValueCollection tracedValues = traceValuesOfTarget(suspVar, sleepTime);
 
-        tracedValues.printAll();
+        //tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
         List<TracedValue> watchedValues = tracedValues.filterByVariableName(suspVar.getVariableName(true, true));
 

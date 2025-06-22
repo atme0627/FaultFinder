@@ -20,8 +20,7 @@ public class ProbeForStatement extends AbstractProbe{
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
     public SuspiciousExpression run(int sleepTime) {
-        List<SuspiciousVariable> probingTargets = new ArrayList<>();
-        List<SuspiciousVariable> nextTargets = new ArrayList<>();
+        Deque<SuspiciousVariable> probingTargets = new ArrayDeque<>();
         List<SuspiciousVariable> investigatedTargets = new ArrayList<>();
 
         probingTargets.add(firstTarget);
@@ -29,19 +28,17 @@ public class ProbeForStatement extends AbstractProbe{
 
         int depth = 0;
         while(!probingTargets.isEmpty()) {
-            for (SuspiciousVariable target : probingTargets) {
-                printProbeExInfoHeader(target, depth);
-                SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
+            SuspiciousVariable target = probingTargets.removeFirst();
+            printProbeExInfoHeader(target, depth);
+            SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
 
-                nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, false);
-                nextTargets.removeAll(investigatedTargets);
+            List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
+            newTargets.removeAll(investigatedTargets);
+            investigatedTargets.addAll(newTargets);
+            probingTargets.addAll(newTargets);
 
-                addTreeElement(suspExpr, target);
-                printProbeExInfoFooter(suspExpr, nextTargets);
-            }
-
-            probingTargets = nextTargets;
-            nextTargets = new ArrayList<>();
+            addTreeElement(suspExpr, target);
+            printProbeExInfoFooter(suspExpr, newTargets);
         }
         return suspiciousExprTreeRoot;
     }

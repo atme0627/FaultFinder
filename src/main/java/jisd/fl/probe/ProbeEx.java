@@ -50,6 +50,7 @@ public class ProbeEx extends ProbeForStatement {
                 printProbeExInfoFooter(suspExpr, nextTargets);
             }
 
+            investigatedTargets.addAll(nextTargets);
             probingTargets = nextTargets;
             nextTargets = new ArrayList<>();
         }
