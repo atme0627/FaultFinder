@@ -26,7 +26,10 @@ public class ProbeForStatement extends AbstractProbe{
         SuspiciousVariable firstTarget = assertInfo.getVariableInfo();
         List<SuspiciousVariable> probingTargets = new ArrayList<>();
         List<SuspiciousVariable> nextTargets = new ArrayList<>();
+        List<SuspiciousVariable> investigatedTargets = new ArrayList<>();
+
         probingTargets.add(firstTarget);
+        investigatedTargets.add(firstTarget);
         boolean isArgument = false;
 
         int depth = 0;
@@ -34,9 +37,10 @@ public class ProbeForStatement extends AbstractProbe{
             if(!isArgument) depth += 1;
             for (SuspiciousVariable target : probingTargets) {
                 printProbeExInfoHeader(target, depth);
-
                 SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
-                List<SuspiciousVariable> newTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
+
+                nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
+                nextTargets.removeAll(investigatedTargets);
 
                 if(root == null) {
                     root = suspExpr;
@@ -46,8 +50,7 @@ public class ProbeForStatement extends AbstractProbe{
 
                 ProbeResult pr = ProbeResult.convertSuspExpr(suspExpr);
                 result.addElement(pr.getProbeMethodName().split("#")[0], pr.probeLine(), 0, 1);
-                printProbeExInfoFooter(pr, newTargets);
-                nextTargets.addAll(newTargets);
+                printProbeExInfoFooter(pr, nextTargets);
                 isArgument = pr.isCausedByArgument();
             }
 
