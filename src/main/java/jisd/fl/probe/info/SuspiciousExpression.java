@@ -64,10 +64,10 @@ public abstract class SuspiciousExpression {
      * exprの演算に直接用いられている変数のみが対象で、引数やメソッド呼び出しの対象となる変数は除外する。
      * @return 変数名のリスト
      */
-    protected List<String> extractNeighborVariableNames(){
+    protected List<String> extractNeighborVariableNames(boolean includeIndirectUsedVariable){
         return expr.findAll(NameExpr.class).stream()
                 //引数やメソッド呼び出しに用いられる変数を除外
-                .filter(nameExpr -> nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
+                .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(NameExpr::toString)
                 .collect(Collectors.toList());
     }
@@ -162,10 +162,10 @@ public abstract class SuspiciousExpression {
         //SuspExprで観測できる全ての変数
         TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime);
         //SuspExpr内で使用されている変数を静的解析により取得
-        List<String> neighborVariableNames = extractNeighborVariableNames();
+        List<String> neighborVariableNames = extractNeighborVariableNames(includeIndirectUsedVariable);
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         return tracedNeighborValue.getAll().stream()
-                .filter(t -> includeIndirectUsedVariable || neighborVariableNames.contains(t.variableName))
+                .filter(t -> neighborVariableNames.contains(t.variableName))
                 .filter(t -> !t.isReference)
                 .map(t -> new SuspiciousVariable(
                         failedTest,
