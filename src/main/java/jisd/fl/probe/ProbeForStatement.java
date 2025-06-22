@@ -30,11 +30,9 @@ public class ProbeForStatement extends AbstractProbe{
 
         probingTargets.add(firstTarget);
         investigatedTargets.add(firstTarget);
-        boolean isArgument = false;
 
         int depth = 0;
         while(!probingTargets.isEmpty()) {
-            if(!isArgument) depth += 1;
             for (SuspiciousVariable target : probingTargets) {
                 printProbeExInfoHeader(target, depth);
                 SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
@@ -43,10 +41,7 @@ public class ProbeForStatement extends AbstractProbe{
                 nextTargets.removeAll(investigatedTargets);
 
                 addTreeElement(suspExpr, target);
-
-                ProbeResult pr = ProbeResult.convertSuspExpr(suspExpr);
-                printProbeExInfoFooter(pr, nextTargets);
-                isArgument = pr.isCausedByArgument();
+                printProbeExInfoFooter(suspExpr, nextTargets);
             }
 
             probingTargets = nextTargets;
@@ -81,8 +76,9 @@ public class ProbeForStatement extends AbstractProbe{
         System.out.println("============================================================================================================");
     }
 
-    private void printProbeExInfoFooter(ProbeResult pr, List<SuspiciousVariable> nextTarget){
-        printProbeStatement(pr);
+    private void printProbeExInfoFooter(SuspiciousExpression suspExpr, List<SuspiciousVariable> nextTarget){
+        System.out.println("------------------------------------------------------------------------------------------------------------");
+        System.out.println(suspExpr);
         System.out.println(" [NEXT TARGET]");
         nextTarget.forEach(v -> System.out.println(v.toString()));
     }

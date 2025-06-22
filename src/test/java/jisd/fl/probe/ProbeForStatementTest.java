@@ -2,6 +2,7 @@ package jisd.fl.probe;
 
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
+import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.util.PropertyLoader;
@@ -29,7 +30,6 @@ class ProbeForStatementTest {
 
         FailedAssertInfo fai = new FailedAssertEqualInfo("org.sample.CalcTest#methodCall1()", vi);
         ProbeForStatement pfs = new ProbeForStatement(fai);
-        ProbeExResult pr = pfs.run(2000);
-        pr.print();
+        SuspiciousExpression treeRoot = pfs.run(2000);
     }
 }

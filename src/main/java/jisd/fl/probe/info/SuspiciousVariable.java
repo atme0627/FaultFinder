@@ -170,7 +170,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
 
     @Override
     public String toString() {
-        return  "     [LOCATION] " + locateMethod + "\n" +
+        return  "     [LOCATION] " + locateMethod +
                 " [PROBE TARGET] " + getVariableName(true, true) + " == " + getActualValue();
 
     }
