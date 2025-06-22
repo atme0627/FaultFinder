@@ -33,7 +33,6 @@ public abstract class SuspiciousExpression {
     protected final Statement stmt;
     @NotNull protected  Expression expr;
     protected final String actualValue;
-
     //木構造にしてvisualizationをできるようにする
     //保持するのは自分の子要素のみ
     List<SuspiciousExpression> childSuspExprs = new ArrayList<>();
@@ -70,6 +69,13 @@ public abstract class SuspiciousExpression {
                 .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(NameExpr::toString)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * exprにメソッド呼び出しが含まれているかを判定
+     */
+    protected boolean hasMethodCalling(){
+        return !expr.findAll(MethodCallExpr.class).isEmpty();
     }
 
     private Statement extractStmt(){
@@ -116,21 +122,17 @@ public abstract class SuspiciousExpression {
      */
     protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime){
         try (QuietStdOut q = QuietStdOut.suppress()) {
-            System.out.println("[[[TEST 1]]]");
 
             //デバッガ生成
             Debugger dbg = TestUtil.testDebuggerFactory(failedTest);
             dbg.setMain(this.locateClass.getFullyQualifiedClassName());
             Optional<Point> watchPointAtLine = dbg.watch(this.locateLine);
-            System.out.println("[[[TEST 2]]]");
 
             //locateLineで観測できる全ての変数を取得
             try {
                 dbg.run(sleepTime);
             } catch (VMDisconnectedException | InvalidStackFrameException ignored) {
             }
-            System.out.println("[[[TEST 3]]]");
-            System.out.println("[[[TEST 4]]]");
 
             Map<String, DebugResult> drs = watchPointAtLine.get().getResults();
 
@@ -163,7 +165,7 @@ public abstract class SuspiciousExpression {
         TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime);
         //SuspExpr内で使用されている変数を静的解析により取得
         List<String> neighborVariableNames = extractNeighborVariableNames(includeIndirectUsedVariable);
-        
+
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         List<SuspiciousVariable> result =
                 tracedNeighborValue.getAll().stream()
@@ -176,7 +178,7 @@ public abstract class SuspiciousExpression {
                         t.value,
                         true,
                         t.variableName.contains("[")
-                )).collect(Collectors.toList());
+                )).distinct().collect(Collectors.toList());
 
         result.forEach(sv -> sv.setParent(this));
         return result;

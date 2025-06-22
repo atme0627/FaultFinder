@@ -32,6 +32,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     //TODO: 今はオブジェクトの違いを考慮していない
     public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
+        if(!hasMethodCalling()) return result;
 
         //Debugger生成
         String main = TestUtil.getJVMMain(this.failedTest);
@@ -182,10 +183,10 @@ public class SuspiciousAssignment extends SuspiciousExpression {
      * exprの演算に直接用いられている変数のみが対象で、引数やメソッド呼び出しの対象となる変数は除外する。
      * @return 変数名のリスト
      */
-    protected List<String> extractNeighborVariableNames(){
+    protected List<String> extractNeighborVariableNames(boolean includeIndirectUsedVariable){
         return expr.findAll(NameExpr.class).stream()
                 //引数やメソッド呼び出しに用いられる変数を除外
-                .filter(nameExpr -> nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
+                .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(NameExpr::toString)
                 //このSuspExprが原因となっている変数を除外
                 .filter(n -> !n.equals(assignTarget.getSimpleVariableName()))

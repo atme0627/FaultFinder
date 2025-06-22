@@ -43,6 +43,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
     //ex.) expressionがx.f(y.g())の時、fのみとる。y.g()はfの探索の後行われるはず
     public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException{
         final List<SuspiciousReturnValue> result = new ArrayList<>();
+        if(!hasMethodCalling()) return result;
+
         //探索対象のmethod名リストを取得
         List<String> targetMethodName = targetMethodName();
         //対象の引数内の最初のmethodCallがstmtで何番目か
