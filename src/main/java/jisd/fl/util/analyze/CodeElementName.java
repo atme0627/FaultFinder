@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -90,9 +91,8 @@ public class CodeElementName {
     public boolean equals(Object obj){
         if(obj == null) return false;
         if(!(obj instanceof CodeElementName)) return false;
-        if(this.getFullyQualifiedMethodName()
-                .equals(((CodeElementName) obj).getFullyQualifiedMethodName())) return true;
-        return false;
+        return this.getFullyQualifiedMethodName()
+                .equals(((CodeElementName) obj).getFullyQualifiedMethodName());
     }
 
     @Override

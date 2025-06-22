@@ -2,6 +2,8 @@ package jisd.fl.probe.info;
 
 import jisd.fl.util.analyze.CodeElementName;
 
+import java.util.Objects;
+
 public class SuspiciousVariable { //ローカル変数の場合のみ
     private final CodeElementName failedTest;
     private final CodeElementName locateMethod;
@@ -140,13 +142,26 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
         if (!(obj instanceof SuspiciousVariable)) return false;
         SuspiciousVariable vi = (SuspiciousVariable) obj;
 
-        return
-                this.variableName.equals(vi.variableName) &&
+        return this.variableName.equals(vi.variableName) &&
                         this.isPrimitive == vi.isPrimitive &&
                         this.isField == vi.isField &&
                         this.arrayNth == vi.arrayNth &&
                         this.isArray == vi.isArray &&
-                        this.actualValue.equals(vi.actualValue);
+                        this.actualValue.equals(vi.actualValue) &&
+                        this.locateMethod.equals(vi.locateMethod);
+    }
+
+    @Override
+    public int hashCode(){
+        return Objects.hash(
+                variableName,
+                isPrimitive,
+                isField,
+                arrayNth,
+                isArray,
+                actualValue,
+                locateMethod
+        );
     }
 
     public String getActualValue() {
