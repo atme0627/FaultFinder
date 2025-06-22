@@ -11,13 +11,13 @@ import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.util.StringHighlighter;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class SuspiciousArgument extends SuspiciousExpression {
     //引数を与え実行しようとしているメソッド
@@ -25,12 +25,12 @@ public class SuspiciousArgument extends SuspiciousExpression {
     //何番目の引数に与えられたexprかを指定
     private final int argIndex;
     protected SuspiciousArgument(CodeElementName failedTest,
-                                 CodeElementName locateClass,
+                                 CodeElementName locateMethod,
                                  int locateLine,
                                  String actualValue,
                                  CodeElementName calleeMethodName,
                                  int argIndex) {
-        super(failedTest, locateClass, locateLine, actualValue);
+        super(failedTest, locateMethod, locateLine, actualValue);
         this.argIndex = argIndex;
         this.expr = extractExpr();
         this.calleeMethodName = calleeMethodName;
@@ -124,15 +124,13 @@ public class SuspiciousArgument extends SuspiciousExpression {
                                 //targetMethodのみ収集
                                 if (targetMethodName.contains(mee.method().name())) {
                                     CodeElementName invokedMethod = new CodeElementName(EnhancedDebugger.getFqmn(mee.method()));
-                                    CodeElementName locateClass = new CodeElementName(invokedMethod.getFullyQualifiedClassName());
                                     int locateLine = mee.location().lineNumber();
                                     String actualValue = mee.returnValue().toString();
                                     SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                                             this.failedTest,
-                                            locateClass,
+                                            invokedMethod,
                                             locateLine,
-                                            actualValue,
-                                            invokedMethod
+                                            actualValue
                                     );
                                     resultCandidate.add(suspReturn);
                                 }
@@ -158,11 +156,11 @@ public class SuspiciousArgument extends SuspiciousExpression {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(this.locateClass.getFullyQualifiedClassName(), this.locateLine, handler);
+        eDbg.handleAtBreakPoint(this.locateMethod.getFullyQualifiedClassName(), this.locateLine, handler);
         if(result.isEmpty()){
             throw new NoSuchElementException("Could not confirm [ " + calleeMethodName
                     + "(argment " + argIndex + ") == " + this.actualValue
-                    + " ] on " + this.locateClass + " line:" + this.locateLine);
+                    + " ] on " + this.locateMethod + " line:" + this.locateLine);
         }
         return result;
     }
@@ -222,6 +220,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
     protected Expression extractExpr() {
         return extractExpr(true);
     }
+
+
     protected Expression extractExpr(boolean deleteParentNode) {
         try {
             List<Expression> args = stmt.findFirst(MethodCallExpr.class).orElseThrow().getArguments();
@@ -233,7 +233,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
             }
             return args.get(argIndex);
         } catch (NoSuchElementException | IndexOutOfBoundsException e){
-            throw new RuntimeException("Cannot extract expression from [" + locateClass + ":" + locateLine + "].");
+            throw new RuntimeException("Cannot extract expression from [" + locateMethod + ":" + locateLine + "].");
         }
     }
 
@@ -250,6 +250,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         CodeElementName[] locateMethod = new CodeElementName[1];
         int[] locateLine = new int[1];
         int[] argIndex = new int[1];
+        int[] callCountAfterTarget = new int[]{0};
 
         //調査対象の行実行に到達した時に行う処理を定義
         EnhancedDebugger.MethodEntryHandler handler = (vm, mEntry) -> {
@@ -265,23 +266,29 @@ public class SuspiciousArgument extends SuspiciousExpression {
                     throw new RuntimeException(e);
                 }
 
+
                 //調査対象の変数がactualValueをとっているか確認
                 Value argValue = topFrame.getValue(topFrame.visibleVariableByName(suspVar.getSimpleVariableName()));
                 if(!argValue.toString().equals(suspVar.getActualValue())) return;
 
                 //対象の引数のインデックスを取得
-                List<LocalVariable> vars = topFrame.visibleVariables();
-                for(int idx = 0; idx < vars.size(); idx++){
-                    if(vars.get(idx).name().equals(suspVar.getSimpleVariableName())){
-                        //   static: スロット 0～(argCount-1)
-                        // 非static:  スロット 0 = this, 引数は 1～argCount
-                        argIndex[0] = idx - ((mEntry.method().isStatic()) ? 1 : 0);
+                List<LocalVariable> args = mEntry.method().arguments();
+                for(int idx = 0; idx < args.size(); idx++){
+                    if(args.get(idx).name().equals(suspVar.getSimpleVariableName())){
+                        argIndex[0] = idx;
                     }
                 }
 
                 com.sun.jdi.Location callerLoc = callerFrame.location();
                 locateMethod[0] = new CodeElementName(EnhancedDebugger.getFqmn(callerLoc.method()));
                 locateLine[0] = callerLoc.lineNumber();
+
+                //targetVarが呼び出し元でどのexprに対応するかを特定
+                //複数回同じメソッドが呼ばれている場合も考慮
+                //目的のmethodEntryの後、何回methodが呼ばれるかを解析
+                mEntry.request().disable();
+                callCountAfterTarget[0] = countMethodCallAfterTarget(vm, mEntry);
+
             } catch (AbsentInformationException e) {
                 throw new RuntimeException(e);
             }
@@ -302,5 +309,63 @@ public class SuspiciousArgument extends SuspiciousExpression {
                 calleeMethodName,
                 argIndex[0]
         );
+    }
+
+    static private int countMethodCallAfterTarget(VirtualMachine vm, MethodEntryEvent mEntry) throws InterruptedException {
+        int result = 0;
+        EventRequestManager manager = vm.eventRequestManager();
+        StepRequest stepOutReq = EnhancedDebugger.createStepOutRequest(manager, mEntry.thread());
+
+        //一旦resumeして、内部ループでstep outを待つ
+        vm.resume();
+
+        //Methodがreturnし呼び出し元の行についた時点でsuspend
+        //必ずMethodExitEventのみのはず
+        Optional<Event> oev = vm.eventQueue().remove().stream().findFirst();
+        if (oev.isEmpty() || !(oev.get() instanceof StepEvent)){
+            throw new RuntimeException("something is wrong");
+        }
+        stepOutReq.disable();
+        ThreadReference thisThread = ((StepEvent) oev.get()).thread();
+        // ブレークポイント地点でのコールスタックの深さを取得
+        // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
+        // 再帰呼び出し含め、その行で直接呼ばれたメソッドの呼び出し回数をカウントするため
+        int depthBeforeCall = getCallStackDepth(thisThread);
+
+        //この行の終わりを検知するためstepOverRequestを設置
+        StepRequest stepOverReq = EnhancedDebugger.createStepOverRequest(manager, thisThread);
+        //その後のメソッド呼び出し回数をカウントするためのMethodEntryRequest
+        MethodEntryRequest mEntry2 = EnhancedDebugger.createMethodEntryRequest(manager, thisThread);
+
+        //一旦resumeして、内部ループでMethodEntry / stepOverを待つ
+        vm.resume();
+        //イベントループ
+        boolean done = false;
+        while(!done) {
+            EventSet es = vm.eventQueue().remove();
+            for (Event ev : es) {
+                //メソッド呼び出し回数をカウント
+                if (ev instanceof MethodEntryEvent) {
+                    MethodEntryEvent mee = (MethodEntryEvent) ev;
+                    if(getCallStackDepth(mee.thread()) == depthBeforeCall + 1) result++;
+                    vm.resume();
+                    continue;
+                }
+                //調査対象の行の実行が終了
+                if (ev instanceof StepEvent) {
+                    done = true;
+                    //vmをresumeしない
+                }
+            }
+        }
+
+        stepOverReq.disable();
+        mEntry2.disable();
+        return result;
+    }
+
+    @Override
+    public String toString(){
+        return "[ SUSPICIOUS ARGUMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + StringHighlighter.highlight(super.toString(), this.expr.toString()) + "\n       ...\n    }";
     }
 }
