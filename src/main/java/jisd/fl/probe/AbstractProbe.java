@@ -12,14 +12,11 @@ import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.*;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
-import jisd.fl.probe.record.TracedValuesAtLine;
 import jisd.fl.probe.record.TracedValuesOfTarget;
 import jisd.fl.util.QuietStdOut;
 import jisd.fl.util.analyze.*;
 import jisd.fl.util.TestUtil;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.*;
 import java.nio.file.NoSuchFileException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -29,8 +26,6 @@ public abstract class AbstractProbe {
 
     FailedAssertInfo assertInfo;
     Debugger dbg;
-    final PrintStream stdOut = System.out;
-    final PrintStream stdErr = System.err;
 
     public AbstractProbe(FailedAssertInfo assertInfo) {
         this.assertInfo = assertInfo;
@@ -112,38 +107,6 @@ public abstract class AbstractProbe {
             dbg.clearResults();
             return watchedValues;
         }
-    }
-
-    //viの原因行で、全ての変数が取っている値を記録する
-    //何回目のループで観測された値かを入力する
-    //TODO: viと一致するかを調べるシステムにする。
-    protected TracedValueCollection traceAllValuesAtLine(CodeElementName targetClassName, int line, int nthLoop, int sleepTime){
-        disableStdOut("");
-        dbg = createDebugger();
-        dbg.setMain(targetClassName.getFullyQualifiedClassName());
-        Optional<Point> watchPointAtLine = dbg.watch(line);
-
-        //run Test debugger
-        try {
-            dbg.run(sleepTime);
-        } catch (VMDisconnectedException | InvalidStackFrameException e) {
-            System.err.println(e);
-        }
-        enableStdOut();
-
-        //この行で値が観測されることが保証されている
-        List<DebugResult> drs = new ArrayList<>(watchPointAtLine.get().getResults().values());
-        Location loc = drs.get(0).getLocation();
-        //行のnthLoop番目のvalueInfoを取得
-        List<ValueInfo> valuesAtLine = drs.stream()
-                .map(DebugResult::getValues)
-                .map(vis -> vis.get(nthLoop))
-                .collect(Collectors.toList());
-
-        TracedValueCollection watchedValues = new TracedValuesAtLine(valuesAtLine, loc);
-        dbg.exit();
-        dbg.clearResults();
-        return watchedValues;
     }
 
     /**
@@ -345,21 +308,6 @@ public abstract class AbstractProbe {
         //実行しているメソッド名を取得
         CodeElementName locateMethodElementName = suspVar.getLocateMethodElement();
         return SuspiciousArgument.searchSuspiciousArgument(locateMethodElementName, suspVar);
-    }
-
-    protected void disableStdOut(String msg){
-        enableStdOut();
-        if(!msg.isEmpty()) System.out.println(msg);
-        PrintStream nop = new PrintStream(new OutputStream() {
-            public void write(int b) { /* noop */ }
-        });
-        System.setOut(nop);
-        System.setErr(nop);
-    }
-
-    protected void enableStdOut(){
-        System.setOut(stdOut);
-        System.setErr(stdErr);
     }
 
     protected void printWatchedValues(TracedValueCollection watchedValues, String variableName){

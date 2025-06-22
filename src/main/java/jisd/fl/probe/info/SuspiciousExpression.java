@@ -13,7 +13,6 @@ import jisd.debug.Debugger;
 import jisd.debug.Location;
 import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
 import jisd.fl.util.QuietStdOut;
@@ -22,8 +21,6 @@ import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import javax.validation.constraints.NotNull;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,9 +37,6 @@ public abstract class SuspiciousExpression {
     //木構造にしてvisualizationをできるようにする
     //保持するのは自分の子要素のみ
     List<SuspiciousExpression> childSuspExprs = new ArrayList<>();
-
-    final PrintStream stdOut = System.out;
-    final PrintStream stdErr = System.err;
 
     protected SuspiciousExpression(CodeElementName failedTest, CodeElementName locateClass, int locateLine, String actualValue) {
         this.failedTest = failedTest;
@@ -181,21 +175,6 @@ public abstract class SuspiciousExpression {
                         true,
                         t.variableName.contains("[")
                 )).collect(Collectors.toList());
-    }
-
-    protected void disableStdOut(String msg){
-        enableStdOut();
-        if(!msg.isEmpty()) System.out.println(msg);
-        PrintStream nop = new PrintStream(new OutputStream() {
-            public void write(int b) { /* noop */ }
-        });
-        System.setOut(nop);
-        System.setErr(nop);
-    }
-
-    protected void enableStdOut(){
-        System.setOut(stdOut);
-        System.setErr(stdErr);
     }
 
     public void addChild(SuspiciousExpression ch){
