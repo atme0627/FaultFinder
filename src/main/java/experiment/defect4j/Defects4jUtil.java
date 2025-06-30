@@ -20,11 +20,11 @@ public class Defects4jUtil {
 
     public static void CheckoutAll(String project, int numberOfBugs){
         for(int i = 1; i <= numberOfBugs; i++){
-            CheckoutBuggySrc(project, i);
+            checkoutBuggySrc(project, i);
         }
     }
 
-    public static void CheckoutBuggySrc(String project, int bugId){
+    public static void checkoutBuggySrc(String project, int bugId){
         String cmd = "defects4j checkout -p " + project + " -v " + bugId + "b " +
                 "-w " + getProjectDir(project, bugId, true);
         execCmd(cmd);
