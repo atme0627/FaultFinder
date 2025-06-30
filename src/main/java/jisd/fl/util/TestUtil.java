@@ -80,12 +80,14 @@ public  class TestUtil {
         // 2: テストが見つからないかつ--fail-if-no-testsが指定されている
         // 0: それ以外
         String cmd =
-                "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
+                "java -javaagent:" + jacocoAgentPath + "=destfile='" + generatedFilePath + "'" +
                 " -cp " + "./build/classes/java/main"
                         + ":" + debugBinDir
-                        + ":" + junitClassPath
-                + " jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
-        Process proc = Runtime.getRuntime().exec(cmd);
+                        + ":'" + junitClassPath + "'"
+                + " jisd.fl.util.TestLauncher '" + testMethod.getFullyQualifiedMethodName() + "'";
+
+        ProcessBuilder pb = new ProcessBuilder("zsh", "-ic", cmd);
+        Process proc = pb.start();
         proc.waitFor();
 
         boolean DEBUG=false;
