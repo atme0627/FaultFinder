@@ -6,6 +6,7 @@ import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,11 @@ public class CoverageAnalyzer {
         targetClassNames = StaticAnalyzer.getClassNames();
     }
 
+    // 1) 結果を格納するレコードクラス
+    record TestResult(String methodName,
+                      String execFileName,
+                      boolean passed) {}
+
     public CoverageCollection analyzeAll(String testClassName){
         FileUtil.createDirectory(jacocoExecFilePath);
         Set<String> failedTestsInClass = new HashSet<>();
@@ -48,19 +54,28 @@ public class CoverageAnalyzer {
         TestUtil.compileForDebug(testClassName);
         MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
         int failedCount = 0;
-        for(String testMethodName : testMethodNames){
-            //execファイルの生成
-            //テストケースをjacocoAgentつきで実行
-            String jacocoExecName = testMethodName + ".jacocoexec";
-            boolean isTestPassed = false;
-            try {
-                isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
-            } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+
+        // 2) 並列にテストを実行して TestResult を集める
+        List<TestResult> results = testMethodNames
+                .parallelStream()
+                .map(testMethodName -> {
+                    String jacocoExecName = testMethodName + ".jacocoexec";
+                    boolean isTestPassed;
+                    try {
+                        isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
+                    } catch (IOException | InterruptedException e) {
+                        throw new UncheckedIOException(new IOException(e));
+                    }
+                    return new TestResult(testMethodName, jacocoExecName, isTestPassed);
+                })
+                .collect(Collectors.toList());
+
+        for (TestResult r : results) {
+            boolean isTestPassed = r.passed();
+            String testMethodName = r.methodName();
+            String jacocoExecName = r.execFileName();
 
             //テストの成否が想定と一致しているか確認
-
             if(failedTests != null){
                 if(!isTestPassed) failedCount++;
                 if((isTestPassed && failedTests.contains(testMethodName))
