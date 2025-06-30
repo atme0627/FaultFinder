@@ -6,6 +6,7 @@ import jisd.fl.probe.ProbeEx;
 import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.report.ScoreUpdateReport; // new
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
@@ -51,7 +52,7 @@ public class FaultFinder {
     }
 
     public void printRanking(int top){
-        this.getFLResults().printFLResults(top);
+        sbflResult.printFLResults(top);
     }
 
 
@@ -77,12 +78,12 @@ public class FaultFinder {
 
     public void remove(int rank) {
         if(!validCheck(rank)) return;
-        IblResult iblResult = new IblResult();
+        ScoreUpdateReport report = new ScoreUpdateReport("REMOVE");
 
         String targetMethod = sbflResult.getElementAtPlace(rank);
         String contextClass = targetMethod.split("#")[0];
         System.out.println("[  REMOVE  ] " + targetMethod);
-        iblResult.addElement(targetMethod, sbflResult.getSuspicious(targetMethod), 0.0);
+        report.recordChange(targetMethod, sbflResult.getSuspicious(targetMethod), 0.0);
         sbflResult.setSuspicious(targetMethod, 0);
 
         Set<String> contexts = null;
@@ -96,11 +97,12 @@ public class FaultFinder {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
             double preScore = sbflResult.getSuspicious(contextMethod);
-            sbflResult.setSuspicious(contextMethod, preScore * removeConst);
-            iblResult.addElement(contextMethod, preScore, sbflResult.getSuspicious(contextMethod));
+            double newScore = preScore * removeConst;
+            sbflResult.setSuspicious(contextMethod, newScore);
+            report.recordChange(contextMethod, preScore, newScore);
         }
 
-        iblResult.print();
+        report.print();
 
         sbflResult.sort();
         sbflResult.printFLResults(rankingSize);
@@ -108,11 +110,11 @@ public class FaultFinder {
 
     public void susp(int rank) {
         if(!validCheck(rank)) return;
-        IblResult iblResult = new IblResult();
+        ScoreUpdateReport report = new ScoreUpdateReport("SUSP");
         String targetMethod = sbflResult.getElementAtPlace(rank);
         System.out.println("[  SUSP  ] " + targetMethod);
         String contextClass = targetMethod.split("#")[0];
-        iblResult.addElement(targetMethod, sbflResult.getSuspicious(targetMethod), 0.0);
+        report.recordChange(targetMethod, sbflResult.getSuspicious(targetMethod), 0.0);
         sbflResult.setSuspicious(targetMethod, 0);
 
         Set<String> contexts = null;
@@ -126,11 +128,12 @@ public class FaultFinder {
             if(!sbflResult.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
             double preScore = sbflResult.getSuspicious(contextMethod);
-            sbflResult.setSuspicious(contextMethod, preScore + suspConst);
-            iblResult.addElement(contextMethod, preScore, sbflResult.getSuspicious(contextMethod));
+            double newScore = preScore + suspConst;
+            sbflResult.setSuspicious(contextMethod, newScore);
+            report.recordChange(contextMethod, preScore, newScore);
         }
 
-        iblResult.print();
+        report.print();
         sbflResult.sort();
         sbflResult.printFLResults(rankingSize);
     }
@@ -153,7 +156,7 @@ public class FaultFinder {
     public void probeEx(ProbeExResult probeExResult){
         System.out.println("[  PROBE EX  ]");
         //set suspicious score
-        IblResult iblResult = new IblResult();
+        ScoreUpdateReport report = new ScoreUpdateReport("PROBE EX");
         double preScore;
         for(String markingMethod : probeExResult.markingMethods()){
             if(!sbflResult.isElementExist(markingMethod)) continue;
@@ -163,11 +166,12 @@ public class FaultFinder {
             ToDoubleBiFunction<Integer, Integer> probeExFunction
                     = (depth, countInLine) -> finalPreScore * (Math.pow(getProbeExLambda(), depth));
 
-            sbflResult.setSuspicious(markingMethod, preScore + probeExResult.probeExSuspScore(markingMethod, probeExFunction));
-            iblResult.addElement(markingMethod, preScore, sbflResult.getSuspicious(markingMethod));
+            double newScore = preScore + probeExResult.probeExSuspScore(markingMethod, probeExFunction);
+            sbflResult.setSuspicious(markingMethod, newScore);
+            report.recordChange(markingMethod, preScore, newScore);
         }
 
-        iblResult.print();
+        report.print();
         sbflResult.sort();
         sbflResult.printFLResults(rankingSize);
     }
@@ -247,94 +251,5 @@ public class FaultFinder {
         this.sbflResult.setHighlightMethods(highlightMethods);
     }
 
-    static class IblResult {
-        List<Element> results = new ArrayList<>();
-
-        public void addElement(String method, Double preScore, Double newScore){
-            results.add(new Element(method, preScore,newScore));
-        }
-
-        public void print(){
-            List<String> shortClassNames = new ArrayList<>();
-            List<String> shortMethodNames = new ArrayList<>();
-            for(int i = 0; i < results.size(); i++){
-                String longClassName = results.get(i).method.split("#")[0];
-                String longMethodName = results.get(i).method;
-
-
-                StringBuilder shortClassName = new StringBuilder();
-                StringBuilder shortMethodName = new StringBuilder();
-
-                String[] packages = longClassName.split("\\.");
-                for(int j = 0; j < packages.length - 2; j++){
-                    shortClassName.append(packages[j].charAt(0));
-                    shortClassName.append(".");
-                }
-                shortClassName.append(packages[packages.length - 2]);
-                shortClassName.append(".");
-                shortClassName.append(packages[packages.length - 1]);
-
-                Map<String, Pair<Integer, Integer>> rangeOfMethods;
-                try {
-                    CodeElementName longClass = new CodeElementName(longClassName);
-                    rangeOfMethods = getRangeOfAllMethods(longClass);
-                } catch (NoSuchFileException e) {
-                    throw new RuntimeException(e);
-                }
-
-                int startLineOfMethod = rangeOfMethods.get(longMethodName).getLeft();
-                shortMethodName.append(longMethodName.split("#")[1].split("\\(")[0]);
-                shortMethodName.append("(...) line: ");
-                shortMethodName.append(String.format("%4d", startLineOfMethod));
-
-                shortClassNames.add(shortClassName.toString());
-                shortMethodNames.add(shortMethodName.toString());
-            }
-
-            int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
-            int methodLength = shortMethodNames.stream().map(String::length).max(Integer::compareTo).get();
-
-            String header =
-                    "| " + StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + "CLASS NAME"
-                    + " | " + StringUtils.repeat(' ', methodLength - "METHOD NAME".length()) + "METHOD NAME"
-                    + " |   OLD  ->   NEW  |";
-            String partition = StringUtils.repeat("=", header.length());
-
-            System.out.println(partition);
-            System.out.println(header);
-            System.out.println(partition);
-            for(int i = 0; i < results.size(); i++){
-                Element e = results.get(i);
-                System.out.println("| " + StringUtils.leftPad(shortClassNames.get(i), classLength)
-                + " | " + StringUtils.leftPad(shortMethodNames.get(i), methodLength)
-                + " | " + String.format("%.4f", e.oldScore) + " -> " + String.format("%.4f", e.newScore) + " |");
-            }
-            System.out.println(partition);
-            System.out.println();
-        }
-
-        private Pair<Integer, Integer> maxLengthOfName() {
-            int classLength = 0;
-            int methodLength = 0;
-
-            for (Element e : results) {
-                classLength = Math.max(classLength, e.method.split("#")[0].length());
-                methodLength = Math.max(methodLength, e.method.split("#")[1].length());
-            }
-
-            return Pair.of(classLength, methodLength);
-        }
-
-        static class Element {
-            String method;
-            Double oldScore;
-            Double newScore;
-
-             Element(String method, Double oldScore, Double newScore){
-                this.method = method;
-                this.oldScore = oldScore;
-                this.newScore = newScore;
-            }
-        }
-    }
+    
 }
