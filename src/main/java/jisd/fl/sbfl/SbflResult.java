@@ -426,6 +426,24 @@ public class SbflResult {
         return e1.getRight().compareTo(e2.getRight());
     }
 
+    public Set<String> getAllElements() {
+        Set<String> elements = new HashSet<>();
+        for (MutablePair<String, Double> p : result) {
+            elements.add(p.getLeft());
+        }
+        return elements;
+    }
+
+    public Set<String> getElementsInClass(String className) {
+        Set<String> elements = new HashSet<>();
+        for (MutablePair<String, Double> p : result) {
+            if (p.getLeft().startsWith(className)) {
+                elements.add(p.getLeft());
+            }
+        }
+        return elements;
+    }
+
     public Set<String> getHighlightMethods() {
         return highlightMethods;
     }

@@ -44,13 +44,13 @@ public class ScoreUpdateReport {
         if (changes.isEmpty()) {
             return;
         }
-        // NOTE: 元のIblResult.print()のロジックをそのままここに移動します。
         // 短縮クラス名・メソッド名の計算
         List<String> shortClassNames = new ArrayList<>();
-        List<String> shortMethodNames = new ArrayList<>();
+                List<String> shortElementNames = new ArrayList<>();
         for (ChangeEntry entry : changes) {
-            String longClassName = entry.method.split("#")[0];
-            String longMethodName = entry.method;
+            String[] parts = entry.method.split(" ---");
+            String longClassName = parts[0];
+            boolean isStmt = parts.length > 1;
 
             // クラス名を短縮 (例: org.apache.commons.math3.optim -> o.a.c.m.optim)
             StringBuilder shortClassName = new StringBuilder();
@@ -60,27 +60,32 @@ public class ScoreUpdateReport {
             }
             shortClassName.append(packages[packages.length - 2]).append(".").append(packages[packages.length - 1]);
 
-            // メソッド名に開始行を追加
-            Map<String, Pair<Integer, Integer>> rangeOfMethods;
-            try {
-                rangeOfMethods = StaticAnalyzer.getRangeOfAllMethods(new CodeElementName(longClassName));
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
+            String shortElementName;
+            if (isStmt) {
+                shortElementName = "line: " + parts[1].trim();
+            } else {
+                // メソッド名に開始行を追加
+                Map<String, Pair<Integer, Integer>> rangeOfMethods;
+                try {
+                    rangeOfMethods = StaticAnalyzer.getRangeOfAllMethods(new CodeElementName(longClassName));
+                } catch (NoSuchFileException e) {
+                    throw new RuntimeException(e);
+                }
+                int startLineOfMethod = rangeOfMethods.get(entry.method).getLeft();
+                String methodName = entry.method.split("#")[1].split("\\(")[0];
+                shortElementName = String.format("%s(...) line: %4d", methodName, startLineOfMethod);
             }
-            int startLineOfMethod = rangeOfMethods.get(longMethodName).getLeft();
-            String methodName = longMethodName.split("#")[1].split("\\(")[0];
-            String shortMethodName = String.format("%s(...) line: %4d", methodName, startLineOfMethod);
 
             shortClassNames.add(shortClassName.toString());
-            shortMethodNames.add(shortMethodName);
+            shortElementNames.add(shortElementName);
         }
 
         // 表示幅の計算
         int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).orElse(10);
-        int methodLength = shortMethodNames.stream().map(String::length).max(Integer::compareTo).orElse(20);
+        int elementLength = shortElementNames.stream().map(String::length).max(Integer::compareTo).orElse(20);
 
         // ヘッダーの生成
-        String header = String.format("| %-" + classLength + "s | %-" + methodLength + "s | %-18s |", "CLASS NAME", "METHOD NAME", "OLD -> NEW");
+        String header = String.format("| %-" + classLength + "s | %-" + elementLength + "s | %-18s |", "CLASS NAME", "ELEMENT NAME", "OLD -> NEW");
         String partition = StringUtils.repeat("=", header.length());
 
         System.out.println("[  " + operationName + "  ]");
@@ -91,8 +96,8 @@ public class ScoreUpdateReport {
         // 内容の出力
         for (int i = 0; i < changes.size(); i++) {
             ChangeEntry e = changes.get(i);
-            String row = String.format("| %-" + classLength + "s | %-" + methodLength + "s | %6.4f -> %6.4f |",
-                    shortClassNames.get(i), shortMethodNames.get(i), e.oldScore, e.newScore);
+            String row = String.format("| %-" + classLength + "s | %-" + elementLength + "s | %6.4f -> %6.4f |",
+                    shortClassNames.get(i), shortElementNames.get(i), e.oldScore, e.newScore);
             System.out.println(row);
         }
         System.out.println(partition);
