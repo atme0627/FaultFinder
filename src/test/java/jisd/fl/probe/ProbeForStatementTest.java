@@ -20,8 +20,8 @@ class ProbeForStatementTest {
     void runTest() {
         SuspiciousVariable target = new SuspiciousVariable(
                 new CodeElementName("org.sample.CalcTest#methodCall1()"),
-                "org.sample.util.Calc#methodCalling(int, int)",
-                "result",
+                "org.sample.CalcTest#methodCall1()",
+                "actual",
                 "11",
                 true,
                 false

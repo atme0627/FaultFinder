@@ -27,10 +27,9 @@ public class ProbeForStatement extends AbstractProbe{
         probingTargets.add(firstTarget);
         investigatedTargets.add(firstTarget);
 
-        int depth = 0;
         while(!probingTargets.isEmpty()) {
             SuspiciousVariable target = probingTargets.removeFirst();
-            printProbeExInfoHeader(target, depth);
+            printProbeExInfoHeader(target);
 
             //search cause line
             SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
@@ -101,9 +100,9 @@ public class ProbeForStatement extends AbstractProbe{
         return result;
     }
 
-    protected void printProbeExInfoHeader(SuspiciousVariable target, int depth){
+    protected void printProbeExInfoHeader(SuspiciousVariable target){
         System.out.println("============================================================================================================");
-        System.out.println(" Probe For STATEMENT      DEPTH: " + depth);
+        System.out.println(" Probe For STATEMENT");
         System.out.println(target.toString());
         if(target.getParent() != null) {
             System.out.println(target.getParent().toString());

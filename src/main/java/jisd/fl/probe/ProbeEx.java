@@ -40,7 +40,7 @@ public class ProbeEx extends ProbeForStatement {
         int depth = 0;
         while(!probingTargets.isEmpty()) {
             for (SuspiciousVariable target : probingTargets) {
-                printProbeExInfoHeader(target, depth);
+                printProbeExInfoHeader(target);
                 SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
 
                 nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
