@@ -321,15 +321,6 @@ public abstract class AbstractProbe {
         }
     }
 
-    protected void printProbeStatement(ProbeResult result){
-        System.out.println("    >> [PROBE LINES]");
-        if(result.isCausedByArgument()) {
-            System.out.println("    >> Variable defect is derived from caller method. ");
-        }
-        System.out.println("    >> " + result.getSrc());
-    }
-
-
 
     protected Debugger createDebugger() {
         return createDebugger(failedTest.getFullyQualifiedMethodName());
