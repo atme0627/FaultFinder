@@ -1,24 +1,17 @@
 package jisd.fl.probe.info;
 
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.stmt.Statement;
-import jisd.debug.EnhancedDebugger;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.CodeElementName;
-import org.apache.commons.lang3.tuple.Pair;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class SuspiciousExpressionTest {
     /**

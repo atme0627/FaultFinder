@@ -13,7 +13,6 @@ import jisd.debug.JDIManager;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;

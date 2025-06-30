@@ -12,13 +12,11 @@ import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
-import jisd.fl.util.StringHighlighter;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class SuspiciousArgument extends SuspiciousExpression {
     //引数を与え実行しようとしているメソッド

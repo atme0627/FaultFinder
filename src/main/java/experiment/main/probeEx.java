@@ -2,7 +2,6 @@ package experiment.main;
 
 import experiment.defect4j.Defects4jUtil;
 import jisd.fl.probe.ProbeEx;
-import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousExpression;
