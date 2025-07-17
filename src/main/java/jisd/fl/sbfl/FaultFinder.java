@@ -42,12 +42,12 @@ public class FaultFinder {
 
     public FaultFinder(CoverageCollection covForTestSuite, Formula f) {
         this.granularity = Granularity.METHOD;
-        sbflResult = new SbflResult();
+        sbflResult = new SbflResult(granularity);
         calcSuspiciousness(covForTestSuite, granularity, f);
     }
     public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
         this.granularity = granularity;
-        sbflResult = new SbflResult();
+        sbflResult = new SbflResult(granularity);
         calcSuspiciousness(covForTestSuite, granularity, f);
     }
 
@@ -57,7 +57,7 @@ public class FaultFinder {
 
 
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
-        Set<String> targetClassNames = covForTestSuite.getTargetClassNames();
+        Set<String> targetClassNames = covForTestSuite.getExecutedClassNames();
         for(String targetClassName : targetClassNames){
             Map<String, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
             calcSuspiciousnessOfTarget(targetClassName, covData, f, granularity);
@@ -67,7 +67,7 @@ public class FaultFinder {
 
     private void calcSuspiciousnessOfTarget(String targetClassName, Map<String, SbflStatus> covData, Formula f, Granularity granularity){
         covData.forEach((element, status) ->{
-            if(granularity == Granularity.LINE) element = targetClassName + " --- " + element;
+            if(granularity == Granularity.LINE) element = targetClassName + "---" + element;
             sbflResult.setElement(element, status, f);
         });
     }
