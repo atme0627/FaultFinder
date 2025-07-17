@@ -99,4 +99,9 @@ public class PropertyLoader {
     public static String getDebugBinDir() {
         return getProperty("debugBinDir");
     }
+
+    public static String getClassesForDebugDir(){
+        return "classesForDebug";
+        //return "classesForDebug/";
+    }
 }

@@ -29,10 +29,10 @@ public class JacocoUtil {
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
 
     public static void analyzeWithJacoco(ExecutionDataStore executionData, ICoverageVisitor cv) throws IOException {
-        final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
+        final String classesForDebugDir = PropertyLoader.getClassesForDebugDir();
         //jacocoによるテスト対象の解析
         final Analyzer analyzer = new Analyzer(executionData, cv);
-        File classFilePath = new File(targetBinDir);
+        File classFilePath = new File(classesForDebugDir);
         analyzer.analyzeAll(classFilePath);
     }
 
