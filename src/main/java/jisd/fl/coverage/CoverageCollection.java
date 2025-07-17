@@ -18,7 +18,7 @@ import jisd.fl.util.FileUtil;
 public class CoverageCollection {
 
     protected final String coverageCollectionName;
-    public Set<String> targetClassNames;  //実行されたターゲットクラスの集合
+    public Set<String> targetClassNames;
 
     //各クラスのカバレッジインスタンスを保持 (ターゲットクラス名) --> CoverageOfTarget
     private Map<String, CoverageOfTarget> coverages;
@@ -64,6 +64,11 @@ public class CoverageCollection {
 
     public Set<String> getTargetClassNames() {
         return targetClassNames;
+    }
+
+    //実行されたターゲットクラスの集合を返す
+    public Set<String> getExecutedClassNames(){
+        return coverages.keySet();
     }
 
     public void putCoverageOfTarget(CoverageOfTarget covOfTarget) {

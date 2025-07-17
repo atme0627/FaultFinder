@@ -80,6 +80,7 @@ public class PropertyLoader {
     public static void setDebugBinDir(String debugBinDir) {
         setProperty("debugBinDir", debugBinDir);
     }
+
     public static String getTargetSrcDir() {
         return getProperty("targetSrcDir");
     }
