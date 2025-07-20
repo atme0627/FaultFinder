@@ -2,6 +2,8 @@ package jisd.fl.sbfl;
 
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
+import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.LineElementName;
 import jisd.fl.util.analyze.MethodElementName;
 import org.apache.commons.lang3.StringUtils;
 
@@ -19,10 +21,10 @@ public class SbflResult {
         this.granularity = granularity;
     }
 
-    public void setElement(MethodElementName element, SbflStatus status, Formula f){
+    public void setElement(CodeElementName element, SbflStatus status, Formula f){
         CodeElement e;
-        if(element.getLine() != -1) {
-            e = new CodeElement(element, element.getLine());
+        if(element instanceof LineElementName tmp && tmp.getLine() != -1) {
+            e = new CodeElement(element, tmp.getLine());
         } else {
             e = new CodeElement(element);
         }
@@ -307,8 +309,8 @@ public class SbflResult {
         }
     }
 
-    record CodeElement(MethodElementName e, int line){
-        public CodeElement(MethodElementName e){
+    record CodeElement(CodeElementName e, int line){
+        public CodeElement(CodeElementName e){
             this(e, -1);
         }
 

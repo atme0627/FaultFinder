@@ -7,6 +7,7 @@ import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.report.ScoreUpdateReport; // new
+import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 
@@ -55,13 +56,13 @@ public class FaultFinder {
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
         Set<String> targetClassNames = covForTestSuite.getExecutedClassNames();
         for(String targetClassName : targetClassNames){
-            Map<MethodElementName, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
-            calcSuspiciousnessOfTarget(targetClassName, covData, f, granularity);
+            Map<CodeElementName, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
+            calcSuspiciousnessOfTarget(covData, f, granularity);
         }
         sbflResult.sort();
     }
 
-    private void calcSuspiciousnessOfTarget(String targetClassName, Map<MethodElementName, SbflStatus> covData, Formula f, Granularity granularity){
+    private void calcSuspiciousnessOfTarget(Map<CodeElementName, SbflStatus> covData, Formula f, Granularity granularity){
         covData.forEach((element, status) ->{
             sbflResult.setElement(element, status, f);
         });

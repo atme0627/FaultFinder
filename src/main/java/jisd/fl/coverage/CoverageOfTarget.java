@@ -2,6 +2,8 @@ package jisd.fl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jisd.fl.sbfl.SbflStatus;
+import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.LineElementName;
 import jisd.fl.util.analyze.MethodElementName;
 import org.apache.commons.lang3.StringUtils;
 import org.jacoco.core.analysis.IClassCoverage;
@@ -20,9 +22,9 @@ public class CoverageOfTarget {
     //各行のカバレッジ情報 (行番号, メソッド名, クラス名) --> lineCoverage status
 
     //各行のカバレッジ情報
-    public Map<MethodElementName, SbflStatus> lineCoverage;
-    public Map<MethodElementName, SbflStatus> methodCoverage;
-    public Map<MethodElementName, SbflStatus> classCoverage;
+    public Map<CodeElementName, SbflStatus> lineCoverage;
+    public Map<CodeElementName, SbflStatus> methodCoverage;
+    public Map<CodeElementName, SbflStatus> classCoverage;
 
 
     @JsonCreator
@@ -45,8 +47,7 @@ public class CoverageOfTarget {
         for(int i = targetClassFirstLine; i <= targetClassLastLine; i++){
             if(cc.getLine(i).getStatus() == ICounter.EMPTY) continue;
             boolean isTestExecuted = !(cc.getLine(i).getStatus() == ICounter.NOT_COVERED);
-            MethodElementName ce = new MethodElementName(targetClassName);
-            ce.setLine(i);
+            LineElementName ce = new LineElementName(targetClassName, i);
             putCoverageStatus(ce, new SbflStatus(isTestExecuted , isTestPassed), Granularity.LINE);
         }
 
@@ -66,7 +67,7 @@ public class CoverageOfTarget {
         putCoverageStatus(ce, getClassSbflStatus(cc, isTestPassed), Granularity.CLASS);
     }
 
-    protected void putCoverageStatus(MethodElementName element, SbflStatus status, Granularity granularity) {
+    protected void putCoverageStatus(CodeElementName element, SbflStatus status, Granularity granularity) {
         switch (granularity) {
             case LINE:
                 lineCoverage.put(element, status);
@@ -95,7 +96,7 @@ public class CoverageOfTarget {
     }
 
 
-    public Map<MethodElementName, SbflStatus> getCoverage(Granularity granularity){
+    public Map<CodeElementName, SbflStatus> getCoverage(Granularity granularity){
         return switch (granularity) {
             case LINE -> lineCoverage;
             case METHOD -> methodCoverage;
@@ -180,8 +181,8 @@ public class CoverageOfTarget {
     }
 
 
-    private Map<MethodElementName, SbflStatus> combineCoverage(Map<MethodElementName, SbflStatus> thisCov, Map<MethodElementName, SbflStatus> otherCov){
-        Map<MethodElementName, SbflStatus> newCoverage = new HashMap<>(otherCov);
+    private Map<CodeElementName, SbflStatus> combineCoverage(Map<CodeElementName, SbflStatus> thisCov, Map<CodeElementName, SbflStatus> otherCov){
+        Map<CodeElementName, SbflStatus> newCoverage = new HashMap<>(otherCov);
         thisCov.forEach((k,v)->{
             if(newCoverage.containsKey(k)){
                 newCoverage.put(k, v.combine(newCoverage.get(k)));
@@ -205,9 +206,9 @@ public class CoverageOfTarget {
         return keys;
     }
 
-    private int maxLengthOfName(Map<MethodElementName, SbflStatus> cov, boolean isMethod){
+    private int maxLengthOfName(Map<CodeElementName, SbflStatus> cov, boolean isMethod){
         int maxLength = 0;
-        for(MethodElementName name : cov.keySet()){
+        for(CodeElementName name : cov.keySet()){
             int l = (isMethod) ? name.getShortMethodName().length() : name.toString().length();
             maxLength = Math.max(maxLength, l);
         }

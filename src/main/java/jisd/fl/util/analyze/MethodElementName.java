@@ -16,15 +16,12 @@ import java.util.stream.Collectors;
 
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
-public class MethodElementName implements Comparable<MethodElementName> {
+public class MethodElementName implements CodeElementName{
     @NotNull
     final public String packageName;
     @NotBlank
     final public String className;
     final public String methodSignature;
-
-    //現状なくても良いこととする。
-    int line = -1;
 
     //メソッド名は一応あってもなくても良い
     //ex1.) sample.demo
@@ -87,42 +84,42 @@ public class MethodElementName implements Comparable<MethodElementName> {
         this.methodSignature = cd.getSignature().toString();
     }
 
-    @Override
-    public boolean equals(Object obj){
-        if(obj == null) return false;
-        if(!(obj instanceof MethodElementName)) return false;
-        return this.getFullyQualifiedMethodName()
-                .equals(((MethodElementName) obj).getFullyQualifiedMethodName())
-                && this.line == ((MethodElementName) obj).line;
-    }
 
     @Override
-    public int hashCode(){
-        return this.getFullyQualifiedMethodName().hashCode() + line;
-    }
-
-    @Override
-    public String toString(){
-        return (this.methodSignature != null ? this.getFullyQualifiedMethodName() : this.getFullyQualifiedClassName())
-                + ((line != -1) ? ":" + line : "");
-    }
-
     public String getFullyQualifiedClassName(){
         return packageName.isEmpty() ? className : packageName + "." + className;
     }
 
+    @Override
     public String getFullyQualifiedMethodName(){
         return packageName.isEmpty() ? className + "#" + methodSignature : packageName + "." + className + "#" + methodSignature;
     }
 
+    @Override
     public String getShortClassName(){
         return this.className;
     }
 
+    @Override
     //signature含まない
     public String getShortMethodName(){
        return this.methodSignature.split("\\(")[0];
     }
+
+    @Override
+    public Path getFilePath(){
+        Path p = getFilePath(false);
+        if(Files.exists(p)) return p;
+        return getFilePath(true);
+    }
+
+    @Override
+    public Path getFilePath(boolean isTest){
+        String dir = isTest ? PropertyLoader.getProperty("testSrcDir") : PropertyLoader.getProperty("targetSrcDir");
+        return Paths.get(dir + "/" + packageName.replace('.', '/'), className + ".java");
+    }
+
+
 
     public static Optional<MethodElementName> generateFromSimpleClassName(String className){
         return generateFromSimpleClassName(className, Paths.get(PropertyLoader.getProperty("targetSrcPath")));
@@ -141,32 +138,26 @@ public class MethodElementName implements Comparable<MethodElementName> {
         return Optional.of(candidates.get(0));
     }
 
-    public Path getFilePath(){
-        Path p = getFilePath(false);
-        if(Files.exists(p)) return p;
-        return getFilePath(true);
-    }
-
-    public Path getFilePath(boolean isTest){
-        String dir = isTest ? PropertyLoader.getProperty("testSrcDir") : PropertyLoader.getProperty("targetSrcDir");
-        return Paths.get(dir + "/" + packageName.replace('.', '/'), className + ".java");
-    }
-
-    public boolean isConstructor(){
-        return this.className.equals(getShortMethodName());
-    }
-
-    public void setLine(int line) {
-        this.line = line;
-    }
-
-    public int getLine() {
-        return line;
+    @Override
+    public int compareTo(CodeElementName o) {
+        return this.getFullyQualifiedMethodName().compareTo(o.getFullyQualifiedMethodName());
     }
 
     @Override
-    public int compareTo(MethodElementName o) {
-        if(this.getFullyQualifiedMethodName().equals(o.getFullyQualifiedMethodName())) return Integer.compare(this.line, o.line);
-        return this.getFullyQualifiedMethodName().compareTo(o.getFullyQualifiedMethodName());
+    public boolean equals(Object obj){
+        if(obj == null) return false;
+        if(!(obj instanceof MethodElementName)) return false;
+        return this.getFullyQualifiedMethodName()
+                .equals(((MethodElementName) obj).getFullyQualifiedMethodName());
+    }
+
+    @Override
+    public int hashCode(){
+        return this.getFullyQualifiedMethodName().hashCode();
+    }
+
+    @Override
+    public String toString(){
+        return this.getFullyQualifiedMethodName();
     }
 }
