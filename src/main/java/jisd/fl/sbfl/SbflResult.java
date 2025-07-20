@@ -22,14 +22,7 @@ public class SbflResult {
     }
 
     public void setElement(CodeElementName element, SbflStatus status, Formula f){
-        CodeElement e;
-        if(element instanceof LineElementName tmp && tmp.getLine() != -1) {
-            e = new CodeElement(element, tmp.getLine());
-        } else {
-            e = new CodeElement(element);
-        }
-        ResultElement r = new ResultElement(e, status.getSuspiciousness(f));
-        result.add(r);
+        result.add(new ResultElement(element, status.getSuspiciousness(f)));
     }
 
     public void sort(){
@@ -50,8 +43,8 @@ public class SbflResult {
         List<String> shortClassNames = new ArrayList<>();
        List<String> shortMethodNames = new ArrayList<>();
        for(int i = 0; i < min(top, getSize()); i++){
-          String longClassName = result.get(i).e().getClassName();
-          String longMethodName = result.get(i).e().getMethodName();
+          String longClassName = result.get(i).e().getFullyQualifiedClassName();
+          String longMethodName = result.get(i).e().getFullyQualifiedMethodName();
 
 
           StringBuilder shortClassName = new StringBuilder();
@@ -67,8 +60,10 @@ public class SbflResult {
           shortClassName.append(packages[packages.length - 1]);
 
           shortMethodName.append(longMethodName.split("#")[1].split("\\(")[0]);
-          shortMethodName.append("(...) line: ");
-          shortMethodName.append(result.get(i).e().line);
+          if(granularity == Granularity.LINE) {
+              shortMethodName.append("(...) line: ");
+              shortMethodName.append(((LineElementName)result.get(i).e()).getLine());
+          }
 
             shortClassNames.add(shortClassName.toString());
             shortMethodNames.add(shortMethodName.toString());
@@ -106,8 +101,8 @@ public class SbflResult {
 
             String colorBegin = "";
             String coloerEnd = "";
-            String className = element.e().getClassName();
-            SbflStatus stat = cc.getCoverageOfTarget(className, Granularity.METHOD).get(element.e.e);
+            String className = element.e().getFullyQualifiedClassName();
+            SbflStatus stat = cc.getCoverageOfTarget(className, Granularity.METHOD).get(element.e);
             if(highlightMethods.contains(element.toString())){
                 colorBegin = "\u001b[00;41m";
                 coloerEnd = "\u001b[00m";
@@ -132,8 +127,8 @@ public class SbflResult {
         List<String> shortClassNames = new ArrayList<>();
         List<String> shortMethodNames = new ArrayList<>();
         for(int i = 0; i < min(top, getSize()); i++){
-            String longClassName = result.get(i).e().getClassName();
-            String longMethodName = result.get(i).e.getMethodName();
+            String longClassName = result.get(i).e().getFullyQualifiedClassName();
+            String longMethodName = result.get(i).e.getFullyQualifiedMethodName();
 
             StringBuilder shortClassName = new StringBuilder();
             StringBuilder shortMethodName = new StringBuilder();
@@ -148,8 +143,10 @@ public class SbflResult {
             shortClassName.append(packages[packages.length - 1]);
 
             shortMethodName.append(longMethodName.split("#")[1].split("\\(")[0]);
-            shortMethodName.append("(...) line: ");
-            shortMethodName.append(result.get(i).e().line);
+            if(granularity == Granularity.LINE) {
+                shortMethodName.append("(...) line: ");
+                shortMethodName.append(((LineElementName)result.get(i).e()).getLine());
+            }
 
             shortClassNames.add(shortClassName.toString());
             shortMethodNames.add(shortMethodName.toString());
@@ -289,7 +286,7 @@ public class SbflResult {
     public Set<String> getAllElements() {
         return result.stream()
                 .map(ResultElement::e)
-                .map(CodeElement::toString)
+                .map(CodeElementName::toString)
                 .collect(Collectors.toSet());
     }
 
@@ -297,43 +294,15 @@ public class SbflResult {
         this.highlightMethods = highlightMethods;
     }
 
-    record ResultElement(CodeElement e, double sbflScore) implements Comparable<ResultElement> {
+    record ResultElement(CodeElementName e, double sbflScore) implements Comparable<ResultElement> {
         @Override
         public int compareTo(ResultElement o) {
-            return isSameScore(o) ? Integer.compare(this.e.line, o.e.line) : -Double.compare(this.sbflScore, o.sbflScore);
+            return isSameScore(o) ? e.compareTo(o.e) : -Double.compare(this.sbflScore, o.sbflScore);
         }
 
         //小数点以下4桁までで比較
         private boolean isSameScore(ResultElement e){
             return String.format("%.4f", this.sbflScore).equals(String.format("%.4f", e.sbflScore));
-        }
-    }
-
-    record CodeElement(CodeElementName e, int line){
-        public CodeElement(CodeElementName e){
-            this(e, -1);
-        }
-
-        @Override
-        public String toString(){
-            if(line == -1){
-                return e.getFullyQualifiedMethodName();
-            }
-            else {
-                return e.getFullyQualifiedMethodName() + " : " + line;
-            }
-        }
-
-        public String getMethodName(){
-            return e.getFullyQualifiedMethodName();
-        }
-
-        public String getShortMethodName(){
-            return e.getShortMethodName();
-        }
-
-        public String getClassName(){
-            return e.getFullyQualifiedClassName();
         }
     }
 }
