@@ -182,7 +182,7 @@ public class CoverageOfTarget {
 
 
     private Map<CodeElementName, SbflStatus> combineCoverage(Map<CodeElementName, SbflStatus> thisCov, Map<CodeElementName, SbflStatus> otherCov){
-        Map<CodeElementName, SbflStatus> newCoverage = new HashMap<>(otherCov);
+        Map<CodeElementName, SbflStatus> newCoverage = new TreeMap<>(otherCov);
         thisCov.forEach((k,v)->{
             if(newCoverage.containsKey(k)){
                 newCoverage.put(k, v.combine(newCoverage.get(k)));
