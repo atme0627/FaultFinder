@@ -72,6 +72,6 @@ public class LineElementName implements CodeElementName {
 
     @Override
     public String toString(){
-        return this.getFullyQualifiedMethodName() + "line: " + line;
+        return this.getFullyQualifiedMethodName() + " line: " + line;
     }
 }
