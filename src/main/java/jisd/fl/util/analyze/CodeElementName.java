@@ -26,6 +26,9 @@ public class CodeElementName {
     final public String className;
     final public String methodSignature;
 
+    //現状なくても良いこととする。
+    int line = -1;
+
     //メソッド名は一応あってもなくても良い
     //ex1.) sample.demo
     //ex2.) sample.demo#sample
@@ -92,17 +95,19 @@ public class CodeElementName {
         if(obj == null) return false;
         if(!(obj instanceof CodeElementName)) return false;
         return this.getFullyQualifiedMethodName()
-                .equals(((CodeElementName) obj).getFullyQualifiedMethodName());
+                .equals(((CodeElementName) obj).getFullyQualifiedMethodName())
+                && this.line == ((CodeElementName) obj).line;
     }
 
     @Override
     public int hashCode(){
-        return this.getFullyQualifiedMethodName().hashCode();
+        return this.getFullyQualifiedMethodName().hashCode() + line;
     }
 
     @Override
     public String toString(){
-        return this.methodSignature != null ? this.getFullyQualifiedMethodName() : this.getFullyQualifiedClassName();
+        return this.methodSignature != null ? this.getFullyQualifiedMethodName() : this.getFullyQualifiedClassName()
+                + ((line != -1) ? ":" + line : "");
     }
 
     public String getFullyQualifiedClassName(){
@@ -152,5 +157,13 @@ public class CodeElementName {
 
     public boolean isConstructor(){
         return this.className.equals(getShortMethodName());
+    }
+
+    public void setLine(int line) {
+        this.line = line;
+    }
+
+    public int getLine() {
+        return line;
     }
 }
