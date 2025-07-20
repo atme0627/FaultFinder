@@ -304,7 +304,7 @@ public class SbflResult {
     record ResultElement(CodeElement e, double sbflScore) implements Comparable<ResultElement> {
         @Override
         public int compareTo(ResultElement o) {
-            return isSameScore(o) ? 0 : -Double.compare(this.sbflScore, o.sbflScore);
+            return isSameScore(o) ? Integer.compare(this.e.line, o.e.line) : -Double.compare(this.sbflScore, o.sbflScore);
         }
 
         //小数点以下4桁までで比較
