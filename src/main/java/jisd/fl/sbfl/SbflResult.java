@@ -43,14 +43,8 @@ public class SbflResult {
         List<String> shortClassNames = new ArrayList<>();
        List<String> shortMethodNames = new ArrayList<>();
         for(int i = 0; i < min(top, getSize()); i++){
-            StringBuilder shortMethodName = new StringBuilder(result.get(i).e.getShortMethodName());
-            if(granularity == Granularity.LINE) {
-                shortMethodName.append("(...) line: ");
-                shortMethodName.append(((LineElementName)result.get(i).e()).getLine());
-            }
-
             shortClassNames.add(result.get(i).e.compressedClassName());
-            shortMethodNames.add(shortMethodName.toString());
+            shortMethodNames.add(result.get(i).e.compressedShortMethodName());
         }
 
         int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
@@ -111,14 +105,8 @@ public class SbflResult {
         List<String> shortClassNames = new ArrayList<>();
         List<String> shortMethodNames = new ArrayList<>();
         for(int i = 0; i < min(top, getSize()); i++){
-            StringBuilder shortMethodName = new StringBuilder(result.get(i).e.getShortMethodName());
-            if(granularity == Granularity.LINE) {
-                shortMethodName.append("(...) line: ");
-                shortMethodName.append(((LineElementName)result.get(i).e()).getLine());
-            }
-
             shortClassNames.add(result.get(i).e.compressedClassName());
-            shortMethodNames.add(shortMethodName.toString());
+            shortMethodNames.add(result.get(i).e.compressedShortMethodName());
         }
 
         int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();

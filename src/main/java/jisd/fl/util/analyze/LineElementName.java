@@ -45,6 +45,11 @@ public class LineElementName implements CodeElementName {
         return methodElementName.getFilePath(isTest);
     }
 
+    @Override
+    public String compressedShortMethodName() {
+        return methodElementName.compressedShortMethodName() + " line: " + line;
+    }
+
 
     @Override
     public int compareTo(CodeElementName o) {

@@ -40,7 +40,7 @@ public class MethodElementName implements CodeElementName{
         }
         else {
             fqClassName = fullyQualifiedName;
-            methodSignature = "<NO METHOD DATA>";
+            methodSignature = "<NO METHOD DATA>()";
         }
 
         //with package
@@ -61,7 +61,7 @@ public class MethodElementName implements CodeElementName{
     public MethodElementName(String packageName, String className){
         this.packageName = packageName;
         this.className = className;
-        this.methodSignature =  "<NO METHOD DATA>";
+        this.methodSignature =  "<NO METHOD DATA>()";
     }
 
     public MethodElementName(String packageName, String className, @NotBlank String methodSignature){
@@ -74,7 +74,7 @@ public class MethodElementName implements CodeElementName{
         CompilationUnit unit = cd.findAncestor(CompilationUnit.class).orElseThrow();
         this.packageName = JavaParserUtil.getPackageName(unit);
         this.className = cd.getNameAsString();
-        this.methodSignature =  "<NO METHOD DATA>";
+        this.methodSignature =  "<NO METHOD DATA>()";
     }
 
     public MethodElementName(CallableDeclaration cd){
@@ -119,7 +119,11 @@ public class MethodElementName implements CodeElementName{
         return Paths.get(dir + "/" + packageName.replace('.', '/'), className + ".java");
     }
 
-
+    @Override
+    public String compressedShortMethodName() {
+        String signature = getFullyQualifiedMethodName().substring(getFullyQualifiedMethodName().indexOf("(")).length() == 2 ? "()" : "(...)";
+        return getShortMethodName() + signature;
+    }
 
     public static Optional<MethodElementName> generateFromSimpleClassName(String className){
         return generateFromSimpleClassName(className, Paths.get(PropertyLoader.getProperty("targetSrcPath")));

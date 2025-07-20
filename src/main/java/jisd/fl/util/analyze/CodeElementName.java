@@ -11,6 +11,7 @@ public interface CodeElementName extends Comparable<CodeElementName> {
     Path getFilePath();
     Path getFilePath(boolean isTest);
 
+    String compressedShortMethodName();
     default String compressedClassName(){
         StringBuilder shortClassName = new StringBuilder();
         String[] packages = getFullyQualifiedClassName().split("\\.");
