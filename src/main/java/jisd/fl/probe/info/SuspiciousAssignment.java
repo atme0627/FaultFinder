@@ -12,7 +12,7 @@ import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class SuspiciousAssignment extends SuspiciousExpression {
     //左辺で値が代入されている変数の情報
     private final SuspiciousVariable assignTarget;
-    public SuspiciousAssignment(CodeElementName failedTest, CodeElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
+    public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue());
         this.expr = extractExpr();
         this.assignTarget = assignTarget;
@@ -81,7 +81,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                         //収集するのは指定した行で直接呼び出したメソッドのみ
                         //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
                         if (mee.thread().equals(thread) && getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
-                            CodeElementName invokedMethod = new CodeElementName(EnhancedDebugger.getFqmn(mee.method()));
+                            MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                             int locateLine = mee.location().lineNumber();
                             String actualValue = mee.returnValue().toString();
                             SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(

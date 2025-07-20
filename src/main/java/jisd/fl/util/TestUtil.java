@@ -6,7 +6,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.io.BufferedReader;
@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public  class TestUtil {
-    public static String getJVMMain(CodeElementName testMethod){
+    public static String getJVMMain(MethodElementName testMethod){
         compileForDebug(testMethod);
         return "jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
     }
@@ -31,11 +31,11 @@ public  class TestUtil {
 
     @Deprecated
     public static void compileForDebug(String testClassName) {
-        compileForDebug(new CodeElementName(testClassName));
+        compileForDebug(new MethodElementName(testClassName));
     }
 
     //-gつきでコンパイル
-    public static void compileForDebug(CodeElementName targetTestClass) {
+    public static void compileForDebug(MethodElementName targetTestClass) {
         FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
         String classpath = "locallib/junit-dependency/*";
         String sourcepath = PropertyLoader.getTargetSrcDir() + ":" + PropertyLoader.getTestSrcDir();
@@ -62,13 +62,13 @@ public  class TestUtil {
 
     @Deprecated
     public static boolean execTestCaseWithJacocoAgent(String testMethodNameWithSignature, String execFileName) throws IOException, InterruptedException {
-        return execTestCaseWithJacocoAgent(new CodeElementName(testMethodNameWithSignature), execFileName);
+        return execTestCaseWithJacocoAgent(new MethodElementName(testMethodNameWithSignature), execFileName);
     }
     //TestLauncherにjacoco agentをつけて起動
     //methodNameは次のように指定: org.example.order.OrderTests#test1(int a)
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
-    public static boolean execTestCaseWithJacocoAgent(CodeElementName testMethod, String execFileName) throws IOException, InterruptedException {
+    public static boolean execTestCaseWithJacocoAgent(MethodElementName testMethod, String execFileName) throws IOException, InterruptedException {
         final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
         final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
         final String debugBinDir = PropertyLoader.getDebugBinDir();
@@ -118,19 +118,19 @@ public  class TestUtil {
 
     @Deprecated
     public static Debugger testDebuggerFactory(String testMethodName) {
-        return testDebuggerFactory(new CodeElementName(testMethodName));
+        return testDebuggerFactory(new MethodElementName(testMethodName));
     }
 
     @Deprecated
     public static Debugger testDebuggerFactory(String testMethodName, String option) {
-        return testDebuggerFactory(new CodeElementName(testMethodName), option);
+        return testDebuggerFactory(new MethodElementName(testMethodName), option);
     }
 
-    public static Debugger testDebuggerFactory(CodeElementName testMethod){
+    public static Debugger testDebuggerFactory(MethodElementName testMethod){
         return testDebuggerFactory(testMethod, "");
     }
 
-    public static Debugger testDebuggerFactory(CodeElementName testMethod, String option) {
+    public static Debugger testDebuggerFactory(MethodElementName testMethod, String option) {
         compileForDebug(testMethod);
         Debugger dbg;
         while(true) {
@@ -162,9 +162,9 @@ public  class TestUtil {
 
     @Deprecated
     public static Set<String> getTestMethods(String targetClassName)  {
-        return getTestMethods(new CodeElementName(targetClassName))
+        return getTestMethods(new MethodElementName(targetClassName))
                 .stream()
-                .map(CodeElementName::getFullyQualifiedMethodName)
+                .map(MethodElementName::getFullyQualifiedMethodName)
                 .collect(Collectors.toSet());
     }
 
@@ -175,8 +175,8 @@ public  class TestUtil {
     //どうせjunitの実行時にはクラスパスにテストクラスを含める必要があるので
     //junitのorg.junit.platform.launcherを使う方法にした方がいい
     @Deprecated
-    public static Set<CodeElementName> getTestMethods(CodeElementName targetClass)  {
-        Set<CodeElementName> methodNames = new LinkedHashSet<>();
+    public static Set<MethodElementName> getTestMethods(MethodElementName targetClass)  {
+        Set<MethodElementName> methodNames = new LinkedHashSet<>();
         CompilationUnit unit = getUnitFromCodeElement(targetClass);
         ClassOrInterfaceDeclaration cd = getClassNodeFromCodeElement(targetClass);
 
@@ -194,7 +194,7 @@ public  class TestUtil {
                     .filter(c -> !c.equals(cd))
                     .forEach(c -> {
                         if(c.isAnnotationPresent("Nested")) {
-                            methodNames.addAll(getTestMethods(new CodeElementName(c)));
+                            methodNames.addAll(getTestMethods(new MethodElementName(c)));
                         }
                         cd.remove(c);
                     });
@@ -207,17 +207,17 @@ public  class TestUtil {
 
 
     //あるクラス内にあるテストメソッドのみ集める（親クラス、入れ子クラスは考えない）
-    private static Set<CodeElementName> getTestMethodsInClass(CodeElementName targetClass){
+    private static Set<MethodElementName> getTestMethodsInClass(MethodElementName targetClass){
         return getClassNodeFromCodeElement(targetClass)
                 .findAll(MethodDeclaration.class)
                 .stream()
                 .filter(md -> md.isAnnotationPresent("Test"))
-                .map(CodeElementName::new)
+                .map(MethodElementName::new)
                 .collect(Collectors.toSet());
     }
 
-    private static Set<CodeElementName> getAncestorClasses(CodeElementName targetClass){
-       Set<CodeElementName> result = new HashSet<>();
+    private static Set<MethodElementName> getAncestorClasses(MethodElementName targetClass){
+       Set<MethodElementName> result = new HashSet<>();
        CompilationUnit unit = getUnitFromCodeElement(targetClass);
        ClassOrInterfaceDeclaration cd = getClassNodeFromCodeElement(targetClass);
        if(cd.getExtendedTypes().isEmpty()) return result;
@@ -225,7 +225,7 @@ public  class TestUtil {
        String parentPackageName = JavaParserUtil.getPackageName(unit);
        cd.getExtendedTypes()
                .stream()
-               .map(type -> new CodeElementName(parentPackageName, type.getNameAsString()))
+               .map(type -> new MethodElementName(parentPackageName, type.getNameAsString()))
                .forEach(ce -> {
                    result.add(ce);
                    result.addAll(getAncestorClasses(ce));
@@ -233,11 +233,11 @@ public  class TestUtil {
        return result;
     }
 
-    private static ClassOrInterfaceDeclaration getClassNodeFromCodeElement(CodeElementName targetClass){
+    private static ClassOrInterfaceDeclaration getClassNodeFromCodeElement(MethodElementName targetClass){
         return getUnitFromCodeElement(targetClass).getClassByName(targetClass.getShortClassName()).orElseThrow();
     }
 
-    private static CompilationUnit getUnitFromCodeElement(CodeElementName targetClass){
+    private static CompilationUnit getUnitFromCodeElement(MethodElementName targetClass){
         CompilationUnit unit;
         try {
             unit = JavaParserUtil.parseClass(targetClass);

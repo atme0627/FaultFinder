@@ -21,12 +21,12 @@ public class JavaParserUtil {
     //引数に与えられるclassNameがpackageを含まない可能性あり
     @Deprecated
     public static CompilationUnit parseClass(String className) throws NoSuchFileException {
-        CodeElementName targetClass = new CodeElementName(className);
+        MethodElementName targetClass = new MethodElementName(className);
         return parseClass(targetClass);
     }
 
     //TODO: parseTestClassのところはいらないはず
-    public static CompilationUnit parseClass(CodeElementName targetClass) throws NoSuchFileException {
+    public static CompilationUnit parseClass(MethodElementName targetClass) throws NoSuchFileException {
         Path p = targetClass.getFilePath();
         if (!Files.exists(p)) return parseTestClass(targetClass);
         try {
@@ -37,7 +37,7 @@ public class JavaParserUtil {
         }
     }
 
-    public static CompilationUnit parseTestClass(CodeElementName targetClass) throws NoSuchFileException {
+    public static CompilationUnit parseTestClass(MethodElementName targetClass) throws NoSuchFileException {
         Path p = targetClass.getFilePath(true);
         if (!Files.exists(p)) throw new NoSuchFileException(p.toString());
         try {
@@ -50,7 +50,7 @@ public class JavaParserUtil {
 
 
     //methodNameはクラス、シグニチャを含む
-    public static CallableDeclaration<?> getCallableDeclarationByName(CodeElementName targetMethod) throws NoSuchFileException {
+    public static CallableDeclaration<?> getCallableDeclarationByName(MethodElementName targetMethod) throws NoSuchFileException {
         Optional<CallableDeclaration> omd = extractCallableDeclaration(targetMethod)
                 .stream()
                 .filter(cd -> cd.getSignature().toString().equals(targetMethod.methodSignature))
@@ -58,50 +58,50 @@ public class JavaParserUtil {
         return omd.orElseThrow(RuntimeException::new);
     }
 
-    public static List<CallableDeclaration> extractCallableDeclaration(CodeElementName targetClass) throws NoSuchFileException {
+    public static List<CallableDeclaration> extractCallableDeclaration(MethodElementName targetClass) throws NoSuchFileException {
         return extractNode(targetClass, CallableDeclaration.class);
     }
 
-    public static List<Statement> extractStatement(CodeElementName targetClass) throws NoSuchFileException {
+    public static List<Statement> extractStatement(MethodElementName targetClass) throws NoSuchFileException {
         return extractNode(targetClass, Statement.class);
     }
 
-    public static List<AssignExpr> extractAssignExpr(CodeElementName targetClass) throws NoSuchFileException {
+    public static List<AssignExpr> extractAssignExpr(MethodElementName targetClass) throws NoSuchFileException {
         return extractNode(targetClass, AssignExpr.class);
     }
 
-    public static List<VariableDeclarator> extractVariableDeclarator(CodeElementName targetClass) throws NoSuchFileException {
+    public static List<VariableDeclarator> extractVariableDeclarator(MethodElementName targetClass) throws NoSuchFileException {
         return extractNode(targetClass, VariableDeclarator.class);
     }
 
     @Deprecated
     public static BlockStmt extractBodyOfMethod(String targetMethod) throws NoSuchFileException {
-        CodeElementName cd = new CodeElementName(targetMethod);
+        MethodElementName cd = new MethodElementName(targetMethod);
         return extractBodyOfMethod(cd);
     }
 
-    public static BlockStmt extractBodyOfMethod(CodeElementName targetMethod) throws NoSuchFileException {
+    public static BlockStmt extractBodyOfMethod(MethodElementName targetMethod) throws NoSuchFileException {
         CallableDeclaration<?> cd = getCallableDeclarationByName(targetMethod);
         return cd.isMethodDeclaration() ?
                 cd.asMethodDeclaration().getBody().orElseThrow() :
                 cd.asConstructorDeclaration().getBody();
     }
 
-    private static <T extends Node> List<T> extractNode(CodeElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
+    private static <T extends Node> List<T> extractNode(MethodElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
         return parseClass(targetClass)
                 .findAll(nodeClass);
     }
 
-    public static Optional<CallableDeclaration> getCallableDeclarationByLine(CodeElementName targetClass, int line) throws NoSuchFileException {
+    public static Optional<CallableDeclaration> getCallableDeclarationByLine(MethodElementName targetClass, int line) throws NoSuchFileException {
         return getNodeByLine(targetClass, line, CallableDeclaration.class);
     }
 
     //その行を含む最小範囲のStatementを返す
-    public static Optional<Statement> getStatementByLine(CodeElementName targetClass, int line) throws NoSuchFileException {
+    public static Optional<Statement> getStatementByLine(MethodElementName targetClass, int line) throws NoSuchFileException {
         return getNodeByLine(targetClass, line, Statement.class);
     }
 
-    private static <T extends Node> Optional<T> getNodeByLine(CodeElementName targetClass, int line, Class<T> nodeClass) throws NoSuchFileException {
+    private static <T extends Node> Optional<T> getNodeByLine(MethodElementName targetClass, int line, Class<T> nodeClass) throws NoSuchFileException {
         return extractNode(targetClass, nodeClass)
                 .stream()
                 .filter(stmt -> stmt.getRange().isPresent())

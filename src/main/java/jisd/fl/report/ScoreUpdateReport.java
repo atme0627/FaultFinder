@@ -1,6 +1,6 @@
 package jisd.fl.report;
 
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -67,7 +67,7 @@ public class ScoreUpdateReport {
                 // メソッド名に開始行を追加
                 Map<String, Pair<Integer, Integer>> rangeOfMethods;
                 try {
-                    rangeOfMethods = StaticAnalyzer.getRangeOfAllMethods(new CodeElementName(longClassName));
+                    rangeOfMethods = StaticAnalyzer.getRangeOfAllMethods(new MethodElementName(longClassName));
                 } catch (NoSuchFileException e) {
                     throw new RuntimeException(e);
                 }

@@ -1,7 +1,7 @@
 package jisd.fl.util;
 
 import com.github.javaparser.Range;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,7 @@ class StaticAnalyzerTest {
     class getMethodNamesTest{
         @Test
         void SimpleCase() {
-            CodeElementName targetClass = new CodeElementName("StaticAnalyzerTest.getMethodNamesTest.SimpleCase");
+            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getMethodNamesTest.SimpleCase");
             try {
                 Set<String> actual =
                         StaticAnalyzer.getMethodNames(targetClass);
@@ -44,7 +44,7 @@ class StaticAnalyzerTest {
 
         @Test
         void AbstractCase() {
-            CodeElementName targetClass = new CodeElementName("StaticAnalyzerTest.getMethodNamesTest.AbstractCase");
+            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getMethodNamesTest.AbstractCase");
             try {
                 Set<String> actual =
                         StaticAnalyzer.getMethodNames(targetClass);
@@ -65,7 +65,7 @@ class StaticAnalyzerTest {
     class getRangeOfAllMethodsTest {
         @Test
         void simpleCase(){
-            CodeElementName targetClass = new CodeElementName("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase");
+            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase");
             try {
                 Map<String, Pair<Integer, Integer>> actual = StaticAnalyzer.getRangeOfAllMethods(targetClass);
                 assertThat(actual.entrySet(), hasSize(3));
@@ -85,7 +85,7 @@ class StaticAnalyzerTest {
     class getRangeOfStatementTest {
         @Test
         void simpleCase1() throws NoSuchFileException {
-            CodeElementName targetClass = new CodeElementName("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
+            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
             Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 9);
             assertTrue(actual.isPresent());
             assertEquals(9, actual.get().begin.line);
@@ -94,7 +94,7 @@ class StaticAnalyzerTest {
 
         @Test
         void simpleCase2() throws NoSuchFileException {
-            CodeElementName targetClass = new CodeElementName("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
+            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
             Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 14);
             assertTrue(actual.isPresent());
             assertEquals(14, actual.get().begin.line);
@@ -103,7 +103,7 @@ class StaticAnalyzerTest {
 
         @Test
         void simpleCase3() throws NoSuchFileException {
-            CodeElementName targetClass = new CodeElementName("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
+            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
             Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 23);
             assertTrue(actual.isPresent());
             assertEquals(22, actual.get().begin.line);
@@ -112,7 +112,7 @@ class StaticAnalyzerTest {
 
         @Test
         void simpleCase4() throws NoSuchFileException {
-            CodeElementName targetClass = new CodeElementName("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
+            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getRangeOfStatementTest.SimpleCase");
             Optional<Range> actual = StaticAnalyzer.getRangeOfStatement(targetClass, 27);
             assertTrue(actual.isPresent());
             assertEquals(26, actual.get().begin.line);
@@ -124,14 +124,14 @@ class StaticAnalyzerTest {
     class getMethodNameFromLineTest {
         @Test
         void simpleCase1() throws NoSuchFileException {
-            CodeElementName targetClass = new CodeElementName("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
+            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
             String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 12);
             assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodA(int)", actual);
         }
 
         @Test
         void simpleCase2() throws NoSuchFileException {
-            CodeElementName targetClass = new CodeElementName("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
+            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase");
             String actual = StaticAnalyzer.getMethodNameFormLine(targetClass, 21);
             assertEquals("StaticAnalyzerTest.getMethodNameFromLineTest.SimpleCase#methodB()", actual);
         }
@@ -141,24 +141,24 @@ class StaticAnalyzerTest {
     class getAssignLineTest {
         @Test
         void d4jMath87_SimplexTableau1() {
-            CodeElementName locateMethod
-                    = new CodeElementName("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()");
+            MethodElementName locateMethod
+                    = new MethodElementName("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()");
             List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "coefficients");
             assertThat(actual, hasSize(1));
             assertThat(actual, hasItems(325));
         }
         @Test
         void d4jMath87_SimplexTableau2() {
-            CodeElementName locateMethod
-                    = new CodeElementName("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()");
+            MethodElementName locateMethod
+                    = new MethodElementName("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#getSolution()");
             List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "basicRow");
             assertThat(actual, hasSize(2));
             assertThat(actual, hasItems(327, 331));
         }
         @Test
         void d4jMath87_SimplexTableau3() {
-            CodeElementName locateMethod
-                = new CodeElementName("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()");
+            MethodElementName locateMethod
+                = new MethodElementName("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()");
             List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "this.numArtificialVariables");
             assertThat(actual, hasSize(2));
             assertThat(actual, hasItems(112, 303));
@@ -167,8 +167,8 @@ class StaticAnalyzerTest {
         //フィールドでの宣言のみ
         @Test
         void d4jMath87_SimplexTableau4() {
-            CodeElementName locateMethod
-                    = new CodeElementName("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()");
+            MethodElementName locateMethod
+                    = new MethodElementName("StaticAnalyzerTest.getAssertLineTest.d4jMath87_SimplexTableau#discardArtificialVariables()");
             List<Integer> actual = StaticAnalyzer.getAssignLine(locateMethod, "numArtificialVariables");
             assertThat(actual, hasSize(1));
             assertThat(actual, hasItems(87));
@@ -179,8 +179,8 @@ class StaticAnalyzerTest {
     class getMethodCallingLineTest {
         @Test
         void d4jMath87_SimplexTableau() throws NoSuchFileException {
-            CodeElementName locateMethod
-                    = new CodeElementName("StaticAnalyzerTest.getMethodCallingLineTest.d4jMath87_SimplexTableau#getSolution()");
+            MethodElementName locateMethod
+                    = new MethodElementName("StaticAnalyzerTest.getMethodCallingLineTest.d4jMath87_SimplexTableau#getSolution()");
             List<Integer> actual = StaticAnalyzer.getMethodCallingLine(locateMethod);
             assertThat(actual, hasSize(8));
             assertThat(actual, hasItems(325, 327, 328, 331, 332, 337, 339, 343));

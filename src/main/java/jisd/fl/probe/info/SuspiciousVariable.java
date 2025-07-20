@@ -1,12 +1,12 @@
 package jisd.fl.probe.info;
 
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.Objects;
 
 public class SuspiciousVariable { //ローカル変数の場合のみ
-    private final CodeElementName failedTest;
-    private final CodeElementName locateMethod;
+    private final MethodElementName failedTest;
+    private final MethodElementName locateMethod;
     private final String variableName;
     private final boolean isPrimitive;
     private final boolean isField;
@@ -27,8 +27,8 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
                               boolean isPrimitive,
                               boolean isField,
                               int arrayNth) {
-        failedTest = new CodeElementName("EMPTY");
-        this.locateMethod = new CodeElementName(locateMethod);
+        failedTest = new MethodElementName("EMPTY");
+        this.locateMethod = new MethodElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
         this.isField = isField;
@@ -44,8 +44,8 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
                               String actualValue,
                               boolean isPrimitive,
                               boolean isField) {
-        failedTest = new CodeElementName("EMPTY");
-        this.locateMethod = new CodeElementName(locateMethod);
+        failedTest = new MethodElementName("EMPTY");
+        this.locateMethod = new MethodElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
         this.isField = isField;
@@ -58,7 +58,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
     //フィールドの場合はクラス名まで
     //配列の場合
     public SuspiciousVariable(
-            CodeElementName failedTest,
+            MethodElementName failedTest,
             String locateMethod,
             String variableName,
             String actualValue,
@@ -67,7 +67,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
             int arrayNth) {
 
         this.failedTest = failedTest;
-        this.locateMethod = new CodeElementName(locateMethod);
+        this.locateMethod = new MethodElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
         this.isField = isField;
@@ -78,7 +78,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
 
     //配列でない場合
     public SuspiciousVariable(
-            CodeElementName failedTest,
+            MethodElementName failedTest,
             String locateMethod,
             String variableName,
             String actualValue,
@@ -86,7 +86,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
             boolean isField) {
 
         this.failedTest = failedTest;
-        this.locateMethod = new CodeElementName(locateMethod);
+        this.locateMethod = new MethodElementName(locateMethod);
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
         this.isField = isField;
@@ -132,7 +132,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
         }
     }
 
-    public CodeElementName getLocateMethodElement() {
+    public MethodElementName getLocateMethodElement() {
         return locateMethod;
     }
 
@@ -175,7 +175,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
 
     }
 
-    public CodeElementName getFailedTest() {
+    public MethodElementName getFailedTest() {
         return failedTest;
     }
 

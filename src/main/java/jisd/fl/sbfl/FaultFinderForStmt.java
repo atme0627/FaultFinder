@@ -3,7 +3,7 @@ package jisd.fl.sbfl;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.report.ScoreUpdateReport;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -30,9 +30,9 @@ public class FaultFinderForStmt extends FaultFinder{
         sbflResult.setSuspicious(targetStmt, 0);
 
         try {
-            CodeElementName codeElementName = new CodeElementName(className);
-            String targetMethodFqmn = StaticAnalyzer.getMethodNameFormLine(codeElementName, lineNumber);
-            Map<String, Pair<Integer, Integer>> methodRanges = StaticAnalyzer.getRangeOfAllMethods(codeElementName);
+            MethodElementName methodElementName = new MethodElementName(className);
+            String targetMethodFqmn = StaticAnalyzer.getMethodNameFormLine(methodElementName, lineNumber);
+            Map<String, Pair<Integer, Integer>> methodRanges = StaticAnalyzer.getRangeOfAllMethods(methodElementName);
             Pair<Integer, Integer> targetMethodRange = methodRanges.get(targetMethodFqmn);
 
             if (targetMethodRange == null) {
@@ -88,9 +88,9 @@ public class FaultFinderForStmt extends FaultFinder{
         sbflResult.setSuspicious(targetStmt, 0);
 
         try {
-            CodeElementName codeElementName = new CodeElementName(className);
-            String targetMethodFqmn = StaticAnalyzer.getMethodNameFormLine(codeElementName, lineNumber);
-            Map<String, Pair<Integer, Integer>> methodRanges = StaticAnalyzer.getRangeOfAllMethods(codeElementName);
+            MethodElementName methodElementName = new MethodElementName(className);
+            String targetMethodFqmn = StaticAnalyzer.getMethodNameFormLine(methodElementName, lineNumber);
+            Map<String, Pair<Integer, Integer>> methodRanges = StaticAnalyzer.getRangeOfAllMethods(methodElementName);
             Pair<Integer, Integer> targetMethodRange = methodRanges.get(targetMethodFqmn);
 
             if (targetMethodRange == null) {

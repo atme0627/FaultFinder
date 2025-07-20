@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 
 public class SuspiciousVariableFinder {
     private final TestMethodElement targetTestCase;
-    private final CodeElementName targetTestCaseName;
+    private final MethodElementName targetTestCaseName;
 
-    public SuspiciousVariableFinder(CodeElementName targetTestCaseName) throws NoSuchFileException {
+    public SuspiciousVariableFinder(MethodElementName targetTestCaseName) throws NoSuchFileException {
         this.targetTestCaseName = targetTestCaseName;
         this.targetTestCase = TestMethodElement.getTestMethodElementByName(targetTestCaseName);
     }
@@ -176,7 +176,7 @@ public class SuspiciousVariableFinder {
         NodeList<Parameter> prms;
         String fieldLocateClass = null;
 
-        CodeElementName tmpCd = new CodeElementName(targetMethod);
+        MethodElementName tmpCd = new MethodElementName(targetMethod);
         try {
             bs = JavaParserUtil.extractBodyOfMethod(tmpCd);
             prms = JavaParserUtil.getCallableDeclarationByName(tmpCd).getParameters();
@@ -226,7 +226,7 @@ public class SuspiciousVariableFinder {
             //親クラスを探す
             ClassOrInterfaceDeclaration classDecl = unit.findFirst(ClassOrInterfaceDeclaration.class).get();
             if(classDecl.getExtendedTypes().isEmpty()) break;
-            CodeElementName cd = CodeElementName.generateFromSimpleClassName(classDecl.getExtendedTypes(0).getNameAsString()).orElseThrow();
+            MethodElementName cd = MethodElementName.generateFromSimpleClassName(classDecl.getExtendedTypes(0).getNameAsString()).orElseThrow();
             System.out.println("parent: " + cd.getFullyQualifiedClassName());
         }
 

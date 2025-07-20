@@ -1,7 +1,7 @@
 package jisd.fl.probe.info;
 
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,9 +14,9 @@ class SuspiciousArgumentTest {
 
     @Test
     void searchSuspiciousArgument() {
-        CodeElementName calleeMethodName = new CodeElementName("org.sample.util.Calc#methodCalling(int, int)");
+        MethodElementName calleeMethodName = new MethodElementName("org.sample.util.Calc#methodCalling(int, int)");
         SuspiciousVariable suspVar = new SuspiciousVariable(
-                new CodeElementName("org.sample.CalcTest#methodCall1()"),
+                new MethodElementName("org.sample.CalcTest#methodCall1()"),
                 "org.sample.util.Calc#methodCalling(int, int)",
                 "y",
                 "3",

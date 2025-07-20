@@ -2,17 +2,13 @@ package jisd.fl.sbfl;
 
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
-import jisd.fl.probe.info.ProbeExResult;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.min;
-import static jisd.fl.util.analyze.StaticAnalyzer.getRangeOfAllMethods;
 
 public class SbflResult {
     List<ResultElement> result = new ArrayList<>();
@@ -23,7 +19,7 @@ public class SbflResult {
         this.granularity = granularity;
     }
 
-    public void setElement(CodeElementName element, SbflStatus status, Formula f){
+    public void setElement(MethodElementName element, SbflStatus status, Formula f){
         CodeElement e;
         if(element.getLine() != -1) {
             e = new CodeElement(element, element.getLine());
@@ -311,8 +307,8 @@ public class SbflResult {
         }
     }
 
-    record CodeElement(CodeElementName e, int line){
-        public CodeElement(CodeElementName e){
+    record CodeElement(MethodElementName e, int line){
+        public CodeElement(MethodElementName e){
             this(e, -1);
         }
 

@@ -39,7 +39,7 @@ public class TestMethodElement extends MethodElement {
                 .collect(Collectors.toList());
     }
 
-    public static TestMethodElement getTestMethodElementByName(CodeElementName testCase) throws NoSuchFileException {
+    public static TestMethodElement getTestMethodElementByName(MethodElementName testCase) throws NoSuchFileException {
         return new TestMethodElement(JavaParserUtil.getCallableDeclarationByName(testCase));
     }
 }

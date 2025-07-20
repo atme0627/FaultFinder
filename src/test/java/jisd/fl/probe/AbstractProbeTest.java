@@ -5,7 +5,7 @@ import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 
 class AbstractProbeTest {
@@ -42,6 +42,6 @@ class AbstractProbeTest {
         PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/main");
         PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/test");
 
-        TestUtil.compileForDebug(new CodeElementName("sample.MethodCallTest"));
+        TestUtil.compileForDebug(new MethodElementName("sample.MethodCallTest"));
     }
 }

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractProbe {
 
     SuspiciousVariable firstTarget;
-    CodeElementName failedTest;
+    MethodElementName failedTest;
     Debugger dbg;
 
     public AbstractProbe(SuspiciousVariable target) {
@@ -180,7 +180,7 @@ public abstract class AbstractProbe {
     private List<Integer> valueChangingLine(SuspiciousVariable vi){
         //代入行の特定
         //unaryExpr(ex a++)も含める
-        CodeElementName locateElement = vi.getLocateMethodElement();
+        MethodElementName locateElement = vi.getLocateMethodElement();
         List<Integer> result = new ArrayList<>();
         List<AssignExpr> aes;
         List<UnaryExpr> ues;
@@ -281,7 +281,7 @@ public abstract class AbstractProbe {
      */
     private SuspiciousAssignment resultIfAssigned(int causeLineNumber, SuspiciousVariable vi){
         //原因行のStatementを取得
-        CodeElementName locateClassElementName = vi.getLocateMethodElement();
+        MethodElementName locateClassElementName = vi.getLocateMethodElement();
         return new SuspiciousAssignment(vi.getFailedTest(), locateClassElementName, causeLineNumber, vi);
 
     }
@@ -307,7 +307,7 @@ public abstract class AbstractProbe {
      */
     private SuspiciousArgument resultIfNotAssigned(SuspiciousVariable suspVar){
         //実行しているメソッド名を取得
-        CodeElementName locateMethodElementName = suspVar.getLocateMethodElement();
+        MethodElementName locateMethodElementName = suspVar.getLocateMethodElement();
         return SuspiciousArgument.searchSuspiciousArgument(locateMethodElementName, suspVar);
     }
 
@@ -353,7 +353,7 @@ public abstract class AbstractProbe {
     }
 
 
-    public Set<String> getCalleeMethods(CodeElementName targetClass, int line){
+    public Set<String> getCalleeMethods(MethodElementName targetClass, int line){
         String main = TestUtil.getJVMMain(failedTest);
         String options = TestUtil.getJVMOption();
         EnhancedDebugger edbg = new EnhancedDebugger(main, options);

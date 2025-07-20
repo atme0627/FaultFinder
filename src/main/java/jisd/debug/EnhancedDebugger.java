@@ -8,7 +8,7 @@ import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.MethodElement;
 import org.apache.commons.lang3.tuple.Pair;
 import java.io.BufferedReader;
@@ -87,7 +87,7 @@ public class EnhancedDebugger {
                         ThreadReference thread = mEntry.thread();
                         List<StackFrame> frames = thread.frames();
                         com.sun.jdi.Location callerLoc = frames.get(1).location();
-                        CodeElementName callerMethodElementName = new CodeElementName(getFqmn(callerLoc.method()));
+                        MethodElementName callerMethodElementName = new MethodElementName(getFqmn(callerLoc.method()));
                         MethodElement callerMethodElement;
                         try {
                             callerMethodElement = MethodElement.getMethodElementByName(callerMethodElementName);

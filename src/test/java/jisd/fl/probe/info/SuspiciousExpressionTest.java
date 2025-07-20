@@ -1,7 +1,7 @@
 package jisd.fl.probe.info;
 
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,10 +46,10 @@ class SuspiciousExpressionTest {
         @Test
         void polymorphism(){
             String testMethodName = "polymorphism";
-            CodeElementName locateClass = new CodeElementName(testFqcn);
+            MethodElementName locateClass = new MethodElementName(testFqcn);
             int locateLine = 19;
             SuspiciousVariable suspVariable = new SuspiciousVariable(
-                    new CodeElementName(getFqmn(testMethodName)),
+                    new MethodElementName(getFqmn(testMethodName)),
                     getFqmn(testMethodName),
                     "totalArea",
                     "32.0",
@@ -58,7 +58,7 @@ class SuspiciousExpressionTest {
             );
 
             SuspiciousAssignment suspAssignment = new SuspiciousAssignment(
-                    new CodeElementName(getFqmn(testMethodName)),
+                    new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
                     suspVariable
@@ -104,10 +104,10 @@ class SuspiciousExpressionTest {
         @Test
         void polymorphismLoop(){
             String testMethodName = "polymorphismLoop";
-            CodeElementName locateClass = new CodeElementName(testFqcn);
+            MethodElementName locateClass = new MethodElementName(testFqcn);
             int locateLine = 34;
             SuspiciousVariable suspVariable = new SuspiciousVariable(
-                    new CodeElementName(getFqmn(testMethodName)),
+                    new MethodElementName(getFqmn(testMethodName)),
                     getFqmn(testMethodName),
                     "totalArea",
                     "32.0",
@@ -116,7 +116,7 @@ class SuspiciousExpressionTest {
             );
 
             SuspiciousAssignment suspAssignment = new SuspiciousAssignment(
-                    new CodeElementName(getFqmn(testMethodName)),
+                    new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
                     suspVariable
@@ -129,11 +129,11 @@ class SuspiciousExpressionTest {
         @Test
         void polymorphismLoopReturn(){
             String testMethodName = "polymorphismLoopReturn";
-            CodeElementName locateClass = new CodeElementName("org.sample.shape.Shape");
+            MethodElementName locateClass = new MethodElementName("org.sample.shape.Shape");
             int locateLine = 30;
 
             SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
-                    new CodeElementName(getFqmn(testMethodName)),
+                    new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
                     "8"
@@ -147,15 +147,15 @@ class SuspiciousExpressionTest {
             //メソッド呼び出しの引数で呼ばれているメソッドの特定
         void polymorphismLoopArgument() {
             String testMethodName = "polymorphismLoopArgument";
-            CodeElementName locateClass = new CodeElementName("org.sample.MethodCallingTest");
+            MethodElementName locateClass = new MethodElementName("org.sample.MethodCallingTest");
             int locateLine = 70;
 
             SuspiciousArgument suspArg = new SuspiciousArgument(
-                    new CodeElementName(getFqmn(testMethodName)),
+                    new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
                     "18.0",
-                    new CodeElementName("max"),
+                    new MethodElementName("max"),
                     1,-1
             );
 

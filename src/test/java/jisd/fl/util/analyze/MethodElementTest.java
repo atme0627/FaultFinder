@@ -7,7 +7,6 @@ import jisd.fl.util.TestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 import java.nio.file.NoSuchFileException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,15 +19,15 @@ class MethodElementTest {
         PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/main");
         PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/test");
 
-        TestUtil.compileForDebug(new CodeElementName("sample.MethodCallTest"));
+        TestUtil.compileForDebug(new MethodElementName("sample.MethodCallTest"));
     }
 
     @Test
     void extractArgumentOfMethodExpr() throws NoSuchFileException {
         CallableDeclaration cd
-                = JavaParserUtil.getCallableDeclarationByName(new CodeElementName("sample.MethodCallTest#methodCall1()"));
+                = JavaParserUtil.getCallableDeclarationByName(new MethodElementName("sample.MethodCallTest#methodCall1()"));
         MethodElement md = new MethodElement(cd);
-        Expression expr = md.extractArgumentOfMethodExpr(new CodeElementName("sample.MethodCall#methodCalling()"), 12, 0);
+        Expression expr = md.extractArgumentOfMethodExpr(new MethodElementName("sample.MethodCall#methodCalling()"), 12, 0);
         assertEquals("2", expr.toString());
     }
 }

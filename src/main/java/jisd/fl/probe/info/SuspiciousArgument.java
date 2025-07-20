@@ -13,24 +13,24 @@ import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class SuspiciousArgument extends SuspiciousExpression {
     //引数を与え実行しようとしているメソッド
-    private final CodeElementName calleeMethodName;
+    private final MethodElementName calleeMethodName;
     //何番目の引数に与えられたexprかを指定
     private final int argIndex;
     //その行の中で呼び出し元のメソッドの後に何回他のメソッドが呼ばれるか
     private final int CallCountAfterTargetInLine;
 
-    protected SuspiciousArgument(CodeElementName failedTest,
-                                 CodeElementName locateMethod,
+    protected SuspiciousArgument(MethodElementName failedTest,
+                                 MethodElementName locateMethod,
                                  int locateLine,
                                  String actualValue,
-                                 CodeElementName calleeMethodName,
+                                 MethodElementName calleeMethodName,
                                  int argIndex,
                                  int CallCountAfterTargetInLine) {
         super(failedTest, locateMethod, locateLine, actualValue);
@@ -127,7 +127,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
                             if(callCount[0] >= targetCallCount) {
                                 //targetMethodのみ収集
                                 if (targetMethodName.contains(mee.method().name())) {
-                                    CodeElementName invokedMethod = new CodeElementName(EnhancedDebugger.getFqmn(mee.method()));
+                                    MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                                     int locateLine = mee.location().lineNumber();
                                     String actualValue = mee.returnValue().toString();
                                     SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
@@ -249,14 +249,14 @@ public class SuspiciousArgument extends SuspiciousExpression {
     /**
      * ある変数がその値を取る原因が呼び出し元の引数のあると判明した場合に使用
      */
-    static public SuspiciousArgument searchSuspiciousArgument(CodeElementName calleeMethodName, SuspiciousVariable suspVar){
+    static public SuspiciousArgument searchSuspiciousArgument(MethodElementName calleeMethodName, SuspiciousVariable suspVar){
         //Debugger生成
         String main = TestUtil.getJVMMain(suspVar.getFailedTest());
         String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
 
         //探索によって求める値
-        CodeElementName[] locateMethod = new CodeElementName[1];
+        MethodElementName[] locateMethod = new MethodElementName[1];
         int[] locateLine = new int[1];
         int[] argIndex = new int[1];
         int[] callCountAfterTarget = new int[]{0};
@@ -289,7 +289,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
                 }
 
                 com.sun.jdi.Location callerLoc = callerFrame.location();
-                locateMethod[0] = new CodeElementName(EnhancedDebugger.getFqmn(callerLoc.method()));
+                locateMethod[0] = new MethodElementName(EnhancedDebugger.getFqmn(callerLoc.method()));
                 locateLine[0] = callerLoc.lineNumber();
 
                 //targetVarが呼び出し元でどのexprに対応するかを特定

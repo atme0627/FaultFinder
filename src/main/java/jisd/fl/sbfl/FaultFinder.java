@@ -7,17 +7,14 @@ import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.report.ScoreUpdateReport; // new
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.function.ToDoubleBiFunction;
 
 import static java.lang.Math.min;
-import static jisd.fl.util.analyze.StaticAnalyzer.getRangeOfAllMethods;
 
 
 public class FaultFinder {
@@ -58,13 +55,13 @@ public class FaultFinder {
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
         Set<String> targetClassNames = covForTestSuite.getExecutedClassNames();
         for(String targetClassName : targetClassNames){
-            Map<CodeElementName, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
+            Map<MethodElementName, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
             calcSuspiciousnessOfTarget(targetClassName, covData, f, granularity);
         }
         sbflResult.sort();
     }
 
-    private void calcSuspiciousnessOfTarget(String targetClassName, Map<CodeElementName, SbflStatus> covData, Formula f, Granularity granularity){
+    private void calcSuspiciousnessOfTarget(String targetClassName, Map<MethodElementName, SbflStatus> covData, Formula f, Granularity granularity){
         covData.forEach((element, status) ->{
             sbflResult.setElement(element, status, f);
         });
@@ -86,7 +83,7 @@ public class FaultFinder {
 
         Set<String> contexts = null;
         try {
-            CodeElementName context = new CodeElementName(contextClass);
+            MethodElementName context = new MethodElementName(contextClass);
             contexts = StaticAnalyzer.getMethodNames(context);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
@@ -117,7 +114,7 @@ public class FaultFinder {
 
         Set<String> contexts = null;
         try {
-            CodeElementName context = new CodeElementName(contextClass);
+            MethodElementName context = new MethodElementName(contextClass);
             contexts = StaticAnalyzer.getMethodNames(context);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);

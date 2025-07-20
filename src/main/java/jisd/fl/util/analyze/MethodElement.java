@@ -22,18 +22,18 @@ import java.util.Optional;
 //constructorも含む
 public class MethodElement {
     protected final CallableDeclaration cd;
-    private final CodeElementName ce;
+    private final MethodElementName ce;
 
     public MethodElement(CallableDeclaration cd){
         this.cd = cd;
-        this.ce = new CodeElementName(cd);
+        this.ce = new MethodElementName(cd);
     }
 
     public String fqmn(){
         return ce.getFullyQualifiedMethodName();
     }
 
-    public CodeElementName name(){
+    public MethodElementName name(){
         return ce;
     }
     //指定されたローカル変数のvariableDeclaratorを返す
@@ -72,7 +72,7 @@ public class MethodElement {
                 cd.asConstructorDeclaration().getBody();
     }
 
-    public static MethodElement getMethodElementByName(CodeElementName methodName) throws NoSuchFileException {
+    public static MethodElement getMethodElementByName(MethodElementName methodName) throws NoSuchFileException {
         return new MethodElement(JavaParserUtil.getCallableDeclarationByName(methodName));
     }
 
@@ -92,7 +92,7 @@ public class MethodElement {
     //指定された行での指定されたメソッドの呼び出しに対して、そのindex番目(0-indexed)の引数を返す
     //メソッド呼び出し、コンストラクタ呼び出し、this()呼び出しの順に探索
     //同名のメソッドが複数含まれている場合は考慮しない
-    public Expression extractArgumentOfMethodExpr(CodeElementName targetCalleeMethod, int line, int index){
+    public Expression extractArgumentOfMethodExpr(MethodElementName targetCalleeMethod, int line, int index){
         Statement targetStmt = findStatementByLine(line).orElseThrow().statement();
 
         NodeWithArguments targetExpr;

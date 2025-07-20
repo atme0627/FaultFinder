@@ -15,7 +15,7 @@ import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -74,7 +74,7 @@ class ProbeExTest {
         @Test
         void VMLaunchDemo() throws IOException {
             //vm生成
-            String main = TestUtil.getJVMMain(new CodeElementName(testMethodName));
+            String main = TestUtil.getJVMMain(new MethodElementName(testMethodName));
             String options = TestUtil.getJVMOption();
             VirtualMachine vm;
 
@@ -218,7 +218,7 @@ class ProbeExTest {
         @Test
         void VMLaunchDemo() throws IOException {
             //vm生成
-            String main = TestUtil.getJVMMain(new CodeElementName(testMethodName));
+            String main = TestUtil.getJVMMain(new MethodElementName(testMethodName));
             String options = TestUtil.getJVMOption();
             VirtualMachine vm;
 
@@ -286,7 +286,7 @@ class ProbeExTest {
             PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/main");
             PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/test");
 
-            TestUtil.compileForDebug(new CodeElementName("sample.MethodCallTest"));
+            TestUtil.compileForDebug(new MethodElementName("sample.MethodCallTest"));
         }
 
         @Test

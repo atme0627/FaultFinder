@@ -3,7 +3,7 @@ package jisd.fl.probe;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ class ProbeForStatementTest {
     @Test
     void runTest() {
         SuspiciousVariable target = new SuspiciousVariable(
-                new CodeElementName("org.sample.CalcTest#methodCall1()"),
+                new MethodElementName("org.sample.CalcTest#methodCall1()"),
                 "org.sample.CalcTest#methodCall1()",
                 "actual",
                 "11",

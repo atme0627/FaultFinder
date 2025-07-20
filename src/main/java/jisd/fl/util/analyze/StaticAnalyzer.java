@@ -39,7 +39,7 @@ public class StaticAnalyzer {
 
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
-    public static Set<String> getMethodNames(CodeElementName targetClass) throws NoSuchFileException {
+    public static Set<String> getMethodNames(MethodElementName targetClass) throws NoSuchFileException {
         return JavaParserUtil
                 .extractCallableDeclaration(targetClass)
                 .stream()
@@ -48,7 +48,7 @@ public class StaticAnalyzer {
     }
 
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
-    public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(CodeElementName targetClass) throws NoSuchFileException {;
+    public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(MethodElementName targetClass) throws NoSuchFileException {;
         return JavaParserUtil
                 .extractCallableDeclaration(targetClass)
                 .stream()
@@ -62,24 +62,24 @@ public class StaticAnalyzer {
         return Pair.of(node.getBegin().get().line, node.getEnd().get().line);
     }
 
-    public static Optional<Range> getRangeOfStatement(CodeElementName targetClass, int line) throws NoSuchFileException {
+    public static Optional<Range> getRangeOfStatement(MethodElementName targetClass, int line) throws NoSuchFileException {
         Optional<Statement> expStmt = JavaParserUtil.getStatementByLine(targetClass, line);
         return (expStmt.isPresent()) ? expStmt.get().getRange() : Optional.empty();
     }
 
     @Deprecated
     public static String getMethodNameFormLine(String targetClassName, int line) throws NoSuchFileException {
-        CodeElementName targetClass = new CodeElementName(targetClassName);
+        MethodElementName targetClass = new MethodElementName(targetClassName);
         return getMethodNameFormLine(targetClass, line);
     }
 
-    public static String getMethodNameFormLine(CodeElementName targetClass, int line) throws NoSuchFileException {
+    public static String getMethodNameFormLine(MethodElementName targetClass, int line) throws NoSuchFileException {
         CallableDeclaration<?> cd = JavaParserUtil.getCallableDeclarationByLine(targetClass, line).orElseThrow();
         return targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature();
     }
 
     //(クラス, 対象の変数) --> 変数が代入されている行（初期化も含む）
-    public static List<Integer> getAssignLine(CodeElementName targetClass, String variable) {
+    public static List<Integer> getAssignLine(MethodElementName targetClass, String variable) {
         //CodeElement targetClass = new CodeElement(className);
         List<Integer> assignLines =
                 null;
@@ -116,7 +116,7 @@ public class StaticAnalyzer {
 
     //メソッド --> メソッドが呼ばれている行
     //methodNameはクラス、シグニチャを含む
-    public static List<Integer> getMethodCallingLine(CodeElementName targetMethod) throws NoSuchFileException {
+    public static List<Integer> getMethodCallingLine(MethodElementName targetMethod) throws NoSuchFileException {
         return JavaParserUtil.extractBodyOfMethod(targetMethod)
                         .findAll(MethodCallExpr.class)
                         .stream()
@@ -136,7 +136,7 @@ public class StaticAnalyzer {
         }
     }
 
-    public static List<Integer> canSetLineOfClass(CodeElementName targetClass, String variable){
+    public static List<Integer> canSetLineOfClass(MethodElementName targetClass, String variable){
         Set<String> methods;
         List<Integer> canSet = new ArrayList<>();
 
@@ -147,7 +147,7 @@ public class StaticAnalyzer {
         }
 
         methods.stream()
-                .map(CodeElementName::new)
+                .map(MethodElementName::new)
                 .forEach(e -> canSet.addAll(canSetLineOfMethod(e, variable)));
 
         return canSet.stream()
@@ -157,7 +157,7 @@ public class StaticAnalyzer {
     }
 
 
-    public static List<Integer> canSetLineOfMethod(CodeElementName targetMethod, String variable){
+    public static List<Integer> canSetLineOfMethod(MethodElementName targetMethod, String variable){
         List<Integer> canSet = new ArrayList<>();
         BlockStmt bs = null;
         try {

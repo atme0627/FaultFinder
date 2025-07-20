@@ -17,7 +17,7 @@ import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
 import jisd.fl.util.QuietStdOut;
 import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import javax.validation.constraints.NotNull;
@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 
 public abstract class SuspiciousExpression {
     //どのテスト実行時の話かを指定
-    protected final CodeElementName failedTest;
+    protected final MethodElementName failedTest;
     //フィールドの場合は<ulinit>で良い
-    protected final CodeElementName locateMethod;
+    protected final MethodElementName locateMethod;
     protected final int locateLine;
     protected final Statement stmt;
     @NotNull protected  Expression expr;
@@ -38,7 +38,7 @@ public abstract class SuspiciousExpression {
     //保持するのは自分の子要素のみ
     List<SuspiciousExpression> childSuspExprs = new ArrayList<>();
 
-    protected SuspiciousExpression(CodeElementName failedTest, CodeElementName locateMethod, int locateLine, String actualValue) {
+    protected SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
         this.failedTest = failedTest;
         this.locateMethod = locateMethod;
         this.locateLine = locateLine;

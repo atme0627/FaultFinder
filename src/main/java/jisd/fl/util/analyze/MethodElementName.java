@@ -3,8 +3,6 @@ package jisd.fl.util.analyze;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import jisd.fl.util.PropertyLoader;
 
 import javax.validation.constraints.NotBlank;
@@ -13,13 +11,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
-public class CodeElementName implements Comparable<CodeElementName> {
+public class MethodElementName implements Comparable<MethodElementName> {
     @NotNull
     final public String packageName;
     @NotBlank
@@ -33,7 +30,7 @@ public class CodeElementName implements Comparable<CodeElementName> {
     //ex1.) sample.demo
     //ex2.) sample.demo#sample
     //ex3.) sample.demo#sample(int)
-    public CodeElementName(String fullyQualifiedName){
+    public MethodElementName(String fullyQualifiedName){
         String fqClassName;
         final String packageName;
         final String className;
@@ -64,26 +61,26 @@ public class CodeElementName implements Comparable<CodeElementName> {
         this.methodSignature = methodSignature;
     }
 
-    public CodeElementName(String packageName, String className){
+    public MethodElementName(String packageName, String className){
         this.packageName = packageName;
         this.className = className;
         this.methodSignature =  "<NO METHOD DATA>";
     }
 
-    public CodeElementName(String packageName, String className, @NotBlank String methodSignature){
+    public MethodElementName(String packageName, String className, @NotBlank String methodSignature){
         this.packageName = packageName;
         this.className = className;
         this.methodSignature = methodSignature;
     }
 
-    public CodeElementName(ClassOrInterfaceDeclaration cd){
+    public MethodElementName(ClassOrInterfaceDeclaration cd){
         CompilationUnit unit = cd.findAncestor(CompilationUnit.class).orElseThrow();
         this.packageName = JavaParserUtil.getPackageName(unit);
         this.className = cd.getNameAsString();
         this.methodSignature =  "<NO METHOD DATA>";
     }
 
-    public CodeElementName(CallableDeclaration cd){
+    public MethodElementName(CallableDeclaration cd){
         CompilationUnit unit = (CompilationUnit) cd.findAncestor(CompilationUnit.class).orElseThrow();
         this.packageName = JavaParserUtil.getPackageName(unit);
         this.className = JavaParserUtil.getParentOfMethod(cd).getNameAsString();
@@ -93,10 +90,10 @@ public class CodeElementName implements Comparable<CodeElementName> {
     @Override
     public boolean equals(Object obj){
         if(obj == null) return false;
-        if(!(obj instanceof CodeElementName)) return false;
+        if(!(obj instanceof MethodElementName)) return false;
         return this.getFullyQualifiedMethodName()
-                .equals(((CodeElementName) obj).getFullyQualifiedMethodName())
-                && this.line == ((CodeElementName) obj).line;
+                .equals(((MethodElementName) obj).getFullyQualifiedMethodName())
+                && this.line == ((MethodElementName) obj).line;
     }
 
     @Override
@@ -127,15 +124,15 @@ public class CodeElementName implements Comparable<CodeElementName> {
        return this.methodSignature.split("\\(")[0];
     }
 
-    public static Optional<CodeElementName> generateFromSimpleClassName(String className){
+    public static Optional<MethodElementName> generateFromSimpleClassName(String className){
         return generateFromSimpleClassName(className, Paths.get(PropertyLoader.getProperty("targetSrcPath")));
     }
 
-    public static Optional<CodeElementName> generateFromSimpleClassName(String className, Path targetSrcPath) {
-        List<CodeElementName> candidates = StaticAnalyzer.getClassNames(targetSrcPath)
+    public static Optional<MethodElementName> generateFromSimpleClassName(String className, Path targetSrcPath) {
+        List<MethodElementName> candidates = StaticAnalyzer.getClassNames(targetSrcPath)
                 .stream()
                 .filter(cn -> cn.substring(cn.lastIndexOf(".") + 1).equals(className))
-                .map(CodeElementName::new)
+                .map(MethodElementName::new)
                 .collect(Collectors.toList());
 
         //候補がない場合、複数候補がある場合はfail
@@ -168,7 +165,7 @@ public class CodeElementName implements Comparable<CodeElementName> {
     }
 
     @Override
-    public int compareTo(CodeElementName o) {
+    public int compareTo(MethodElementName o) {
         if(this.getFullyQualifiedMethodName().equals(o.getFullyQualifiedMethodName())) return Integer.compare(this.line, o.line);
         return this.getFullyQualifiedMethodName().compareTo(o.getFullyQualifiedMethodName());
     }
