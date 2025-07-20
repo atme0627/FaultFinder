@@ -55,19 +55,17 @@ public class FaultFinder {
         sbflResult.printFLResults(top);
     }
 
-
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
         Set<String> targetClassNames = covForTestSuite.getExecutedClassNames();
         for(String targetClassName : targetClassNames){
-            Map<String, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
+            Map<CodeElementName, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
             calcSuspiciousnessOfTarget(targetClassName, covData, f, granularity);
         }
         sbflResult.sort();
     }
 
-    private void calcSuspiciousnessOfTarget(String targetClassName, Map<String, SbflStatus> covData, Formula f, Granularity granularity){
+    private void calcSuspiciousnessOfTarget(String targetClassName, Map<CodeElementName, SbflStatus> covData, Formula f, Granularity granularity){
         covData.forEach((element, status) ->{
-            if(granularity == Granularity.LINE) element = targetClassName + "---" + element;
             sbflResult.setElement(element, status, f);
         });
     }

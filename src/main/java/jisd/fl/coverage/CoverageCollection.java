@@ -13,6 +13,7 @@ import java.io.PrintStream;
 import java.util.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jisd.fl.util.FileUtil;
+import jisd.fl.util.analyze.CodeElementName;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
 public class CoverageCollection {
@@ -34,7 +35,7 @@ public class CoverageCollection {
         coverages = new LinkedHashMap<>();
     }
 
-    public Map<String, SbflStatus> getCoverageOfTarget(String targetClassName, Granularity granularity) {
+    public Map<CodeElementName, SbflStatus> getCoverageOfTarget(String targetClassName, Granularity granularity) {
         return getCoverages().get(targetClassName).getCoverage(granularity);
     }
 

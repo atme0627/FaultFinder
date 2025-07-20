@@ -2,6 +2,7 @@ package jisd.fl.sbfl;
 
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
+import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.util.analyze.CodeElementName;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,15 +23,13 @@ public class SbflResult {
         this.granularity = granularity;
     }
 
-    public void setElement(String element, SbflStatus status, Formula f){
+    public void setElement(CodeElementName element, SbflStatus status, Formula f){
         CodeElement e;
-        if(element.contains("---")){
-            e = new CodeElement(new CodeElementName(element.split("---")[0]), Integer.parseInt(element.split("---")[1]));
+        if(element.getLine() != -1) {
+            e = new CodeElement(element, element.getLine());
+        } else {
+            e = new CodeElement(element);
         }
-        else {
-            e = new CodeElement(new CodeElementName(element));
-        }
-
         ResultElement r = new ResultElement(e, status.getSuspiciousness(f));
         result.add(r);
     }
@@ -110,8 +109,7 @@ public class SbflResult {
             String colorBegin = "";
             String coloerEnd = "";
             String className = element.e().getClassName();
-            String methodName = element.e().getShortMethodName();
-            SbflStatus stat = cc.getCoverageOfTarget(className, Granularity.METHOD).get(methodName);
+            SbflStatus stat = cc.getCoverageOfTarget(className, Granularity.METHOD).get(element.e.e);
             if(highlightMethods.contains(element.toString())){
                 colorBegin = "\u001b[00;41m";
                 coloerEnd = "\u001b[00m";
