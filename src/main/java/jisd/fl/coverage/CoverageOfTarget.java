@@ -3,9 +3,7 @@ package jisd.fl.coverage;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 import org.jacoco.core.analysis.IMethodCoverage;
@@ -20,9 +18,12 @@ public class CoverageOfTarget {
     public String targetClassName;
 
     //各行のカバレッジ情報 (行番号, メソッド名, クラス名) --> lineCoverage status
-    public Map<String, SbflStatus> lineCoverage;
-    public Map<String, SbflStatus> methodCoverage;
-    public Map<String, SbflStatus> classCoverage;
+
+    //各行のカバレッジ情報
+    public Map<CodeElementName, SbflStatus> lineCoverage;
+    public Map<CodeElementName, SbflStatus> methodCoverage;
+    public Map<CodeElementName, SbflStatus> classCoverage;
+
 
     @JsonCreator
     public CoverageOfTarget(){
@@ -44,7 +45,9 @@ public class CoverageOfTarget {
         for(int i = targetClassFirstLine; i <= targetClassLastLine; i++){
             if(cc.getLine(i).getStatus() == ICounter.EMPTY) continue;
             boolean isTestExecuted = !(cc.getLine(i).getStatus() == ICounter.NOT_COVERED);
-            putCoverageStatus(Integer.toString(i), new SbflStatus(isTestExecuted , isTestPassed), Granularity.LINE);
+            CodeElementName ce = new CodeElementName(targetClassName);
+            ce.setLine(i);
+            putCoverageStatus(ce, new SbflStatus(isTestExecuted , isTestPassed), Granularity.LINE);
         }
 
         //method coverage
@@ -54,14 +57,16 @@ public class CoverageOfTarget {
                     .map(Type::getClassName)
                     .collect(Collectors.joining(", "));
             String targetMethodName = targetClassName + "#" + mc.getName() + "(" + methodSignature + ")";
-            putCoverageStatus(targetMethodName, new SbflStatus(isTestExecuted, isTestPassed), Granularity.METHOD);
+            CodeElementName ce = new CodeElementName(targetMethodName);
+            putCoverageStatus(ce, new SbflStatus(isTestExecuted, isTestPassed), Granularity.METHOD);
         }
 
         //class coverage
-        putCoverageStatus(targetClassName, getClassSbflStatus(cc, isTestPassed), Granularity.CLASS);
+        CodeElementName ce = new CodeElementName(targetClassName);
+        putCoverageStatus(ce, getClassSbflStatus(cc, isTestPassed), Granularity.CLASS);
     }
 
-    protected void putCoverageStatus(String element, SbflStatus status, Granularity granularity) {
+    protected void putCoverageStatus(CodeElementName element, SbflStatus status, Granularity granularity) {
         switch (granularity) {
             case LINE:
                 lineCoverage.put(element, status);
@@ -90,16 +95,12 @@ public class CoverageOfTarget {
     }
 
 
-    public Map<String, SbflStatus> getCoverage(Granularity granularity){
-        switch (granularity){
-            case LINE:
-                return lineCoverage;
-            case METHOD:
-                return methodCoverage;
-            case CLASS:
-                return classCoverage;
-        }
-        return null;
+    public Map<CodeElementName, SbflStatus> getCoverage(Granularity granularity){
+        return switch (granularity) {
+            case LINE -> lineCoverage;
+            case METHOD -> methodCoverage;
+            case CLASS -> classCoverage;
+        };
     }
 
     public String getTargetClassName() {
@@ -122,7 +123,7 @@ public class CoverageOfTarget {
 
     private void printClassCoverage(PrintStream out){
         classCoverage.forEach((name, s) -> {
-            out.println("|  " + StringUtils.leftPad(name, 100) +
+            out.println("|  " + StringUtils.leftPad(name.toString(), 100) +
                     " | " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
                     " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
                     " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
@@ -141,7 +142,7 @@ public class CoverageOfTarget {
         out.println(header);
         out.println(partition);
         methodCoverage.forEach((name, s) -> {
-                    out.println("|  " + StringUtils.leftPad(name.split("#")[1], nameLength) +
+                    out.println("|  " + StringUtils.leftPad(name.getShortMethodName(), nameLength) +
                                       " | " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
                                       " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
                                       " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
@@ -160,17 +161,13 @@ public class CoverageOfTarget {
         out.println(header);
         out.println(partition);
 
-        List<String> keys = new ArrayList<>(lineCoverage.keySet());
-        keys.sort(Comparator.comparingInt(Integer::parseInt));
-        for(String line : keys){
-            SbflStatus s = lineCoverage.get(line);
-
-            out.println( String.format("| %4d |", Integer.parseInt(line))+
+        lineCoverage.forEach((line, s) -> {
+            out.println( String.format("| %s |", line)+
                     "| " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
                     " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
                     " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
                     " | " + StringUtils.leftPad(String.valueOf(s.nf), 4) + " |");
-        }
+        });
 
         out.println(partition);
         out.println();
@@ -182,8 +179,9 @@ public class CoverageOfTarget {
         this.classCoverage = combineCoverage(this.classCoverage, cov.classCoverage);
     }
 
-    private Map<String, SbflStatus> combineCoverage(Map<String, SbflStatus> thisCov, Map<String, SbflStatus> otherCov){
-        Map<String, SbflStatus> newCoverage = new HashMap<>(otherCov);
+
+    private Map<CodeElementName, SbflStatus> combineCoverage(Map<CodeElementName, SbflStatus> thisCov, Map<CodeElementName, SbflStatus> otherCov){
+        Map<CodeElementName, SbflStatus> newCoverage = new HashMap<>(otherCov);
         thisCov.forEach((k,v)->{
             if(newCoverage.containsKey(k)){
                 newCoverage.put(k, v.combine(newCoverage.get(k)));
@@ -207,10 +205,10 @@ public class CoverageOfTarget {
         return keys;
     }
 
-    private int maxLengthOfName(Map<String, SbflStatus> cov, boolean isMethod){
+    private int maxLengthOfName(Map<CodeElementName, SbflStatus> cov, boolean isMethod){
         int maxLength = 0;
-        for(String name : cov.keySet()){
-            int l = (isMethod) ? name.split("#")[1].length() : name.length();
+        for(CodeElementName name : cov.keySet()){
+            int l = (isMethod) ? name.getShortMethodName().length() : name.toString().length();
             maxLength = Math.max(maxLength, l);
         }
         return maxLength;

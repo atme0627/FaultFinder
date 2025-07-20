@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
-public class CodeElementName {
+public class CodeElementName implements Comparable<CodeElementName> {
     @NotNull
     final public String packageName;
     @NotBlank
@@ -106,7 +106,7 @@ public class CodeElementName {
 
     @Override
     public String toString(){
-        return this.methodSignature != null ? this.getFullyQualifiedMethodName() : this.getFullyQualifiedClassName()
+        return (this.methodSignature != null ? this.getFullyQualifiedMethodName() : this.getFullyQualifiedClassName())
                 + ((line != -1) ? ":" + line : "");
     }
 
@@ -165,5 +165,11 @@ public class CodeElementName {
 
     public int getLine() {
         return line;
+    }
+
+    @Override
+    public int compareTo(CodeElementName o) {
+        if(this.getFullyQualifiedMethodName().equals(o.getFullyQualifiedMethodName())) return Integer.compare(this.line, o.line);
+        return this.getFullyQualifiedMethodName().compareTo(o.getFullyQualifiedMethodName());
     }
 }
