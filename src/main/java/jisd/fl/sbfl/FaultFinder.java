@@ -57,15 +57,11 @@ public class FaultFinder {
         Set<String> targetClassNames = covForTestSuite.getExecutedClassNames();
         for(String targetClassName : targetClassNames){
             Map<CodeElementName, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
-            calcSuspiciousnessOfTarget(covData, f, granularity);
+            covData.forEach((element, status) ->{
+                sbflResult.setElement(element, status, f);
+            });
         }
         sbflResult.sort();
-    }
-
-    private void calcSuspiciousnessOfTarget(Map<CodeElementName, SbflStatus> covData, Formula f, Granularity granularity){
-        covData.forEach((element, status) ->{
-            sbflResult.setElement(element, status, f);
-        });
     }
 
     public SbflResult getFLResults(){
