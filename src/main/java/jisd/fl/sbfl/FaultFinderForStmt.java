@@ -24,14 +24,9 @@ public class FaultFinderForStmt extends FaultFinder{
         String targetStmt = fLRanking.getElementNameAtPlace(rank);
         String className = target.getCodeElementName().getFullyQualifiedClassName();
 
-        String targetStmt = FLRanking.getElementAtPlace(rank);
-        String[] parts = targetStmt.split(" ---");
-        String className = parts[0];
-        int lineNumber = Integer.parseInt(parts[1].trim());
-
-        System.out.println("[  REMOVE  ] " + targetStmt);
-        report.recordChange(targetStmt, FLRanking.getSuspicious(targetStmt), 0.0);
-        FLRanking.updateSuspiciousScore(targetStmt, 0);
+        System.out.println("[  REMOVE  ] " + target);
+        report.recordChange(target.toString(), target.getSuspiciousnessScore(), 0.0);
+        target.remove();
 
         try {
             String[] parts = target.getCodeElementName().toString().split(":");
