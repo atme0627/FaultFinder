@@ -19,6 +19,10 @@ public class FaultFinderForStmt extends FaultFinder{
     @Override
     public void remove(int rank) {
         ScoreUpdateReport report = new ScoreUpdateReport("REMOVE");
+        FLRankingElement target = fLRanking.getElementAtPlace(rank).orElseThrow(
+                () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + fLRanking.getSize() + ")"));
+        String targetStmt = fLRanking.getElementNameAtPlace(rank);
+        String className = target.getCodeElementName().getFullyQualifiedClassName();
 
         String targetStmt = FLRanking.getElementAtPlace(rank);
         String[] parts = targetStmt.split(" ---");
@@ -30,6 +34,8 @@ public class FaultFinderForStmt extends FaultFinder{
         FLRanking.updateSuspiciousScore(targetStmt, 0);
 
         try {
+            String[] parts = target.getCodeElementName().toString().split(":");
+            int lineNumber = Integer.parseInt(parts[1].trim());
             MethodElementName methodElementName = new MethodElementName(className);
             String targetMethodFqmn = StaticAnalyzer.getMethodNameFormLine(methodElementName, lineNumber);
             Map<String, Pair<Integer, Integer>> methodRanges = StaticAnalyzer.getRangeOfAllMethods(methodElementName);

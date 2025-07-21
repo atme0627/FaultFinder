@@ -95,6 +95,10 @@ public class FLRanking {
         return ranking.get(place - 1).toString();
     }
 
+    public Optional<FLRankingElement> getElementAtPlace(int place){
+        return Optional.ofNullable(ranking.get(place - 1));
+    }
+
     //同率も考慮した絶対順位
     public double getRankOfElement(String elementName){
         FLRankingElement target = searchElement(elementName).orElseThrow(() -> new RuntimeException(elementName + " is not exist."));

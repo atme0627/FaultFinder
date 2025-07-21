@@ -18,23 +18,29 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FaultFinderForStmtTest {
+    FaultFinder faultFinder;
+
     @BeforeEach
-    void initProperty() {
+    void init(){
         PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
         PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/test/java");
-    }
 
-    @Test
-    public void testPrintRanking() {
         String testClassName = "org.sample.coverage.ConditionalTest";
         // カバレッジを分析
         CoverageAnalyzer ca = new CoverageAnalyzer();
         CoverageCollection coverageCollection = ca.analyzeAll(testClassName);
-
         // FaultFinderForStmtのインスタンス化
-        FaultFinderForStmt faultFinder = new FaultFinderForStmt(coverageCollection, Formula.OCHIAI);
+        faultFinder = new FaultFinderForStmt(coverageCollection, Formula.OCHIAI);
+    }
 
-        // printRankingのテスト
-        assertDoesNotThrow(() -> faultFinder.printRanking(10));
+    @Test
+    public void printRankingTest() {
+        assertDoesNotThrow(() -> faultFinder.printRanking());
+    }
+
+    @Test
+    public void removeTest(){
+        faultFinder.printRanking();
+        faultFinder.remove(4);
     }
 }
