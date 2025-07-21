@@ -32,13 +32,13 @@ class FaultFinderTestOnD4j {
             testMethodName,
             actual,
             field);
+
     FaultFinderTestOnD4j() throws IOException {
     }
 
-    private String outputDir(String project, int bugId){
+    private String outputDir(String project, int bugId) {
         return rootDir + "/" + project + "/" + project + bugId + "_buggy/" + testClassName;
     }
-
 
 
     @Test
@@ -74,18 +74,4 @@ class FaultFinderTestOnD4j {
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.probeEx(fai, 3000);
     }
-
-    @Test
-    void printFLResultsTest() {
-        String project = "Math";
-        int bugId = 87;
-        CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
-        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-
-
-
-        ff.printRanking(20);
-    }
-
-
 }

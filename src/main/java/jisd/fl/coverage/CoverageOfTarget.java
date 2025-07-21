@@ -10,16 +10,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 import org.jacoco.core.analysis.IMethodCoverage;
-import org.objectweb.asm.Type;
 
 import java.io.PrintStream;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
-import java.util.stream.Collectors;
 
+//各クラスごとにインスタンスは一つのみ
 public class CoverageOfTarget {
+    static final private Map<String, CoverageOfTarget> targets = new HashMap<>();
     public String targetClassName;
-
     //各行のカバレッジ情報
     public Map<CodeElementName, SbflStatus> lineCoverage;
     public Map<CodeElementName, SbflStatus> methodCoverage;
@@ -32,12 +31,12 @@ public class CoverageOfTarget {
     public CoverageOfTarget(){
     }
 
-    public CoverageOfTarget(String targetClassName) {
+    CoverageOfTarget(String targetClassName) {
         this.targetClassName = targetClassName;
 
-        lineCoverage = new TreeMap<>();
-        classCoverage = new TreeMap<>();
-        methodCoverage = new TreeMap<>();
+        lineCoverage = new HashMap<>();
+        classCoverage = new HashMap<>();
+        methodCoverage = new HashMap<>();
 
         try {
             methodElementNames = StaticAnalyzer.getMethodNamesWithLine(new MethodElementName(targetClassName));
@@ -55,32 +54,26 @@ public class CoverageOfTarget {
             if(cc.getLine(i).getStatus() == ICounter.EMPTY) continue;
             boolean isTestExecuted = !(cc.getLine(i).getStatus() == ICounter.NOT_COVERED);
 
-            putCoverageStatus(getLineElementNameFromLine(i), new SbflStatus(isTestExecuted , isTestPassed), Granularity.LINE);
+            putCoverageStatus(lineCoverage, getLineElementNameFromLine(i), new SbflStatus(isTestExecuted , isTestPassed));
         }
 
         //method coverage
         for(IMethodCoverage mc : cc.getMethods()){
             boolean isTestExecuted = mc.getMethodCounter().getCoveredCount() == 1;
-            putCoverageStatus(getMethodElementNameFromLine(mc.getFirstLine()), new SbflStatus(isTestExecuted, isTestPassed), Granularity.METHOD);
+            putCoverageStatus(methodCoverage, getMethodElementNameFromLine(mc.getFirstLine()), new SbflStatus(isTestExecuted, isTestPassed));
         }
 
         //class coverage
         MethodElementName ce = new MethodElementName(targetClassName);
-        putCoverageStatus(ce, getClassSbflStatus(cc, isTestPassed), Granularity.CLASS);
+        putCoverageStatus(classCoverage, ce, getClassSbflStatus(cc, isTestPassed));
     }
 
-    protected void putCoverageStatus(CodeElementName element, SbflStatus status, Granularity granularity) {
-        switch (granularity) {
-            case LINE:
-                lineCoverage.put(element, status);
-                break;
-            case METHOD:
-                methodCoverage.put(element, status);
-                break;
-            case CLASS:
-                classCoverage.put(element, status);
-                break;
+    protected void putCoverageStatus(Map<CodeElementName, SbflStatus> coverage, CodeElementName element, SbflStatus status) {
+        if(!coverage.containsKey(element)){
+            coverage.put(element, status);
+            return;
         }
+        coverage.put(element, coverage.get(element).combine(status));
     }
 
     protected SbflStatus getClassSbflStatus(IClassCoverage cc, boolean isTestPassed){
@@ -100,9 +93,9 @@ public class CoverageOfTarget {
 
     public Map<CodeElementName, SbflStatus> getCoverage(Granularity granularity){
         return switch (granularity) {
-            case LINE -> lineCoverage;
-            case METHOD -> methodCoverage;
-            case CLASS -> classCoverage;
+            case LINE -> new TreeMap<>(lineCoverage);
+            case METHOD -> new TreeMap<>(methodCoverage);
+            case CLASS -> new TreeMap<>(classCoverage);
         };
     }
 
@@ -125,7 +118,7 @@ public class CoverageOfTarget {
     }
 
     private void printClassCoverage(PrintStream out){
-        classCoverage.forEach((name, s) -> {
+        new TreeMap<>(classCoverage).forEach((name, s) -> {
             out.println("|  " + StringUtils.leftPad(name.toString(), 100) +
                     " | " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
                     " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
@@ -144,7 +137,7 @@ public class CoverageOfTarget {
         out.println(partition);
         out.println(header);
         out.println(partition);
-        methodCoverage.forEach((name, s) -> {
+        new TreeMap<>(methodCoverage).forEach((name, s) -> {
                     out.println("|  " + StringUtils.leftPad(name.getShortMethodName(), nameLength) +
                                       " | " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
                                       " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
@@ -164,7 +157,7 @@ public class CoverageOfTarget {
         out.println(header);
         out.println(partition);
 
-        lineCoverage.forEach((line, s) -> {
+        new TreeMap<>(lineCoverage).forEach((line, s) -> {
             out.println( String.format("| %s |", line.compressedShortMethodName())+
                     "| " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
                     " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
@@ -176,37 +169,6 @@ public class CoverageOfTarget {
         out.println();
     }
 
-    void combineCoverages(CoverageOfTarget cov){
-        this.lineCoverage = combineCoverage(this.lineCoverage, cov.lineCoverage);
-        this.methodCoverage = combineCoverage(this.methodCoverage,  cov.methodCoverage);
-        this.classCoverage = combineCoverage(this.classCoverage, cov.classCoverage);
-    }
-
-
-    private Map<CodeElementName, SbflStatus> combineCoverage(Map<CodeElementName, SbflStatus> thisCov, Map<CodeElementName, SbflStatus> otherCov){
-        Map<CodeElementName, SbflStatus> newCoverage = new TreeMap<>(otherCov);
-        thisCov.forEach((k,v)->{
-            if(newCoverage.containsKey(k)){
-                newCoverage.put(k, v.combine(newCoverage.get(k)));
-            }
-            else {
-                newCoverage.put(k, v);
-            }
-        });
-        return newCoverage;
-    }
-
-    private List<String> getSortedKeys(Set<String> keyset, Granularity granularity){
-        ArrayList<String> keys =  new ArrayList<>(keyset);
-        if(granularity == Granularity.LINE){
-            //行数のStringをソートするための処理
-            keys.sort((o1, o2) -> Integer.parseInt(o1) - Integer.parseInt(o2));
-        }
-        else {
-            Collections.sort(keys);
-        }
-        return keys;
-    }
 
     private int maxLengthOfName(Map<CodeElementName, SbflStatus> cov, boolean isMethod){
         int maxLength = 0;

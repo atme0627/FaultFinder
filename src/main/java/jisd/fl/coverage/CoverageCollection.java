@@ -10,7 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,7 +20,23 @@ public class CoverageCollection {
     public Set<String> targetClassNames;
 
     //クラスごとのカバレッジ
-    private Set<CoverageOfTarget> coverages;
+    static final private Set<CoverageOfTarget> coverages = new HashSet<>();
+
+    public static CoverageOfTarget getCoverageOfTarget(String targetClassName){
+        CoverageOfTarget coverageOfTarget;
+        Optional<CoverageOfTarget> tmp = coverages.stream()
+                .filter(e -> e.getTargetClassName().equals(targetClassName))
+                .findFirst();
+
+        if(tmp.isEmpty()) {
+            coverageOfTarget = new CoverageOfTarget(targetClassName);
+        }
+        else {
+            coverageOfTarget = tmp.get();
+        }
+        coverages.add(coverageOfTarget);
+        return coverageOfTarget;
+    }
 
     @JsonCreator
     private CoverageCollection(@JsonProperty("coverageCollectionName") String coverageCollectionName){
@@ -31,8 +46,8 @@ public class CoverageCollection {
     public CoverageCollection(String coverageCollectionName, Set<String> targetClassNames) {
         this.coverageCollectionName = coverageCollectionName;
         this.targetClassNames = targetClassNames;
-        coverages = new HashSet<>();
     }
+
 
 
     public void printCoverages(Granularity granularity){
@@ -61,30 +76,6 @@ public class CoverageCollection {
         return targetClassNames;
     }
 
-    //実行されたターゲットクラスの集合を返す
-    public Set<String> getExecutedClassNames(){
-        return coverages.stream()
-                .map(CoverageOfTarget::getTargetClassName)
-                .collect(Collectors.toSet());
-    }
-
-    public void putCoverageOfTarget(CoverageOfTarget covOfTarget) {
-        String targetClassName = covOfTarget.getTargetClassName();
-        boolean isEmpty = !getExecutedClassNames().contains(targetClassName);
-        //coveragesにない、新しいtargetClassのカバレッジが追加されたとき
-        if (isEmpty) {
-            getCoverages().add(covOfTarget);
-        }
-        //すでにtargetClassのカバレッジがあるとき
-        else {
-            CoverageOfTarget existedCov = getCoverages().stream()
-                    .filter(e -> e.getTargetClassName().equals(targetClassName))
-                    .findFirst()
-                    .get();
-            existedCov.combineCoverages(covOfTarget);
-        }
-    }
-
     public static CoverageCollection loadJson(String dir){
         File f = new File(dir);
         try {
@@ -96,10 +87,6 @@ public class CoverageCollection {
 
     public boolean isContainsTargetClass(String targetClassName){
         return targetClassNames.contains(targetClassName);
-    }
-
-    public void mergeCoverage(CoverageCollection newCov) {
-        newCov.getCoverages().forEach(this::putCoverageOfTarget);
     }
 
     public Set<CoverageOfTarget> getCoverages(){

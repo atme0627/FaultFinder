@@ -36,9 +36,8 @@ public class MyCoverageVisiter implements ICoverageVisitor {
             return;
         }
 
-        CoverageOfTarget covOfTarget = new CoverageOfTarget(targetClassName);
+        CoverageOfTarget covOfTarget = CoverageCollection.getCoverageOfTarget(targetClassName);
         covOfTarget.processCoverage(coverage, isTestsPassed);
-        coverageCollection.putCoverageOfTarget(covOfTarget);
     }
 
     public void setTestsPassed(boolean testsPassed) {
