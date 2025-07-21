@@ -76,7 +76,7 @@ public class FaultFinder {
         String contextClass = targetMethod.split("#")[0];
         System.out.println("[  REMOVE  ] " + targetMethod);
         report.recordChange(targetMethod, FLRanking.getSuspicious(targetMethod), 0.0);
-        FLRanking.setSuspicious(targetMethod, 0);
+        FLRanking.updateSuspiciousScore(targetMethod, 0);
 
         Set<String> contexts = null;
         try {
@@ -90,7 +90,7 @@ public class FaultFinder {
             if(contextMethod.equals(targetMethod)) continue;
             double preScore = FLRanking.getSuspicious(contextMethod);
             double newScore = preScore * removeConst;
-            FLRanking.setSuspicious(contextMethod, newScore);
+            FLRanking.updateSuspiciousScore(contextMethod, newScore);
             report.recordChange(contextMethod, preScore, newScore);
         }
 
@@ -107,7 +107,7 @@ public class FaultFinder {
         System.out.println("[  SUSP  ] " + targetMethod);
         String contextClass = targetMethod.split("#")[0];
         report.recordChange(targetMethod, FLRanking.getSuspicious(targetMethod), 0.0);
-        FLRanking.setSuspicious(targetMethod, 0);
+        FLRanking.updateSuspiciousScore(targetMethod, 0);
 
         Set<String> contexts = null;
         try {
@@ -121,7 +121,7 @@ public class FaultFinder {
             if(contextMethod.equals(targetMethod)) continue;
             double preScore = FLRanking.getSuspicious(contextMethod);
             double newScore = preScore + suspConst;
-            FLRanking.setSuspicious(contextMethod, newScore);
+            FLRanking.updateSuspiciousScore(contextMethod, newScore);
             report.recordChange(contextMethod, preScore, newScore);
         }
 
@@ -159,7 +159,7 @@ public class FaultFinder {
                     = (depth, countInLine) -> finalPreScore * (Math.pow(getProbeExLambda(), depth));
 
             double newScore = preScore + probeExResult.probeExSuspScore(markingMethod, probeExFunction);
-            FLRanking.setSuspicious(markingMethod, newScore);
+            FLRanking.updateSuspiciousScore(markingMethod, newScore);
             report.recordChange(markingMethod, preScore, newScore);
         }
 

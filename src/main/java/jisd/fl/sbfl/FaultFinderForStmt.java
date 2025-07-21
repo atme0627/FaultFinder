@@ -27,7 +27,7 @@ public class FaultFinderForStmt extends FaultFinder{
 
         System.out.println("[  REMOVE  ] " + targetStmt);
         report.recordChange(targetStmt, FLRanking.getSuspicious(targetStmt), 0.0);
-        FLRanking.setSuspicious(targetStmt, 0);
+        FLRanking.updateSuspiciousScore(targetStmt, 0);
 
         try {
             MethodElementName methodElementName = new MethodElementName(className);
@@ -60,7 +60,7 @@ public class FaultFinderForStmt extends FaultFinder{
 
                     double preScore = FLRanking.getSuspicious(element);
                     double newScore = preScore * getRemoveConst();
-                    FLRanking.setSuspicious(element, newScore);
+                    FLRanking.updateSuspiciousScore(element, newScore);
                     report.recordChange(element, preScore, newScore);
                 }
             }
@@ -85,7 +85,7 @@ public class FaultFinderForStmt extends FaultFinder{
 
         System.out.println("[  SUSP  ] " + targetStmt);
         report.recordChange(targetStmt, FLRanking.getSuspicious(targetStmt), 0.0);
-        FLRanking.setSuspicious(targetStmt, 0);
+        FLRanking.updateSuspiciousScore(targetStmt, 0);
 
         try {
             MethodElementName methodElementName = new MethodElementName(className);
@@ -118,7 +118,7 @@ public class FaultFinderForStmt extends FaultFinder{
 
                     double preScore = FLRanking.getSuspicious(element);
                     double newScore = preScore + getSuspConst();
-                    FLRanking.setSuspicious(element, newScore);
+                    FLRanking.updateSuspiciousScore(element, newScore);
                     report.recordChange(element, preScore, newScore);
                 }
             }

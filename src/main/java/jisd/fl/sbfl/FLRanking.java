@@ -39,8 +39,8 @@ public class FLRanking {
         List<String> shortClassNames = new ArrayList<>();
         List<String> shortMethodNames = new ArrayList<>();
         for(int i = 0; i < min(top, getSize()); i++){
-            shortClassNames.add(result.get(i).e().compressedClassName());
-            shortMethodNames.add(result.get(i).e().compressedShortMethodName());
+            shortClassNames.add(result.get(i).getCodeElementName().compressedClassName());
+            shortMethodNames.add(result.get(i).getCodeElementName().compressedShortMethodName());
         }
 
         int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
@@ -82,7 +82,7 @@ public class FLRanking {
             System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
                     StringUtils.leftPad(shortClassNames.get(i), classLength) + " | " +
                     StringUtils.leftPad(shortMethodNames.get(i), methodLength) + " | " +
-                    String.format("  %.4f  ", element.sbflScore()) + " |" + coloerEnd);
+                    String.format("  %.4f  ", element.getSuspiciousnessScore()) + " |" + coloerEnd);
             previousRank = rank;
         }
         System.out.println(partition);
@@ -96,13 +96,9 @@ public class FLRanking {
 
     //同率も考慮した絶対順位
     public double getRankOfElement(String elementName){
-        if(!isElementExist(elementName)) {
-            System.err.println(elementName + " is not exist.");
-            return -1;
-        }
+        FLRankingElement target = searchElement(elementName).orElseThrow(() -> new RuntimeException(elementName + " is not exist."));
 
         int rankTieIgnored = 0;
-        FLRankingElement target = searchElement(elementName);
         for(int i = 0; i < getSize(); i++){
             if(target.compareTo(result.get(i)) < 0) {
                 rankTieIgnored++;
@@ -117,7 +113,7 @@ public class FLRanking {
     }
 
     public int getNumOfTie(String elementName){
-        FLRankingElement target = searchElement(elementName);
+        FLRankingElement target = searchElement(elementName).orElseThrow(() -> new RuntimeException(elementName + " is not exist."));
         int numOfTie = 0;
         for(int i = 0; i < getSize(); i++){
             if(target.compareTo(result.get(i)) == 0) numOfTie++;
@@ -134,49 +130,47 @@ public class FLRanking {
     }
 
     public double getSuspicious(String targetElementName){
-        if(!isElementExist(targetElementName)) {
-            System.err.println(targetElementName + " is not exist.");
-            return -1.0;
+        Optional<FLRankingElement> element = searchElement(targetElementName);
+        if(element.isPresent()){
+            return element.get().getSuspiciousnessScore();
         }
-        FLRankingElement element = searchElement(targetElementName);
-        return element.sbflScore();
+        throw new RuntimeException(targetElementName + " is not exist.");
     }
 
-    public void setSuspicious(String targetElementName, double suspicious){
-        if(!isElementExist(targetElementName)) {
-            System.err.println(targetElementName + " is not exist.");
+    public void updateSuspiciousScore(String targetElementName, double suspicious){
+        Optional<FLRankingElement> oldElement = searchElement(targetElementName);
+        if(oldElement.isPresent()) {
+            oldElement.get().updateSuspiciousnessScore(suspicious);
             return;
         }
-        FLRankingElement oldElement = searchElement(targetElementName);
-        FLRankingElement newElement = new FLRankingElement(oldElement.e(), suspicious);
-
-        result.remove(oldElement);
-        result.add(newElement);
+        throw new RuntimeException(targetElementName + " is not exist.");
     }
 
-    private FLRankingElement searchElement(String targetElementName){
+    private Optional<FLRankingElement> searchElement(String targetElementName){
         for(FLRankingElement element : result){
-            if(element.toString().equals(targetElementName)) return element;
+            if(element.toString().equals(targetElementName)) return Optional.of(element);
         }
-        System.err.println("Element not found. name: " + targetElementName);
-        return null;
+        return Optional.empty();
     }
 
     public boolean isElementExist(String targetElementName){
         for(FLRankingElement element : result){
-            if(element.e().equals(targetElementName)) return true;
+            if(element.getCodeElementName().equals(targetElementName)) return true;
         }
         return false;
     }
 
     public boolean isTop(String targetElementName){
-        FLRankingElement e = searchElement(targetElementName);
-        return e.isSameScore(result.get(0));
+        Optional<FLRankingElement> element = searchElement(targetElementName);
+        if(element.isPresent()){
+            return element.get().isSameScore(result.get(0));
+        }
+        throw new RuntimeException(targetElementName + " is not exist.");
     }
 
     public Set<String> getAllElements() {
         return result.stream()
-                .map(FLRankingElement::e)
+                .map(FLRankingElement::getCodeElementName)
                 .map(CodeElementName::toString)
                 .collect(Collectors.toSet());
     }
