@@ -19,9 +19,9 @@ public class FaultFinderForStmt extends FaultFinder{
     @Override
     public void remove(int rank) {
         ScoreUpdateReport report = new ScoreUpdateReport("REMOVE");
-        FLRankingElement target = fLRanking.getElementAtPlace(rank).orElseThrow(
-                () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + fLRanking.getSize() + ")"));
-        String targetStmt = fLRanking.getElementNameAtPlace(rank);
+        FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
+                () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
+        String targetStmt = flRanking.getElementNameAtPlace(rank);
         String className = target.getCodeElementName().getFullyQualifiedClassName();
 
         System.out.println("[  REMOVE  ] " + target);
@@ -44,7 +44,7 @@ public class FaultFinderForStmt extends FaultFinder{
             int methodStartLine = targetMethodRange.getLeft();
             int methodEndLine = targetMethodRange.getRight();
 
-            Set<String> allElements = FLRanking.getAllElements();
+            Set<String> allElements = flRanking.getAllElements();
 
             for (String element : allElements) {
                 String[] elementParts = element.split(" ---");
@@ -59,9 +59,9 @@ public class FaultFinderForStmt extends FaultFinder{
                     elementLineNumber <= methodEndLine &&
                     !element.equals(targetStmt)) {
 
-                    double preScore = FLRanking.getSuspicious(element);
+                    double preScore = flRanking.getSuspicious(element);
                     double newScore = preScore * getRemoveConst();
-                    FLRanking.updateSuspiciousScore(element, newScore);
+                    flRanking.updateSuspiciousScore(element, newScore);
                     report.recordChange(element, preScore, newScore);
                 }
             }
@@ -70,23 +70,23 @@ public class FaultFinderForStmt extends FaultFinder{
             throw new RuntimeException(e);
         }
 
-        report.print();
-        FLRanking.sort();
-        FLRanking.printFLResults(getRankingSize());
+        //report.print();
+        flRanking.sort();
+        flRanking.printFLResults(getRankingSize());
     }
 
     @Override
     public void susp(int rank) {
         ScoreUpdateReport report = new ScoreUpdateReport("SUSP");
 
-        String targetStmt = FLRanking.getElementAtPlace(rank);
+        String targetStmt = flRanking.getElementNameAtPlace(rank);
         String[] parts = targetStmt.split(" ---");
         String className = parts[0];
         int lineNumber = Integer.parseInt(parts[1].trim());
 
         System.out.println("[  SUSP  ] " + targetStmt);
-        report.recordChange(targetStmt, FLRanking.getSuspicious(targetStmt), 0.0);
-        FLRanking.updateSuspiciousScore(targetStmt, 0);
+        report.recordChange(targetStmt, flRanking.getSuspicious(targetStmt), 0.0);
+        flRanking.updateSuspiciousScore(targetStmt, 0);
 
         try {
             MethodElementName methodElementName = new MethodElementName(className);
@@ -102,7 +102,7 @@ public class FaultFinderForStmt extends FaultFinder{
             int methodStartLine = targetMethodRange.getLeft();
             int methodEndLine = targetMethodRange.getRight();
 
-            Set<String> allElements = FLRanking.getAllElements(); // SbflResultにgetAllElements()を追加する必要があります
+            Set<String> allElements = flRanking.getAllElements(); // SbflResultにgetAllElements()を追加する必要があります
 
             for (String element : allElements) {
                 String[] elementParts = element.split(" ---");
@@ -117,9 +117,9 @@ public class FaultFinderForStmt extends FaultFinder{
                     elementLineNumber <= methodEndLine &&
                     !element.equals(targetStmt)) {
 
-                    double preScore = FLRanking.getSuspicious(element);
+                    double preScore = flRanking.getSuspicious(element);
                     double newScore = preScore + getSuspConst();
-                    FLRanking.updateSuspiciousScore(element, newScore);
+                    flRanking.updateSuspiciousScore(element, newScore);
                     report.recordChange(element, preScore, newScore);
                 }
             }
@@ -129,7 +129,7 @@ public class FaultFinderForStmt extends FaultFinder{
         }
 
         report.print();
-        FLRanking.sort();
-        FLRanking.printFLResults(getRankingSize());
+        flRanking.sort();
+        flRanking.printFLResults(getRankingSize());
     }
 }

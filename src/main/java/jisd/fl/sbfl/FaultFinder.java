@@ -19,7 +19,7 @@ import static java.lang.Math.min;
 
 
 public class FaultFinder {
-    FLRanking FLRanking;
+    FLRanking flRanking;
     private Set<String> highlightMethods = new HashSet<>();
 
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
@@ -40,17 +40,21 @@ public class FaultFinder {
 
     public FaultFinder(CoverageCollection covForTestSuite, Formula f) {
         this.granularity = Granularity.METHOD;
-        FLRanking = new FLRanking(granularity);
+        flRanking = new FLRanking(granularity);
         calcSuspiciousness(covForTestSuite, granularity, f);
     }
     public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
         this.granularity = granularity;
-        FLRanking = new FLRanking(granularity);
+        flRanking = new FLRanking(granularity);
         calcSuspiciousness(covForTestSuite, granularity, f);
     }
 
+    public void printRanking(){
+        flRanking.printFLResults();
+    }
+
     public void printRanking(int top){
-        FLRanking.printFLResults(top);
+        flRanking.printFLResults(top);
     }
 
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
@@ -58,25 +62,25 @@ public class FaultFinder {
         for(String targetClassName : targetClassNames){
             Map<CodeElementName, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
             covData.forEach((element, status) ->{
-                FLRanking.setElement(element, status, f);
+                flRanking.setElement(element, status, f);
             });
         }
-        FLRanking.sort();
+        flRanking.sort();
     }
 
     public FLRanking getFLResults(){
-        return FLRanking;
+        return flRanking;
     }
 
     public void remove(int rank) {
         if(!validCheck(rank)) return;
         ScoreUpdateReport report = new ScoreUpdateReport("REMOVE");
 
-        String targetMethod = FLRanking.getElementAtPlace(rank);
+        String targetMethod = flRanking.getElementNameAtPlace(rank);
         String contextClass = targetMethod.split("#")[0];
         System.out.println("[  REMOVE  ] " + targetMethod);
-        report.recordChange(targetMethod, FLRanking.getSuspicious(targetMethod), 0.0);
-        FLRanking.updateSuspiciousScore(targetMethod, 0);
+        report.recordChange(targetMethod, flRanking.getSuspicious(targetMethod), 0.0);
+        flRanking.updateSuspiciousScore(targetMethod, 0);
 
         Set<String> contexts = null;
         try {
@@ -86,28 +90,28 @@ public class FaultFinder {
             throw new RuntimeException(e);
         }
         for(String contextMethod : contexts) {
-            if(!FLRanking.isElementExist(contextMethod)) continue;
+            if(!flRanking.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
-            double preScore = FLRanking.getSuspicious(contextMethod);
+            double preScore = flRanking.getSuspicious(contextMethod);
             double newScore = preScore * removeConst;
-            FLRanking.updateSuspiciousScore(contextMethod, newScore);
+            flRanking.updateSuspiciousScore(contextMethod, newScore);
             report.recordChange(contextMethod, preScore, newScore);
         }
 
         report.print();
 
-        FLRanking.sort();
-        FLRanking.printFLResults(rankingSize);
+        flRanking.sort();
+        flRanking.printFLResults(rankingSize);
     }
 
     public void susp(int rank) {
         if(!validCheck(rank)) return;
         ScoreUpdateReport report = new ScoreUpdateReport("SUSP");
-        String targetMethod = FLRanking.getElementAtPlace(rank);
+        String targetMethod = flRanking.getElementNameAtPlace(rank);
         System.out.println("[  SUSP  ] " + targetMethod);
         String contextClass = targetMethod.split("#")[0];
-        report.recordChange(targetMethod, FLRanking.getSuspicious(targetMethod), 0.0);
-        FLRanking.updateSuspiciousScore(targetMethod, 0);
+        report.recordChange(targetMethod, flRanking.getSuspicious(targetMethod), 0.0);
+        flRanking.updateSuspiciousScore(targetMethod, 0);
 
         Set<String> contexts = null;
         try {
@@ -117,17 +121,17 @@ public class FaultFinder {
             throw new RuntimeException(e);
         }
         for(String contextMethod : contexts) {
-            if(!FLRanking.isElementExist(contextMethod)) continue;
+            if(!flRanking.isElementExist(contextMethod)) continue;
             if(contextMethod.equals(targetMethod)) continue;
-            double preScore = FLRanking.getSuspicious(contextMethod);
+            double preScore = flRanking.getSuspicious(contextMethod);
             double newScore = preScore + suspConst;
-            FLRanking.updateSuspiciousScore(contextMethod, newScore);
+            flRanking.updateSuspiciousScore(contextMethod, newScore);
             report.recordChange(contextMethod, preScore, newScore);
         }
 
         report.print();
-        FLRanking.sort();
-        FLRanking.printFLResults(rankingSize);
+        flRanking.sort();
+        flRanking.printFLResults(rankingSize);
     }
 
     public void probeEx(FailedAssertInfo fai){
@@ -151,21 +155,21 @@ public class FaultFinder {
         ScoreUpdateReport report = new ScoreUpdateReport("PROBE EX");
         double preScore;
         for(String markingMethod : probeExResult.markingMethods()){
-            if(!FLRanking.isElementExist(markingMethod)) continue;
-            preScore = FLRanking.getSuspicious(markingMethod);
+            if(!flRanking.isElementExist(markingMethod)) continue;
+            preScore = flRanking.getSuspicious(markingMethod);
 
             double finalPreScore = preScore;
             ToDoubleBiFunction<Integer, Integer> probeExFunction
                     = (depth, countInLine) -> finalPreScore * (Math.pow(getProbeExLambda(), depth));
 
             double newScore = preScore + probeExResult.probeExSuspScore(markingMethod, probeExFunction);
-            FLRanking.updateSuspiciousScore(markingMethod, newScore);
+            flRanking.updateSuspiciousScore(markingMethod, newScore);
             report.recordChange(markingMethod, preScore, newScore);
         }
 
         report.print();
-        FLRanking.sort();
-        FLRanking.printFLResults(rankingSize);
+        flRanking.sort();
+        flRanking.printFLResults(rankingSize);
     }
 
     private boolean validCheck(int rank){
@@ -173,7 +177,7 @@ public class FaultFinder {
             System.err.println("Only method granularity is supported.");
             return false;
         }
-        if(!FLRanking.rankValidCheck(rank)) return false;
+        if(!flRanking.rankValidCheck(rank)) return false;
         return true;
     }
 
@@ -240,7 +244,7 @@ public class FaultFinder {
 
     public void setHighlightMethods(Set<String> highlightMethods) {
         this.highlightMethods = highlightMethods;
-        this.FLRanking.setHighlightMethods(highlightMethods);
+        this.flRanking.setHighlightMethods(highlightMethods);
     }
 
     
