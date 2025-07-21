@@ -11,9 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.MethodElementName;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
 public class CoverageCollection {
@@ -21,8 +22,8 @@ public class CoverageCollection {
     protected final String coverageCollectionName;
     public Set<String> targetClassNames;
 
-    //各クラスのカバレッジインスタンスを保持 (ターゲットクラス名) --> CoverageOfTarget
-    private Map<String, CoverageOfTarget> coverages;
+    //クラスごとのカバレッジ
+    private Set<CoverageOfTarget> coverages;
 
     @JsonCreator
     private CoverageCollection(@JsonProperty("coverageCollectionName") String coverageCollectionName){
@@ -32,11 +33,15 @@ public class CoverageCollection {
     public CoverageCollection(String coverageCollectionName, Set<String> targetClassNames) {
         this.coverageCollectionName = coverageCollectionName;
         this.targetClassNames = targetClassNames;
-        coverages = new LinkedHashMap<>();
+        coverages = new HashSet<>();
     }
 
     public Map<CodeElementName, SbflStatus> getCoverageOfTarget(String targetClassName, Granularity granularity) {
-        return getCoverages().get(targetClassName).getCoverage(granularity);
+        return getCoverages().stream()
+                .filter(c -> c.getTargetClassName().equals(targetClassName))
+                .findFirst()
+                .get()
+                .getCoverage(granularity);
     }
 
 
@@ -46,13 +51,13 @@ public class CoverageCollection {
     }
 
     public void printCoverages(Granularity granularity, boolean onlyCovered){
-        for(CoverageOfTarget cov : getCoverages().values()){
+        for(CoverageOfTarget cov : getCoverages()){
             cov.printCoverage(System.out, granularity);
         }
     }
 
     public void printCoverages(PrintStream out, Granularity granularity){
-        for(CoverageOfTarget cov : getCoverages().values()){
+        for(CoverageOfTarget cov : getCoverages()){
             cov.printCoverage(out, granularity);
         }
     }
@@ -69,19 +74,24 @@ public class CoverageCollection {
 
     //実行されたターゲットクラスの集合を返す
     public Set<String> getExecutedClassNames(){
-        return coverages.keySet();
+        return coverages.stream()
+                .map(CoverageOfTarget::getTargetClassName)
+                .collect(Collectors.toSet());
     }
 
     public void putCoverageOfTarget(CoverageOfTarget covOfTarget) {
         String targetClassName = covOfTarget.getTargetClassName();
-        boolean isEmpty = !getCoverages().containsKey(targetClassName);
+        boolean isEmpty = !getExecutedClassNames().contains(targetClassName);
         //coveragesにない、新しいtargetClassのカバレッジが追加されたとき
         if (isEmpty) {
-            getCoverages().put(targetClassName, covOfTarget);
+            getCoverages().add(covOfTarget);
         }
         //すでにtargetClassのカバレッジがあるとき
         else {
-            CoverageOfTarget existedCov = getCoverages().get(targetClassName);
+            CoverageOfTarget existedCov = getCoverages().stream()
+                    .filter(e -> e.getTargetClassName().equals(targetClassName))
+                    .findFirst()
+                    .get();
             existedCov.combineCoverages(covOfTarget);
         }
     }
@@ -100,16 +110,10 @@ public class CoverageCollection {
     }
 
     public void mergeCoverage(CoverageCollection newCov) {
-        newCov.getCoverages().forEach((targetClassName, covOfTarget) -> {
-            putCoverageOfTarget(covOfTarget);
-        });
+        newCov.getCoverages().forEach(this::putCoverageOfTarget);
     }
 
-    public void setCoverages(Map<String, CoverageOfTarget> coverages) {
-        this.coverages = coverages;
-    }
-
-    public Map<String, CoverageOfTarget> getCoverages(){
+    public Set<CoverageOfTarget> getCoverages(){
         return coverages;
     }
 }
