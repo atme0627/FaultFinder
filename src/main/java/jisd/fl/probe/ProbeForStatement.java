@@ -28,7 +28,7 @@ public class ProbeForStatement extends AbstractProbe{
         investigatedTargets.add(firstTarget);
 
         while(!probingTargets.isEmpty()) {
-            SuspiciousVariable target = probingTargets.removeFirst();
+            SuspiciousVariable target = probingTargets.removeLast();
             printProbeExInfoHeader(target);
 
             //search cause line
