@@ -1,10 +1,7 @@
 package jisd.fl.sbfl;
 
-import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.LineElementName;
-import jisd.fl.util.analyze.MethodElementName;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -12,21 +9,21 @@ import java.util.stream.Collectors;
 
 import static java.lang.Math.min;
 
-public class SbflResult {
-    List<ResultElement> result = new ArrayList<>();
+public class FLRanking {
+    List<FLRankingElement> result = new ArrayList<>();
     final Granularity granularity;
     private Set<String> highlightMethods = new HashSet<>();
 
-    public SbflResult(Granularity granularity){
+    public FLRanking(Granularity granularity){
         this.granularity = granularity;
     }
 
     public void setElement(CodeElementName element, SbflStatus status, Formula f){
-        result.add(new ResultElement(element, status.getSuspiciousness(f)));
+        result.add(new FLRankingElement(element, status.getSuspiciousness(f)));
     }
 
     public void sort(){
-        result.sort(ResultElement::compareTo);
+        result.sort(FLRankingElement::compareTo);
     }
 
     public int getSize(){
@@ -105,8 +102,8 @@ public class SbflResult {
         List<String> shortClassNames = new ArrayList<>();
         List<String> shortMethodNames = new ArrayList<>();
         for(int i = 0; i < min(top, getSize()); i++){
-            shortClassNames.add(result.get(i).e.compressedClassName());
-            shortMethodNames.add(result.get(i).e.compressedShortMethodName());
+            shortClassNames.add(result.get(i).e().compressedClassName());
+            shortMethodNames.add(result.get(i).e().compressedShortMethodName());
         }
 
         int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
@@ -124,7 +121,7 @@ public class SbflResult {
         System.out.println(partition);
         int previousRank = 1;
         for(int i = 0; i < min(top, getSize()); i++){
-            ResultElement element = result.get(i);
+            FLRankingElement element = result.get(i);
             //同率を考慮する
             int rank = 0;
             if(i == 0) {
@@ -168,7 +165,7 @@ public class SbflResult {
         }
 
         int rankTieIgnored = 0;
-        ResultElement target = searchElement(elementName);
+        FLRankingElement target = searchElement(elementName);
         for(int i = 0; i < getSize(); i++){
             if(target.compareTo(result.get(i)) < 0) {
                 rankTieIgnored++;
@@ -183,7 +180,7 @@ public class SbflResult {
     }
 
     public int getNumOfTie(String elementName){
-        ResultElement target = searchElement(elementName);
+        FLRankingElement target = searchElement(elementName);
         int numOfTie = 0;
         for(int i = 0; i < getSize(); i++){
             if(target.compareTo(result.get(i)) == 0) numOfTie++;
@@ -204,7 +201,7 @@ public class SbflResult {
             System.err.println(targetElementName + " is not exist.");
             return -1.0;
         }
-        ResultElement element = searchElement(targetElementName);
+        FLRankingElement element = searchElement(targetElementName);
         return element.sbflScore();
     }
 
@@ -213,15 +210,15 @@ public class SbflResult {
             System.err.println(targetElementName + " is not exist.");
             return;
         }
-        ResultElement oldElement = searchElement(targetElementName);
-        ResultElement newElement = new ResultElement(oldElement.e(), suspicious);
+        FLRankingElement oldElement = searchElement(targetElementName);
+        FLRankingElement newElement = new FLRankingElement(oldElement.e(), suspicious);
 
         result.remove(oldElement);
         result.add(newElement);
     }
 
-    private ResultElement searchElement(String targetElementName){
-        for(ResultElement element : result){
+    private FLRankingElement searchElement(String targetElementName){
+        for(FLRankingElement element : result){
             if(element.toString().equals(targetElementName)) return element;
         }
         System.err.println("Element not found. name: " + targetElementName);
@@ -229,20 +226,20 @@ public class SbflResult {
     }
 
     public boolean isElementExist(String targetElementName){
-        for(ResultElement element : result){
+        for(FLRankingElement element : result){
             if(element.e().equals(targetElementName)) return true;
         }
         return false;
     }
 
     public boolean isTop(String targetElementName){
-        ResultElement e = searchElement(targetElementName);
+        FLRankingElement e = searchElement(targetElementName);
         return e.isSameScore(result.get(0));
     }
 
     public Set<String> getAllElements() {
         return result.stream()
-                .map(ResultElement::e)
+                .map(FLRankingElement::e)
                 .map(CodeElementName::toString)
                 .collect(Collectors.toSet());
     }
@@ -251,15 +248,4 @@ public class SbflResult {
         this.highlightMethods = highlightMethods;
     }
 
-    record ResultElement(CodeElementName e, double sbflScore) implements Comparable<ResultElement> {
-        @Override
-        public int compareTo(ResultElement o) {
-            return isSameScore(o) ? e.compareTo(o.e) : -Double.compare(this.sbflScore, o.sbflScore);
-        }
-
-        //小数点以下4桁までで比較
-        private boolean isSameScore(ResultElement e){
-            return String.format("%.4f", this.sbflScore).equals(String.format("%.4f", e.sbflScore));
-        }
-    }
 }
