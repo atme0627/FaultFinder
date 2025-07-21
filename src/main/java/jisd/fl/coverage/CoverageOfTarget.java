@@ -61,7 +61,7 @@ public class CoverageOfTarget {
         //method coverage
         for(IMethodCoverage mc : cc.getMethods()){
             boolean isTestExecuted = mc.getMethodCounter().getCoveredCount() == 1;
-            putCoverageStatus(methodElementNames.get(mc.getFirstLine()), new SbflStatus(isTestExecuted, isTestPassed), Granularity.METHOD);
+            putCoverageStatus(getMethodElementNameFromLine(mc.getFirstLine()), new SbflStatus(isTestExecuted, isTestPassed), Granularity.METHOD);
         }
 
         //class coverage
@@ -218,9 +218,17 @@ public class CoverageOfTarget {
     }
 
     private LineElementName getLineElementNameFromLine(int line){
-        LineElementName result = methodElementNames.get(line).toLineElementName(line);
+        MethodElementName methodElementName = methodElementNames.get(line);
+        if(methodElementName == null) {
+            return new LineElementName(targetClassName + "#<clinit>", line);
+        }
+        return methodElementName.toLineElementName(line);
+    }
+
+    private MethodElementName getMethodElementNameFromLine(int line){
+        MethodElementName result = methodElementNames.get(line);
         if(result == null) {
-            result = new LineElementName(targetClassName + "#<clinit>", line);
+            return new MethodElementName(targetClassName + "#<clinit>");
         }
         return result;
     }
