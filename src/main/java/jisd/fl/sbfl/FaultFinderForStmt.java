@@ -23,12 +23,15 @@ public class FaultFinderForStmt extends FaultFinder{
                 () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
 
         System.out.println("[  REMOVE  ] " + target);
-        report.recordChange(target.toString(), target.getSuspiciousnessScore(), 0.0);
+        report.recordChange(target);
 
         target.updateSuspiciousnessScore(0);
-        flRanking.getNeighborElements(target).forEach(e -> e.updateSuspiciousnessScore(this.removeConst));
+        flRanking.getNeighborElements(target).forEach(e -> {
+            report.recordChange(e);
+            e.updateSuspiciousnessScore(this.removeConst);
+        });
 
-        //report.print();
+        report.print();
         flRanking.sort();
         flRanking.printFLResults(getRankingSize());
     }
@@ -40,12 +43,15 @@ public class FaultFinderForStmt extends FaultFinder{
                 () -> new RuntimeException("rank: " + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
 
         System.out.println("[  SUSP  ] " + target);
-        report.recordChange(target.toString(), target.getSuspiciousnessScore(), 0.0);
+        report.recordChange(target);
 
         target.updateSuspiciousnessScore(0);
-        flRanking.getNeighborElements(target).forEach(e -> e.updateSuspiciousnessScore(this.suspConst));
+        flRanking.getNeighborElements(target).forEach(e -> {
+                report.recordChange(e);
+                e.updateSuspiciousnessScore(this.suspConst);
+        });
 
-        //report.print();
+        report.print();
         flRanking.sort();
         flRanking.printFLResults(getRankingSize());
     }

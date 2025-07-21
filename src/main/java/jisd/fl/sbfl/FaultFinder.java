@@ -77,9 +77,11 @@ public class FaultFinder {
         ScoreUpdateReport report = new ScoreUpdateReport("REMOVE");
 
         String targetMethod = flRanking.getElementNameAtPlace(rank);
+        FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
+                () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
         String contextClass = targetMethod.split("#")[0];
         System.out.println("[  REMOVE  ] " + targetMethod);
-        report.recordChange(targetMethod, flRanking.getSuspicious(targetMethod), 0.0);
+        report.recordChange(target);
         flRanking.updateSuspiciousScore(targetMethod, 0);
 
         Set<String> contexts = null;
@@ -95,7 +97,6 @@ public class FaultFinder {
             double preScore = flRanking.getSuspicious(contextMethod);
             double newScore = preScore * removeConst;
             flRanking.updateSuspiciousScore(contextMethod, newScore);
-            report.recordChange(contextMethod, preScore, newScore);
         }
 
         report.print();
@@ -108,9 +109,11 @@ public class FaultFinder {
         if(!validCheck(rank)) return;
         ScoreUpdateReport report = new ScoreUpdateReport("SUSP");
         String targetMethod = flRanking.getElementNameAtPlace(rank);
+        FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
+                () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
         System.out.println("[  SUSP  ] " + targetMethod);
         String contextClass = targetMethod.split("#")[0];
-        report.recordChange(targetMethod, flRanking.getSuspicious(targetMethod), 0.0);
+        report.recordChange(target);
         flRanking.updateSuspiciousScore(targetMethod, 0);
 
         Set<String> contexts = null;
@@ -126,7 +129,6 @@ public class FaultFinder {
             double preScore = flRanking.getSuspicious(contextMethod);
             double newScore = preScore + suspConst;
             flRanking.updateSuspiciousScore(contextMethod, newScore);
-            report.recordChange(contextMethod, preScore, newScore);
         }
 
         report.print();
@@ -164,7 +166,6 @@ public class FaultFinder {
 
             double newScore = preScore + probeExResult.probeExSuspScore(markingMethod, probeExFunction);
             flRanking.updateSuspiciousScore(markingMethod, newScore);
-            report.recordChange(markingMethod, preScore, newScore);
         }
 
         report.print();

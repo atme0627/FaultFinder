@@ -1,14 +1,10 @@
 package jisd.fl.report;
 
-import jisd.fl.util.analyze.MethodElementName;
-import jisd.fl.util.analyze.StaticAnalyzer;
+import jisd.fl.sbfl.FLRankingElement;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * スコア更新処理の結果を保持し、整形してコンソールに出力する責務を持つクラス。
@@ -27,14 +23,8 @@ public class ScoreUpdateReport {
         this.operationName = operationName;
     }
 
-    /**
-     * スコアの変更を記録します。
-     * @param method   対象のメソッド名
-     * @param oldScore 変更前のスコア
-     * @param newScore 変更後のスコア
-     */
-    public void recordChange(String method, Double oldScore, Double newScore) {
-        changes.add(new ChangeEntry(method, oldScore, newScore));
+    public void recordChange(FLRankingElement changeTarget) {
+        changes.add(new ChangeEntry(changeTarget, changeTarget.getSuspiciousnessScore()));
     }
 
     /**
@@ -46,38 +36,10 @@ public class ScoreUpdateReport {
         }
         // 短縮クラス名・メソッド名の計算
         List<String> shortClassNames = new ArrayList<>();
-                List<String> shortElementNames = new ArrayList<>();
+        List<String> shortElementNames = new ArrayList<>();
         for (ChangeEntry entry : changes) {
-            String[] parts = entry.method.split(" ---");
-            String longClassName = parts[0];
-            boolean isStmt = parts.length > 1;
-
-            // クラス名を短縮 (例: org.apache.commons.math3.optim -> o.a.c.m.optim)
-            StringBuilder shortClassName = new StringBuilder();
-            String[] packages = longClassName.split("\\.");
-            for (int j = 0; j < packages.length - 2; j++) {
-                shortClassName.append(packages[j].charAt(0)).append(".");
-            }
-            shortClassName.append(packages[packages.length - 2]).append(".").append(packages[packages.length - 1]);
-
-            String shortElementName;
-            if (isStmt) {
-                shortElementName = "line: " + parts[1].trim();
-            } else {
-                // メソッド名に開始行を追加
-                Map<String, Pair<Integer, Integer>> rangeOfMethods;
-                try {
-                    rangeOfMethods = StaticAnalyzer.getRangeOfAllMethods(new MethodElementName(longClassName));
-                } catch (NoSuchFileException e) {
-                    throw new RuntimeException(e);
-                }
-                int startLineOfMethod = rangeOfMethods.get(entry.method).getLeft();
-                String methodName = entry.method.split("#")[1].split("\\(")[0];
-                shortElementName = String.format("%s(...) line: %4d", methodName, startLineOfMethod);
-            }
-
-            shortClassNames.add(shortClassName.toString());
-            shortElementNames.add(shortElementName);
+            shortClassNames.add(entry.updatedElement.getCodeElementName().compressedClassName());
+            shortElementNames.add(entry.updatedElement.getCodeElementName().compressedShortMethodName());
         }
 
         // 表示幅の計算
@@ -97,7 +59,7 @@ public class ScoreUpdateReport {
         for (int i = 0; i < changes.size(); i++) {
             ChangeEntry e = changes.get(i);
             String row = String.format("| %-" + classLength + "s | %-" + elementLength + "s | %6.4f -> %6.4f |",
-                    shortClassNames.get(i), shortElementNames.get(i), e.oldScore, e.newScore);
+                    shortClassNames.get(i), shortElementNames.get(i), e.oldScore(), e.newScore());
             System.out.println(row);
         }
         System.out.println(partition);
@@ -107,15 +69,10 @@ public class ScoreUpdateReport {
     /**
      * 1つのスコア変更を表す内部データクラス。
      */
-    private static class ChangeEntry {
-        final String method;
-        final Double oldScore;
-        final Double newScore;
+    private record ChangeEntry(FLRankingElement updatedElement, Double oldScore) {
+        public double newScore(){
+            return updatedElement.getSuspiciousnessScore();
+    }
 
-        ChangeEntry(String method, Double oldScore, Double newScore) {
-            this.method = method;
-            this.oldScore = oldScore;
-            this.newScore = newScore;
-        }
     }
 }
