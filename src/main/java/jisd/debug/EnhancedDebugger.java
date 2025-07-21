@@ -301,8 +301,8 @@ public class EnhancedDebugger {
         StringBuilder n = new StringBuilder(m.toString());
         n.setCharAt(m.toString().lastIndexOf("."), '#');
         if (n.toString().contains("<init>")) {
-            String constructorName = n.substring(n.lastIndexOf("."), n.indexOf("#"));
-            n.replace(n.indexOf("#"), n.indexOf("("), constructorName);
+            String constructorName = n.substring(n.lastIndexOf(".") + 1, n.indexOf("#"));
+            n.replace(n.indexOf("#") + 1, n.indexOf("("), constructorName);
         }
         if((n.toString().contains("<clinit>"))){
             return n.substring(0, '#');

@@ -32,9 +32,14 @@ public class ProbeForStatement extends AbstractProbe{
             printProbeExInfoHeader(target);
 
             //search cause line
-            SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
+            Optional<SuspiciousExpression> suspExprOpt = probing(sleepTime, target);
+            if(suspExprOpt.isEmpty()){
+                System.err.println("[Probe For STATEMENT] Cause line is not found.");
+                System.err.println("[Probe For STATEMENT] Skip probing");
+                continue;
+            }
+            SuspiciousExpression suspExpr = suspExprOpt.get();
 ;
-
             //include return line of callee method to cause lines
             List<SuspiciousExpression> causeExprs = searchSuspiciousReturns(suspExpr);
 
@@ -60,17 +65,18 @@ public class ProbeForStatement extends AbstractProbe{
     protected Optional<SuspiciousExpression> probing(int sleepTime, SuspiciousVariable suspVar) {
         Optional<SuspiciousExpression> result = super.probing(sleepTime, suspVar);
         int loop = 0;
-        int LOOP_LIMIT = 5;
+        int LOOP_LIMIT = 1;
         while(result.isEmpty()) {
             loop++;
-            System.err.println("[Probe For STATEMENT] Cannot get enough information.");
-            System.err.println("[Probe For STATEMENT] Retry to collect information.");
-            sleepTime += 2000;
-            result = super.probing(sleepTime, suspVar);
             if (loop == LOOP_LIMIT) {
                 System.err.println("[Probe For STATEMENT] Failed to collect information.");
                 return Optional.empty();
             }
+            System.err.println("[Probe For STATEMENT] Cannot get enough information.");
+            System.err.println("[Probe For STATEMENT] Retry to collect information.");
+            sleepTime += 2000;
+            result = super.probing(sleepTime, suspVar);
+
         }
         return result;
     }
@@ -93,6 +99,7 @@ public class ProbeForStatement extends AbstractProbe{
                 for (SuspiciousReturnValue r : returnsOfTarget) {
                     System.out.println(" >>> " + r);
                 }
+                target.addChild(returnsOfTarget);
                 suspExprQueue.addAll(returnsOfTarget);
             }
             result.add(target);

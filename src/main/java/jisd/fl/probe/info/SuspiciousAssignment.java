@@ -191,8 +191,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                 //引数やメソッド呼び出しに用いられる変数を除外
                 .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(NameExpr::toString)
-                //このSuspExprが原因となっている変数を除外
-                .filter(n -> !n.equals(assignTarget.getSimpleVariableName()))
                 .collect(Collectors.toList());
     }
 
@@ -204,12 +202,20 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         try {
             Expression result = null;
             Optional<AssignExpr> assignExpr = stmt.findFirst(AssignExpr.class);
-            if(assignExpr.isPresent()) result = assignExpr.get().getValue();
-
-            VariableDeclarationExpr vdExpr = stmt.findFirst(VariableDeclarationExpr.class).orElseThrow();
-            //代入文がひとつであると仮定
-            VariableDeclarator var = vdExpr.getVariable(0);
-            result =  var.getInitializer().orElseThrow();
+            if(assignExpr.isPresent()) {
+                if(assignExpr.get().getOperator() == AssignExpr.Operator.ASSIGN) {
+                    result = assignExpr.get().getValue();
+                }
+                else {
+                    result = assignExpr.get();
+                }
+            }
+            else {
+                VariableDeclarationExpr vdExpr = stmt.findFirst(VariableDeclarationExpr.class).orElseThrow();
+                //代入文がひとつであると仮定
+                VariableDeclarator var = vdExpr.getVariable(0);
+                result = var.getInitializer().orElseThrow();
+            }
 
             if(!deleteParentNode) return result;
             result = result.clone();

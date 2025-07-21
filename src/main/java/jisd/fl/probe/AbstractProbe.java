@@ -45,9 +45,10 @@ public abstract class AbstractProbe {
         System.out.println("    >> Probe Info: Running debugger and extract watched info.");
         TracedValueCollection tracedValues = traceValuesOfTarget(suspVar, sleepTime);
 
-        //tracedValues.printAll();
+        tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
-        List<TracedValue> watchedValues = tracedValues.filterByVariableName(suspVar.getVariableName(true, true));
+        //List<TracedValue> watchedValues = tracedValues.filterByVariableName(suspVar.getVariableName(true, true));
+        List<TracedValue> watchedValues = tracedValues.getAll();
 
         System.out.println("    >> Probe Info: Searching probe line.");
         Optional<SuspiciousExpression> result = searchProbeLine(watchedValues, suspVar);
@@ -61,7 +62,7 @@ public abstract class AbstractProbe {
             List<Integer> canSetLines = StaticAnalyzer.getCanSetLine(target);
             String dbgMain = target.getLocateClass();
             dbg = createDebugger();
-            String[] targetValueName = new String[]{target.getSimpleVariableName()};
+            String[] targetValueName = new String[]{(target.isField() ? "this." : "") + target.getSimpleVariableName()};
             //set watchPoint
             dbg.setMain(dbgMain);
             List<Optional<Point>> watchPoints =
@@ -280,10 +281,14 @@ public abstract class AbstractProbe {
      *     が、同じクラスであることは保証される
      */
     private SuspiciousAssignment resultIfAssigned(int causeLineNumber, SuspiciousVariable vi){
-        //原因行のStatementを取得
-        MethodElementName locateClassElementName = vi.getLocateMethodElement();
-        return new SuspiciousAssignment(vi.getFailedTest(), locateClassElementName, causeLineNumber, vi);
-
+        try {
+            //TODO: 毎回静的解析するのは遅すぎるため、キャッシュする方がいい
+            Map<Integer, MethodElementName> methodElementNames = StaticAnalyzer.getMethodNamesWithLine(vi.getLocateMethodElement());
+            MethodElementName locateMethodElementName = methodElementNames.get(causeLineNumber);
+            return new SuspiciousAssignment(vi.getFailedTest(), locateMethodElementName, causeLineNumber, vi);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /** 探索対象の変数が現在実行中のメソッドの引数であり、メソッド呼び出しの時点でその値を取っていたパターン

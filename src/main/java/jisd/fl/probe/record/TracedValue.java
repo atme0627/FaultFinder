@@ -11,6 +11,7 @@ public class TracedValue implements Comparable<TracedValue>{
     public final String variableName;
     public final String value;
     public final boolean isReference;
+    public final boolean isField;
     public long objectID = 0;
 
     public TracedValue(LocalDateTime createAt,
@@ -19,9 +20,10 @@ public class TracedValue implements Comparable<TracedValue>{
                        int lineNumber){
         this.createAt = createAt;
         this.lineNumber = lineNumber;
-        this.variableName = variableName;
+        this.variableName = variableName.contains("this") ? variableName.split("\\.")[1] : variableName;
         this.value = value;
         this.isReference = false;
+        this.isField = variableName.contains("this");
     }
 
     public TracedValue(LocalDateTime createAt,
@@ -32,9 +34,10 @@ public class TracedValue implements Comparable<TracedValue>{
 
         this.createAt = createAt;
         this.lineNumber = lineNumber;
-        this.variableName = variableName;
+        this.variableName = variableName.contains("this") ? variableName.split("\\.")[1] : variableName;
         this.value = value;
         this.isReference = isReference;
+        this.isField = variableName.contains("this");
     }
 
     @Override

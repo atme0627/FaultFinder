@@ -40,13 +40,11 @@ public class FaultFinderForStmtTest {
 
     @Test
     public void removeTest(){
-        faultFinder.printRanking();
-        faultFinder.remove(4);
+        faultFinder.remove(3);
     }
 
     @Test
     public void suspTest(){
-        faultFinder.printRanking();
         faultFinder.susp(2);
     }
 }

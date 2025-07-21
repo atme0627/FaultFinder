@@ -113,8 +113,12 @@ public abstract class SuspiciousExpression {
         sb.append(locateMethod);
         sb.append("\n");
         sb.append(String.format(
-                locateLine + ": " + "    " + String.format("%-50s", stmt.toString()) +
-                        String.format(" == %-8s", actualValue)
+                "%d: %s%-50s %s%s",
+                locateLine,
+                "    ",
+                stmt.toString(),
+                " == ",
+                actualValue
         ));
         sb.append("\n");
         return sb.toString();
@@ -160,7 +164,7 @@ public abstract class SuspiciousExpression {
                     .collect(Collectors.toList());
 
             //TODO: Locationに依存しない形にしたい
-            Location loc = drs.values().stream().findFirst().get().getLocation();
+            Location loc = new Location(this.locateMethod.className, this.locateMethod.getShortMethodName(), this.locateLine, "DUMMY");
             TracedValueCollection watchedValues = new TracedValuesAtLine(valuesAtLine, loc);
             dbg.exit();
             dbg.clearResults();
@@ -181,17 +185,20 @@ public abstract class SuspiciousExpression {
         List<String> neighborVariableNames = extractNeighborVariableNames(includeIndirectUsedVariable);
 
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
+        //TODO: 今の実装だと、変数がローカルかフィールドか区別できない
+        // ex. this.x = x の時, this.xも探索してしまう。
         List<SuspiciousVariable> result =
                 tracedNeighborValue.getAll().stream()
                 .filter(t -> neighborVariableNames.contains(t.variableName))
                 .filter(t -> !t.isReference)
+                        //
                 .map(t -> new SuspiciousVariable(
                         failedTest,
                         locateMethod.getFullyQualifiedMethodName(),
                         t.variableName,
                         t.value,
                         true,
-                        t.variableName.contains("[")
+                        t.isField
                 )).distinct().collect(Collectors.toList());
 
         result.forEach(sv -> sv.setParent(this));
