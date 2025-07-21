@@ -21,54 +21,11 @@ public class FaultFinderForStmt extends FaultFinder{
         ScoreUpdateReport report = new ScoreUpdateReport("REMOVE");
         FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
                 () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
-        String targetStmt = flRanking.getElementNameAtPlace(rank);
-        String className = target.getCodeElementName().getFullyQualifiedClassName();
 
         System.out.println("[  REMOVE  ] " + target);
         report.recordChange(target.toString(), target.getSuspiciousnessScore(), 0.0);
-        target.remove();
-
-        try {
-            String[] parts = target.getCodeElementName().toString().split(":");
-            int lineNumber = Integer.parseInt(parts[1].trim());
-            MethodElementName methodElementName = new MethodElementName(className);
-            String targetMethodFqmn = StaticAnalyzer.getMethodNameFormLine(methodElementName, lineNumber);
-            Map<String, Pair<Integer, Integer>> methodRanges = StaticAnalyzer.getRangeOfAllMethods(methodElementName);
-            Pair<Integer, Integer> targetMethodRange = methodRanges.get(targetMethodFqmn);
-
-            if (targetMethodRange == null) {
-                System.err.println("Could not find method range for: " + targetMethodFqmn);
-                return;
-            }
-
-            int methodStartLine = targetMethodRange.getLeft();
-            int methodEndLine = targetMethodRange.getRight();
-
-            Set<String> allElements = flRanking.getAllElements();
-
-            for (String element : allElements) {
-                String[] elementParts = element.split(" ---");
-                if (elementParts.length < 2) continue; // メソッド単位の要素などをスキップ
-
-                String elementClassName = elementParts[0];
-                int elementLineNumber = Integer.parseInt(elementParts[1].trim());
-
-                // 同じクラスで、かつ対象メソッドの行範囲内にある要素のみを更新対象とする
-                if (elementClassName.equals(className) &&
-                    elementLineNumber >= methodStartLine &&
-                    elementLineNumber <= methodEndLine &&
-                    !element.equals(targetStmt)) {
-
-                    double preScore = flRanking.getSuspicious(element);
-                    double newScore = preScore * getRemoveConst();
-                    flRanking.updateSuspiciousScore(element, newScore);
-                    report.recordChange(element, preScore, newScore);
-                }
-            }
-
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
+        target.updateSuspiciousnessScore(0);
+        flRanking.getNeighborElements(target).forEach(e -> e.updateSuspiciousnessScore(this.removeConst));
 
         //report.print();
         flRanking.sort();
