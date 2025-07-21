@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static java.lang.Math.min;
 
 public class FLRanking {
-    List<FLRankingElement> result = new ArrayList<>();
+    List<FLRankingElement> ranking = new ArrayList<>();
     final Granularity granularity;
     private Set<String> highlightMethods = new HashSet<>();
 
@@ -19,15 +19,15 @@ public class FLRanking {
     }
 
     public void setElement(CodeElementName element, SbflStatus status, Formula f){
-        result.add(new FLRankingElement(element, status.getSuspiciousness(f)));
+        ranking.add(new FLRankingElement(element, status.getSuspiciousness(f)));
     }
 
     public void sort(){
-        result.sort(FLRankingElement::compareTo);
+        ranking.sort(FLRankingElement::compareTo);
     }
 
     public int getSize(){
-        return result.size();
+        return ranking.size();
     }
 
     public void printFLResults() {
@@ -39,8 +39,8 @@ public class FLRanking {
         List<String> shortClassNames = new ArrayList<>();
         List<String> shortMethodNames = new ArrayList<>();
         for(int i = 0; i < min(top, getSize()); i++){
-            shortClassNames.add(result.get(i).getCodeElementName().compressedClassName());
-            shortMethodNames.add(result.get(i).getCodeElementName().compressedShortMethodName());
+            shortClassNames.add(ranking.get(i).getCodeElementName().compressedClassName());
+            shortMethodNames.add(ranking.get(i).getCodeElementName().compressedShortMethodName());
         }
 
         int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
@@ -58,14 +58,14 @@ public class FLRanking {
         System.out.println(partition);
         int previousRank = 1;
         for(int i = 0; i < min(top, getSize()); i++){
-            FLRankingElement element = result.get(i);
+            FLRankingElement element = ranking.get(i);
             //同率を考慮する
             int rank = 0;
             if(i == 0) {
                 rank = i+1;
             }
             else {
-                if(element.isSameScore(result.get(i-1))){
+                if(element.isSameScore(ranking.get(i-1))){
                     rank = previousRank;
                 }
                 else {
@@ -89,9 +89,10 @@ public class FLRanking {
         System.out.println();
     }
 
+    @Deprecated
     public String getElementAtPlace(int place){
         if(!rankValidCheck(place)) return "";
-        return result.get(place - 1).toString();
+        return ranking.get(place - 1).toString();
     }
 
     //同率も考慮した絶対順位
@@ -100,7 +101,7 @@ public class FLRanking {
 
         int rankTieIgnored = 0;
         for(int i = 0; i < getSize(); i++){
-            if(target.compareTo(result.get(i)) < 0) {
+            if(target.compareTo(ranking.get(i)) < 0) {
                 rankTieIgnored++;
             }
             else {
@@ -116,7 +117,7 @@ public class FLRanking {
         FLRankingElement target = searchElement(elementName).orElseThrow(() -> new RuntimeException(elementName + " is not exist."));
         int numOfTie = 0;
         for(int i = 0; i < getSize(); i++){
-            if(target.compareTo(result.get(i)) == 0) numOfTie++;
+            if(target.compareTo(ranking.get(i)) == 0) numOfTie++;
         }
         return numOfTie;
     }
@@ -147,14 +148,14 @@ public class FLRanking {
     }
 
     private Optional<FLRankingElement> searchElement(String targetElementName){
-        for(FLRankingElement element : result){
+        for(FLRankingElement element : ranking){
             if(element.toString().equals(targetElementName)) return Optional.of(element);
         }
         return Optional.empty();
     }
 
     public boolean isElementExist(String targetElementName){
-        for(FLRankingElement element : result){
+        for(FLRankingElement element : ranking){
             if(element.getCodeElementName().equals(targetElementName)) return true;
         }
         return false;
@@ -163,13 +164,13 @@ public class FLRanking {
     public boolean isTop(String targetElementName){
         Optional<FLRankingElement> element = searchElement(targetElementName);
         if(element.isPresent()){
-            return element.get().isSameScore(result.get(0));
+            return element.get().isSameScore(ranking.get(0));
         }
         throw new RuntimeException(targetElementName + " is not exist.");
     }
 
     public Set<String> getAllElements() {
-        return result.stream()
+        return ranking.stream()
                 .map(FLRankingElement::getCodeElementName)
                 .map(CodeElementName::toString)
                 .collect(Collectors.toSet());
