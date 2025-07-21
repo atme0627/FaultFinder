@@ -25,7 +25,7 @@ public class FaultFinderForStmtTest {
         PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
         PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/test/java");
 
-        String testClassName = "org.sample.coverage.ConditionalTest";
+        String testClassName = "org.sample.CalcTest";
         // カバレッジを分析
         CoverageAnalyzer ca = new CoverageAnalyzer();
         CoverageCollection coverageCollection = ca.analyzeAll(testClassName);

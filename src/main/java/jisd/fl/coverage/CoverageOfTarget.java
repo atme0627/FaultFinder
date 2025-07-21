@@ -182,7 +182,7 @@ public class CoverageOfTarget {
     private LineElementName getLineElementNameFromLine(int line){
         MethodElementName methodElementName = methodElementNames.get(line);
         if(methodElementName == null) {
-            return new LineElementName(targetClassName + "#<clinit>", line);
+            return new LineElementName(targetClassName + "#<clinit>()", line);
         }
         return methodElementName.toLineElementName(line);
     }
@@ -190,7 +190,7 @@ public class CoverageOfTarget {
     private MethodElementName getMethodElementNameFromLine(int line){
         MethodElementName result = methodElementNames.get(line);
         if(result == null) {
-            return new MethodElementName(targetClassName + "#<clinit>");
+            return new MethodElementName(targetClassName + "#<clinit>()");
         }
         return result;
     }
