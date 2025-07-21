@@ -1,6 +1,7 @@
 package jisd.fl.sbfl;
 
 import jisd.fl.coverage.CoverageCollection;
+import jisd.fl.coverage.CoverageOfTarget;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.ProbeEx;
 import jisd.fl.probe.info.ProbeExResult;
@@ -53,10 +54,8 @@ public class FaultFinder {
     }
 
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
-        Set<String> targetClassNames = covForTestSuite.getExecutedClassNames();
-        for(String targetClassName : targetClassNames){
-            Map<CodeElementName, SbflStatus> covData = covForTestSuite.getCoverageOfTarget(targetClassName, granularity);
-            covData.forEach((element, status) ->{
+        for(CoverageOfTarget coverageOfTarget : covForTestSuite.getCoverages()) {
+            coverageOfTarget.getCoverage(granularity).forEach((element, status) -> {
                 flRanking.setElement(element, status, f);
             });
         }

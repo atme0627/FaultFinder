@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import jisd.fl.sbfl.SbflStatus;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +13,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jisd.fl.util.analyze.CodeElementName;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
 public class CoverageCollection {
@@ -35,15 +33,6 @@ public class CoverageCollection {
         this.targetClassNames = targetClassNames;
         coverages = new HashSet<>();
     }
-
-    public Map<CodeElementName, SbflStatus> getCoverageOfTarget(String targetClassName, Granularity granularity) {
-        return getCoverages().stream()
-                .filter(c -> c.getTargetClassName().equals(targetClassName))
-                .findFirst()
-                .get()
-                .getCoverage(granularity);
-    }
-
 
 
     public void printCoverages(Granularity granularity){
