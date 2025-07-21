@@ -23,16 +23,16 @@ public class FaultFinder {
     private Set<String> highlightMethods = new HashSet<>();
 
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
-    private double removeConst = 0.8;
+    protected double removeConst = 0.8;
     //susp時に同じクラスの他のメソッドの疑惑値に足す定数
-    private double suspConst = 0.2;
+    protected double suspConst = 0.2;
     //probe時に使用する定数
-    private double probeC1 = 0.2;
-    private double probeC2 = 0.1;
-    private double probeC3 = 0.1;
+    protected double probeC1 = 0.2;
+    protected double probeC2 = 0.1;
+    protected double probeC3 = 0.1;
 
     //probeExの疑惑値計算に使用する変数
-    private double probeExLambda = 0.8;
+    protected double probeExLambda = 0.8;
 
     //probeExの疑惑値計算に使用する変数
     private int rankingSize = 20;
