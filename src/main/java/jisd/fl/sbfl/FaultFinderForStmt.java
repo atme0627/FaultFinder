@@ -24,6 +24,7 @@ public class FaultFinderForStmt extends FaultFinder{
 
         System.out.println("[  REMOVE  ] " + target);
         report.recordChange(target.toString(), target.getSuspiciousnessScore(), 0.0);
+
         target.updateSuspiciousnessScore(0);
         flRanking.getNeighborElements(target).forEach(e -> e.updateSuspiciousnessScore(this.removeConst));
 
@@ -35,57 +36,16 @@ public class FaultFinderForStmt extends FaultFinder{
     @Override
     public void susp(int rank) {
         ScoreUpdateReport report = new ScoreUpdateReport("SUSP");
+        FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
+                () -> new RuntimeException("rank: " + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
 
-        String targetStmt = flRanking.getElementNameAtPlace(rank);
-        String[] parts = targetStmt.split(" ---");
-        String className = parts[0];
-        int lineNumber = Integer.parseInt(parts[1].trim());
+        System.out.println("[  SUSP  ] " + target);
+        report.recordChange(target.toString(), target.getSuspiciousnessScore(), 0.0);
 
-        System.out.println("[  SUSP  ] " + targetStmt);
-        report.recordChange(targetStmt, flRanking.getSuspicious(targetStmt), 0.0);
-        flRanking.updateSuspiciousScore(targetStmt, 0);
+        target.updateSuspiciousnessScore(0);
+        flRanking.getNeighborElements(target).forEach(e -> e.updateSuspiciousnessScore(this.suspConst));
 
-        try {
-            MethodElementName methodElementName = new MethodElementName(className);
-            String targetMethodFqmn = StaticAnalyzer.getMethodNameFormLine(methodElementName, lineNumber);
-            Map<String, Pair<Integer, Integer>> methodRanges = StaticAnalyzer.getRangeOfAllMethods(methodElementName);
-            Pair<Integer, Integer> targetMethodRange = methodRanges.get(targetMethodFqmn);
-
-            if (targetMethodRange == null) {
-                System.err.println("Could not find method range for: " + targetMethodFqmn);
-                return;
-            }
-
-            int methodStartLine = targetMethodRange.getLeft();
-            int methodEndLine = targetMethodRange.getRight();
-
-            Set<String> allElements = flRanking.getAllElements(); // SbflResultにgetAllElements()を追加する必要があります
-
-            for (String element : allElements) {
-                String[] elementParts = element.split(" ---");
-                if (elementParts.length < 2) continue; // メソッド単位の要素などをスキップ
-
-                String elementClassName = elementParts[0];
-                int elementLineNumber = Integer.parseInt(elementParts[1].trim());
-
-                // 同じクラスで、かつ対象メソッドの行範囲内にある要素のみを更新対象とする
-                if (elementClassName.equals(className) &&
-                    elementLineNumber >= methodStartLine &&
-                    elementLineNumber <= methodEndLine &&
-                    !element.equals(targetStmt)) {
-
-                    double preScore = flRanking.getSuspicious(element);
-                    double newScore = preScore + getSuspConst();
-                    flRanking.updateSuspiciousScore(element, newScore);
-                    report.recordChange(element, preScore, newScore);
-                }
-            }
-
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
-        report.print();
+        //report.print();
         flRanking.sort();
         flRanking.printFLResults(getRankingSize());
     }
