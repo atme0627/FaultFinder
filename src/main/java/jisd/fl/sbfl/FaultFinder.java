@@ -24,8 +24,8 @@ public class FaultFinder {
 
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
     protected double removeConst = 0.8;
-    //susp時に同じクラスの他のメソッドの疑惑値に足す定数
-    protected double suspConst = 0.2;
+    //susp時に同じクラスの他のメソッドの疑惑値にかける定数
+    protected double suspConst = 1.2;
     //probe時に使用する定数
     protected double probeC1 = 0.2;
     protected double probeC2 = 0.1;

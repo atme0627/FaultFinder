@@ -96,7 +96,7 @@ public class FLRanking {
     }
 
     public Optional<FLRankingElement> getElementAtPlace(int place){
-        return Optional.ofNullable(ranking.get(place - 1));
+        return place <= ranking.size() ? Optional.of(ranking.get(place - 1)) : Optional.empty();
     }
 
     //同率も考慮した絶対順位
