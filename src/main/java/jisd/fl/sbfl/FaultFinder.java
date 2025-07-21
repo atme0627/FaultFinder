@@ -86,34 +86,22 @@ public class FaultFinder {
     }
 
     public void susp(int rank) {
-        if(!validCheck(rank)) return;
         ScoreUpdateReport report = new ScoreUpdateReport("SUSP");
-        String targetMethod = flRanking.getElementNameAtPlace(rank);
         FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
-                () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
-        System.out.println("[  SUSP  ] " + targetMethod);
-        String contextClass = targetMethod.split("#")[0];
-        report.recordChange(target);
-        flRanking.updateSuspiciousScore(targetMethod, 0);
+                () -> new RuntimeException("rank: " + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
 
-        Set<String> contexts = null;
-        try {
-            MethodElementName context = new MethodElementName(contextClass);
-            contexts = StaticAnalyzer.getMethodNames(context);
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-        for(String contextMethod : contexts) {
-            if(!flRanking.isElementExist(contextMethod)) continue;
-            if(contextMethod.equals(targetMethod)) continue;
-            double preScore = flRanking.getSuspicious(contextMethod);
-            double newScore = preScore + suspConst;
-            flRanking.updateSuspiciousScore(contextMethod, newScore);
-        }
+        System.out.println("[  SUSP  ] " + target);
+        report.recordChange(target);
+
+        target.updateSuspiciousnessScore(0);
+        flRanking.getNeighborElements(target).forEach(e -> {
+            report.recordChange(e);
+            e.updateSuspiciousnessScore(this.suspConst);
+        });
 
         report.print();
         flRanking.sort();
-        flRanking.printFLResults(rankingSize);
+        flRanking.printFLResults(getRankingSize());
     }
 
     public void probeEx(FailedAssertInfo fai){
