@@ -31,12 +31,13 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
         return sbflScore;
     }
 
-    public void updateSuspiciousnessScore(double newScore){
-        this.sbflScore = newScore;
+    public void updateSuspiciousnessScore(double ratio){
+        this.sbflScore *= ratio;
     }
 
-    public void remove(){
-        updateSuspiciousnessScore(0);
+    //与えられた要素の周辺要素であるかを判定
+    public boolean isNeighbor(FLRankingElement target){
+        return this.getCodeElementName().isNeighbor(target.getCodeElementName());
     }
 
     @Override

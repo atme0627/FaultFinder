@@ -184,4 +184,10 @@ public class FLRanking {
         this.highlightMethods = highlightMethods;
     }
 
+    public Set<FLRankingElement> getNeighborElements(FLRankingElement target){
+        return ranking.stream()
+                .filter(e -> e.isNeighbor(target))
+                .collect(Collectors.toSet());
+    }
+
 }

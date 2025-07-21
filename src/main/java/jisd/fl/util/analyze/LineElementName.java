@@ -50,6 +50,11 @@ public class LineElementName implements CodeElementName {
         return methodElementName.compressedShortMethodName() + " line: " + line;
     }
 
+    @Override
+    public boolean isNeighbor(CodeElementName target){
+        if(!(target instanceof LineElementName lineElementTarget)) return false;
+        return this.methodElementName.equals(lineElementTarget.methodElementName);
+    }
 
     @Override
     public int compareTo(CodeElementName o) {

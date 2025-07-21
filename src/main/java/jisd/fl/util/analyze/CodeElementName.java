@@ -22,4 +22,6 @@ public interface CodeElementName extends Comparable<CodeElementName> {
         }
         return shortClassName.toString();
     }
+
+    boolean isNeighbor(CodeElementName target);
 }

@@ -144,6 +144,12 @@ public class MethodElementName implements CodeElementName{
     }
 
     @Override
+    public boolean isNeighbor(CodeElementName target){
+        if(!(target instanceof MethodElementName methodElementTarget)) return false;
+        return this.getFullyQualifiedClassName().equals(methodElementTarget.getFullyQualifiedClassName());
+    }
+
+    @Override
     public int compareTo(CodeElementName o) {
         return this.getFullyQualifiedMethodName().compareTo(o.getFullyQualifiedMethodName());
     }
