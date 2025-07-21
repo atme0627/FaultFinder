@@ -69,25 +69,25 @@ public class CoverageGenerator {
        }
    }
 
-    public static CoverageCollection loadAll(String project, int bugId){
-       String dir = rootDir + "/" + project + "/" + project + bugId + "_buggy";
-        Set<String> testClasses = FileUtil.getFileNames(dir);
-        CoverageCollection cc = null;
-
-        for(String testClass : testClasses){
-            if(testClass.startsWith(".")) continue;
-            CoverageCollection ccTmp
-                    = CoverageCollection.loadJson(dir + "/" + testClass + "/CoverageCollection_object_data.json");
-            if(ccTmp.getCoverages().isEmpty()) {
-                throw new RuntimeException("CoverageCollection is empty. [FILE] " + dir + "/" + testClass + "/CoverageCollection_object_data.json");
-            }
-            if(cc == null) {
-                cc = ccTmp;
-            }
-            else {
-                cc.mergeCoverage(ccTmp);
-            }
-        }
-        return cc;
-    }
+//    public static CoverageCollection loadAll(String project, int bugId){
+//       String dir = rootDir + "/" + project + "/" + project + bugId + "_buggy";
+//        Set<String> testClasses = FileUtil.getFileNames(dir);
+//        CoverageCollection cc = null;
+//
+//        for(String testClass : testClasses){
+//            if(testClass.startsWith(".")) continue;
+//            CoverageCollection ccTmp
+//                    = CoverageCollection.loadJson(dir + "/" + testClass + "/CoverageCollection_object_data.json");
+//            if(ccTmp.getCoverages().isEmpty()) {
+//                throw new RuntimeException("CoverageCollection is empty. [FILE] " + dir + "/" + testClass + "/CoverageCollection_object_data.json");
+//            }
+//            if(cc == null) {
+//                cc = ccTmp;
+//            }
+//            else {
+//                cc.mergeCoverage(ccTmp);
+//            }
+//        }
+//        return cc;
+//    }
 }
