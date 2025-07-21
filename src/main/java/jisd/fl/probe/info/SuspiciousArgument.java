@@ -1,8 +1,11 @@
 package jisd.fl.probe.info;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.sun.jdi.*;
@@ -19,6 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SuspiciousArgument extends SuspiciousExpression {
+    @JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
     //引数を与え実行しようとしているメソッド
     private final MethodElementName calleeMethodName;
     //何番目の引数に与えられたexprかを指定
@@ -393,4 +397,19 @@ public class SuspiciousArgument extends SuspiciousExpression {
         return "[ SUSPICIOUS ARGUMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + LexicalPreservingPrinter.print(stmt) + "\n       ...\n    }";
     }
 
+    //Jackson シリアライズ用メソッド
+    @JsonProperty("calleeMethodName")
+    public String getCalleeMethodName() {
+        return calleeMethodName.toString();
+    }
+
+    @JsonProperty("argIndex")
+    public int getArgIndex(){
+        return argIndex;
+    }
+
+    @JsonProperty("CallCountAfterTargetInLine")
+    public int geCallCountAfterTargetInLine(){
+        return CallCountAfterTargetInLine;
+    }
 }

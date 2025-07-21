@@ -1,5 +1,6 @@
 package jisd.fl.probe.info;
 
+import com.fasterxml.jackson.annotation.*;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -26,6 +27,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class SuspiciousExpression {
+    @JsonTypeInfo(
+            use = JsonTypeInfo.Id.NAME,
+            include = JsonTypeInfo.As.PROPERTY,
+            property = "type"
+    )
+    @JsonSubTypes({
+            @JsonSubTypes.Type(value = SuspiciousAssignment.class, name = "assign"),
+            @JsonSubTypes.Type(value = SuspiciousReturnValue.class, name = "return"),
+            @JsonSubTypes.Type(value = SuspiciousArgument.class, name = "argument")
+    })
+    @JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
+
     //どのテスト実行時の話かを指定
     protected final MethodElementName failedTest;
     //フィールドの場合は<ulinit>で良い
@@ -107,6 +120,7 @@ public abstract class SuspiciousExpression {
         return sb.toString();
     }
 
+
     protected static int getCallStackDepth(ThreadReference th){
         try {
             return th.frameCount();
@@ -136,7 +150,6 @@ public abstract class SuspiciousExpression {
             }
 
             Map<String, DebugResult> drs = watchPointAtLine.get().getResults();
-
             //SuspExpr内で使用されている変数の情報のみ取り出す
             //SuspiciousVariableがActualValueをとっている瞬間のものを取得するのは面倒なため
             //SuspExprが複数回実行されているときは最後に観測された値を採用する。
@@ -187,5 +200,45 @@ public abstract class SuspiciousExpression {
 
     public void addChild(SuspiciousExpression ch){
         this.childSuspExprs.add(ch);
+    }
+
+    public void addChild(List<? extends SuspiciousExpression> chs){
+        this.childSuspExprs.addAll(chs);
+    }
+
+    //Jackson シリアライズ用メソッド
+    @JsonProperty("failedTest")
+    public String getFailedTest() {
+        return failedTest.toString();
+    }
+
+    @JsonProperty("locateMethod")
+    public String getLocateMethod() {
+        return locateMethod.toString();
+    }
+
+    @JsonProperty("locateLine")
+    public int getLocateLine() {
+        return locateLine;
+    }
+
+    @JsonProperty("stmt")
+    public String getStatementStr() {
+        return stmt.toString();
+    }
+
+    @JsonProperty("expr")
+    public String getExpressionStr() {
+        return expr.toString();
+    }
+
+    @JsonProperty("actualValue")
+    public String getActualValue() {
+        return actualValue;
+    }
+
+    @JsonProperty("children")
+    public List<SuspiciousExpression> getChildren() {
+        return childSuspExprs;
     }
 }
