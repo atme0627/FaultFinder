@@ -11,6 +11,11 @@ public class LineElementName implements CodeElementName {
         this.line = line;
     }
 
+    LineElementName(MethodElementName methodElementName, int line){
+        this.methodElementName = methodElementName;
+        this.line = line;
+    }
+
     public int getLine(){
         return line;
     }

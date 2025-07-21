@@ -47,12 +47,12 @@ public class StaticAnalyzer {
                 .collect(Collectors.toSet());
     }
 
-    public static Map<Integer, LineElementName> getMethodNamesWithLine(MethodElementName targetClass) throws NoSuchFileException {
-        Map<Integer, LineElementName> result = new HashMap<>();
+    public static Map<Integer, MethodElementName> getMethodNamesWithLine(MethodElementName targetClass) throws NoSuchFileException {
+        Map<Integer, MethodElementName> result = new HashMap<>();
         for(CallableDeclaration cd : JavaParserUtil.extractCallableDeclaration(targetClass)){
             Range methodRange = cd.getRange().get();
             for(int line = methodRange.begin.line; line <= methodRange.end.line; line++){
-                result.put(line, new LineElementName(targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature(), line));
+                result.put(line, new MethodElementName(targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature()));
             }
         }
         return result;

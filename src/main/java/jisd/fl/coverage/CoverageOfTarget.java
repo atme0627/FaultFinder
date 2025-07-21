@@ -12,7 +12,6 @@ import org.jacoco.core.analysis.ICounter;
 import org.jacoco.core.analysis.IMethodCoverage;
 import org.objectweb.asm.Type;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
@@ -26,8 +25,8 @@ public class CoverageOfTarget {
     public Map<CodeElementName, SbflStatus> methodCoverage;
     public Map<CodeElementName, SbflStatus> classCoverage;
 
-    //行 --> LineElementName
-    private Map<Integer, LineElementName> lineElementNames;
+    //行 --> MethodElementName
+    private Map<Integer, MethodElementName> methodElementNames;
 
     @JsonCreator
     public CoverageOfTarget(){
@@ -41,7 +40,7 @@ public class CoverageOfTarget {
         methodCoverage = new TreeMap<>();
 
         try {
-            lineElementNames = StaticAnalyzer.getMethodNamesWithLine(new MethodElementName(targetClassName));
+            methodElementNames = StaticAnalyzer.getMethodNamesWithLine(new MethodElementName(targetClassName));
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -62,12 +61,7 @@ public class CoverageOfTarget {
         //method coverage
         for(IMethodCoverage mc : cc.getMethods()){
             boolean isTestExecuted = mc.getMethodCounter().getCoveredCount() == 1;
-            String methodSignature = Arrays.stream(Type.getArgumentTypes(mc.getDesc()))
-                    .map(Type::getClassName)
-                    .collect(Collectors.joining(", "));
-            String targetMethodName = targetClassName + "#" + mc.getName() + "(" + methodSignature + ")";
-            MethodElementName ce = new MethodElementName(targetMethodName);
-            putCoverageStatus(ce, new SbflStatus(isTestExecuted, isTestPassed), Granularity.METHOD);
+            putCoverageStatus(methodElementNames.get(mc.getFirstLine()), new SbflStatus(isTestExecuted, isTestPassed), Granularity.METHOD);
         }
 
         //class coverage
@@ -224,9 +218,9 @@ public class CoverageOfTarget {
     }
 
     private LineElementName getLineElementNameFromLine(int line){
-        LineElementName result = lineElementNames.get(line);
+        LineElementName result = methodElementNames.get(line).toLineElementName(line);
         if(result == null) {
-            result = new LineElementName(targetClassName + "#<init>", line);
+            result = new LineElementName(targetClassName + "#<clinit>", line);
         }
         return result;
     }

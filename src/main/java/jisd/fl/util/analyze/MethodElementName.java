@@ -143,6 +143,10 @@ public class MethodElementName implements CodeElementName{
         return Optional.of(candidates.get(0));
     }
 
+    public LineElementName toLineElementName(int line){
+        return new LineElementName(this, line);
+    }
+
     @Override
     public boolean isNeighbor(CodeElementName target){
         if(!(target instanceof MethodElementName methodElementTarget)) return false;
