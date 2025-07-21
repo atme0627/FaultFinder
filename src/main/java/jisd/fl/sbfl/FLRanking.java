@@ -186,7 +186,7 @@ public class FLRanking {
 
     public Set<FLRankingElement> getNeighborElements(FLRankingElement target){
         return ranking.stream()
-                .filter(e -> e.isNeighbor(target))
+                .filter(e -> e.isNeighbor(target) && !e.equals(target))
                 .collect(Collectors.toSet());
     }
 
