@@ -33,6 +33,7 @@ dependencies {
 
     //parser
     implementation 'com.github.javaparser:javaparser-core:3.19.0'
+    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.19.0'
 
     //coverage
     // https://mvnrepository.com/artifact/org.jacoco/org.jacoco.core
@@ -44,7 +45,7 @@ dependencies {
     implementation "org.apache.commons:commons-lang3:3.10"
     implementation("com.fasterxml.jackson.core:jackson-core:2.18.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
-
+    implementation('com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.2')
     //for test
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
