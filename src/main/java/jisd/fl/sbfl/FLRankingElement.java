@@ -4,7 +4,7 @@ import jisd.fl.util.analyze.CodeElementName;
 
 import java.util.Objects;
 
-class FLRankingElement implements Comparable<FLRankingElement> {
+public class FLRankingElement implements Comparable<FLRankingElement> {
     private final CodeElementName e;
     private double sbflScore;
 
@@ -33,6 +33,10 @@ class FLRankingElement implements Comparable<FLRankingElement> {
 
     public void updateSuspiciousnessScore(double newScore){
         this.sbflScore = newScore;
+    }
+
+    public void remove(){
+        updateSuspiciousnessScore(0);
     }
 
     @Override
