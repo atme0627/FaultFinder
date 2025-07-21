@@ -34,69 +34,6 @@ public class FLRanking {
         printFLResults(getSize());
     }
 
-    //ランキングの短縮版
-    public void printFLResults(int top, CoverageCollection cc){
-        sort();
-        List<String> shortClassNames = new ArrayList<>();
-       List<String> shortMethodNames = new ArrayList<>();
-        for(int i = 0; i < min(top, getSize()); i++){
-            shortClassNames.add(result.get(i).e.compressedClassName());
-            shortMethodNames.add(result.get(i).e.compressedShortMethodName());
-        }
-
-        int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
-        int methodLength = shortMethodNames.stream().map(String::length).max(Integer::compareTo).get();
-
-        String header = "|      | RANK |" +
-                StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + " CLASS NAME " +
-                "|" + StringUtils.repeat(' ', methodLength - "METHOD NAME".length()) + " METHOD NAME " +
-                "| SUSP SCORE ||  EP  |  EF  |  NP  |  NF  |";
-        String partition = StringUtils.repeat('=', header.length());
-
-        System.out.println("[  SBFL RANKING  ]");
-        System.out.println(partition);
-        System.out.println(header);
-        System.out.println(partition);
-        int previousRank = 1;
-        for(int i = 0; i < min(top, getSize()); i++){
-            ResultElement element = result.get(i);
-            //同率を考慮する
-            int rank = 0;
-            if(i == 0) {
-                rank = i+1;
-            }
-            else {
-                if(element.isSameScore(result.get(i-1))){
-                    rank = previousRank;
-                }
-                else {
-                    rank = i+1;
-                }
-            }
-
-            String colorBegin = "";
-            String coloerEnd = "";
-            String className = element.e().getFullyQualifiedClassName();
-            SbflStatus stat = cc.getCoverageOfTarget(className, Granularity.METHOD).get(element.e);
-            if(highlightMethods.contains(element.toString())){
-                colorBegin = "\u001b[00;41m";
-                coloerEnd = "\u001b[00m";
-            }
-            System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
-                    StringUtils.leftPad(shortClassNames.get(i), classLength) + " | " +
-                    StringUtils.leftPad(shortMethodNames.get(i), methodLength) + " | " +
-                    String.format("  %.4f  ", element.sbflScore()) +
-                    " || " + StringUtils.leftPad(String.valueOf(stat.ep), 4) +
-                    " | " + StringUtils.leftPad(String.valueOf(stat.ef), 4) +
-                    " | " + StringUtils.leftPad(String.valueOf(stat.np), 4) +
-                    " | " + StringUtils.leftPad(String.valueOf(stat.nf), 4) +
-                    " |" + coloerEnd);
-            previousRank = rank;
-        }
-        System.out.println(partition);
-        System.out.println();
-    }
-
     public void printFLResults(int top){
         sort();
         List<String> shortClassNames = new ArrayList<>();

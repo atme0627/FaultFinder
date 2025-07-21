@@ -78,26 +78,6 @@ class FaultFinderTest {
     }
 
     @Test
-    void loadTest() throws NoSuchFileException {
-        String project = "Math";
-        int bugId = 47;
-        boolean probe = true;
-
-        CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
-        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-
-        ff.setHighlightMethods(RankingEvaluator.loadBugMethods(project, bugId));
-        ff.getFLResults().printFLResults(50, cov);
-        System.out.println();
-        if(probe) {
-            RankingEvaluator re = new RankingEvaluator(ff);
-            re.loadAndApplyProbeEx(project, bugId);
-        }
-        ff.getFLResults().printFLResults(50, cov);
-        //System.out.println(ff.getFLResults().getNumOfTie(ff.getFLResults().getElementAtPlace(49)));
-    }
-
-    @Test
     void printFLResultsTest() {
         String project = "Math";
         int bugId = 87;
