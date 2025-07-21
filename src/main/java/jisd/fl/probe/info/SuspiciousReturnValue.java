@@ -1,5 +1,8 @@
 package jisd.fl.probe.info;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.github.javaparser.ast.expr.Expression;
 import com.sun.jdi.IncompatibleThreadStateException;
@@ -19,14 +22,27 @@ import jisd.fl.util.analyze.MethodElementName;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
 
 public class SuspiciousReturnValue extends SuspiciousExpression {
-    @JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
     protected SuspiciousReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
         super(failedTest, locateMethod, locateLine, actualValue);
         this.expr = extractExpr();
     }
 
+    @JsonCreator
+    private SuspiciousReturnValue(
+            @JsonProperty("failedTest") String failedTest,
+            @JsonProperty("locateMethod") String locateMethod,
+            @JsonProperty("locateLine") int locateLine,
+            @JsonProperty("actualValue") String actualValue,
+            @JsonProperty("children") List<SuspiciousExpression> children
+    ){
+        super(failedTest, locateMethod, locateLine, actualValue, children);
+        this.expr = extractExpr();
+    }
+    
     @Override
     public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();

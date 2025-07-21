@@ -1,8 +1,18 @@
 package jisd.fl.probe.info;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jisd.fl.util.analyze.MethodElementName;
 
+import java.util.List;
 import java.util.Objects;
+
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type"
+)
 
 public class SuspiciousVariable { //ローカル変数の場合のみ
     private final MethodElementName failedTest;
@@ -73,6 +83,27 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
         this.isField = isField;
         this.arrayNth = arrayNth;
         this.isArray = true;
+        this.actualValue = actualValue;
+    }
+
+    @JsonCreator
+    protected SuspiciousVariable(
+            @JsonProperty("failedTest") MethodElementName failedTest,
+            @JsonProperty("locateMethod") MethodElementName locateMethod,
+            @JsonProperty("variableName") String variableName,
+            @JsonProperty("isPrimitive") boolean isPrimitive,
+            @JsonProperty("isField") boolean isField,
+            @JsonProperty("isArray") boolean isArray,
+            @JsonProperty("arrayNth") int arrayNth,
+            @JsonProperty("actualValue") String actualValue
+    ) {
+        this.failedTest = failedTest;
+        this.locateMethod = locateMethod;
+        this.variableName = variableName;
+        this.isPrimitive = isPrimitive;
+        this.isField = isField;
+        this.isArray = isArray;
+        this.arrayNth = arrayNth;
         this.actualValue = actualValue;
     }
 

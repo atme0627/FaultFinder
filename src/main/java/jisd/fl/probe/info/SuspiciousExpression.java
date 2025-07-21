@@ -1,6 +1,7 @@
 package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -22,30 +23,32 @@ import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import javax.validation.constraints.NotNull;
+import java.io.File;
 import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.stream.Collectors;
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "type"
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = SuspiciousAssignment.class, name = "assign"),
+        @JsonSubTypes.Type(value = SuspiciousReturnValue.class, name = "return"),
+        @JsonSubTypes.Type(value = SuspiciousArgument.class, name = "argument")
+})
+
+@JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
 
 public abstract class SuspiciousExpression {
-    @JsonTypeInfo(
-            use = JsonTypeInfo.Id.NAME,
-            include = JsonTypeInfo.As.PROPERTY,
-            property = "type"
-    )
-    @JsonSubTypes({
-            @JsonSubTypes.Type(value = SuspiciousAssignment.class, name = "assign"),
-            @JsonSubTypes.Type(value = SuspiciousReturnValue.class, name = "return"),
-            @JsonSubTypes.Type(value = SuspiciousArgument.class, name = "argument")
-    })
-    @JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
-
     //どのテスト実行時の話かを指定
     protected final MethodElementName failedTest;
     //フィールドの場合は<ulinit>で良い
     protected final MethodElementName locateMethod;
     protected final int locateLine;
-    protected final Statement stmt;
-    @NotNull protected  Expression expr;
+    @JsonIgnore protected final Statement stmt;
+    @JsonIgnore @NotNull protected  Expression expr;
     protected final String actualValue;
     //木構造にしてvisualizationをできるようにする
     //保持するのは自分の子要素のみ
@@ -56,6 +59,22 @@ public abstract class SuspiciousExpression {
         this.locateMethod = locateMethod;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
+        this.stmt = extractStmt();
+    }
+
+    @JsonCreator
+    protected SuspiciousExpression(
+            @JsonProperty("failedTest") String failedTest,
+            @JsonProperty("locateMethod") String locateMethod,
+            @JsonProperty("locateLine") int locateLine,
+            @JsonProperty("actualValue") String actualValue,
+            @JsonProperty("children") List<SuspiciousExpression> children
+    ){
+        this.failedTest = new MethodElementName(failedTest);
+        this.locateMethod = new MethodElementName(locateMethod);
+        this.locateLine = locateLine;
+        this.actualValue = actualValue;
+        this.childSuspExprs = children;
         this.stmt = extractStmt();
     }
 
@@ -247,5 +266,15 @@ public abstract class SuspiciousExpression {
     @JsonProperty("children")
     public List<SuspiciousExpression> getChildren() {
         return childSuspExprs;
+    }
+
+    //Jackson デシリアライズ用メソッド
+    public static SuspiciousExpression loadFromJson(File f){
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(f, SuspiciousExpression.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

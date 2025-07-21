@@ -1,8 +1,6 @@
 package jisd.fl.probe.info;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.*;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.sun.jdi.*;
@@ -19,10 +17,11 @@ import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
 
 public class SuspiciousAssignment extends SuspiciousExpression {
-    @JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
+
     //左辺で値が代入されている変数の情報
     @JsonIgnore
     private final SuspiciousVariable assignTarget;
@@ -31,6 +30,19 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue());
         this.expr = extractExpr();
         this.assignTarget = assignTarget;
+    }
+
+    @JsonCreator
+    private SuspiciousAssignment(
+            @JsonProperty("failedTest") String failedTest,
+            @JsonProperty("locateMethod") String locateMethod,
+            @JsonProperty("locateLine") int locateLine,
+            @JsonProperty("actualValue") String actualValue,
+            @JsonProperty("children") List<SuspiciousExpression> children
+            ){
+        super(failedTest, locateMethod, locateLine, actualValue, children);
+        this.assignTarget = null;
+        this.expr = extractExpr();
     }
 
     @Override

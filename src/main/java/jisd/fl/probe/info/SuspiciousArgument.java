@@ -1,5 +1,7 @@
 package jisd.fl.probe.info;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.github.javaparser.ast.Node;
@@ -20,9 +22,10 @@ import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.*;
 import java.util.stream.Collectors;
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
 
 public class SuspiciousArgument extends SuspiciousExpression {
-    @JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
     //引数を与え実行しようとしているメソッド
     private final MethodElementName calleeMethodName;
     //何番目の引数に与えられたexprかを指定
@@ -43,6 +46,25 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
         this.expr = extractExpr();
     }
+    
+    @JsonCreator
+    private SuspiciousArgument(
+        @JsonProperty("failedTest") String failedTest,
+        @JsonProperty("locateMethod") String locateMethod,
+        @JsonProperty("locateLine") int locateLine,
+        @JsonProperty("actualValue") String actualValue,
+        @JsonProperty("children") List<SuspiciousExpression> children,
+        @JsonProperty("calleeMethodName") String calleeMethodName,
+        @JsonProperty("argIndex") int argIndex,
+        @JsonProperty("CallCountAfterTargetInLine") int CallCountAfterTargetInLine
+    ) {
+        super(failedTest, locateMethod, locateLine, actualValue, children);
+        this.calleeMethodName = new MethodElementName(calleeMethodName);
+        this.argIndex = argIndex;
+        this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
+        this.expr = extractExpr();
+    }
+    
 
     @Override
     //引数のindexを指定してその引数の評価の直前でsuspendするのは激ムズなのでやらない
