@@ -38,11 +38,6 @@ public class FaultFinder {
     private int rankingSize = 20;
     final Granularity granularity;
 
-    public FaultFinder(CoverageCollection covForTestSuite, Formula f) {
-        this.granularity = Granularity.METHOD;
-        flRanking = new FLRanking(granularity);
-        calcSuspiciousness(covForTestSuite, granularity, f);
-    }
     public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
         this.granularity = granularity;
         flRanking = new FLRanking(granularity);

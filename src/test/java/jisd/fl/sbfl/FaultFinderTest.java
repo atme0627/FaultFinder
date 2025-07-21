@@ -82,7 +82,7 @@ class FaultFinderTest {
         String project = "Math";
         int bugId = 87;
         CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
-        FaultFinder ff = new FaultFinder(cov, Formula.OCHIAI);
+        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
 
 
 
