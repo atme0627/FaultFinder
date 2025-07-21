@@ -5,6 +5,7 @@ import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.LineElementName;
 import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.util.analyze.StaticAnalyzer;
 import org.apache.commons.lang3.StringUtils;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
@@ -13,33 +14,40 @@ import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class CoverageOfTarget {
     public String targetClassName;
 
-    //各行のカバレッジ情報 (行番号, メソッド名, クラス名) --> lineCoverage status
-
     //各行のカバレッジ情報
     public Map<CodeElementName, SbflStatus> lineCoverage;
     public Map<CodeElementName, SbflStatus> methodCoverage;
     public Map<CodeElementName, SbflStatus> classCoverage;
 
+    //行 --> LineElementName
+    private Map<Integer, LineElementName> lineElementNames;
 
     @JsonCreator
     public CoverageOfTarget(){
     }
 
-    public CoverageOfTarget(String targetClassName) throws IOException {
+    public CoverageOfTarget(String targetClassName) {
         this.targetClassName = targetClassName;
 
         lineCoverage = new TreeMap<>();
         classCoverage = new TreeMap<>();
         methodCoverage = new TreeMap<>();
+
+        try {
+            lineElementNames = StaticAnalyzer.getMethodNamesWithLine(new MethodElementName(targetClassName));
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public void processCoverage(IClassCoverage cc, boolean isTestPassed) throws IOException {
+    public void processCoverage(IClassCoverage cc, boolean isTestPassed) {
         int targetClassFirstLine = cc.getFirstLine();
         int targetClassLastLine = cc.getLastLine();
 
@@ -47,8 +55,8 @@ public class CoverageOfTarget {
         for(int i = targetClassFirstLine; i <= targetClassLastLine; i++){
             if(cc.getLine(i).getStatus() == ICounter.EMPTY) continue;
             boolean isTestExecuted = !(cc.getLine(i).getStatus() == ICounter.NOT_COVERED);
-            LineElementName ce = new LineElementName(targetClassName, i);
-            putCoverageStatus(ce, new SbflStatus(isTestExecuted , isTestPassed), Granularity.LINE);
+
+            putCoverageStatus(getLineElementNameFromLine(i), new SbflStatus(isTestExecuted , isTestPassed), Granularity.LINE);
         }
 
         //method coverage
@@ -163,7 +171,7 @@ public class CoverageOfTarget {
         out.println(partition);
 
         lineCoverage.forEach((line, s) -> {
-            out.println( String.format("| %s |", line)+
+            out.println( String.format("| %s |", line.compressedShortMethodName())+
                     "| " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
                     " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
                     " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
@@ -213,5 +221,13 @@ public class CoverageOfTarget {
             maxLength = Math.max(maxLength, l);
         }
         return maxLength;
+    }
+
+    private LineElementName getLineElementNameFromLine(int line){
+        LineElementName result = lineElementNames.get(line);
+        if(result == null) {
+            result = new LineElementName(targetClassName + "#<init>", line);
+        }
+        return result;
     }
 }

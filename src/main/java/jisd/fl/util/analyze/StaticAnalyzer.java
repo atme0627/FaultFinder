@@ -47,6 +47,17 @@ public class StaticAnalyzer {
                 .collect(Collectors.toSet());
     }
 
+    public static Map<Integer, LineElementName> getMethodNamesWithLine(MethodElementName targetClass) throws NoSuchFileException {
+        Map<Integer, LineElementName> result = new HashMap<>();
+        for(CallableDeclaration cd : JavaParserUtil.extractCallableDeclaration(targetClass)){
+            Range methodRange = cd.getRange().get();
+            for(int line = methodRange.begin.line; line <= methodRange.end.line; line++){
+                result.put(line, new LineElementName(targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature(), line));
+            }
+        }
+        return result;
+    }
+
     //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
     public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(MethodElementName targetClass) throws NoSuchFileException {;
         return JavaParserUtil

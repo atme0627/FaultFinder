@@ -53,8 +53,9 @@ public class MethodElementName implements CodeElementName{
             className = fqClassName;
         }
 
+
         this.packageName = packageName;
-        this.className = className;
+        this.className = className.contains("$") ? className.split("\\$")[0] : className;
         this.methodSignature = methodSignature;
     }
 
