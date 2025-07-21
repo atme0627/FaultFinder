@@ -90,7 +90,7 @@ public class FLRanking {
     }
 
     @Deprecated
-    public String getElementAtPlace(int place){
+    public String getElementNameAtPlace(int place){
         if(!rankValidCheck(place)) return "";
         return ranking.get(place - 1).toString();
     }

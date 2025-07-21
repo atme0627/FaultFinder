@@ -88,7 +88,7 @@ public class RankingEvaluator {
 
             efforts += 1;
             log("[EFFORT] " + efforts);
-            String examinedMethod = ff.getFLResults().getElementAtPlace(1);
+            String examinedMethod = ff.getFLResults().getElementNameAtPlace(1);
             boolean isNeighborOfBug = bugClasses.contains(examinedMethod.split("#")[0]);
 
             if(isNeighborOfBug){
