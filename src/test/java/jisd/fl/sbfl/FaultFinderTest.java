@@ -42,7 +42,7 @@ public class FaultFinderTest {
     @Test
     public void removeTest(){
         faultFinder.printRanking();
-        faultFinder.remove(4);
+        faultFinder.remove(1);
     }
 
     @Test
