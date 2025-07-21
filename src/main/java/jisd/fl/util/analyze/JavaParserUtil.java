@@ -6,8 +6,13 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.AssignExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -119,5 +124,13 @@ public class JavaParserUtil {
     public static String getPackageName(CompilationUnit unit){
         PackageDeclaration parentPackage = unit.getPackageDeclaration().orElse(null);
         return parentPackage != null ? parentPackage.getNameAsString() : "";
+    }
+
+    public static boolean isFieldVariable(CompilationUnit cu, NameExpr variable){
+        CombinedTypeSolver typeSolver = new CombinedTypeSolver();
+        typeSolver.add(new ReflectionTypeSolver());
+        JavaParserFacade javaParserFacade = JavaParserFacade.get(typeSolver);
+        ResolvedValueDeclaration decl = javaParserFacade.solve(variable).getCorrespondingDeclaration();
+        return false;
     }
 }
