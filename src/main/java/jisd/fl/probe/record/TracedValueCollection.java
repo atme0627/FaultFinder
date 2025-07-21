@@ -121,6 +121,7 @@ public abstract class TracedValueCollection {
     }
 
     public void printAll(){
+        record.sort(TracedValue::compareTo);
         for(TracedValue tv : record){
             System.out.println("    >> " + tv);
         }
