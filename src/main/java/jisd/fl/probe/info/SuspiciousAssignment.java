@@ -210,34 +210,59 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     protected Expression extractExpr() {
         return extractExpr(true);
     }
-    protected Expression extractExpr(boolean deleteParentNode) {
+
+    protected Expression extractExpr (boolean deleteParentNode){
         try {
-            Expression result = null;
-            Optional<AssignExpr> assignExpr = stmt.findFirst(AssignExpr.class);
-            if(assignExpr.isPresent()) {
-                if(assignExpr.get().getOperator() == AssignExpr.Operator.ASSIGN) {
-                    result = assignExpr.get().getValue();
-                }
-                else {
-                    result = assignExpr.get();
-                }
-            }
-            else {
-                VariableDeclarationExpr vdExpr = stmt.findFirst(VariableDeclarationExpr.class).orElseThrow();
-                //代入文がひとつであると仮定
-                VariableDeclarator var = vdExpr.getVariable(0);
-                result = var.getInitializer().orElseThrow();
-            }
-
-            if(!deleteParentNode) return result;
-            result = result.clone();
-            //親ノードの情報を消す
-            result.setParentNode(null);
-            return result;
-
-        } catch (NoSuchElementException e){
-            throw new RuntimeException("Cannot extract expression from [" + locateMethod + ":" + locateLine + "].");
+            Expression result = extractExpressionFromStatement();
+            return finalizeResult(result, deleteParentNode);
+        } catch (NoSuchElementException e) {
+            throw new RuntimeException(
+                    String.format("Cannot extract expression from [%s:%d].", locateMethod, locateLine));
         }
+    }
+
+    private Expression extractExpressionFromStatement() {
+        // Try to extract from assignment expression
+        Optional<AssignExpr> assignExpr = stmt.findFirst(AssignExpr.class);
+        if (assignExpr.isPresent()) {
+            return extractFromAssignExpr(assignExpr.get());
+        }
+
+        // Try to extract from variable declaration
+        Optional<VariableDeclarationExpr> vdExpr = stmt.findFirst(VariableDeclarationExpr.class);
+        if (vdExpr.isPresent()) {
+            return extractFromVariableDeclaration(vdExpr.get());
+        }
+
+        // Try to extract from unary expression
+        Optional<UnaryExpr> unaryExpr = stmt.findFirst(UnaryExpr.class);
+        if (unaryExpr.isPresent()) {
+            return unaryExpr.get().getExpression();
+        }
+
+        throw new RuntimeException(
+                String.format("Cannot extract expression from [%s:%d].", locateMethod, locateLine));
+    }
+
+    private Expression extractFromAssignExpr (AssignExpr assignExpr){
+        return assignExpr.getOperator() == AssignExpr.Operator.ASSIGN
+                ? assignExpr.getValue()
+                : assignExpr;
+    }
+
+    private Expression extractFromVariableDeclaration (VariableDeclarationExpr vdExpr){
+        // 代入文がひとつであると仮定
+        VariableDeclarator var = vdExpr.getVariable(0);
+        return var.getInitializer().orElseThrow();
+    }
+
+    private Expression finalizeResult (Expression result,boolean deleteParentNode){
+        if (!deleteParentNode) {
+            return result;
+        }
+        Expression clonedResult = result.clone();
+        clonedResult.setParentNode(null);
+        return clonedResult;
     }
 
     static private void waitForThreadPreparation(ThreadReference thread){
