@@ -1,5 +1,5 @@
 ##!/bin/zsh
-p=Math
+p=Lang
 id=$1
 targetClassSrc=$1
 
