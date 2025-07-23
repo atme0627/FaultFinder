@@ -123,6 +123,7 @@ public class SuspiciousVariableFinder {
             SuspiciousVariable vi;
             if(isArray){
                 vi = new SuspiciousVariable(
+                        targetTestCaseName,
                         isField ? locateClass : targetTestCaseName.getFullyQualifiedMethodName(),
                         variableName,
                         nextTargetActualValue,
@@ -133,6 +134,7 @@ public class SuspiciousVariableFinder {
             }
             else {
                 vi = new SuspiciousVariable(
+                        targetTestCaseName,
                         isField ? locateClass : targetTestCaseName.getFullyQualifiedMethodName(),
                         variableName,
                         nextTargetActualValue,

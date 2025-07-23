@@ -2,11 +2,10 @@ package experiment.main;
 
 import experiment.defect4j.Defects4jUtil;
 import jisd.fl.probe.ProbeEx;
-import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
-import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.FileUtil;
+import jisd.fl.util.analyze.MethodElementName;
 //import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -42,6 +41,7 @@ class ProbeExTest {
     SuspiciousVariable probeVariable =
             isArray ?
             new SuspiciousVariable(
+                    new MethodElementName(testMethodName),
                     locate,
                     variableName,
                     actual,
@@ -51,23 +51,18 @@ class ProbeExTest {
             )
             :
             new SuspiciousVariable(
+            new MethodElementName(testMethodName),
             locate,
             variableName,
             actual,
             isPrimitive,
             isField
             );
-
-    FailedAssertInfo fai = new FailedAssertEqualInfo(
-            testMethodName,
-            actual,
-            probeVariable);
-
-
+    
     //@Test
     void runTest() {
         Defects4jUtil.changeTargetVersion(project, bugId);
-        ProbeEx prbEx = new ProbeEx(fai);
+        ProbeEx prbEx = new ProbeEx(probeVariable);
         SuspiciousExpression root = prbEx.run(5000);
         //pr.print();
 

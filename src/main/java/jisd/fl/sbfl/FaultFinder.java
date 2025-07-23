@@ -5,18 +5,12 @@ import jisd.fl.coverage.CoverageOfTarget;
 import jisd.fl.coverage.Granularity;
 import jisd.fl.probe.ProbeEx;
 import jisd.fl.probe.info.ProbeExResult;
-import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.report.ScoreUpdateReport; // new
-import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.MethodElementName;
-import jisd.fl.util.analyze.StaticAnalyzer;
+import jisd.fl.report.ScoreUpdateReport;
 
-import java.nio.file.NoSuchFileException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.ToDoubleBiFunction;
-
-import static java.lang.Math.min;
 
 
 public class FaultFinder {
@@ -104,14 +98,13 @@ public class FaultFinder {
         flRanking.printFLResults(getRankingSize());
     }
 
-    public void probeEx(FailedAssertInfo fai){
-        probeEx(fai, 3000);
+    public void probeEx(SuspiciousVariable target){
+        probeEx(target, 3000);
     }
 
-    public void probeEx(FailedAssertInfo fai, int sleepTime){
-        SuspiciousVariable suspiciousVariable = fai.getVariableInfo();
-        System.out.println("[  PROBE EX  ] " + fai.getTestMethodName() + ": " + suspiciousVariable);
-        ProbeEx prbEx = new ProbeEx(fai);
+    public void probeEx(SuspiciousVariable target, int sleepTime){
+        System.out.println("[  PROBE EX  ] " + target);
+        ProbeEx prbEx = new ProbeEx(target);
         ProbeExResult probeExResult = null;
 
         //TODO: SuspiciousStatementに変換

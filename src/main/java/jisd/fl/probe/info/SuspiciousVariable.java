@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jisd.fl.util.analyze.MethodElementName;
 
-import java.util.List;
 import java.util.Objects;
 
 @JsonTypeInfo(
@@ -27,43 +26,18 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
     //木構造でスライスを表すため、このSuspVarの親の参照を保持する。
     private SuspiciousExpression parent = null;
 
-    //locateはローカル変数の場合はメソッド名まで(フルネーム、シグニチャあり)
-    //フィールドの場合はクラス名まで
-    //配列の場合
-    @Deprecated
-    public SuspiciousVariable(String locateMethod,
-                              String variableName,
-                              String actualValue,
-                              boolean isPrimitive,
-                              boolean isField,
-                              int arrayNth) {
-        failedTest = new MethodElementName("EMPTY");
-        this.locateMethod = new MethodElementName(locateMethod);
-        this.variableName = variableName;
-        this.isPrimitive = isPrimitive;
-        this.isField = isField;
-        this.arrayNth = arrayNth;
-        this.isArray = true;
-        this.actualValue = actualValue;
-    }
-
     //配列でない場合
-    @Deprecated
-    public SuspiciousVariable(String locateMethod,
-                              String variableName,
-                              String actualValue,
-                              boolean isPrimitive,
-                              boolean isField) {
-        failedTest = new MethodElementName("EMPTY");
-        this.locateMethod = new MethodElementName(locateMethod);
-        this.variableName = variableName;
-        this.isPrimitive = isPrimitive;
-        this.isField = isField;
-        this.arrayNth = -1;
-        this.isArray = false;
-        this.actualValue = actualValue;
-    }
+    public SuspiciousVariable(
+            MethodElementName failedTest,
+            String locateMethod,
+            String variableName,
+            String actualValue,
+            boolean isPrimitive,
+            boolean isField) {
 
+        this(failedTest, locateMethod, variableName, actualValue, isPrimitive, isField, -1);
+    }
+    
     //locateはローカル変数の場合はメソッド名まで(フルネーム、シグニチャあり)
     //フィールドの場合はクラス名まで
     //配列の場合
@@ -106,26 +80,6 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
         this.arrayNth = arrayNth;
         this.actualValue = actualValue;
     }
-
-    //配列でない場合
-    public SuspiciousVariable(
-            MethodElementName failedTest,
-            String locateMethod,
-            String variableName,
-            String actualValue,
-            boolean isPrimitive,
-            boolean isField) {
-
-        this.failedTest = failedTest;
-        this.locateMethod = new MethodElementName(locateMethod);
-        this.variableName = variableName;
-        this.isPrimitive = isPrimitive;
-        this.isField = isField;
-        this.arrayNth = -1;
-        this.isArray = false;
-        this.actualValue = actualValue;
-    }
-
 
     public String getLocateClass() {
         return locateMethod.getFullyQualifiedClassName();

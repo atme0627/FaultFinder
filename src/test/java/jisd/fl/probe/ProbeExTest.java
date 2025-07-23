@@ -10,8 +10,6 @@ import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
 import jisd.debug.Debugger;
 import jisd.debug.JDIManager;
-import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
-import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
@@ -45,6 +43,7 @@ class ProbeExTest {
         String locate = "org.apache.commons.math3.distribution.AbstractIntegerDistribution#inverseCumulativeProbability(double)";
 
         SuspiciousVariable probeVariable = new SuspiciousVariable(
+                new MethodElementName(testMethodName),
                 locate,
                 variableName,
                 actual,
@@ -52,10 +51,6 @@ class ProbeExTest {
                 isField
         );
 
-        FailedAssertInfo fai = new FailedAssertEqualInfo(
-                testMethodName,
-                actual,
-                probeVariable);
         @BeforeEach
         void initProperty() {
             PropertyLoader.setProperty("targetSrcDir", "src/test/resources/d4jProject/Math_2_buggy/src/main/java");
@@ -66,7 +61,7 @@ class ProbeExTest {
 
         @Test
         void runTest() {
-            ProbeEx prbEx = new ProbeEx(fai);
+            ProbeEx prbEx = new ProbeEx(probeVariable);
             //ProbeExResult pr = prbEx.run(3000);
             //pr.print();
         }
@@ -123,6 +118,7 @@ class ProbeExTest {
         String locate = testMethodName;
 
         SuspiciousVariable probeVariable = new SuspiciousVariable(
+                new MethodElementName(testMethodName),
                 locate,
                 variableName,
                 actual,
@@ -130,11 +126,6 @@ class ProbeExTest {
                 isField,
                 arrayNth
         );
-
-        FailedAssertInfo fai = new FailedAssertEqualInfo(
-                testMethodName,
-                actual,
-                probeVariable);
 
         @BeforeEach
         void initProperty() {
@@ -146,7 +137,7 @@ class ProbeExTest {
 
         @Test
         void runTest() {
-            ProbeEx prbEx = new ProbeEx(fai);
+            ProbeEx prbEx = new ProbeEx(probeVariable);
             //ProbeExResult pr = prbEx.run(2000);
             //pr.print();
         }
@@ -267,17 +258,13 @@ class ProbeExTest {
         String locate = "sample.MethodCall#methodCalling(int, int)";
 
         SuspiciousVariable probeVariable = new SuspiciousVariable(
+                new MethodElementName(testMethodName),
                 locate,
                 variableName,
                 actual,
                 isPrimitive,
                 isField
         );
-
-        FailedAssertInfo fai = new FailedAssertEqualInfo(
-                testMethodName,
-                actual,
-                probeVariable);
 
         @BeforeEach
         void initProperty() {
@@ -291,7 +278,7 @@ class ProbeExTest {
 
         @Test
         void runTest() {
-            ProbeEx prbEx = new ProbeEx(fai);
+            ProbeEx prbEx = new ProbeEx(probeVariable);
             //ProbeExResult pr = prbEx.run(2000);
             //pr.print();
         }

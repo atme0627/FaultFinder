@@ -1,13 +1,11 @@
 package jisd.fl.sbfl;
 
-import experiment.coverage.CoverageGenerator;
 import experiment.defect4j.Defects4jUtil;
 import jisd.fl.coverage.CoverageAnalyzer;
 import jisd.fl.coverage.CoverageCollection;
 import jisd.fl.coverage.Granularity;
-import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
-import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -21,20 +19,13 @@ class FaultFinderTestOnD4j {
     String rootDir = "src/main/resources/coverages";
 
     SuspiciousVariable field = new SuspiciousVariable(
+            new MethodElementName(testMethodName),
             variableType,
             fieldName,
             actual,
             false,
             true
     );
-
-    FailedAssertInfo fai = new FailedAssertEqualInfo(
-            testMethodName,
-            actual,
-            field);
-
-    FaultFinderTestOnD4j() throws IOException {
-    }
 
     private String outputDir(String project, int bugId) {
         return rootDir + "/" + project + "/" + project + bugId + "_buggy/" + testClassName;
@@ -72,6 +63,6 @@ class FaultFinderTestOnD4j {
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
         CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.probeEx(fai, 3000);
+        ff.probeEx(field, 3000);
     }
 }

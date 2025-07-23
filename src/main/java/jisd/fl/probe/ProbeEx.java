@@ -1,6 +1,5 @@
 package jisd.fl.probe;
 
-import jisd.fl.probe.assertinfo.FailedAssertInfo;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.analyze.StaticAnalyzer;
@@ -18,8 +17,8 @@ public class ProbeEx extends ProbeForStatement {
     Set<String> targetClasses;
     SuspiciousExpression suspiciousExprTreeRoot = null;
 
-    public ProbeEx(FailedAssertInfo assertInfo) {
-        super(assertInfo.getVariableInfo());
+    public ProbeEx(SuspiciousVariable target) {
+        super(target);
         probedValue = new HashSet<>();
         targetClasses = StaticAnalyzer.getClassNames();
     }

@@ -16,4 +16,7 @@ public class FaultFinderForStmt extends FaultFinder{
         super(covForTestSuite, Granularity.LINE, f);
     }
 
+    public void probe(){
+
+    }
 }
