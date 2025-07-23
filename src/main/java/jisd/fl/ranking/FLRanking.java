@@ -212,4 +212,12 @@ public class FLRanking {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * ランキングの要素を再計算
+     * @param adjustments
+     */
+    public void adjustAll(List<ScoreAdjustment> adjustments){
+        ScoreAdjuster.applyAll(this, adjustments);
+    }
+
 }
