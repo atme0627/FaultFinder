@@ -169,6 +169,24 @@ public class FLRanking {
         return false;
     }
 
+    Optional<FLRankingElement> searchElement(CodeElementName target){
+        for(FLRankingElement element : ranking){
+            if(element.getCodeElementName().equals(target)) return Optional.of(element);
+        }
+        return Optional.empty();
+    }
+
+
+    /**
+     * Adjusts the ranking by applying a list of score adjustments to its elements.
+     * Each adjustment specifies a target code element and a multiplier to modify its suspiciousness score.
+     *
+     * @param adjustments the list of score adjustments to be applied; each containing a target code element and a multiplier
+     */
+    void adjust(List<ScoreAdjustment> adjustments){
+        ScoreAdjuster.applyAll(this, adjustments);
+    }
+
     public boolean isTop(String targetElementName){
         Optional<FLRankingElement> element = searchElement(targetElementName);
         if(element.isPresent()){
