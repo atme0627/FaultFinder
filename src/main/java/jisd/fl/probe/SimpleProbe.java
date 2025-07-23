@@ -12,12 +12,12 @@ import java.util.*;
 /**
  * 卒論での実装
  */
-public class ProbeEx extends ProbeForStatement {
+public class SimpleProbe extends Probe {
     Set<SuspiciousVariable> probedValue;
     Set<String> targetClasses;
     SuspiciousExpression suspiciousExprTreeRoot = null;
 
-    public ProbeEx(SuspiciousVariable target) {
+    public SimpleProbe(SuspiciousVariable target) {
         super(target);
         probedValue = new HashSet<>();
         targetClasses = StaticAnalyzer.getClassNames();

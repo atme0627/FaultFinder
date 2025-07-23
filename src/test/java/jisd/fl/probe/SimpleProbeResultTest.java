@@ -3,7 +3,7 @@ package jisd.fl.probe;
 import jisd.fl.probe.info.ProbeExResult;
 import org.junit.jupiter.api.Test;
 
-class ProbeExResultTest {
+class SimpleProbeResultTest {
 
     @Test
     void loadJsonTest(){

@@ -1,7 +1,7 @@
 package experiment.main;
 
 import experiment.defect4j.Defects4jUtil;
-import jisd.fl.probe.ProbeEx;
+import jisd.fl.probe.SimpleProbe;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.FileUtil;
@@ -58,11 +58,11 @@ class ProbeExTest {
             isPrimitive,
             isField
             );
-    
+
     //@Test
     void runTest() {
         Defects4jUtil.changeTargetVersion(project, bugId);
-        ProbeEx prbEx = new ProbeEx(probeVariable);
+        SimpleProbe prbEx = new SimpleProbe(probeVariable);
         SuspiciousExpression root = prbEx.run(5000);
         //pr.print();
 

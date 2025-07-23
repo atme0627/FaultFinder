@@ -24,7 +24,7 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 
-class ProbeExTest {
+class SimpleProbeTest {
     @Nested
     class d4jTest {
         String project = "Math";
@@ -61,7 +61,7 @@ class ProbeExTest {
 
         @Test
         void runTest() {
-            ProbeEx prbEx = new ProbeEx(probeVariable);
+            SimpleProbe prbEx = new SimpleProbe(probeVariable);
             //ProbeExResult pr = prbEx.run(3000);
             //pr.print();
         }
@@ -137,7 +137,7 @@ class ProbeExTest {
 
         @Test
         void runTest() {
-            ProbeEx prbEx = new ProbeEx(probeVariable);
+            SimpleProbe prbEx = new SimpleProbe(probeVariable);
             //ProbeExResult pr = prbEx.run(2000);
             //pr.print();
         }
@@ -278,7 +278,7 @@ class ProbeExTest {
 
         @Test
         void runTest() {
-            ProbeEx prbEx = new ProbeEx(probeVariable);
+            SimpleProbe prbEx = new SimpleProbe(probeVariable);
             //ProbeExResult pr = prbEx.run(2000);
             //pr.print();
         }

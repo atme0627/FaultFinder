@@ -3,7 +3,7 @@ package jisd.fl.sbfl;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.probe.ProbeEx;
+import jisd.fl.probe.SimpleProbe;
 import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.report.ScoreUpdateReport;
@@ -104,7 +104,7 @@ public class FaultFinder {
 
     public void probeEx(SuspiciousVariable target, int sleepTime){
         System.out.println("[  PROBE EX  ] " + target);
-        ProbeEx prbEx = new ProbeEx(target);
+        SimpleProbe prbEx = new SimpleProbe(target);
         ProbeExResult probeExResult = null;
 
         //TODO: SuspiciousStatementに変換

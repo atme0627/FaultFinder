@@ -2,7 +2,6 @@ package jisd.fl.probe;
 
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.util.FileUtil;
 import jisd.fl.util.JsonExporter;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.MethodElementName;
@@ -16,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.io.IOException;
 
-class ProbeForStatementTest {
+class ProbeTest {
     @BeforeEach
     void initProperty() {
         PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
@@ -36,7 +35,7 @@ class ProbeForStatementTest {
                     false
             );
 
-            ProbeForStatement pfs = new ProbeForStatement(target);
+            Probe pfs = new Probe(target);
             SuspiciousExpression treeRoot = pfs.run(2000);
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/CalcTest.json");
@@ -57,7 +56,7 @@ class ProbeForStatementTest {
                     false
             );
 
-            ProbeForStatement pfs = new ProbeForStatement(target);
+            Probe pfs = new Probe(target);
             SuspiciousExpression treeRoot = pfs.run(2000);
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest.json");
@@ -88,7 +87,7 @@ class ProbeForStatementTest {
                     false
             );
 
-            ProbeForStatement pfs = new ProbeForStatement(target);
+            Probe pfs = new Probe(target);
             SuspiciousExpression treeRoot = pfs.run(2000);
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/LoopTest1.json");

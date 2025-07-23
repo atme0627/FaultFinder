@@ -7,13 +7,13 @@ import jisd.fl.util.analyze.*;
 
 import java.util.*;
 
-public class ProbeForStatement extends AbstractProbe{
+public class Probe extends AbstractProbe{
     Set<SuspiciousVariable> probedValue;
     Set<String> targetClasses;
     SuspiciousExpression suspiciousExprTreeRoot = null;
 
 
-    public ProbeForStatement(SuspiciousVariable target) {
+    public Probe(SuspiciousVariable target) {
         super(target);
         probedValue = new HashSet<>();
         targetClasses = StaticAnalyzer.getClassNames();
