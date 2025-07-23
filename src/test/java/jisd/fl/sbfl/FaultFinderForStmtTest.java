@@ -2,17 +2,20 @@ package jisd.fl.sbfl;
 
 import jisd.fl.FaultFinder;
 import jisd.fl.FaultFinderForStmt;
+import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FaultFinderForStmtTest {
-    FaultFinder faultFinder;
+    FaultFinderForStmt faultFinder;
 
     @BeforeEach
     void init(){
@@ -40,5 +43,14 @@ public class FaultFinderForStmtTest {
     @Test
     public void suspTest(){
         faultFinder.susp(2);
+    }
+
+    @Test
+    public void probeTest(){
+        faultFinder.printRanking();
+        File j = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/CalcTest.json");
+        SuspiciousExpression suspExpr = SuspiciousExpression.loadFromJson(j);
+        faultFinder.probe(suspExpr);
+
     }
 }

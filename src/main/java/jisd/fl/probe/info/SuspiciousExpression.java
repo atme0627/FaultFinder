@@ -17,8 +17,10 @@ import jisd.debug.Point;
 import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
+import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.QuietStdOut;
 import jisd.fl.util.TestUtil;
+import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
@@ -230,6 +232,13 @@ public abstract class SuspiciousExpression {
 
     public void addChild(List<? extends SuspiciousExpression> chs){
         this.childSuspExprs.addAll(chs);
+    }
+
+    public CodeElementName convertToCodeElementName(Granularity granularity){
+        return switch (granularity){
+            case LINE -> locateMethod.toLineElementName(locateLine);
+            case METHOD, CLASS -> locateMethod;
+        };
     }
 
     //Jackson シリアライズ用メソッド
