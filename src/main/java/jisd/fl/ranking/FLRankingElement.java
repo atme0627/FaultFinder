@@ -31,7 +31,7 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
         return sbflScore;
     }
 
-    public void updateSuspiciousnessScore(double ratio){
+    public void multipleSuspiciousnessScore(double ratio){
         this.sbflScore *= ratio;
     }
 

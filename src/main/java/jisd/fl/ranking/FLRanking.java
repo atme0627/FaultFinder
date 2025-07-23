@@ -147,7 +147,7 @@ public class FLRanking {
     public void updateSuspiciousScore(String targetElementName, double suspicious){
         Optional<FLRankingElement> oldElement = searchElement(targetElementName);
         if(oldElement.isPresent()) {
-            oldElement.get().updateSuspiciousnessScore(suspicious);
+            oldElement.get().multipleSuspiciousnessScore(suspicious);
             return;
         }
         throw new RuntimeException(targetElementName + " is not exist.");
