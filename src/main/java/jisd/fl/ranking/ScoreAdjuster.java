@@ -1,8 +1,9 @@
 package jisd.fl.ranking;
 
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.ranking.report.ScoreUpdateReport;
 
 import java.util.List;
+import java.util.Optional;
 
 class ScoreAdjuster {
 
@@ -13,10 +14,14 @@ class ScoreAdjuster {
      * @param adjustments 調整項目（要素＋倍率）のリスト
      */
     public static void applyAll(FLRanking ranking, List<ScoreAdjustment> adjustments) {
+        ScoreUpdateReport report = new ScoreUpdateReport();
         for (ScoreAdjustment adj : adjustments) {
-            FLRankingElement target = ranking.searchElement(adj.getElement()).orElseThrow();
-            target.multipleSuspiciousnessScore(adj.getMultiplier());
+            Optional<FLRankingElement> target = ranking.searchElement(adj.getElement());
+            if(target.isEmpty()) continue;
+            report.recordChange(target.get());
+            target.get().multipleSuspiciousnessScore(adj.getMultiplier());
         }
+        report.print();
         ranking.sort();
     }
 }
