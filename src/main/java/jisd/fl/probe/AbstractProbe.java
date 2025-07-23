@@ -316,16 +316,6 @@ public abstract class AbstractProbe {
         return SuspiciousArgument.searchSuspiciousArgument(locateMethodElementName, suspVar);
     }
 
-    protected void printWatchedValues(TracedValueCollection watchedValues, String variableName){
-        //System.out.println("    >> [assigned line] " + Arrays.toString(assignLine.toArray()));
-        if(variableName != null) {
-            watchedValues.print(variableName);
-        }
-        else {
-            watchedValues.printAll();
-        }
-    }
-
 
     protected Debugger createDebugger() {
         return createDebugger(failedTest.getFullyQualifiedMethodName());
@@ -358,12 +348,4 @@ public abstract class AbstractProbe {
     }
 
 
-    public Set<String> getCalleeMethods(MethodElementName targetClass, int line){
-        String main = TestUtil.getJVMMain(failedTest);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger edbg = new EnhancedDebugger(main, options);
-        //return edbg.getCalleeMethods(targetClass.getFullyQualifiedClassName(), line);
-        //TODO: あとで直す
-        return Set.of();
-    }
 }
