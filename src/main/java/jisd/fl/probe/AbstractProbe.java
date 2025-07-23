@@ -47,7 +47,6 @@ public abstract class AbstractProbe {
 
         tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
-        //List<TracedValue> watchedValues = tracedValues.filterByVariableName(suspVar.getVariableName(true, true));
         List<TracedValue> watchedValues = tracedValues.getAll();
 
         System.out.println("    >> Probe Info: Searching probe line.");
