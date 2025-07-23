@@ -1,5 +1,7 @@
 package jisd.fl.sbfl;
 
+import jisd.fl.FaultFinder;
+import jisd.fl.FaultFinderForStmt;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.util.PropertyLoader;

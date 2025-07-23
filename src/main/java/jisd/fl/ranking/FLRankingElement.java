@@ -1,4 +1,4 @@
-package jisd.fl.sbfl;
+package jisd.fl.ranking;
 
 import jisd.fl.util.analyze.CodeElementName;
 

@@ -1,5 +1,8 @@
-package jisd.fl.sbfl;
+package jisd.fl;
 
+import jisd.fl.ranking.FLRanking;
+import jisd.fl.ranking.FLRankingElement;
+import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
