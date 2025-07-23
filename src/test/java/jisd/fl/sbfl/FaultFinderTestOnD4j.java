@@ -53,7 +53,7 @@ class FaultFinderTestOnD4j {
     }
 
     @Test
-    void probeExTest() {
+    void simpleProbeTest() {
         String project = "Math";
         int bugId = 87;
 
@@ -61,6 +61,6 @@ class FaultFinderTestOnD4j {
         CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
         CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.probeEx(field, 3000);
+        ff.simpleProbe(field, 3000);
     }
 }

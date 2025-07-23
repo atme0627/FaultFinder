@@ -4,7 +4,7 @@ import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.probe.SimpleProbe;
-import jisd.fl.probe.info.ProbeExResult;
+import jisd.fl.probe.info.SimpleProbeResult;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.report.ScoreUpdateReport;
 
@@ -98,26 +98,26 @@ public class FaultFinder {
         flRanking.printFLResults(getRankingSize());
     }
 
-    public void probeEx(SuspiciousVariable target){
-        probeEx(target, 3000);
+    public void simpleProbe(SuspiciousVariable target){
+        simpleProbe(target, 3000);
     }
 
-    public void probeEx(SuspiciousVariable target, int sleepTime){
+    public void simpleProbe(SuspiciousVariable target, int sleepTime){
         System.out.println("[  PROBE EX  ] " + target);
         SimpleProbe prbEx = new SimpleProbe(target);
-        ProbeExResult probeExResult = null;
+        SimpleProbeResult simpleProbeResult = null;
 
         //TODO: SuspiciousStatementに変換
         //probeExResult = prbEx.run(sleepTime);
         //probeEx(probeExResult);
     }
 
-    public void probeEx(ProbeExResult probeExResult){
-        System.out.println("[  PROBE EX  ]");
+    public void simpleProbe(SimpleProbeResult simpleProbeResult){
+        System.out.println("[  PROBE (simple) ]");
         //set suspicious score
         ScoreUpdateReport report = new ScoreUpdateReport("PROBE EX");
         double preScore;
-        for(String markingMethod : probeExResult.markingMethods()){
+        for(String markingMethod : simpleProbeResult.markingMethods()){
             if(!flRanking.isElementExist(markingMethod)) continue;
             preScore = flRanking.getSuspicious(markingMethod);
 
@@ -125,7 +125,7 @@ public class FaultFinder {
             ToDoubleBiFunction<Integer, Integer> probeExFunction
                     = (depth, countInLine) -> finalPreScore * (Math.pow(getProbeExLambda(), depth));
 
-            double newScore = preScore + probeExResult.probeExSuspScore(markingMethod, probeExFunction);
+            double newScore = preScore + simpleProbeResult.probeExSuspScore(markingMethod, probeExFunction);
             flRanking.updateSuspiciousScore(markingMethod, newScore);
         }
 

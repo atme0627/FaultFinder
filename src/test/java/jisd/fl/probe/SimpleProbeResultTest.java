@@ -1,6 +1,6 @@
 package jisd.fl.probe;
 
-import jisd.fl.probe.info.ProbeExResult;
+import jisd.fl.probe.info.SimpleProbeResult;
 import org.junit.jupiter.api.Test;
 
 class SimpleProbeResultTest {
@@ -11,7 +11,7 @@ class SimpleProbeResultTest {
         int bugId = 1;
 
         String dir = "src/main/resources/probeExResult/Math/Math1_buggy/org.apache.commons.math3.fraction.BigFractionTest#testDigitLimitConstructor()_p2_probeEx.json" ;
-        ProbeExResult result = ProbeExResult.loadJson(dir);
+        SimpleProbeResult result = SimpleProbeResult.loadJson(dir);
         result.print();
     }
 }

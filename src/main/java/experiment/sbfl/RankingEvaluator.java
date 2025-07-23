@@ -2,7 +2,7 @@ package experiment.sbfl;
 
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.probe.info.ProbeExResult;
+import jisd.fl.probe.info.SimpleProbeResult;
 import jisd.fl.sbfl.FaultFinder;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.util.FileUtil;
@@ -101,25 +101,25 @@ public class RankingEvaluator {
     }
 
     public void loadAndApplyProbeEx(String project, int bugId) throws NoSuchFileException {
-        List<ProbeExResult> pers = loadProbeEx(project, bugId);
+        List<SimpleProbeResult> pers = loadProbeEx(project, bugId);
 
-        for(ProbeExResult per : pers){
-            ff.probeEx(per);
+        for(SimpleProbeResult per : pers){
+            ff.simpleProbe(per);
         }
     }
 
-    public static List<ProbeExResult> loadProbeEx(String project, int bugId) throws NoSuchFileException {
+    public static List<SimpleProbeResult> loadProbeEx(String project, int bugId) throws NoSuchFileException {
         String dir = "src/main/resources/probeExResult/" + project + "/" + project + bugId + "_buggy";
         if(!FileUtil.isExist(dir)) throw new NoSuchFileException(dir);
         return loadProbeEx(dir);
     }
 
-    public static List<ProbeExResult> loadProbeEx(String dir){
-        List<ProbeExResult> pers = new ArrayList<>();
+    public static List<SimpleProbeResult> loadProbeEx(String dir){
+        List<SimpleProbeResult> pers = new ArrayList<>();
         Set<String> files = FileUtil.getFileNames(dir, "json");
         for(String f : files){
             System.out.println("[LOAD] " + f);
-            pers.add(ProbeExResult.loadJson(dir + "/" + f));
+            pers.add(SimpleProbeResult.loadJson(dir + "/" + f));
         }
         return pers;
     }

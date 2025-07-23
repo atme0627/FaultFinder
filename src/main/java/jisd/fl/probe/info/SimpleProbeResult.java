@@ -13,9 +13,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.ToDoubleBiFunction;
 
-public class ProbeExResult implements Serializable {
+@Deprecated
+public class SimpleProbeResult implements Serializable {
     public List<Element> per;
-    public ProbeExResult(){
+    public SimpleProbeResult(){
         per = new ArrayList<>();
     }
 
@@ -104,10 +105,10 @@ public class ProbeExResult implements Serializable {
         }
     }
 
-    public static ProbeExResult loadJson(String dir){
+    public static SimpleProbeResult loadJson(String dir){
         File f = new File(dir);
         try {
-            return new ObjectMapper().readValue(f, ProbeExResult.class);
+            return new ObjectMapper().readValue(f, SimpleProbeResult.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
