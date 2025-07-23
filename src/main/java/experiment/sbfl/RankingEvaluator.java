@@ -150,7 +150,7 @@ public class RankingEvaluator {
         ff.setProbeC3(probeC3);
         ff.setSuspConst(suspConst);
         ff.setRemoveConst(removeConst);
-        ff.setProbeExLambda(probeExLambda);
+        ff.setProbeLambda(probeExLambda);
     }
 
     private void log(String message){
