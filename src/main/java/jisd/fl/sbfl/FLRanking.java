@@ -1,6 +1,6 @@
 package jisd.fl.sbfl;
 
-import jisd.fl.coverage.Granularity;
+import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.analyze.CodeElementName;
 import org.apache.commons.lang3.StringUtils;
 

@@ -1,14 +1,12 @@
 package jisd.fl.sbfl;
 
 import experiment.defect4j.Defects4jUtil;
-import jisd.fl.coverage.CoverageAnalyzer;
-import jisd.fl.coverage.CoverageCollection;
-import jisd.fl.coverage.Granularity;
+import jisd.fl.sbfl.coverage.CoverageAnalyzer;
+import jisd.fl.sbfl.coverage.CoverageCollection;
+import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
 
 class FaultFinderTestOnD4j {
     String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";

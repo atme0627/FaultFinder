@@ -1,7 +1,7 @@
 package experiment.sbfl;
 
-import jisd.fl.coverage.CoverageCollection;
-import jisd.fl.coverage.Granularity;
+import jisd.fl.sbfl.coverage.CoverageCollection;
+import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.probe.info.ProbeExResult;
 import jisd.fl.sbfl.FaultFinder;
 import jisd.fl.sbfl.Formula;

@@ -2,14 +2,13 @@ package experiment.coverage;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import experiment.defect4j.Defects4jUtil;
-import jisd.fl.coverage.CoverageAnalyzer;
-import jisd.fl.coverage.CoverageCollection;
-import jisd.fl.coverage.Granularity;
+import jisd.fl.sbfl.coverage.CoverageAnalyzer;
+import jisd.fl.sbfl.coverage.CoverageCollection;
+import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.FileUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Set;

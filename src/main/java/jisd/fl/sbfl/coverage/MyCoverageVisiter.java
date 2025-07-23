@@ -1,9 +1,8 @@
-package jisd.fl.coverage;
+package jisd.fl.sbfl.coverage;
 
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICoverageVisitor;
 
-import java.io.IOException;
 import java.util.Set;
 
 //executionDataを処理するvisitor

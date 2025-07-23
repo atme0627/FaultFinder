@@ -2,7 +2,6 @@ package experiment.main;
 
 import experiment.coverage.CoverageGenerator;
 import experiment.defect4j.Defects4jUtil;
-import jisd.fl.coverage.CoverageCollection;
 
 import java.util.HashSet;
 import java.util.List;

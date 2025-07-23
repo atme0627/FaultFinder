@@ -1,4 +1,4 @@
-package jisd.fl.coverage;
+package jisd.fl.sbfl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

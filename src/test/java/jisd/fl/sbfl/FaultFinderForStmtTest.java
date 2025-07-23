@@ -1,18 +1,10 @@
 package jisd.fl.sbfl;
 
-import experiment.defect4j.Defects4jUtil;
-import jisd.fl.coverage.CoverageAnalyzer;
-import jisd.fl.coverage.CoverageCollection;
+import jisd.fl.sbfl.coverage.CoverageAnalyzer;
+import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;

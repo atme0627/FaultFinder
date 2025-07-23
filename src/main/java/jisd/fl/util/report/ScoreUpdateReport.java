@@ -1,4 +1,4 @@
-package jisd.fl.report;
+package jisd.fl.util.report;
 
 import jisd.fl.sbfl.FLRankingElement;
 import org.apache.commons.lang3.StringUtils;

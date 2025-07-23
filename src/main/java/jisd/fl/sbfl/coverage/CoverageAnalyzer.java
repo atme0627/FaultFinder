@@ -1,4 +1,4 @@
-package jisd.fl.coverage;
+package jisd.fl.sbfl.coverage;
 
 import jisd.fl.util.*;
 import jisd.fl.util.analyze.StaticAnalyzer;
