@@ -153,6 +153,7 @@ public class FLRanking {
         throw new RuntimeException(targetElementName + " is not exist.");
     }
 
+    @Deprecated
     private Optional<FLRankingElement> searchElement(String targetElementName){
         for(FLRankingElement element : ranking){
             if(element.toString().equals(targetElementName)) return Optional.of(element);
@@ -160,6 +161,7 @@ public class FLRanking {
         return Optional.empty();
     }
 
+    @Deprecated
     public boolean isElementExist(String targetElementName){
         for(FLRankingElement element : ranking){
             if(element.getCodeElementName().equals(targetElementName)) return true;
