@@ -103,7 +103,7 @@ public class FaultFinder {
     }
 
     public void simpleProbe(SuspiciousVariable target, int sleepTime){
-        System.out.println("[  PROBE EX  ] " + target);
+        System.out.println("[  PROBE (simple)  ] " + target);
         SimpleProbe prbEx = new SimpleProbe(target);
         SimpleProbeResult simpleProbeResult = null;
 
