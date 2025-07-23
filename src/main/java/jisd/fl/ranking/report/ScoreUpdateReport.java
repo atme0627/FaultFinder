@@ -8,20 +8,10 @@ import java.util.List;
 
 /**
  * スコア更新処理の結果を保持し、整形してコンソールに出力する責務を持つクラス。
- * FaultFinderから表示ロジックを分離するために作成されました。
  */
 public class ScoreUpdateReport {
 
     private final List<ChangeEntry> changes = new ArrayList<>();
-    private final String operationName;
-
-    /**
-     * コンストラクタ
-     * @param operationName "REMOVE", "SUSP" など、レポートのタイトルとして表示する操作名。
-     */
-    public ScoreUpdateReport(String operationName) {
-        this.operationName = operationName;
-    }
 
     public void recordChange(FLRankingElement changeTarget) {
         changes.add(new ChangeEntry(changeTarget, changeTarget.getSuspiciousnessScore()));
@@ -50,7 +40,6 @@ public class ScoreUpdateReport {
         String header = String.format("| %-" + classLength + "s | %-" + elementLength + "s | %-18s |", "CLASS NAME", "ELEMENT NAME", "OLD -> NEW");
         String partition = StringUtils.repeat("=", header.length());
 
-        System.out.println("[  " + operationName + "  ]");
         System.out.println(partition);
         System.out.println(header);
         System.out.println(partition);

@@ -9,7 +9,7 @@ import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.probe.SimpleProbe;
 import jisd.fl.probe.info.SimpleProbeResult;
 import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.util.report.ScoreUpdateReport;
+import jisd.fl.ranking.report.ScoreUpdateReport;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,7 +30,7 @@ public class FaultFinder {
     protected double probeC3 = 0.1;
 
     //probeExの疑惑値計算に使用する変数
-    protected double probeExLambda = 0.8;
+    protected double probeLambda = 0.8;
 
     //probeExの疑惑値計算に使用する変数
     private int rankingSize = 20;
@@ -64,7 +64,7 @@ public class FaultFinder {
     }
 
     public void remove(int rank) {
-        ScoreUpdateReport report = new ScoreUpdateReport("REMOVE");
+        ScoreUpdateReport report = new ScoreUpdateReport();
         FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
                 () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
 
@@ -83,7 +83,7 @@ public class FaultFinder {
     }
 
     public void susp(int rank) {
-        ScoreUpdateReport report = new ScoreUpdateReport("SUSP");
+        ScoreUpdateReport report = new ScoreUpdateReport();
         FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
                 () -> new RuntimeException("rank: " + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
 
@@ -118,7 +118,7 @@ public class FaultFinder {
     public void simpleProbe(SimpleProbeResult simpleProbeResult){
         System.out.println("[  PROBE (simple) ]");
         //set suspicious score
-        ScoreUpdateReport report = new ScoreUpdateReport("PROBE EX");
+        ScoreUpdateReport report = new ScoreUpdateReport();
         double preScore;
         for(String markingMethod : simpleProbeResult.markingMethods()){
             if(!flRanking.isElementExist(markingMethod)) continue;
@@ -126,7 +126,7 @@ public class FaultFinder {
 
             double finalPreScore = preScore;
             ToDoubleBiFunction<Integer, Integer> probeExFunction
-                    = (depth, countInLine) -> finalPreScore * (Math.pow(getProbeExLambda(), depth));
+                    = (depth, countInLine) -> finalPreScore * (Math.pow(getProbeLambda(), depth));
 
             double newScore = preScore + simpleProbeResult.probeExSuspScore(markingMethod, probeExFunction);
             flRanking.updateSuspiciousScore(markingMethod, newScore);
@@ -187,12 +187,12 @@ public class FaultFinder {
         this.probeC3 = probeC3;
     }
 
-    public double getProbeExLambda() {
-        return probeExLambda;
+    public double getProbeLambda() {
+        return probeLambda;
     }
 
-    public void setProbeExLambda(double probeExLambda) {
-        this.probeExLambda = probeExLambda;
+    public void setProbeLambda(double probeLambda) {
+        this.probeLambda = probeLambda;
     }
 
     public int getRankingSize() {
