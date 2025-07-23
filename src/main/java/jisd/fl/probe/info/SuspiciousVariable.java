@@ -34,7 +34,6 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
             String actualValue,
             boolean isPrimitive,
             boolean isField) {
-
         this(failedTest, locateMethod, variableName, actualValue, isPrimitive, isField, -1);
     }
     
@@ -56,7 +55,7 @@ public class SuspiciousVariable { //ローカル変数の場合のみ
         this.isPrimitive = isPrimitive;
         this.isField = isField;
         this.arrayNth = arrayNth;
-        this.isArray = true;
+        this.isArray = (arrayNth >= 0);
         this.actualValue = actualValue;
     }
 

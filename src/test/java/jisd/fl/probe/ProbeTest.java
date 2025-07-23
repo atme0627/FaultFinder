@@ -30,7 +30,7 @@ class ProbeTest {
                     new MethodElementName("org.sample.CalcTest#methodCall1()"),
                     "org.sample.CalcTest#methodCall1()",
                     "actual",
-                    "11",
+                    "4",
                     true,
                     false
             );
