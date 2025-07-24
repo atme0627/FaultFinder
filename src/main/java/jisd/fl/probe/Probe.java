@@ -44,6 +44,7 @@ public class Probe extends AbstractProbe{
             List<SuspiciousExpression> causeExprs = searchSuspiciousReturns(suspExpr);
 
             //search next target
+            System.out.println(" >>> search next target");
             List<SuspiciousVariable> newTargets = new ArrayList<>();
             for (SuspiciousExpression ce : causeExprs) {
                 List<SuspiciousVariable> neighbor = ce.neighborSuspiciousVariables(sleepTime, false);
