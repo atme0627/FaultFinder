@@ -3,6 +3,7 @@ package jisd.fl.probe.info;
 import com.fasterxml.jackson.annotation.*;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.stmt.ForStmt;
 import com.sun.jdi.*;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
@@ -11,7 +12,16 @@ import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
+import jisd.debug.DebugResult;
+import jisd.debug.Debugger;
 import jisd.debug.EnhancedDebugger;
+import jisd.debug.Location;
+import jisd.debug.Point;
+import jisd.debug.value.ValueInfo;
+import jisd.fl.probe.record.TracedValue;
+import jisd.fl.probe.record.TracedValueCollection;
+import jisd.fl.probe.record.TracedValuesAtLine;
+import jisd.fl.util.QuietStdOut;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.MethodElementName;
 
@@ -112,7 +122,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                         }
                         vm.resume();
                     }
-                    //調査対象の行の実行が終了
+                    //調査対象の行の実行(実行インスタンス)が終了
                     //ここで、調査した行が目的のものであったかチェック
                     if (ev instanceof StepEvent) {
                         done = true;
@@ -172,7 +182,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
             } else {
                 //ローカル変数を取り出す
-                //waitForThreadPreparation(se.thread());
                 StackFrame frame = se.thread().frame(0);
                 List<LocalVariable> lvs = frame.visibleVariables();
                 LocalVariable lvalue = lvs.stream().filter(lv -> lv.name().equals(assignTarget.getSimpleVariableName()))
@@ -222,6 +231,10 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     }
 
     private Expression extractExpressionFromStatement() {
+        //更新式は1つであると仮定
+        if(stmt instanceof ForStmt forStmt){
+            return forStmt.getUpdate().getFirst().get();
+        }
         // Try to extract from assignment expression
         Optional<AssignExpr> assignExpr = stmt.findFirst(AssignExpr.class);
         if (assignExpr.isPresent()) {
@@ -281,5 +294,62 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     @Override
     public String toString(){
         return "[ SUSPICIOUS ASSIGNMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
+    }
+
+    @Override
+    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime){
+        System.out.println(" >>> [DEBUG] Assignment");
+        final List<TracedValue> result = new ArrayList<>();
+
+        //Debugger生成
+        String main = TestUtil.getJVMMain(this.failedTest);
+        String options = TestUtil.getJVMOption();
+        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+
+        //対象の引数が属する行にたどり着いた時に行う処理を定義
+        //ここではその行で呼ばれてるメソッド情報を抽出
+        EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
+            //既に情報が取得できている場合は終了
+            if(!result.isEmpty()) return;
+
+            EventRequestManager manager = vm.eventRequestManager();
+
+            //この行の実行が終わったことを検知するステップリクエストを作成
+            //この具象クラスではステップイベントの通知タイミングで、今調査していた行が調べたい行だったかを確認
+            ThreadReference thread = bpe.thread();
+            StepRequest stepReq = EnhancedDebugger.createStepOverRequest(manager, thread);
+
+            //周辺の値を観測
+            List<TracedValue> resultCandidate;
+            try {
+                resultCandidate = watchAllVariablesInLine(thread.frame(0));
+            } catch (IncompatibleThreadStateException e) {
+                throw new RuntimeException(e);
+            }
+
+
+            //resume してステップイベントを待つ
+            vm.resume();
+            boolean done = false;
+            while (!done) {
+                EventSet es = vm.eventQueue().remove();
+                for (Event ev : es) {
+                    //調査対象の行の実行(実行インスタンス)が終了
+                    //ここで、調査した行が目的のものであったかチェック
+                    if (ev instanceof StepEvent) {
+                        done = true;
+                        StepEvent se = (StepEvent) ev;
+                        if(validateIsTargetExecution(se, this.getAssignTarget())) result.addAll(resultCandidate);
+                        //vmをresumeしない
+                    }
+                }
+            }
+            //動的に作ったリクエストを無効化
+            stepReq.disable();
+        };
+
+        //VMを実行し情報を収集
+        eDbg.handleAtBreakPoint(this.locateMethod.getFullyQualifiedClassName(), this.locateLine, handler);
+        return TracedValuesAtLine.of(result);
     }
 }

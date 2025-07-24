@@ -6,20 +6,10 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
-import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.InvalidStackFrameException;
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
-import jisd.debug.DebugResult;
-import jisd.debug.Debugger;
-import jisd.debug.Location;
-import jisd.debug.Point;
-import jisd.debug.value.ValueInfo;
+import com.sun.jdi.*;
+import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
-import jisd.fl.probe.record.TracedValuesAtLine;
 import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.util.QuietStdOut;
-import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
@@ -27,6 +17,7 @@ import jisd.fl.util.analyze.JavaParserUtil;
 import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.nio.file.NoSuchFileException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -240,6 +231,67 @@ public abstract class SuspiciousExpression {
             case METHOD, CLASS -> locateMethod;
         };
     }
+
+    protected List<TracedValue> watchAllVariablesInLine(StackFrame frame){
+        List<TracedValue> result = new ArrayList<>();
+
+        // （1）ローカル変数
+        List<LocalVariable> locals;
+        try {
+            locals = frame.visibleVariables();
+        } catch (AbsentInformationException e) {
+            throw new RuntimeException(e);
+        }
+        Map<LocalVariable, Value> localVals = frame.getValues(locals);
+        localVals.forEach((lv, v) -> {
+            //配列の場合[0]のみ観測
+            if(v instanceof ArrayReference ar){
+                if(ar.length() == 0) return;
+                result.add(new TracedValue(
+                        LocalDateTime.MIN,
+                        lv.name() + "[0]",
+                        ar.getValue(0).toString(),
+                        locateLine
+                ));
+            }
+
+            result.add(new TracedValue(
+                    LocalDateTime.MIN,
+                    lv.name(),
+                    v.toString(),
+                    locateLine
+            ));
+        });
+
+        // (2) インスタンスフィールド
+        ObjectReference thisObj = frame.thisObject();
+        if (thisObj != null) {
+            ReferenceType  rt = thisObj.referenceType();
+            for (Field f : rt.visibleFields()) {
+                if (f.isStatic()) continue;
+                result.add(new TracedValue(
+                        LocalDateTime.MIN,
+                        "this." + f.name(),
+                        thisObj.getValue(f).toString(),
+                        locateLine
+                ));
+            }
+        }
+
+        // (3) static フィールド
+        ReferenceType rt = frame.location().declaringType();
+        for (Field f : rt.visibleFields()) {
+            if (!f.isStatic()) continue;
+            result.add(new TracedValue(
+                    LocalDateTime.MIN,
+                    "this." + f.name(),
+                    rt.getValue(f).toString(),
+                    locateLine
+            ));
+        }
+        return result;
+    }
+
 
     //Jackson シリアライズ用メソッド
     @JsonProperty("failedTest")

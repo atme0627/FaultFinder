@@ -15,4 +15,11 @@ public class TracedValuesAtLine extends TracedValueCollection {
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
+
+    private TracedValuesAtLine(List<TracedValue> record){
+        super(record);
+    }
+    public static TracedValueCollection of(List<TracedValue> record){
+        return new TracedValuesAtLine(record);
+    }
 }

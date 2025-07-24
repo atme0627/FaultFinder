@@ -15,6 +15,10 @@ public abstract class TracedValueCollection {
     protected TracedValueCollection(){
     }
 
+    protected TracedValueCollection(List<TracedValue> record){
+        this.record = record;
+    }
+
     public List<TracedValue> filterByVariableName(String varName){
         return record.stream()
                 .filter(tv -> tv.variableName.equals(varName))
