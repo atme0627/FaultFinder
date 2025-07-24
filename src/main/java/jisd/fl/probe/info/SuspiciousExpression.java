@@ -151,39 +151,7 @@ public abstract class SuspiciousExpression {
      * @param sleepTime
      * @return
      */
-    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime){
-        try (QuietStdOut q = QuietStdOut.suppress()) {
-
-            //デバッガ生成
-            Debugger dbg = TestUtil.testDebuggerFactory(failedTest);
-            dbg.setMain(this.locateMethod.getFullyQualifiedClassName());
-            Optional<Point> watchPointAtLine = dbg.watch(this.locateLine);
-
-            //locateLineで観測できる全ての変数を取得
-            try {
-                dbg.run(sleepTime);
-            } catch (VMDisconnectedException | InvalidStackFrameException ignored) {
-            }
-
-            Map<String, DebugResult> drs = watchPointAtLine.get().getResults();
-            //SuspExpr内で使用されている変数の情報のみ取り出す
-            //SuspiciousVariableがActualValueをとっている瞬間のものを取得するのは面倒なため
-            //SuspExprが複数回実行されているときは最後に観測された値を採用する。
-            List<ValueInfo> valuesAtLine = drs.entrySet().stream()
-                    .map(Map.Entry::getValue)
-                    .map(DebugResult::getValues)
-                    .map(vis -> vis.get(vis.size() - 1))
-                    .collect(Collectors.toList());
-
-            //TODO: Locationに依存しない形にしたい
-            Location loc = new Location(this.locateMethod.className, this.locateMethod.getShortMethodName(), this.locateLine, "DUMMY");
-            TracedValueCollection watchedValues = new TracedValuesAtLine(valuesAtLine, loc);
-            dbg.exit();
-            dbg.clearResults();
-            System.out.println("[[[TEST 5]]]");
-            return watchedValues;
-        }
-    }
+    protected abstract TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime);
 
     /**
      * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得

@@ -126,8 +126,21 @@ public class SuspiciousArgument extends SuspiciousExpression {
                     if(ev instanceof MethodEntryEvent){
                         //かつ対象の引数が目的の値を取っている場合、目的の行実行であったとし探索終了
                         MethodEntryEvent mEntry = (MethodEntryEvent) ev;
-                        //entryしたメソッドが目的のcalleeメソッドでない
-                        if(mEntry.method().name().equals(calleeMethodName.getShortMethodName())) {
+
+                        // 1) 通常メソッドの場合は name() で比較
+                        // 2) コンストラクタの場合は declaringType().name()（FQCN）で比較
+                        boolean isTarget;
+                        Method method = mEntry.method();
+                        if (method.isConstructor()) {
+                            // calleeMethodName には FullyQualifiedClassName を保持している想定
+                            isTarget = method.declaringType().name()
+                                    .equals(calleeMethodName.getFullyQualifiedClassName());
+                        } else {
+                            isTarget = method.name().equals(calleeMethodName.getShortMethodName());
+                        }
+
+                        //entryしたメソッドが目的のcalleeメソッドか確認
+                        if(isTarget) {
                             if (validateIsTargetExecution(mEntry, actualValue, argIndex)) {
                                 done = true;
                                 result.addAll(resultCandidate);

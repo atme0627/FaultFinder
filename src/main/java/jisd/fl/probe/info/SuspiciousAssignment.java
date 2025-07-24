@@ -96,15 +96,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                     //実行された、とあるメソッドから抜けた
                     if (ev instanceof MethodExitEvent) {
                         MethodExitEvent mee = (MethodExitEvent) ev;
-                        StackFrame caller = null;
-                        try {
-                            //thread()がsuspendされていないと例外を投げる
-                            //普通は成功するはず
-                            //waitForThreadPreparation(mee.thread());
-                            caller = mee.thread().frame(1);
-                        } catch (IncompatibleThreadStateException e) {
-                            throw new RuntimeException("Target thread must be suspended.");
-                        }
 
                         //収集するのは指定した行で直接呼び出したメソッドのみ
                         //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
