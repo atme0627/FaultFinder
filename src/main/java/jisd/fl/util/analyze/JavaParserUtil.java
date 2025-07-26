@@ -33,7 +33,6 @@ public class JavaParserUtil {
     //TODO: parseTestClassのところはいらないはず
     public static CompilationUnit parseClass(MethodElementName targetClass) throws NoSuchFileException {
         Path p = targetClass.getFilePath();
-        if (!Files.exists(p)) return parseTestClass(targetClass);
         try {
             return StaticJavaParser.parse(p);
         }
