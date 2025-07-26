@@ -1,11 +1,11 @@
 package jisd.fl.sbfl.coverage;
 
 import jisd.fl.util.*;
+import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,7 +16,8 @@ public class CoverageAnalyzer {
     final String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");;
     String outputDir;
     Set<String> targetClassNames;
-    Set<String> failedTests;
+    Set<MethodElementName> failedTests;
+    MyCoverageVisitor visitor;
 
     public CoverageAnalyzer(){
         this("./.coverage_data");
@@ -28,82 +29,78 @@ public class CoverageAnalyzer {
 
     public CoverageAnalyzer(String outputDir, Set<String> failedTests) {
         this.outputDir = outputDir;
-        this.failedTests = failedTests;
+        this.failedTests = failedTests.stream().map(MethodElementName::new).collect(Collectors.toSet());
         targetClassNames = StaticAnalyzer.getClassNames();
+        visitor = new MyCoverageVisitor(targetClassNames);
     }
 
     // 1) 結果を格納するレコードクラス
-    record TestResult(String methodName,
+    record TestResult(MethodElementName methodName,
                       String execFileName,
                       boolean passed) {}
 
-    public CoverageCollection analyzeAll(String testClassName){
+    public CoverageCollection analyzeAll(String tmp){
+        MethodElementName testClassName = new MethodElementName(tmp);
         FileUtil.createDirectory(jacocoExecFilePath);
-        Set<String> failedTestsInClass = new HashSet<>();
-        if(failedTests != null) {
-            failedTestsInClass = failedTests
-                    .stream()
-                    .filter((ft) -> ft.split("#")[0].equals(testClassName))
-                    .collect(Collectors.toSet());
-        }
-
-        Set<String> testMethodNames = TestUtil.getTestMethods(testClassName);
+        Set<MethodElementName> testMethodNames = TestUtil.getTestMethods(testClassName);
         if(testMethodNames.isEmpty()) throw new RuntimeException("test method is not found. [CLASS] " + testMethodNames);
-
-        //テストクラスをコンパイル
         TestUtil.compileForDebug(testClassName);
-        MyCoverageVisiter cv = new MyCoverageVisiter(testClassName, targetClassNames);
-        int failedCount = 0;
 
-        // 2) 並列にテストを実行して TestResult を集める
+        // 並列にテストを実行して TestResult を集める
         List<TestResult> results = testMethodNames
                 .parallelStream()
                 .map(testMethodName -> {
-                    String jacocoExecName = testMethodName + ".jacocoexec";
-                    boolean isTestPassed;
                     try {
-                        isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
+                        String jacocoExecName = testMethodName + ".jacocoexec";
+                        boolean isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
+                        return new TestResult(testMethodName, jacocoExecName, isTestPassed);
                     } catch (IOException | InterruptedException e) {
                         throw new UncheckedIOException(new IOException(e));
                     }
-                    return new TestResult(testMethodName, jacocoExecName, isTestPassed);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
+        int failedCount = 0;
         for (TestResult r : results) {
-            boolean isTestPassed = r.passed();
-            String testMethodName = r.methodName();
-            String jacocoExecName = r.execFileName();
-
             //テストの成否が想定と一致しているか確認
-            if(failedTests != null){
-                if(!isTestPassed) failedCount++;
-                if((isTestPassed && failedTests.contains(testMethodName))
-                || (!isTestPassed && !failedTests.contains(testMethodName))){
-                    throw new RuntimeException("Execution result is wrong. [testcase] " + testMethodName);
-                }
-            }
-
-            cv.setTestsPassed(isTestPassed);
+            validateTestResult(r.methodName(), r.passed());
+            //失敗テスト数カウント
+            if(!r.passed()) failedCount++;
+            visitor.setTestsPassed(r.passed());
             try {
-                ExecutionDataStore execData = JacocoUtil.execFileLoader(jacocoExecName);
-                JacocoUtil.analyzeWithJacoco(execData, cv);
+                ExecutionDataStore execData = JacocoUtil.execFileLoader(r.execFileName());
+                JacocoUtil.analyzeWithJacoco(execData, visitor);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
+        //失敗テストの実行回数が想定と一致しているか確認
+        validateFailedTestCount(testClassName, failedCount);
 
-        if(failedTests != null){
-            if (failedTestsInClass.size() != failedCount) throw  new RuntimeException("failed test count is not correct.");
-        }
         FileUtil.deleteDirectory(new File(jacocoExecFilePath));
-        return cv.getCoverages();
+        return visitor.getCoverages();
     }
 
-    private boolean isCovDataExist(String coverageCollectionName){
-        String covFileName = outputDir + "/" + coverageCollectionName + ".cov";
-        File data = new File(covFileName);
-        return data.exists();
+    private long failedTestsCountInClass(MethodElementName testClassName){
+        return failedTests
+                .stream()
+                .filter((ft) -> ft.getFullyQualifiedClassName().equals(testClassName.getFullyQualifiedClassName()))
+                .count();
+    }
+
+    private void validateTestResult(MethodElementName testMethodName, boolean isTestPassed){
+        if(failedTests == null) return;
+        if((isTestPassed && failedTests.contains(testMethodName))
+                || (!isTestPassed && !failedTests.contains(testMethodName))){
+            throw new RuntimeException("Execution result is wrong. [testcase] " + testMethodName);
+        }
+    }
+
+    private void validateFailedTestCount(MethodElementName testClassName, int failedCount){
+        if(failedTests == null) return;
+        if (failedTestsCountInClass(testClassName) != failedCount) {
+            throw new RuntimeException("failed test count is not correct.");
+        }
     }
 }
 
