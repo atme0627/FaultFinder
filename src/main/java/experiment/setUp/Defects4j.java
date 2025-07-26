@@ -7,6 +7,6 @@ import java.io.File;
 public class Defects4j {
     public static void main(String[] arg){
         String project = "Lang";
-        Defects4jUtil.checkoutBuggySrc(project, 2, new File("/Users/ezaki/Desktop/research/d4jProjects/Lang"));
+        Defects4jUtil.checkoutBuggySrc(project, 1, new File("/Users/ezaki/Desktop/research/d4jProjects/Lang"));
     }
 }
