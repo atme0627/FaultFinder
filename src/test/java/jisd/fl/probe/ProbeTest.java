@@ -2,7 +2,7 @@ package jisd.fl.probe;
 
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.util.JsonExporter;
+import jisd.fl.util.JsonIO;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.MethodElementName;
 import org.apache.commons.io.FileUtils;
@@ -39,7 +39,7 @@ class ProbeTest {
             SuspiciousExpression treeRoot = pfs.run(2000);
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/CalcTest.json");
-            JsonExporter.exportSuspExpr(treeRoot, output);
+            JsonIO.exportSuspExpr(treeRoot, output);
         }
     }
 
@@ -60,7 +60,7 @@ class ProbeTest {
             SuspiciousExpression treeRoot = pfs.run(2000);
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest.json");
-            JsonExporter.exportSuspExpr(treeRoot, output);
+            JsonIO.exportSuspExpr(treeRoot, output);
         }
 
         @Test
@@ -68,7 +68,7 @@ class ProbeTest {
             File input = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest.json");
             SuspiciousExpression loadedFromJson = SuspiciousExpression.loadFromJson(input);
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest2.json");
-            JsonExporter.exportSuspExpr(loadedFromJson, output);
+            JsonIO.exportSuspExpr(loadedFromJson, output);
             assertTrue(FileUtils.contentEquals(input, output), "File contents should match");
 
         }
@@ -91,7 +91,7 @@ class ProbeTest {
             SuspiciousExpression treeRoot = pfs.run(2000);
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/LoopTest1.json");
-            JsonExporter.exportSuspExpr(treeRoot, output);
+            JsonIO.exportSuspExpr(treeRoot, output);
         }
     }
 }
