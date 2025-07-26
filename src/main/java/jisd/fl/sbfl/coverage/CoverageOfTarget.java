@@ -17,7 +17,6 @@ import java.util.*;
 
 //各クラスごとにインスタンスは一つのみ
 public class CoverageOfTarget {
-    static final private Map<String, CoverageOfTarget> targets = new HashMap<>();
     public String targetClassName;
     //各行のカバレッジ情報
     public Map<CodeElementName, SbflStatus> lineCoverage;
