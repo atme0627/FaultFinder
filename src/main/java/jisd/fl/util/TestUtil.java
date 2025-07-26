@@ -103,13 +103,6 @@ public  class TestUtil {
             }
         }
 
-        //execファイルが生成されるまで待機
-        while(true){
-            File f = new File(generatedFilePath);
-            if(f.exists()){
-                break;
-            }
-        }
         //ファイルの生成が行われたことを出力
         System.out.println("Success to generate " + generatedFilePath + ".");
         System.out.println("testResult " + (proc.exitValue() == 0 ? "o" : "x"));
