@@ -45,3 +45,4 @@ bin/
 /gradle/
 /src/test/resources/d4jProject/
 fl_properties
+/.env

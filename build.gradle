@@ -58,6 +58,9 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.4.14'
     implementation 'org.slf4j:slf4j-api:2.0.9'
 
+    //.env
+    implementation("io.github.cdimascio:dotenv-java:3.2.0")
+
     //----for JISD -------------------------------------------
     // https://mvnrepository.com/artifact/org.ow2.asm/asm
     implementation 'org.ow2.asm:asm:9.0'
