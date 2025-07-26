@@ -1,4 +1,4 @@
-package experiment.main;
+package experiment.setUp;
 
 import experiment.defect4j.Defects4jUtil;
 
