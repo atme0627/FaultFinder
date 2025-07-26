@@ -12,6 +12,7 @@ import java.io.PrintStream;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jisd.fl.util.JsonIO;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
 public class CoverageCollection {
@@ -39,11 +40,9 @@ public class CoverageCollection {
     }
 
     @JsonCreator
-    private CoverageCollection(@JsonProperty("coverageCollectionName") String coverageCollectionName){
-        this.coverageCollectionName = coverageCollectionName;
-    }
-
-    public CoverageCollection(String coverageCollectionName, Set<String> targetClassNames) {
+    public CoverageCollection(
+            @JsonProperty("coverageCollectionName") String coverageCollectionName,
+            @JsonProperty("targetClassName")        Set<String> targetClassNames) {
         this.coverageCollectionName = coverageCollectionName;
         this.targetClassNames = targetClassNames;
     }
@@ -72,9 +71,6 @@ public class CoverageCollection {
         out.println(new ObjectMapper().writer(printer).writeValueAsString(this));
     }
 
-    public Set<String> getTargetClassNames() {
-        return targetClassNames;
-    }
 
     public static CoverageCollection loadJson(String dir){
         File f = new File(dir);
@@ -91,5 +87,27 @@ public class CoverageCollection {
 
     public Set<CoverageOfTarget> getCoverages(){
         return coverages;
+    }
+
+    //Jackson シリアライズ用メソッド
+    @JsonProperty
+    private String getCoverageCollectionName(){
+        return coverageCollectionName;
+    }
+
+    @JsonProperty
+    public Set<String> getTargetClassNames() {
+        return targetClassNames;
+    }
+
+    @JsonProperty
+    private void setCoverages(Set<CoverageOfTarget> coveragesFromJson) {
+        coverages.clear();
+        coverages.addAll(coveragesFromJson);
+    }
+
+    //Jackson デシリアライズ用メソッド
+    public static CoverageCollection loadFromJson(File f){
+        return JsonIO.importCoverage(f);
     }
 }
