@@ -9,6 +9,9 @@ import java.io.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
@@ -40,19 +43,27 @@ public class CoverageAnalyzer {
         if(testMethodNames.isEmpty()) throw new RuntimeException("test method is not found. [CLASS] " + testMethodNames);
         TestUtil.compileForDebug(testClassName);
 
-        // 並列にテストを実行して TestResult を集める
-        List<TestResult> results = testMethodNames
-                .parallelStream()
-                .map(testMethodName -> {
-                    try {
+        //固定長スレッドプール
+        List<TestResult> results;
+        try(ExecutorService executor = Executors.newFixedThreadPool(8)) {
+            List<Future<TestResult>> futures = testMethodNames.stream()
+                    .map(testMethodName -> executor.submit(() -> {
                         String jacocoExecName = testMethodName + ".jacocoexec";
                         boolean isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
                         return new TestResult(testMethodName, jacocoExecName, isTestPassed);
-                    } catch (IOException | InterruptedException e) {
-                        throw new UncheckedIOException(new IOException(e));
-                    }
-                })
-                .toList();
+                    }))
+                    .toList();
+
+            results = futures.stream()
+                    .map(f -> {
+                        try {
+                            return f.get();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        }
 
         int failedCount = 0;
         for (TestResult r : results) {
