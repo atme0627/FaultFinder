@@ -1,5 +1,6 @@
 package jisd.fl.util;
 
+import experiment.defect4j.Defects4jUtil;
 import jisd.debug.Debugger;
 import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,38 +26,14 @@ class TestUtilTest {
 
         @Test
         void voidGaussNewtonOptimizerTest() {
-            MethodElementName testClass = new MethodElementName("TestUtilTest.getTestMethodsTest.d4jMath6.GaussNewtonOptimizerTest");
-            Set<MethodElementName> testMethods = TestUtil.getTestMethods(testClass);
+            String project = "Lang";
+            int bugId = 11;
+            Defects4jUtil.changeTargetVersion(project, bugId);
+            MethodElementName targetTestClass = new MethodElementName("org.apache.commons.lang3.RandomStringUtilsTest");
+            TestUtil.compileForDebug(targetTestClass);
+            Set<MethodElementName> testMethods = TestUtil.getTestMethods(targetTestClass);
             for(MethodElementName ce : testMethods){
                 System.out.println(ce);
-            }
-        }
-
-        @Test
-        void getTestMethodsByJunit(){
-            LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
-                    .selectors(
-                            DiscoverySelectors.selectPackage("jisd.fl.util")
-                    )
-                    .build();
-
-            Launcher launcher = LauncherFactory.create();
-            TestPlan testPlan = launcher.discover(request);
-
-            for (TestIdentifier identifier : testPlan.getRoots()) {
-                printTestIdentifiers(testPlan, identifier, 0);
-            }
-        }
-
-        void printTestIdentifiers(TestPlan plan, TestIdentifier id, int level) {
-            if (id.isTest()) {
-                System.out.println("  ".repeat(level) + "Test: " + id.getDisplayName());
-            } else if (id.isContainer()) {
-                System.out.println("  ".repeat(level) + "Container: " + id.getDisplayName());
-            }
-
-            for (TestIdentifier child : plan.getChildren(id)) {
-                printTestIdentifiers(plan, child, level + 1);
             }
         }
     }
