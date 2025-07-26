@@ -1,18 +1,25 @@
 package jisd.fl.util;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import jisd.debug.DebugResult;
 import jisd.debug.Debugger;
 import jisd.fl.util.analyze.MethodElementName;
-import jisd.fl.util.analyze.JavaParserUtil;
+import org.junit.platform.engine.DiscoverySelector;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
+import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.TestPlan;
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.launcher.core.LauncherFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.NoSuchFileException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,7 +45,7 @@ public  class TestUtil {
                 "-g",
                 "-cp", classpath,
                 "-sourcepath", sourcepath,
-                "-d", "classesForDebug/",
+                "-d", PropertyLoader.getDebugBinDir(),
                 targetTestClass.getFilePath(true).toString()
         };
         try {
@@ -132,90 +139,49 @@ public  class TestUtil {
         return dbg;
     }
 
-
-    //targetSrcPathは最後"/"なし
-    //targetClassNameはdemo.SortTestのように記述
-    //返り値は demo.SortTest#test1(int a)の形式
-    //publicメソッド以外は取得しない
-    //どうせjunitの実行時にはクラスパスにテストクラスを含める必要があるので
-    //junitのorg.junit.platform.launcherを使う方法にした方がいい
-    @Deprecated
-    public static Set<MethodElementName> getTestMethods(MethodElementName targetClass)  {
-        Set<MethodElementName> methodNames = new LinkedHashSet<>();
-        CompilationUnit unit = getUnitFromCodeElement(targetClass);
-        ClassOrInterfaceDeclaration cd = getClassNodeFromCodeElement(targetClass);
-
-        //親クラスが存在する場合、そのClassも探索
-        getAncestorClasses(targetClass)
-                .stream()
-                .map(TestUtil::getTestMethodsInClass)
-                .forEach(methodNames::addAll);
-
-        //targetClass内のtestClassを探索
-        if (!isJunit4Style(unit)) {
-            //@Nestedクラスがある場合、再帰的に探索
-            cd.findAll(ClassOrInterfaceDeclaration.class)
-                    .stream()
-                    .filter(c -> !c.equals(cd))
-                    .forEach(c -> {
-                        if(c.isAnnotationPresent("Nested")) {
-                            methodNames.addAll(getTestMethods(new MethodElementName(c)));
-                        }
-                        cd.remove(c);
-                    });
-        }
-
-        //targetClassに含まれるmethodを探索
-        methodNames.addAll(getTestMethodsInClass(targetClass));
-        return methodNames;
-    }
-
-
-    //あるクラス内にあるテストメソッドのみ集める（親クラス、入れ子クラスは考えない）
-    private static Set<MethodElementName> getTestMethodsInClass(MethodElementName targetClass){
-        return getClassNodeFromCodeElement(targetClass)
-                .findAll(MethodDeclaration.class)
-                .stream()
-                .filter(md -> md.isAnnotationPresent("Test"))
-                .map(MethodElementName::new)
-                .collect(Collectors.toSet());
-    }
-
-    private static Set<MethodElementName> getAncestorClasses(MethodElementName targetClass){
-       Set<MethodElementName> result = new HashSet<>();
-       CompilationUnit unit = getUnitFromCodeElement(targetClass);
-       ClassOrInterfaceDeclaration cd = getClassNodeFromCodeElement(targetClass);
-       if(cd.getExtendedTypes().isEmpty()) return result;
-
-       String parentPackageName = JavaParserUtil.getPackageName(unit);
-       cd.getExtendedTypes()
-               .stream()
-               .map(type -> new MethodElementName(parentPackageName, type.getNameAsString()))
-               .forEach(ce -> {
-                   result.add(ce);
-                   result.addAll(getAncestorClasses(ce));
-               });
-       return result;
-    }
-
-    private static ClassOrInterfaceDeclaration getClassNodeFromCodeElement(MethodElementName targetClass){
-        return getUnitFromCodeElement(targetClass).getClassByName(targetClass.getShortClassName()).orElseThrow();
-    }
-
-    private static CompilationUnit getUnitFromCodeElement(MethodElementName targetClass){
-        CompilationUnit unit;
+    public static Set<MethodElementName> getTestMethods(MethodElementName testMethodName){
+        //テスト対象クラスの.classを含むディレクトリを動的にロード
+        //テストクラスはコンパイル済みと仮定
+        URL[] url;
         try {
-            unit = JavaParserUtil.parseClass(targetClass);
-        } catch (NoSuchFileException e) {
+            url = new URL[]{Paths.get(PropertyLoader.getDebugBinDir()).toUri().toURL()};
+        } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-        return unit;
+
+        try (URLClassLoader testClassLoader = new URLClassLoader(url, Thread.currentThread().getContextClassLoader())){
+            //ClassLoaderを切り替え
+            Thread.currentThread().setContextClassLoader(testClassLoader);
+            //対象のテストクラスをロード
+            Class<?> targetTestClass = testClassLoader.loadClass(testMethodName.getFullyQualifiedClassName());
+
+            // JUnit Launcher API を使用してテストを検出
+            DiscoverySelector selector = DiscoverySelectors.selectClass(targetTestClass);
+            LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
+                    .selectors(selector)
+                    .build();
+
+            Launcher launcher = LauncherFactory.create();
+            TestPlan testPlan = launcher.discover(request);
+
+            return testPlan.getRoots().stream()
+                    .flatMap(root -> testPlan.getDescendants(root).stream())
+                    .filter(TestIdentifier::isTest)
+                    .map(TestUtil::getFQMNName)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toSet());
+
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    //テストクラスがjunit4スタイルのものか判定
-    private static boolean isJunit4Style(CompilationUnit unit){
-        return unit.findAll(ImportDeclaration.class)
-                .stream()
-                .anyMatch(id -> id.getName().toString().equals("org.junit.Test"));
+    private static Optional<MethodElementName> getFQMNName(TestIdentifier id) {
+        if(id.getSource().isEmpty()) return Optional.empty();
+        MethodSource source = (MethodSource) id.getSource().get();
+        String className = source.getClassName();
+        String methodName = source.getMethodName();
+        return Optional.of(new MethodElementName(className + "#" + methodName + "()"));
     }
 }
