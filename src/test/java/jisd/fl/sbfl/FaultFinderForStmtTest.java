@@ -1,6 +1,5 @@
 package jisd.fl.sbfl;
 
-import jisd.fl.FaultFinder;
 import jisd.fl.FaultFinderForStmt;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
@@ -25,7 +24,8 @@ public class FaultFinderForStmtTest {
         String testClassName = "org.sample.CalcTest";
         // カバレッジを分析
         CoverageAnalyzer ca = new CoverageAnalyzer();
-        CoverageCollection coverageCollection = ca.analyzeAll(testClassName);
+        ca.analyze(testClassName);
+        CoverageCollection coverageCollection = ca.result();
         // FaultFinderForStmtのインスタンス化
         faultFinder = new FaultFinderForStmt(coverageCollection, Formula.OCHIAI);
     }

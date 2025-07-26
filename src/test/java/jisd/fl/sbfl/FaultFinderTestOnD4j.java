@@ -37,7 +37,8 @@ class FaultFinderTestOnD4j {
         int bugId = 87;
 
         CoverageAnalyzer ca = new CoverageAnalyzer();
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        ca.analyze(testClassName);
+        CoverageCollection cov = ca.result();
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.remove(1);
     }
@@ -48,7 +49,8 @@ class FaultFinderTestOnD4j {
         int bugId = 87;
 
         CoverageAnalyzer ca = new CoverageAnalyzer();
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        ca.analyze(testClassName);
+        CoverageCollection cov = ca.result();
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.susp(2);
     }
@@ -60,7 +62,8 @@ class FaultFinderTestOnD4j {
 
         Defects4jUtil.changeTargetVersion(project, bugId);
         CoverageAnalyzer ca = new CoverageAnalyzer();
-        CoverageCollection cov = ca.analyzeAll(testClassName);
+        ca.analyze(testClassName);
+        CoverageCollection cov = ca.result();
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.simpleProbe(field, 3000);
     }

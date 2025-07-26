@@ -22,7 +22,8 @@ public class FaultFinderTest {
         String testClassName = "org.sample.coverage.ConditionalTest";
         // カバレッジを分析
         CoverageAnalyzer ca = new CoverageAnalyzer();
-        CoverageCollection coverageCollection = ca.analyzeAll(testClassName);
+        ca.analyze(testClassName);
+        CoverageCollection coverageCollection = ca.result();
         // FaultFinderForStmtのインスタンス化
         faultFinder = new FaultFinder(coverageCollection, Granularity.METHOD, Formula.OCHIAI);
     }

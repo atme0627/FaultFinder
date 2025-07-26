@@ -33,7 +33,7 @@ public class CoverageAnalyzer {
                       String execFileName,
                       boolean passed) {}
 
-    public CoverageCollection analyzeAll(String tmp){
+    public void analyze(String tmp){
         MethodElementName testClassName = new MethodElementName(tmp);
         FileUtil.createDirectory(jacocoExecFilePath);
         Set<MethodElementName> testMethodNames = TestUtil.getTestMethods(testClassName);
@@ -72,6 +72,10 @@ public class CoverageAnalyzer {
         validateFailedTestCount(testClassName, failedCount);
 
         FileUtil.deleteDirectory(new File(jacocoExecFilePath));
+    }
+
+    //TODO: 複数テストクラスを計測した際の挙動をテスト
+    public CoverageCollection result(){
         return visitor.getCoverages();
     }
 
