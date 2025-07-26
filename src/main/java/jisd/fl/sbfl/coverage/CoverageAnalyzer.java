@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
     String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-    final String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");;
     String outputDir;
     Set<String> targetClassNames;
     Set<MethodElementName> failedTests;
