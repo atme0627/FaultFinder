@@ -1,5 +1,6 @@
 package experiment.defect4j;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.LineElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
@@ -22,7 +23,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Defects4jUtil {
-    static File defects4jDir = new File("/Users/ezaki/Desktop/tools/defects4j");
+    static Dotenv dotenv = Dotenv.load();
+    static File defects4jDir = Paths.get(dotenv.get("D4J_DIR")).toFile();
 
     public static void CheckoutAll(String project, int numberOfBugs, File workDir){
         for(int i = 1; i <= numberOfBugs; i++){
