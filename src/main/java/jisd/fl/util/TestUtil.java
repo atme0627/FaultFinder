@@ -51,11 +51,13 @@ public  class TestUtil {
         try {
             ProcessBuilder pb = new ProcessBuilder(cmdArray);
             Process proc = pb.start();
+            proc.waitFor();
+            System.out.println("Success to compile " + targetTestClass.getFullyQualifiedClassName() + ".");
             String line = null;
             try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
                 while ((line = buf.readLine()) != null) System.err.println(line);
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
