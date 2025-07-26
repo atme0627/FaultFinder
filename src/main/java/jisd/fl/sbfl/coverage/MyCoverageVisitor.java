@@ -10,13 +10,13 @@ import java.util.Set;
 //各行の実行回数を得られるようにしたい
 //execdataに対応するcoverageインスタンスを返せるようにする。
 
-public class MyCoverageVisiter implements ICoverageVisitor {
+public class MyCoverageVisitor implements ICoverageVisitor {
     //与えるjacocoexecのテストケースの成否を指定
     private Boolean isTestsPassed;
     CoverageCollection coverageCollection;
 
-    public MyCoverageVisiter(String testClassName, Set<String> targetClassNames){
-        this.coverageCollection = new CoverageCollection(testClassName, targetClassNames);
+    public MyCoverageVisitor(Set<String> targetClassNames){
+        this.coverageCollection = new CoverageCollection(targetClassNames);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class MyCoverageVisiter implements ICoverageVisitor {
             return;
         }
 
-        CoverageOfTarget covOfTarget = CoverageCollection.getCoverageOfTarget(targetClassName);
+        CoverageOfTarget covOfTarget = coverageCollection.getCoverageOfTarget(targetClassName);
         covOfTarget.processCoverage(coverage, isTestsPassed);
     }
 

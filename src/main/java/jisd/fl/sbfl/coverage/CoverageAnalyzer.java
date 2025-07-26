@@ -6,6 +6,7 @@ import jisd.fl.util.analyze.StaticAnalyzer;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,21 +14,15 @@ import java.util.stream.Collectors;
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
     String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-    String outputDir;
     Set<String> targetClassNames;
     Set<MethodElementName> failedTests;
     MyCoverageVisitor visitor;
 
     public CoverageAnalyzer(){
-        this("./.coverage_data");
+        this(new HashSet<>());
     }
 
-    public CoverageAnalyzer(String outputDir){
-        this(outputDir, null);
-    }
-
-    public CoverageAnalyzer(String outputDir, Set<String> failedTests) {
-        this.outputDir = outputDir;
+    public CoverageAnalyzer(Set<String> failedTests) {
         this.failedTests = failedTests.stream().map(MethodElementName::new).collect(Collectors.toSet());
         targetClassNames = StaticAnalyzer.getClassNames();
         visitor = new MyCoverageVisitor(targetClassNames);
@@ -88,7 +83,7 @@ public class CoverageAnalyzer {
     }
 
     private void validateTestResult(MethodElementName testMethodName, boolean isTestPassed){
-        if(failedTests == null) return;
+        if(failedTests.isEmpty()) return;
         if((isTestPassed && failedTests.contains(testMethodName))
                 || (!isTestPassed && !failedTests.contains(testMethodName))){
             throw new RuntimeException("Execution result is wrong. [testcase] " + testMethodName);
@@ -96,7 +91,7 @@ public class CoverageAnalyzer {
     }
 
     private void validateFailedTestCount(MethodElementName testClassName, int failedCount){
-        if(failedTests == null) return;
+        if(failedTests.isEmpty()) return;
         if (failedTestsCountInClass(testClassName) != failedCount) {
             throw new RuntimeException("failed test count is not correct.");
         }

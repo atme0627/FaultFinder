@@ -42,7 +42,7 @@ public class CoverageGenerator {
 
    public void generate(){
        Set<String> failedTests = new HashSet<>(Defects4jUtil.getFailedTestMethods(project, bugId));
-      CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(), failedTests);
+      CoverageAnalyzer ca = new CoverageAnalyzer(failedTests);
       CoverageCollection cc = ca.analyzeAll(testClassName);
        exportCoverage(cc);
    }

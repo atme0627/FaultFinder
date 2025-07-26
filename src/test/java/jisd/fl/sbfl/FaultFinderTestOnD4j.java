@@ -36,7 +36,7 @@ class FaultFinderTestOnD4j {
         String project = "Math";
         int bugId = 87;
 
-        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
+        CoverageAnalyzer ca = new CoverageAnalyzer();
         CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.remove(1);
@@ -47,7 +47,7 @@ class FaultFinderTestOnD4j {
         String project = "Math";
         int bugId = 87;
 
-        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
+        CoverageAnalyzer ca = new CoverageAnalyzer();
         CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.susp(2);
@@ -59,7 +59,7 @@ class FaultFinderTestOnD4j {
         int bugId = 87;
 
         Defects4jUtil.changeTargetVersion(project, bugId);
-        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
+        CoverageAnalyzer ca = new CoverageAnalyzer();
         CoverageCollection cov = ca.analyzeAll(testClassName);
         FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
         ff.simpleProbe(field, 3000);
