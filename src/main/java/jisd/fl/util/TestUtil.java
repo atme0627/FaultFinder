@@ -10,7 +10,6 @@ import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.NoSuchFileException;
@@ -27,11 +26,6 @@ public  class TestUtil {
         return "-cp " + "./build/classes/java/main"
                 + ":" + PropertyLoader.getDebugBinDir()
                 + ":" + PropertyLoader.getJunitClassPaths();
-    }
-
-    @Deprecated
-    public static void compileForDebug(String testClassName) {
-        compileForDebug(new MethodElementName(testClassName));
     }
 
     //-gつきでコンパイル
@@ -60,10 +54,6 @@ public  class TestUtil {
     }
 
 
-    @Deprecated
-    public static boolean execTestCaseWithJacocoAgent(String testMethodNameWithSignature, String execFileName) throws IOException, InterruptedException {
-        return execTestCaseWithJacocoAgent(new MethodElementName(testMethodNameWithSignature), execFileName);
-    }
     //TestLauncherにjacoco agentをつけて起動
     //methodNameは次のように指定: org.example.order.OrderTests#test1(int a)
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
@@ -109,16 +99,6 @@ public  class TestUtil {
         return proc.exitValue() == 0;
     }
 
-    @Deprecated
-    public static Debugger testDebuggerFactory(String testMethodName) {
-        return testDebuggerFactory(new MethodElementName(testMethodName));
-    }
-
-    @Deprecated
-    public static Debugger testDebuggerFactory(String testMethodName, String option) {
-        return testDebuggerFactory(new MethodElementName(testMethodName), option);
-    }
-
     public static Debugger testDebuggerFactory(MethodElementName testMethod){
         return testDebuggerFactory(testMethod, "");
     }
@@ -152,14 +132,6 @@ public  class TestUtil {
         return dbg;
     }
 
-
-    @Deprecated
-    public static Set<String> getTestMethods(String targetClassName)  {
-        return getTestMethods(new MethodElementName(targetClassName))
-                .stream()
-                .map(MethodElementName::getFullyQualifiedMethodName)
-                .collect(Collectors.toSet());
-    }
 
     //targetSrcPathは最後"/"なし
     //targetClassNameはdemo.SortTestのように記述
