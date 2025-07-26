@@ -130,7 +130,7 @@ class Defects4jUtilTest {
 
 
         private File targetProjectDir(int bugId) {
-            return Defects4jUtil.getProjectDir(d4jDir, "Lang", bugId, true);
+            return new File(Defects4jUtil.getProjectDir("Lang", bugId, true));
         }
 
     }
