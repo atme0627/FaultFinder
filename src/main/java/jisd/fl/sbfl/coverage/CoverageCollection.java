@@ -76,4 +76,9 @@ public class CoverageCollection {
     public static CoverageCollection loadFromJson(File f){
         return JsonIO.importCoverage(f);
     }
+
+    public void free(){
+        targetClassNames.clear();
+        coverages.clear();
+    }
 }

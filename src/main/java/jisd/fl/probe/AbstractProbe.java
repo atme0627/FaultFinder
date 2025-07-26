@@ -343,7 +343,7 @@ public abstract class AbstractProbe {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return TestUtil.testDebuggerFactory(targetMethod);
+        return TestUtil.testDebuggerFactory(new MethodElementName(targetMethod));
     }
 
 
