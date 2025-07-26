@@ -16,10 +16,6 @@ public class LineElementName implements CodeElementName {
         this.line = line;
     }
 
-    public int getLine(){
-        return line;
-    }
-
     @Override
     public String getFullyQualifiedClassName() {
         return methodElementName.getFullyQualifiedClassName();
@@ -89,4 +85,9 @@ public class LineElementName implements CodeElementName {
     public String toString(){
         return this.getFullyQualifiedMethodName() + " line: " + line;
     }
+
+    public int getLine(){
+        return line;
+    }
+
 }
