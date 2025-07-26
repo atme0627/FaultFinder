@@ -45,7 +45,7 @@ public class CoverageAnalyzer {
 
         //固定長スレッドプール
         List<TestResult> results;
-        try(ExecutorService executor = Executors.newFixedThreadPool(8)) {
+        try(ExecutorService executor = Executors.newFixedThreadPool(4)) {
             List<Future<TestResult>> futures = testMethodNames.stream()
                     .map(testMethodName -> executor.submit(() -> {
                         String jacocoExecName = testMethodName + ".jacocoexec";
