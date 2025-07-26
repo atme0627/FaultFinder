@@ -2,15 +2,11 @@ package jisd.fl.sbfl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 
 import java.io.File;
 import java.io.PrintStream;
 import java.util.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jisd.fl.util.JsonIO;
 
 //あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
@@ -54,12 +50,6 @@ public class CoverageCollection {
         for(CoverageOfTarget cov : getCoverages()){
             cov.printCoverage(out, granularity);
         }
-    }
-
-    public void generateJson(PrintStream out) throws JsonProcessingException {
-        DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
-        printer.indentArraysWith(DefaultIndenter.SYSTEM_LINEFEED_INSTANCE);
-        out.println(new ObjectMapper().writer(printer).writeValueAsString(this));
     }
 
     public boolean isContainsTargetClass(String targetClassName){
