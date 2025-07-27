@@ -22,6 +22,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Arrays.stream;
+
 public class JavaParserUtil {
     //引数に与えられるclassNameがpackageを含まない可能性あり
     @Deprecated
@@ -56,6 +58,11 @@ public class JavaParserUtil {
 
     //methodNameはクラス、シグニチャを含む
     public static CallableDeclaration<?> getCallableDeclarationByName(MethodElementName targetMethod) throws NoSuchFileException {
+        List<String> tmp = extractCallableDeclaration(targetMethod)
+                .stream()
+                .map(cd -> cd.getSignature().toString())
+                .toList();
+
         Optional<CallableDeclaration> omd = extractCallableDeclaration(targetMethod)
                 .stream()
                 .filter(cd -> cd.getSignature().toString().equals(targetMethod.methodSignature))

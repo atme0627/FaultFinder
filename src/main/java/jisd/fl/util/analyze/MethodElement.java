@@ -38,13 +38,13 @@ public class MethodElement {
     }
     //指定されたローカル変数のvariableDeclaratorを返す
     //指定された名前の変数が存在しない場合はnull
-    //同一メソッド内にスコープが異なる同盟の変数がある状況は未想定
-    public Optional<VariableDeclarator> findLocalVarDeclaration(String localVarName){
+    //同一メソッド内にスコープが異なる同名の変数がある状況は未想定
+    public List<VariableDeclarator> findLocalVarDeclaration(String localVarName){
         BlockStmt bs = extractBodyOfMethod();
         List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
         return vds.stream()
                 .filter(vd -> vd.getNameAsString().equals(localVarName))
-                .findFirst();
+                .toList();
     }
 
     //指定された行を含むStatementElementを返す
