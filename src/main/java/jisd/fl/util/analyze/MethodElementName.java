@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import jisd.debug.EnhancedDebugger;
 import jisd.fl.util.PropertyLoader;
 
 import javax.validation.constraints.NotBlank;
@@ -186,24 +187,6 @@ public class MethodElementName implements CodeElementName{
     }
 
     private String normalizeMethodSignature(String methodSignature){
-        String shortMethodName = methodSignature.split("\\(")[0];
-        String[] args = methodSignature.substring(methodSignature.indexOf("(") + 1, methodSignature.indexOf(")")).split(",");
-        if(args.length == 1 && args[0].isEmpty()) return methodSignature;
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(shortMethodName);
-        sb.append("(");
-        for(String arg : args){
-            if(!arg.contains(".")) {
-                sb.append(arg);
-            }
-            else {
-                sb.append(arg.substring(arg.lastIndexOf(".") + 1));
-            }
-            sb.append(", ");
-        }
-        sb.delete(sb.length() - 2, sb.length());
-        sb.append(")");
-        return sb.toString();
+        return EnhancedDebugger.normalizeMethodSignature(methodSignature);
     }
 }
