@@ -6,6 +6,7 @@ import jisd.fl.util.analyze.StaticAnalyzer;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,8 +26,8 @@ public class CoverageAnalyzer {
         this(new HashSet<>());
     }
 
-    public CoverageAnalyzer(Set<String> failedTests) {
-        this.failedTests = failedTests.stream().map(MethodElementName::new).collect(Collectors.toSet());
+    public CoverageAnalyzer(Set<MethodElementName> failedTests) {
+        this.failedTests = failedTests;
         targetClassNames = StaticAnalyzer.getClassNames();
         visitor = new MyCoverageVisitor(targetClassNames);
     }
@@ -41,7 +42,6 @@ public class CoverageAnalyzer {
         FileUtil.createDirectory(jacocoExecFilePath);
         Set<MethodElementName> testMethodNames = TestUtil.getTestMethods(testClassName);
         if(testMethodNames.isEmpty()) throw new RuntimeException("test method is not found. [CLASS] " + testMethodNames);
-        TestUtil.compileForDebug(testClassName);
 
         //固定長スレッドプール
         List<TestResult> results;
