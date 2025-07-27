@@ -1,5 +1,8 @@
 package jisd.fl.probe;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import experiment.defect4j.Defects4jUtil;
+import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
@@ -14,6 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 class ProbeTest {
     @BeforeEach
@@ -92,6 +99,38 @@ class ProbeTest {
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/LoopTest1.json");
             JsonIO.export(treeRoot, output);
+        }
+    }
+
+    @Test
+    void runFromJsonTest() throws IOException {
+        Dotenv dotenv = Dotenv.load();
+        Path expDir = Paths.get(dotenv.get("EXP_20250726_DIR"));
+
+        String project = "Lang";
+        int bugId = 3;
+
+        File inputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probeTargets.json").toFile();
+        Defects4jUtil.changeTargetVersion(project, bugId);
+        Defects4jUtil.compileBuggySrc(project, bugId);
+
+        List<?> probeTargets = JsonIO.importFromJson(inputFile, new TypeReference<List<SuspiciousVariable>>() {});
+
+        System.out.println("Finding target: [PROJECT] " + project + "  [BUG ID] " + bugId);
+
+        for(int i = 0; i < probeTargets.size(); i++) {
+            SuspiciousVariable target = (SuspiciousVariable) probeTargets.get(i);
+            System.out.println("failedTest " + target.getFailedTest());
+
+            File outputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probe/" +
+                    target.getFailedTest() + "_" + target.getSimpleVariableName()).toFile();
+            Path path = outputFile.toPath();
+            Files.deleteIfExists(path);
+            Files.createFile(path);
+
+            Probe prb = new Probe(target);
+            SuspiciousExpression result = prb.run(2000);
+            JsonIO.export(result, outputFile);
         }
     }
 }
