@@ -64,12 +64,18 @@ public class EnhancedDebugger {
      * @param handler プレークポイントがヒットした場合の処理
      */
     public void handleAtBreakPoint(String fqcn, int line, BreakpointHandler handler) {
+        handleAtBreakPoint(fqcn, Collections.singletonList(line), handler);
+    }
+
+    public void handleAtBreakPoint(String fqcn, List<Integer> lines, BreakpointHandler handler) {
         //ロード済みのクラスに対しbreakPointを設定
         EventRequestManager manager = vm.eventRequestManager();
         //通常は一つのはず
         List<ReferenceType> loaded = vm.classesByName(fqcn);
         for (ReferenceType rt : loaded) {
-            setBreakpointIfLoaded(rt, manager, line);
+            for(int line : lines) {
+                setBreakpointIfLoaded(rt, manager, line);
+            }
         }
 
         //未ロードのクラスがロードされたタイミングを監視
@@ -96,7 +102,9 @@ public class EnhancedDebugger {
                     if (ev instanceof ClassPrepareEvent) {
                         ReferenceType ref = ((ClassPrepareEvent) ev).referenceType();
                         if (ref.name().equals(fqcn)) {
-                            setBreakpointIfLoaded(ref, manager, line);
+                            for(int line : lines) {
+                                setBreakpointIfLoaded(ref, manager, line);
+                            }
                         }
                         vm.resume();
                         continue;
