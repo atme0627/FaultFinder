@@ -92,4 +92,7 @@ public class FileUtil {
         Path p = Paths.get(dir);
         return  Files.exists(p);
     }
+
+    public static void initFile(File outputFile) {
+    }
 }
