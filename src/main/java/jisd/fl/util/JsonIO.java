@@ -8,28 +8,17 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.LineElementName;
 import jisd.fl.util.analyze.MethodElementName;
 
 
 import java.io.File;
 
 public class JsonIO {
-    public static void exportSuspExpr(SuspiciousExpression root, File output){
+    public static void export(Object obj, File output){
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.enable(SerializationFeature.INDENT_OUTPUT);
-            mapper.writeValue(output, root);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to export to JSON", e);
-        }
-    }
-
-    public static void exportCoverage(CoverageCollection coverage, File output){
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
-            mapper.writeValue(output, coverage);
+            mapper.writeValue(output, obj);
         } catch (Exception e) {
             throw new RuntimeException("Failed to export to JSON", e);
         }

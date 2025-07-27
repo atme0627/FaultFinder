@@ -39,7 +39,7 @@ class ProbeTest {
             SuspiciousExpression treeRoot = pfs.run(2000);
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/CalcTest.json");
-            JsonIO.exportSuspExpr(treeRoot, output);
+            JsonIO.export(treeRoot, output);
         }
     }
 
@@ -60,7 +60,7 @@ class ProbeTest {
             SuspiciousExpression treeRoot = pfs.run(2000);
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest.json");
-            JsonIO.exportSuspExpr(treeRoot, output);
+            JsonIO.export(treeRoot, output);
         }
 
         @Test
@@ -68,7 +68,7 @@ class ProbeTest {
             File input = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest.json");
             SuspiciousExpression loadedFromJson = SuspiciousExpression.loadFromJson(input);
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest2.json");
-            JsonIO.exportSuspExpr(loadedFromJson, output);
+            JsonIO.export(loadedFromJson, output);
             assertTrue(FileUtils.contentEquals(input, output), "File contents should match");
 
         }
@@ -91,7 +91,7 @@ class ProbeTest {
             SuspiciousExpression treeRoot = pfs.run(2000);
 
             File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/LoopTest1.json");
-            JsonIO.exportSuspExpr(treeRoot, output);
+            JsonIO.export(treeRoot, output);
         }
     }
 }

@@ -35,8 +35,9 @@ public class JavaParserUtil {
         Path p = targetClass.getFilePath();
         try {
             return StaticJavaParser.parse(p);
-        }
-        catch (IOException e) {
+        } catch (NoSuchFileException e){
+            throw e;
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

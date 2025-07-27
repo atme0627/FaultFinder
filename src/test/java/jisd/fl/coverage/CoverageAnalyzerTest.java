@@ -50,7 +50,7 @@ class CoverageAnalyzerTest {
         void jsonExportTest(){
             Path projRoot = Paths.get("").toAbsolutePath();
             File f = new File(projRoot + "/src/test/resources/json/coverage/ConditionalTest.json");
-            JsonIO.exportCoverage(cov, f);
+            JsonIO.export(cov, f);
         }
 
         @Test

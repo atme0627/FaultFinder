@@ -157,7 +157,8 @@ public class EnhancedDebugger {
         try {
             List<com.sun.jdi.Location> bpLocs = rt.locationsOfLine(line);
             if (bpLocs.isEmpty()) {
-                throw new IllegalArgumentException("line " + line + " at " + rt.name() + " is not found.");
+                System.err.println("Cannot set BreakPoint at line " + line + " at " + rt.name() + ".");
+                return;
             } else {
                 //bpLocsには指定した行に属する要素が複数含まれ、
                 //先頭の要素が行内で一番初めに実行されるものとは限らない
@@ -246,9 +247,9 @@ public class EnhancedDebugger {
 
     static public String getFqmn(Method m) {
         StringBuilder n = new StringBuilder(m.toString());
-        n.setCharAt(m.toString().lastIndexOf("."), '#');
+        n.setCharAt(m.toString().split("\\(")[0].lastIndexOf("."), '#');
         if (n.toString().contains("<init>")) {
-            String constructorName = n.substring(n.lastIndexOf(".") + 1, n.indexOf("#"));
+            String constructorName = n.substring(n.toString().split("\\(")[0].lastIndexOf(".") + 1, n.indexOf("#"));
             n.replace(n.indexOf("#") + 1, n.indexOf("("), constructorName);
         }
         if((n.toString().contains("<clinit>"))){
