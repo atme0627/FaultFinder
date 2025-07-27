@@ -126,6 +126,18 @@ public abstract class AbstractProbe {
             //対象の変数に値の変化が起きている行の特定
             List<Integer> valueChangingLines = valueChangingLine(vi);
 
+            //実行しているメソッドを取得
+            MethodElement locateMethodElement;
+            try {
+                locateMethodElement = MethodElement.getMethodElementByName(vi.getLocateMethodElement());
+            } catch (NoSuchFileException e) {
+                throw new RuntimeException(e);
+            }
+            //対象の変数を定義している行を追加
+            valueChangingLines.addAll(locateMethodElement
+                    .findLocalVarDeclaration(vi.getSimpleVariableName())
+                    .stream().map(vd -> vd.getRange().get().begin.line).toList());
+
             /* 1a. すでに定義されていた変数に代入が行われたパターン */
             //代入の実行後にactualの値に変化している行の特定(ない場合あり)
             List<TracedValue> changeToActualLines = valueChangedToActualLine(tracedValues, valueChangingLines, vi.getActualValue());
@@ -143,37 +155,13 @@ public abstract class AbstractProbe {
                 return Optional.empty();
             }
 
-            /* 1b. 宣言と同時に行われた初期化によってactualの値を取るパターン */
-            //初期化の時点でその値が代入されている
-            //変数が存在し、宣言と同時に初期化がされている時点で、これを満たすことにする
-
-            //実行しているメソッドを取得
-            MethodElement locateMethodElement;
-            try {
-                locateMethodElement = MethodElement.getMethodElementByName(vi.getLocateMethodElement());
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-
-            //targetVariableのVariableDeclaratorを特定
-            //ここは必要なくなる予定
-            List<VariableDeclarator> vds = locateMethodElement.findLocalVarDeclaration(vi.getSimpleVariableName());
-            boolean isThereVariableDeclaration = !vds.isEmpty();
-            if (isThereVariableDeclaration) {
-                int varDeclarationLine = vds.get(0).getBegin().get().line;
-                return Optional.of(resultIfAssigned(varDeclarationLine, vi));
-            }
-
             /* 2. その変数が引数由来で、かつメソッド内で上書きされていないパターン */
             //初めて変数が観測された時点ですでにactualの値を取っている
-            TracedValue firstMatchedLine = tracedValues.get(0);
-            if (vi.getActualValue().equals(firstMatchedLine.value)) {
-                return Optional.of(resultIfNotAssigned(vi));
-            }
+            return resultIfNotAssigned(vi);
 
             /* 3. throw内などブレークポイントが置けない行で、代入が行われているパターン */
-            System.err.println("There is no value which same to actual.");
-            return Optional.empty();
+//            System.err.println("There is no value which same to actual.");
+//            return Optional.empty();
         }
     }
 
@@ -308,10 +296,16 @@ public abstract class AbstractProbe {
      * ...
      * }
      */
-    private SuspiciousArgument resultIfNotAssigned(SuspiciousVariable suspVar) {
+    private Optional<SuspiciousExpression> resultIfNotAssigned(SuspiciousVariable suspVar) {
         //実行しているメソッド名を取得
         MethodElementName locateMethodElementName = suspVar.getLocateMethodElement();
-        return SuspiciousArgument.searchSuspiciousArgument(locateMethodElementName, suspVar);
+        Optional<SuspiciousArgument> result = SuspiciousArgument.searchSuspiciousArgument(locateMethodElementName, suspVar);
+        if(result.isEmpty()){
+            return Optional.empty();
+        }
+        else {
+            return Optional.of(result.get());
+        }
     }
 
 
