@@ -1,5 +1,6 @@
 package jisd.fl.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +37,16 @@ public class JsonIO {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static <T> T importFromJson(File input, TypeReference<T> typeReference){
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(input, typeReference);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public static class CodeElementNameKeyDeserializer extends KeyDeserializer {

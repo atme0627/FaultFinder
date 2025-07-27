@@ -1,24 +1,23 @@
 package jisd.fl.probe.info;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.*;
 import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.Objects;
 
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
-        property = "type"
-)
-
-public class SuspiciousVariable { //ローカル変数の場合のみ
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class SuspiciousVariable {
+    //ローカル変数の場合のみ
     private final MethodElementName failedTest;
+    @JsonProperty("locateMethodElement")
     private final MethodElementName locateMethod;
+    @JsonProperty("simpleVariableName")
     private final String variableName;
+    @JsonProperty("primitive")
     private final boolean isPrimitive;
+    @JsonProperty("field")
     private final boolean isField;
+    @JsonProperty("array")
     private final boolean isArray;
     private final int arrayNth;
     private final String actualValue;

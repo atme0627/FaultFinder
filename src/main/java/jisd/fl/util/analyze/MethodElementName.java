@@ -1,5 +1,8 @@
 package jisd.fl.util.analyze;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -16,12 +19,24 @@ import java.util.stream.Collectors;
 
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MethodElementName implements CodeElementName{
     @NotNull
     final public String packageName;
     @NotBlank
     final public String className;
     final public String methodSignature;
+
+    @JsonCreator
+    public MethodElementName(
+            @JsonProperty("packageName") String packageName,
+            @JsonProperty("className") String className,
+            @JsonProperty("methodSignature") String methodSignature
+    ) {
+        this.packageName = packageName;
+        this.className = className;
+        this.methodSignature = normalizeMethodSignature(methodSignature);
+    }
 
     //メソッド名は一応あってもなくても良い
     //ex1.) sample.demo
@@ -36,7 +51,7 @@ public class MethodElementName implements CodeElementName{
         //with method name
         if(fullyQualifiedName.contains("#")){
             fqClassName = fullyQualifiedName.split("#")[0];
-            methodSignature = fullyQualifiedName.split("#")[1];
+            methodSignature = normalizeMethodSignature(fullyQualifiedName.split("#")[1]);
         }
         else {
             fqClassName = fullyQualifiedName;
@@ -63,12 +78,6 @@ public class MethodElementName implements CodeElementName{
         this.packageName = packageName;
         this.className = className;
         this.methodSignature =  "<NO METHOD DATA>()";
-    }
-
-    public MethodElementName(String packageName, String className, @NotBlank String methodSignature){
-        this.packageName = packageName;
-        this.className = className;
-        this.methodSignature = methodSignature;
     }
 
     public MethodElementName(ClassOrInterfaceDeclaration cd){
@@ -174,5 +183,27 @@ public class MethodElementName implements CodeElementName{
     @Override
     public String toString(){
         return this.getFullyQualifiedMethodName();
+    }
+
+    private String normalizeMethodSignature(String methodSignature){
+        String shortMethodName = methodSignature.split("\\(")[0];
+        String[] args = methodSignature.substring(methodSignature.indexOf("(") + 1, methodSignature.indexOf(")")).split(",");
+        if(args.length == 1 && args[0].isEmpty()) return methodSignature;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(shortMethodName);
+        sb.append("(");
+        for(String arg : args){
+            if(!arg.contains(".")) {
+                sb.append(arg);
+            }
+            else {
+                sb.append(arg.substring(arg.lastIndexOf(".") + 1));
+            }
+            sb.append(", ");
+        }
+        sb.delete(sb.length() - 2, sb.length());
+        sb.append(")");
+        return sb.toString();
     }
 }
