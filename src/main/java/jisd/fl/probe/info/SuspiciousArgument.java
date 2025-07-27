@@ -8,6 +8,7 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.sun.jdi.*;
@@ -375,8 +376,15 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
     protected Expression extractExpr(boolean deleteParentNode) {
         int methodCallCount = stmt.findAll(MethodCallExpr.class).size() + stmt.findAll(ObjectCreationExpr.class).size();
+        if(isAssert(stmt)) methodCallCount--;
         int nthCallInLine = methodCallCount - this.CallCountAfterTargetInLine;
-        if(nthCallInLine <= 0) throw new RuntimeException("something is wrong");
+        if(nthCallInLine <= 0) {
+            if(nthCallInLine == 0 && isAssert(stmt)) {
+                nthCallInLine = 1;
+            } else {
+                throw new RuntimeException("something is wrong");
+            }
+        }
 
         Expression result;
         List<Expression> calls = new ArrayList<>();
@@ -402,10 +410,15 @@ public class SuspiciousArgument extends SuspiciousExpression {
         return result;
     }
 
+    //assert文はMethodExitが起きず、例外で終わることによるCallCountAfterTargetInLine
+    //のずれ解消のための処置
+    public boolean isAssert(Statement stmt){
+        return stmt.toString().startsWith("assert");
+    }
     /**
      * ある変数がその値を取る原因が呼び出し元の引数のあると判明した場合に使用
      */
-    static public SuspiciousArgument searchSuspiciousArgument(MethodElementName calleeMethodName, SuspiciousVariable suspVar){
+    static public Optional<SuspiciousArgument> searchSuspiciousArgument(MethodElementName calleeMethodName, SuspiciousVariable suspVar){
         //Debugger生成
         String main = TestUtil.getJVMMain(suspVar.getFailedTest());
         String options = TestUtil.getJVMOption();
@@ -431,17 +444,21 @@ public class SuspiciousArgument extends SuspiciousExpression {
                     throw new RuntimeException(e);
                 }
 
-
                 //調査対象の変数がactualValueをとっているか確認
-                Value argValue = topFrame.getValue(topFrame.visibleVariableByName(suspVar.getSimpleVariableName()));
-                if(!argValue.toString().equals(suspVar.getActualValue())) return;
-
+                LocalVariable topVar = topFrame.visibleVariableByName(suspVar.getSimpleVariableName());
+                if(topVar == null) return;
+                Value argValue = topFrame.getValue(topVar);
+                if(!getValueString(argValue).equals(suspVar.getActualValue())) return;
                 //対象の引数のインデックスを取得
                 List<LocalVariable> args = mEntry.method().arguments();
                 for(int idx = 0; idx < args.size(); idx++){
                     if(args.get(idx).name().equals(suspVar.getSimpleVariableName())){
                         argIndex[0] = idx;
                     }
+                }
+                //引数に含まれない場合
+                if(argIndex[0] == -1){
+                    return;
                 }
 
                 com.sun.jdi.Location callerLoc = callerFrame.location();
@@ -464,9 +481,10 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
         //nullチェック
         if(locateMethod[0] == null || locateLine[0] == 0 || argIndex[0] == -1){
-            throw new RuntimeException("Cannot find target argument of caller method. \n" + suspVar);
+            System.err.println("Cannot find target argument of caller method. (may not be argument)\n" + suspVar);
+            return Optional.empty();
         }
-        return new SuspiciousArgument(
+        return Optional.of(new SuspiciousArgument(
                 suspVar.getFailedTest(),
                 locateMethod[0],
                 locateLine[0],
@@ -474,7 +492,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
                 calleeMethodName,
                 argIndex[0],
                 callCountAfterTarget[0]
-        );
+        ));
     }
 
     static private int countMethodCallAfterTarget(VirtualMachine vm, MethodEntryEvent mEntry) throws InterruptedException {
@@ -500,8 +518,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
         //この行の終わりを検知するためstepOverRequestを設置
         StepRequest stepOverReq = EnhancedDebugger.createStepOverRequest(manager, thisThread);
-        //その後のメソッド呼び出し回数をカウントするためのMethodEntryRequest
-        MethodEntryRequest mEntry2 = EnhancedDebugger.createMethodEntryRequest(manager, thisThread);
+        //その後のメソッド呼び出し回数をカウントするためのMethodExitRequest
+        MethodExitRequest mExit = EnhancedDebugger.createMethodExitRequest(manager, thisThread);
 
         //一旦resumeして、内部ループでMethodEntry / stepOverを待つ
         vm.resume();
@@ -511,9 +529,10 @@ public class SuspiciousArgument extends SuspiciousExpression {
             EventSet es = vm.eventQueue().remove();
             for (Event ev : es) {
                 //メソッド呼び出し回数をカウント
-                if (ev instanceof MethodEntryEvent) {
-                    MethodEntryEvent mee = (MethodEntryEvent) ev;
-                    if(getCallStackDepth(mee.thread()) == depthBeforeCall + 1) result++;
+                if (ev instanceof MethodExitEvent) {
+                    MethodExitEvent mee = (MethodExitEvent) ev;
+
+                    if(getCallStackDepth(mee.thread()) == depthBeforeCall) result++;
                     vm.resume();
                     continue;
                 }
@@ -526,7 +545,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         }
 
         stepOverReq.disable();
-        mEntry2.disable();
+        mExit.disable();
         return result;
     }
 
