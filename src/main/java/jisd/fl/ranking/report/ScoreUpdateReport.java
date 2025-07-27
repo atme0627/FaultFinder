@@ -1,7 +1,6 @@
 package jisd.fl.ranking.report;
 
 import jisd.fl.ranking.FLRankingElement;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +37,7 @@ public class ScoreUpdateReport {
 
         // ヘッダーの生成
         String header = String.format("| %-" + classLength + "s | %-" + elementLength + "s | %-18s |", "CLASS NAME", "ELEMENT NAME", "OLD -> NEW");
-        String partition = StringUtils.repeat("=", header.length());
+        String partition = "=".repeat(header.length());
 
         System.out.println(partition);
         System.out.println(header);

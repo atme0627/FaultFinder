@@ -4,7 +4,6 @@ import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.analyze.CodeElementName;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,10 +48,10 @@ public class FLRanking {
         int methodLength = shortMethodNames.stream().map(String::length).max(Integer::compareTo).get();
 
         String header = "|      | RANK |" +
-                StringUtils.repeat(' ', classLength - "CLASS NAME".length()) + " CLASS NAME " +
-                "|" + StringUtils.repeat(' ', methodLength - "METHOD NAME".length()) + " METHOD NAME " +
+                " ".repeat(classLength - "CLASS NAME".length()) + " CLASS NAME " +
+                "|" + " ".repeat(methodLength - "METHOD NAME".length()) + " METHOD NAME " +
                 "| SUSP SCORE |";
-        String partition = StringUtils.repeat('=', header.length());
+        String partition = "=".repeat(header.length());
 
         System.out.println("[  SBFL RANKING  ]");
         System.out.println(partition);
@@ -82,8 +81,8 @@ public class FLRanking {
                 coloerEnd = "\u001b[00m";
             }
             System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
-                    StringUtils.leftPad(shortClassNames.get(i), classLength) + " | " +
-                    StringUtils.leftPad(shortMethodNames.get(i), methodLength) + " | " +
+                    shortClassNames.get(i) + " | " +
+                    shortMethodNames.get(i) + " | " +
                     String.format("  %.4f  ", element.getSuspiciousnessScore()) + " |" + coloerEnd);
             previousRank = rank;
         }

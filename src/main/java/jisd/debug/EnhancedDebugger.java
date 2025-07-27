@@ -8,14 +8,10 @@ import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
-import jisd.fl.util.analyze.MethodElementName;
-import jisd.fl.util.analyze.MethodElement;
-import org.apache.commons.lang3.tuple.Pair;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.NoSuchFileException;
 import java.util.*;
 
 
@@ -58,55 +54,6 @@ public class EnhancedDebugger {
         catch (VMStartException e){
             return createVM(main, options);
         }
-    }
-
-    //TODO: そのメソッドの呼び出しメソッドが一つしかない場合しか考慮できてない
-    public Pair<Integer, MethodElement> getCallerMethod(String fqmn) {
-
-        Pair<Integer, MethodElement> result = null;
-        EventRequestManager manager = vm.eventRequestManager();
-        MethodEntryRequest methodEntryRequest = manager.createMethodEntryRequest();
-        methodEntryRequest.addClassFilter(fqmn.split("#")[0]);
-        methodEntryRequest.setSuspendPolicy(EventRequest.SUSPEND_ALL);
-        methodEntryRequest.enable();
-
-        run();
-
-        EventQueue queue = vm.eventQueue();
-        while (true) {
-            try {
-                EventSet eventSet = queue.remove();
-                for (Event ev : eventSet) {
-                    if (ev instanceof MethodEntryEvent) {
-                        MethodEntryEvent mEntry = (MethodEntryEvent) ev;
-                        //ターゲットのメソッドでない場合continue
-                        String targetFqmn = getFqmn(mEntry.method());
-                        if (!targetFqmn.equals(fqmn)) continue;
-
-                        //呼び出しメソッドを取得
-                        ThreadReference thread = mEntry.thread();
-                        List<StackFrame> frames = thread.frames();
-                        com.sun.jdi.Location callerLoc = frames.get(1).location();
-                        MethodElementName callerMethodElementName = new MethodElementName(getFqmn(callerLoc.method()));
-                        MethodElement callerMethodElement;
-                        try {
-                            callerMethodElement = MethodElement.getMethodElementByName(callerMethodElementName);
-                        } catch (NoSuchFileException e) {
-                            throw new RuntimeException(e);
-                        }
-                        result = Pair.of(callerLoc.lineNumber(), callerMethodElement);
-                        methodEntryRequest.disable();
-                        break;
-                    }
-                }
-                eventSet.resume();
-            } catch (VMDisconnectedException | InterruptedException e) {
-                break;
-            } catch (IncompatibleThreadStateException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return result;
     }
 
     /**

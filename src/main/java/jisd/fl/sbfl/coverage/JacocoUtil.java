@@ -1,24 +1,15 @@
 package jisd.fl.sbfl.coverage;
 
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.TestLauncherForJacocoAPI;
-import org.apache.commons.lang3.tuple.Pair;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.ICoverageVisitor;
 import org.jacoco.core.data.ExecutionDataStore;
-import org.jacoco.core.data.SessionInfoStore;
-import org.jacoco.core.instr.Instrumenter;
-import org.jacoco.core.runtime.IRuntime;
-import org.jacoco.core.runtime.LoggerRuntime;
-import org.jacoco.core.runtime.RuntimeData;
 import org.jacoco.core.tools.ExecFileLoader;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BooleanSupplier;
 
 public class JacocoUtil {
 
@@ -61,32 +52,4 @@ public class JacocoUtil {
         }
     }
 
-    private InputStream getTargetClass(final String name) {
-        final String resource = '/' + name.replace('.', '/') + ".class";
-        return getClass().getResourceAsStream(resource);
-    }
-
-    public Pair<Boolean, ExecutionDataStore> execTestCaseWithJacocoAPI(String testMethodName) throws Exception {
-        String testLauncherName = TestLauncherForJacocoAPI.class.getName();
-
-        final IRuntime runtime = new LoggerRuntime();
-        final Instrumenter instrumenter = new Instrumenter(runtime);
-        InputStream originalTestLauncher = getTargetClass(testLauncherName);
-        final byte[] instrumentedTestLauncher = instrumenter.instrument(originalTestLauncher, testLauncherName);
-        originalTestLauncher.close();
-        final RuntimeData data = new RuntimeData();
-        runtime.startup(data);
-
-        final MemoryClassLoader classLoader = new MemoryClassLoader();
-        classLoader.addDefinition(testLauncherName, instrumentedTestLauncher);
-        final Class<?> testLauncher = classLoader.loadClass(testLauncherName);
-        final BooleanSupplier testLauncherInstance = (BooleanSupplier) testLauncher.getConstructor(String.class).newInstance(testMethodName);
-        boolean isTestPassed = testLauncherInstance.getAsBoolean();
-
-        final ExecutionDataStore executionData = new ExecutionDataStore();
-        final SessionInfoStore sessionInfos = new SessionInfoStore();
-        data.collect(executionData, sessionInfos, false);
-        runtime.shutdown();
-        return Pair.of(isTestPassed, executionData);
-    }
 }

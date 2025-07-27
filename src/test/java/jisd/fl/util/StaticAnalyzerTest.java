@@ -3,7 +3,6 @@ package jisd.fl.util;
 import com.github.javaparser.Range;
 import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
@@ -61,25 +60,6 @@ class StaticAnalyzerTest {
         }
     }
 
-    @Nested
-    class getRangeOfAllMethodsTest {
-        @Test
-        void simpleCase(){
-            MethodElementName targetClass = new MethodElementName("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase");
-            try {
-                Map<String, Pair<Integer, Integer>> actual = StaticAnalyzer.getRangeOfAllMethods(targetClass);
-                assertThat(actual.entrySet(), hasSize(3));
-                assertThat(actual.entrySet(), hasItems(
-                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#SimpleCase()", Pair.of(8, 10)),
-                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#methodA()", Pair.of(12, 16)),
-                        Map.entry("StaticAnalyzerTest.getRangeOfAllMethodTest.SimpleCase#methodB()", Pair.of(18, 19))
-                ));
-
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 
     @Nested
     class getRangeOfStatementTest {

@@ -4,12 +4,10 @@ import com.github.javaparser.Range;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
-import com.github.javaparser.ast.nodeTypes.NodeWithRange;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -56,21 +54,6 @@ public class StaticAnalyzer {
             }
         }
         return result;
-    }
-
-    //返り値はmap: targetMethodName ex.) demo.SortTest#test1(int a) --> Pair(start, end)
-    public static Map<String, Pair<Integer, Integer>> getRangeOfAllMethods(MethodElementName targetClass) throws NoSuchFileException {;
-        return JavaParserUtil
-                .extractCallableDeclaration(targetClass)
-                .stream()
-                .collect(toMap(
-                    cd -> targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature(),
-                    StaticAnalyzer::getRangeOfNode
-                ));
-    }
-
-    private static Pair<Integer, Integer> getRangeOfNode(NodeWithRange<?> node){
-        return Pair.of(node.getBegin().get().line, node.getEnd().get().line);
     }
 
     public static Optional<Range> getRangeOfStatement(MethodElementName targetClass, int line) throws NoSuchFileException {

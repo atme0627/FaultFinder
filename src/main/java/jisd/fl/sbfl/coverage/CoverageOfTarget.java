@@ -6,7 +6,6 @@ import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.LineElementName;
 import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
-import org.apache.commons.lang3.StringUtils;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 import org.jacoco.core.analysis.IMethodCoverage;
@@ -118,30 +117,30 @@ public class CoverageOfTarget {
 
     private void printClassCoverage(PrintStream out){
         new TreeMap<>(classCoverage).forEach((name, s) -> {
-            out.println("|  " + StringUtils.leftPad(name.toString(), 100) +
-                    " | " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
-                    " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
-                    " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
-                    " | " + StringUtils.leftPad(String.valueOf(s.nf), 4) + " |");
+            out.println("|  " + name.toString() +
+                    " | " + String.valueOf(s.ep) +
+                    " | " + String.valueOf(s.ef) +
+                    " | " + String.valueOf(s.np) +
+                    " | " + String.valueOf(s.nf) + " |");
         });
     }
 
     private void printMethodCoverage(PrintStream out){
         int nameLength = maxLengthOfName(methodCoverage, true);
         out.println("[TARGET: " + targetClassName + "]");
-        String header = "| " + StringUtils.repeat(' ', nameLength - "METHOD NAME".length()) + " METHOD NAME " +
+        String header = "| " + " ".repeat(nameLength - "METHOD NAME".length()) + " METHOD NAME " +
                         "|  EP  |  EF  |  NP  |  NF  |";
-        String partition = StringUtils.repeat('=', header.length());
+        String partition = "=".repeat( header.length());
 
         out.println(partition);
         out.println(header);
         out.println(partition);
         new TreeMap<>(methodCoverage).forEach((name, s) -> {
-                    out.println("|  " + StringUtils.leftPad(name.getShortMethodName(), nameLength) +
-                                      " | " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
-                                      " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
-                                      " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
-                                      " | " + StringUtils.leftPad(String.valueOf(s.nf), 4) + " |");
+                    out.println("|  " + name.getShortMethodName() +
+                                      " | " + String.valueOf(s.ep) +
+                                      " | " + String.valueOf(s.ef) +
+                                      " | " + String.valueOf(s.np) +
+                                      " | " + String.valueOf(s.nf) + " |");
                 });
         out.println(partition);
         out.println();
@@ -150,7 +149,7 @@ public class CoverageOfTarget {
     private void printLineCoverage(PrintStream out){
         out.println("[TARGET: " + targetClassName + "]");
         String header = "| LINE ||  EP  |  EF  |  NP  |  NF  |";
-        String partition = StringUtils.repeat('=', header.length());
+        String partition = "=".repeat(header.length());
 
         out.println(partition);
         out.println(header);
@@ -158,10 +157,10 @@ public class CoverageOfTarget {
 
         new TreeMap<>(lineCoverage).forEach((line, s) -> {
             out.println( String.format("| %s |", line.compressedShortMethodName())+
-                    "| " + StringUtils.leftPad(String.valueOf(s.ep), 4) +
-                    " | " + StringUtils.leftPad(String.valueOf(s.ef), 4) +
-                    " | " + StringUtils.leftPad(String.valueOf(s.np), 4) +
-                    " | " + StringUtils.leftPad(String.valueOf(s.nf), 4) + " |");
+                    "| " + String.valueOf(s.ep) +
+                    " | " + String.valueOf(s.ef) +
+                    " | " + String.valueOf(s.np) +
+                    " | " + String.valueOf(s.nf) + " |");
         });
 
         out.println(partition);
