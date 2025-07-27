@@ -294,7 +294,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
     @Override
     protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime){
-        System.out.println(" >>> [DEBUG] Assignment");
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成

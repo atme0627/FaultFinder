@@ -257,7 +257,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
     @Override
     protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime){
-        System.out.println(" >>> [DEBUG] Argument");
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成

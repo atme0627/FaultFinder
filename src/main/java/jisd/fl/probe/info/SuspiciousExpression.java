@@ -106,6 +106,7 @@ public abstract class SuspiciousExpression {
 
     private Statement extractStmt(){
         try {
+
             return JavaParserUtil.getStatementByLine(locateMethod, locateLine).orElseThrow();
         } catch (NoSuchFileException e) {
             throw new RuntimeException("Class [" + locateMethod + "] is not found.");
