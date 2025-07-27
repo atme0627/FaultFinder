@@ -185,7 +185,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                         .orElseThrow();
 
                 //評価結果を比較
-                String evaluatedValue = frame.getValue(lvalue).toString();
+                String evaluatedValue = getValueString(frame.getValue(lvalue));
                 return evaluatedValue.equals(assignTarget.getActualValue());
             }
         } catch (IncompatibleThreadStateException e) {
@@ -193,8 +193,8 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         } catch (AbsentInformationException e){
             throw new RuntimeException("Something is wrong.");
         } catch (NoSuchElementException e){
-            throw new RuntimeException("Variable [" + assignTarget.getSimpleVariableName() +
-                    "] is not found in " + assignTarget.getLocateMethodElement());
+            //値がそもそも存在しない --> 目的の実行ではない
+            return false;
         }
     }
 

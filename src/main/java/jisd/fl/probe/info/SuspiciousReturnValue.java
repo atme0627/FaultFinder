@@ -75,9 +75,6 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
             //この具象クラスではステップイベントの通知タイミングで、今調査していた行が調べたい行だったかを確認
             StepRequest stepReq = EnhancedDebugger.createStepOutRequest(manager, thread);
 
-            //一旦 resume して、内部ループで MethodExit／Step を待つ
-            vm.resume();
-
             //直前に通知されたMethodExitEventを保持
             //StepEventでreturnから返った時にこのMEEを使ってreturnのactualValueを手にいれる。
             MethodExitEvent recentMee = null;
@@ -86,7 +83,8 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
             // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
             // 再帰呼び出し含め、その行で直接呼ばれたメソッドのみ取ってこれる
             int depthBeforeCall = getCallStackDepth(thread);
-
+            //一旦 resume して、内部ループで MethodExit／Step を待つ
+            vm.resume();
             boolean done = false;
             while (!done) {
                 EventSet es = vm.eventQueue().remove();
