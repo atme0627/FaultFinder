@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Set;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.JsonIO;
-import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.MethodElementName;
 
 public class Coverage {
@@ -58,7 +57,7 @@ public class Coverage {
 
                 ca.analyze(testClassName);
             }
-            JsonIO.exportCoverage(ca.result(), outputFile);
+            JsonIO.export(ca.result(), outputFile);
             ca.result().free();
         }
 
