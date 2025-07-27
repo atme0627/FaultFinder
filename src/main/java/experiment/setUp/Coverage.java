@@ -4,6 +4,8 @@ import experiment.defect4j.Defects4jUtil;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -11,34 +13,42 @@ import java.util.List;
 import java.util.Set;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.JsonIO;
+import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.MethodElementName;
 
 public class Coverage {
     static Dotenv dotenv = Dotenv.load();
-    static Path d4jDir = Paths.get(dotenv.get("D4J_DIR"));
     static Path expDir = Paths.get(dotenv.get("EXP_20250726_DIR"));
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, IOException {
         String project = "Lang";
-        int number0fBugs = 61;
+        int numberOfBugs = 61;
         List<Integer> duplicatedBugs = List.of(2, 18, 25, 48);
 
-        for(int bugId = 1; bugId <= 1; bugId++){
+        boolean CACHE = false;
+
+        for(int bugId = 34; bugId <= numberOfBugs; bugId++){
             if(duplicatedBugs.contains(bugId)) continue;
             File outputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/coverage.json").toFile();
 
             System.out.println("Coverage measurement: [PROJECT] " + project + "  [BUG ID] " + bugId);
 
-            if(outputFile.exists() && outputFile.length() != 0) {
-                System.out.println("Already generated.");
-                continue;
+            if(CACHE) {
+                if (outputFile.exists() && outputFile.length() != 0) {
+                    System.out.println("Already generated.");
+                    continue;
+                }
+            }
+            else {
+                Path path = outputFile.toPath();
+                Files.deleteIfExists(path);
+                Files.createFile(path);
             }
 
             Defects4jUtil.changeTargetVersion(project, bugId);
-            Defects4jUtil.CompileBuggySrc(project, bugId);
+            Defects4jUtil.compileBuggySrc(project, bugId);
             List<MethodElementName> testMethods = Defects4jUtil.getFailedTestMethods(project, bugId);
-
-            CoverageAnalyzer ca = new CoverageAnalyzer();
+            CoverageAnalyzer ca = new CoverageAnalyzer(new HashSet<>(testMethods));
             Set<String> executed = new HashSet<>();
             for(MethodElementName testMethodName : testMethods) {
                 String testClassName = testMethodName.getFullyQualifiedClassName();
@@ -49,6 +59,7 @@ public class Coverage {
                 ca.analyze(testClassName);
             }
             JsonIO.exportCoverage(ca.result(), outputFile);
+            ca.result().free();
         }
 
         Thread.sleep(100);
