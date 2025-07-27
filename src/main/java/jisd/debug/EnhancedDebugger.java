@@ -165,7 +165,7 @@ public class EnhancedDebugger {
         try {
             List<com.sun.jdi.Location> bpLocs = rt.locationsOfLine(line);
             if (bpLocs.isEmpty()) {
-                System.err.println("Cannot set BreakPoint at line " + line + " at " + rt.name() + ".");
+                //System.err.println("Cannot set BreakPoint at line " + line + " at " + rt.name() + ".");
                 return;
             } else {
                 //bpLocsには指定した行に属する要素が複数含まれ、
@@ -256,14 +256,39 @@ public class EnhancedDebugger {
     static public String getFqmn(Method m) {
         StringBuilder n = new StringBuilder(m.toString());
         n.setCharAt(m.toString().split("\\(")[0].lastIndexOf("."), '#');
+        if((n.toString().contains("<clinit>"))){
+            return n.substring(0, n.indexOf("#"));
+        }
         if (n.toString().contains("<init>")) {
             String constructorName = n.substring(n.toString().split("\\(")[0].lastIndexOf(".") + 1, n.indexOf("#"));
             n.replace(n.indexOf("#") + 1, n.indexOf("("), constructorName);
         }
-        if((n.toString().contains("<clinit>"))){
-            return n.substring(0, '#');
+
+        return n.toString().split("\\(")[0] + normalizeMethodSignature("(" + n.toString().split("\\(")[1]);
+    }
+
+    public static String normalizeMethodSignature(String methodSignature){
+        String shortMethodName = methodSignature.split("\\(")[0];
+        String[] args = methodSignature.substring(methodSignature.indexOf("(") + 1, methodSignature.indexOf(")")).split(",");
+        if(args.length == 1 && args[0].isEmpty()) return methodSignature;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(shortMethodName);
+        sb.append("(");
+        for(String arg : args){
+            arg = arg.trim();
+            if(!arg.contains(".")) {
+                sb.append(arg);
+            }
+            else {
+                sb.append(arg.substring(arg.lastIndexOf(".") + 1));
+            }
+            sb.append(", ");
         }
-        return n.toString();
+
+        sb.delete(sb.length() -2, sb.length());
+        sb.append(")");
+        return sb.toString();
     }
 
 
