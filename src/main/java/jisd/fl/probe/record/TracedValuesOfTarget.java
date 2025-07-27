@@ -20,6 +20,14 @@ public class TracedValuesOfTarget extends TracedValueCollection {
         this.record = convertValuesOfTarget(valuesOfTarget, locationAtTime);
     }
 
+    private TracedValuesOfTarget(List<TracedValue> record, SuspiciousVariable target){
+        super(record);
+        this.target = target;
+    }
+    public static TracedValueCollection of(List<TracedValue> record, SuspiciousVariable target){
+        return new TracedValuesOfTarget(record, target);
+    }
+
     private List<TracedValue> convertValuesOfTarget(List<ValueInfo> valuesOfTarget, Map<LocalDateTime, Location> locationAtTime){
         return  valuesOfTarget.stream()
                         .map(v -> convertValueInfo(v, locationAtTime.get(v.getCreatedAt())))

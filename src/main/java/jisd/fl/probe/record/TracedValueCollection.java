@@ -39,6 +39,7 @@ public abstract class TracedValueCollection {
     }
 
     protected List<TracedValue> convertValueInfo(ValueInfo vi, Location loc){
+        if(vi.getJValue() == null) return convertPrimitiveInfo(vi, loc);
         Type typeOfValue = vi.getJValue().type();
         //変数が配列の場合
         if(typeOfValue instanceof ArrayType){
