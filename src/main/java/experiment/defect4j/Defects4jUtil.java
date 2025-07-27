@@ -1,6 +1,7 @@
 package experiment.defect4j;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.util.FileUtil;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.LineElementName;
 import jisd.fl.util.analyze.MethodElementName;
@@ -11,8 +12,10 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -42,12 +45,16 @@ public class Defects4jUtil {
         execCmd(cmd);
     }
 
-    public static void CompileBuggySrc(String project, int bugId){
+    public static void compileBuggySrc(String project, int bugId){
+        FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
         String cmd = "defects4j compile -w " + getProjectDir(project, bugId, true);
+        execCmd(cmd);
+        cmd = "cp -r " + PropertyLoader.getTargetBinDir() + "/. " + PropertyLoader.getDebugBinDir();
+        execCmd(cmd);
+        cmd = "cp -r " + PropertyLoader.getTestBinDir() + "/. " + PropertyLoader.getDebugBinDir();
         execCmd(cmd);
     }
 
-    @Deprecated
     public static String getProjectDir(String project, int bugId, boolean buggy){
         return defects4jDir + "/" + project + "/" + project + "_" + bugId + (buggy ? "_buggy" : "_fixed");
     }
@@ -57,14 +64,19 @@ public class Defects4jUtil {
 
         String targetSrcDir = getProjectDir(project, bugId, true) + "/" + p.getProperty("d4j.dir.src.classes");
         String testSrcDir = getProjectDir(project, bugId, true) + "/" + p.getProperty("d4j.dir.src.tests");
-        String targetBinDir = getProjectDir(project, bugId, true) + "/target/classes";
-        String testBinDir = getProjectDir(project, bugId, true) + "/target/test-classes";
+        String targetBinDir = getProjectDir(project, bugId, true) + "/" + exportProperty(project, bugId, "dir.bin.classes");
+        String testBinDir = getProjectDir(project, bugId, true) + "/" + exportProperty(project, bugId, "dir.bin.tests");
 
         PropertyLoader.setProperty("targetSrcDir", targetSrcDir);
         PropertyLoader.setProperty("testSrcDir", testSrcDir);
         PropertyLoader.setProperty("testBinDir", testBinDir);
         PropertyLoader.setProperty("targetBinDir", targetBinDir);
         PropertyLoader.store();
+    }
+
+    private static String exportProperty(String project, int bugId, String key){
+        String cmd = "defects4j export -p " + key + " -w " + getProjectDir(project, bugId, true);
+        return execCmd(cmd);
     }
 
     public static List<MethodElementName> getFailedTestMethods(String project, int bugId){
@@ -74,6 +86,7 @@ public class Defects4jUtil {
         return new ArrayList<>(List.of(raw.split(",")))
                 .stream()
                 .map((s) -> s.replace("::", "#"))
+                .map(s -> s + "()")
                 .map(MethodElementName::new)
                 .collect(Collectors.toList());
     }
@@ -89,10 +102,22 @@ public class Defects4jUtil {
         return properties;
     }
 
-    private static void execCmd(String cmd){
+    private static String execCmd(String cmd){
         try {
             Process proc = Runtime.getRuntime().exec(cmd, null, defects4jDir);
-            proc.waitFor();
+            String line = null;
+//            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+//                while ((line = buf.readLine()) != null) System.err.println(line);
+//            }
+            StringBuilder output = new StringBuilder();
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) output.append(line).append("\n");
+            }
+            int exitCode = proc.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Process exited with code " + exitCode);
+            }
+            return output.toString().replace("\n", "");
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
