@@ -36,6 +36,7 @@ public  class TestUtil {
     }
 
     //-gつきでコンパイル
+    @Deprecated
     public static void compileForDebug(MethodElementName targetTestClass) {
         FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
         String classpath = "locallib/junit-dependency/*";
@@ -61,6 +62,36 @@ public  class TestUtil {
             throw new RuntimeException(e);
         }
     }
+    //現状外部ライブラリに非対応
+    //gradleなどでやる方法を検討
+    public static void compileForDebug() {
+        FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
+        String classpath = "'locallib/junit-dependency/*'";
+        String sourcepath = PropertyLoader.getTargetSrcDir() + ":" + PropertyLoader.getTestSrcDir();
+        String cmd = String.join(" ",
+                "javac",
+                "-g",
+                "-cp", classpath,
+                "-sourcepath ", sourcepath,
+                "-d ", PropertyLoader.getDebugBinDir(),
+                "$(find " +  PropertyLoader.getTargetSrcDir() + " " + PropertyLoader.getTestSrcDir() + " -name *.java)"
+        );
+        try {
+            ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd);
+            Process proc = pb.start();
+            proc.waitFor();
+            System.out.println("Success to compile " + PropertyLoader.getTargetSrcDir() + ".");
+            String line = null;
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = buf.readLine()) != null) System.err.println(line);
+            }
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) System.out.println(line);
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     //TestLauncherにjacoco agentをつけて起動
@@ -79,7 +110,10 @@ public  class TestUtil {
         // 2: テストが見つからないかつ--fail-if-no-testsが指定されている
         // 0: それ以外
         String cmd =
-                "java -javaagent:" + jacocoAgentPath + "=destfile='" + generatedFilePath + "'" +
+                "java " +
+                "--add-opens java.base/java.lang=ALL-UNNAMED " +
+                "--add-opens java.base/java.lang.reflect=ALL-UNNAMED " +
+                "-javaagent:" + jacocoAgentPath + "=destfile='" + generatedFilePath + "'" +
                 " -cp " + "./build/classes/java/main"
                         + ":" + debugBinDir
                         + ":'" + junitClassPath + "'"
@@ -151,7 +185,8 @@ public  class TestUtil {
             throw new RuntimeException(e);
         }
 
-        try (URLClassLoader testClassLoader = new URLClassLoader(url, Thread.currentThread().getContextClassLoader())){
+        ClassLoader original = Thread.currentThread().getContextClassLoader();
+        try (URLClassLoader testClassLoader = new URLClassLoader(url, original)){
             //ClassLoaderを切り替え
             Thread.currentThread().setContextClassLoader(testClassLoader);
             //対象のテストクラスをロード
@@ -176,6 +211,8 @@ public  class TestUtil {
 
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(original);
         }
     }
 
