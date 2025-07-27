@@ -102,7 +102,8 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                         if (mee.thread().equals(thread) && getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
                             MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                             int locateLine = mee.location().lineNumber();
-                            String actualValue = mee.returnValue().toString();
+                            String actualValue = getValueString(mee.returnValue());
+                            try {
                             SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                                     this.failedTest,
                                     invokedMethod,
@@ -110,6 +111,10 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                                     actualValue
                             );
                             resultCandidate.add(suspReturn);
+                            }
+                            catch (RuntimeException e){
+                            System.out.println("cannot create SuspiciousReturnValue: " + e.getMessage() + " at " + invokedMethod + " line:" + locateLine);
+                        }
                         }
                         vm.resume();
                     }
@@ -131,8 +136,8 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         //VMを実行し情報を収集
         eDbg.handleAtBreakPoint(this.locateMethod.getFullyQualifiedClassName(), this.locateLine, handler);
         if(result.isEmpty()){
-            throw new NoSuchElementException("Could not confirm [ "
-                    + getAssignTarget().getSimpleVariableName() + " == " + getAssignTarget().getActualValue()
+            System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
+                    + "(return value) == " + this.actualValue
                     + " ] on " + this.locateMethod + " line:" + this.locateLine);
         }
         return result;

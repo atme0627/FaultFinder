@@ -212,13 +212,14 @@ public abstract class SuspiciousExpression {
         }
         Map<LocalVariable, Value> localVals = frame.getValues(locals);
         localVals.forEach((lv, v) -> {
+            if(v == null) return;
             //配列の場合[0]のみ観測
             if(v instanceof ArrayReference ar){
                 if(ar.length() == 0) return;
                 result.add(new TracedValue(
                         LocalDateTime.MIN,
                         lv.name() + "[0]",
-                        ar.getValue(0).toString(),
+                        getValueString(ar.getValue(0)),
                         locateLine
                 ));
             }
@@ -226,7 +227,7 @@ public abstract class SuspiciousExpression {
             result.add(new TracedValue(
                     LocalDateTime.MIN,
                     lv.name(),
-                    v.toString(),
+                    getValueString(v),
                     locateLine
             ));
         });
@@ -240,7 +241,7 @@ public abstract class SuspiciousExpression {
                 result.add(new TracedValue(
                         LocalDateTime.MIN,
                         "this." + f.name(),
-                        thisObj.getValue(f).toString(),
+                        getValueString(thisObj.getValue(f)),
                         locateLine
                 ));
             }
@@ -253,7 +254,7 @@ public abstract class SuspiciousExpression {
             result.add(new TracedValue(
                     LocalDateTime.MIN,
                     "this." + f.name(),
-                    rt.getValue(f).toString(),
+                    getValueString(rt.getValue(f)),
                     locateLine
             ));
         }
@@ -305,5 +306,42 @@ public abstract class SuspiciousExpression {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String getValueString(Value v){
+        if(v == null) return "null";
+        if(v instanceof ObjectReference obj){
+            if(isPrimitiveWrapper(obj.referenceType())) {
+                try {
+                    Field valueField = obj.referenceType().fieldByName("value");
+                    Value primitiveValue = obj.getValue(valueField);
+                    return primitiveValue.toString();
+                } catch (Exception e) {
+                    return v.toString();
+                }
+            }
+            return v.toString();
+        }
+        return v.toString();
+    }
+
+    protected static boolean isPrimitiveWrapper(Type type) {
+        //プリミティブ型のラッパークラスの名前
+        final Set<String> WRAPPER_CLASS_NAMES = new HashSet<>(Arrays.asList(
+                Boolean.class.getName(),
+                Byte.class.getName(),
+                Character.class.getName(),
+                Short.class.getName(),
+                Integer.class.getName(),
+                Long.class.getName(),
+                Float.class.getName(),
+                Double.class.getName(),
+                Void.class.getName()
+        ));
+
+        if (type instanceof ClassType) {
+            return WRAPPER_CLASS_NAMES.contains(type.name());
+        }
+        return false;
     }
 }

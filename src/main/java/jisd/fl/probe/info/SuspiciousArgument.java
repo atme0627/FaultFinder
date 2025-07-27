@@ -176,14 +176,19 @@ public class SuspiciousArgument extends SuspiciousExpression {
                                 if (targetMethodName.contains(mee.method().name())) {
                                     MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                                     int locateLine = mee.location().lineNumber();
-                                    String actualValue = mee.returnValue().toString();
-                                    SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
-                                            this.failedTest,
-                                            invokedMethod,
-                                            locateLine,
-                                            actualValue
-                                    );
-                                    resultCandidate.add(suspReturn);
+                                    String actualValue = getValueString(mee.returnValue());
+                                    try {
+                                        SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
+                                                this.failedTest,
+                                                invokedMethod,
+                                                locateLine,
+                                                actualValue
+                                        );
+                                        resultCandidate.add(suspReturn);
+                                    }
+                                    catch (RuntimeException e){
+                                        System.out.println("cannot create SuspiciousReturnValue: " + e.getMessage() + " at " + invokedMethod + " line:" + locateLine);
+                                    }
                                 }
                             }
                         }
@@ -209,8 +214,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
         //VMを実行し情報を収集
         eDbg.handleAtBreakPoint(this.locateMethod.getFullyQualifiedClassName(), this.locateLine, handler);
         if(result.isEmpty()){
-            throw new NoSuchElementException("Could not confirm [ " + calleeMethodName
-                    + "(argment " + argIndex + ") == " + this.actualValue
+            System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
+                    + "(return value) == " + this.actualValue
                     + " ] on " + this.locateMethod + " line:" + this.locateLine);
         }
         return result;
@@ -220,7 +225,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         try {
             //対象の引数が目的の値を取っている
             List<Value> args = mEntry.thread().frame(0).getArgumentValues();
-            return args.size() > argIndex && args.get(argIndex).toString().equals(actualValue);
+            return args.size() > argIndex && getValueString(args.get(argIndex)).equals(actualValue);
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException("Target thread must be suspended.");
         }
