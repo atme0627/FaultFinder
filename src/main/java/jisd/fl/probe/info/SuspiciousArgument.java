@@ -469,6 +469,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
                 //複数回同じメソッドが呼ばれている場合も考慮
                 //目的のmethodEntryの後、何回methodが呼ばれるかを解析
                 mEntry.request().disable();
+                //この段階でリクエストは全てdisabledになっている必要がある。
+                //今は呼び出されたメソッドの中にいる。
                 callCountAfterTarget[0] = countMethodCallAfterTarget(vm, mEntry);
 
             } catch (AbsentInformationException e) {
@@ -532,7 +534,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
                 if (ev instanceof MethodExitEvent) {
                     MethodExitEvent mee = (MethodExitEvent) ev;
 
-                    if(getCallStackDepth(mee.thread()) == depthBeforeCall) result++;
+                    //meeのthreadは抜ける直前のもののため+1が必要
+                    if(getCallStackDepth(mee.thread()) == depthBeforeCall + 1) result++;
                     vm.resume();
                     continue;
                 }
