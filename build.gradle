@@ -17,17 +17,10 @@ repositories {
 dependencies {
     implementation(fileTree(dir: 'locallib', include: ['jisd-0.3.0_bata.jar']))
 
-    //junit4
-    // https://mvnrepository.com/artifact/junit/junit
-    //implementation 'junit:junit:4.13.2'
 
     //Junit5
     // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher
     implementation 'org.junit.platform:junit-platform-launcher:1.10.0'
-    // https://mvnrepository.com/artifact/org.junit.platform/junit-platform-engine
-    //implementation 'org.junit.platform:junit-platform-engine:1.10.0'
-    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine
-    //implementation 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     // https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine
     implementation 'org.junit.vintage:junit-vintage-engine:5.10.0'
 
@@ -36,18 +29,16 @@ dependencies {
 
     //parser
     implementation 'com.github.javaparser:javaparser-core:3.19.0'
-    implementation 'com.github.javaparser:javaparser-symbol-solver-core:3.19.0'
 
     //coverage
     // https://mvnrepository.com/artifact/org.jacoco/org.jacoco.core
     implementation 'org.jacoco:org.jacoco.core:0.8.12'
-    // https://mvnrepository.com/artifact/org.ow2.asm/asm
-    //implementation 'org.ow2.asm:asm:9.7.1'
 
-    //utility
+    //jackson
     implementation("com.fasterxml.jackson.core:jackson-core:2.18.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
     implementation('com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.2')
+
     //for test
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -63,34 +54,8 @@ dependencies {
     //.env
     implementation("io.github.cdimascio:dotenv-java:3.2.0")
 
-    //----for JISD -------------------------------------------
-    // https://mvnrepository.com/artifact/org.ow2.asm/asm
-    implementation 'org.ow2.asm:asm:9.0'
-
-    // https://mvnrepository.com/artifact/org.ow2.asm/asm-tree
-    implementation 'org.ow2.asm:asm-tree:9.0'
-
-    // https://mvnrepository.com/artifact/org.json/json
-    implementation 'org.json:json:20171018'
-
-    // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation 'commons-io:commons-io:2.8.0'
-
-    // jisdvis
-    implementation 'io.prometheus:simpleclient:0.11.0'
-    implementation 'io.prometheus:simpleclient_hotspot:0.11.0'
-    implementation 'io.prometheus:simpleclient_httpserver:0.11.0'
-    implementation 'io.prometheus:simpleclient_servlet:0.11.0'
-
-    // undertow server
-    implementation 'io.undertow:undertow-servlet:2.2.8.Final'
+    // undertow
     implementation 'org.jboss.resteasy:resteasy-undertow:4.5.12.Final'
-    implementation 'org.jboss.resteasy:resteasy-servlet-initializer:4.5.12.Final'
-
-    // jdiscript
-    // implementation files('./locallib//jdiscript/jdiscript/build/libs/jdiscript-0.9.0.jar')
-    // https://mvnrepository.com/artifact/org.jdiscript/jdiscript
-    implementation("org.jdiscript:jdiscript:0.9.0")
 }
 
 test {
