@@ -108,7 +108,7 @@ class ProbeTest {
         Path expDir = Paths.get(dotenv.get("EXP_20250726_DIR"));
 
         String project = "Lang";
-        int bugId = 3;
+        int bugId = 8;
 
         File inputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probeTargets.json").toFile();
         Defects4jUtil.changeTargetVersion(project, bugId);
