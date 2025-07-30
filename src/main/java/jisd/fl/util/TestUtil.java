@@ -33,6 +33,9 @@ public  class TestUtil {
                 + ":" + PropertyLoader.getJunitClassPaths();
     }
 
+    public static void compileForDebug(String targetTestClass) {
+        compileForDebug(new MethodElementName(targetTestClass));
+    }
     //-gつきでコンパイル
     @Deprecated
     public static void compileForDebug(MethodElementName targetTestClass) {

@@ -37,8 +37,12 @@ public class CoverageAnalyzer {
                       String execFileName,
                       boolean passed) {}
 
+    @Deprecated
     public void analyze(String tmp){
-        MethodElementName testClassName = new MethodElementName(tmp);
+        analyze(new MethodElementName(tmp));
+    }
+
+    public void analyze(MethodElementName testClassName){
         FileUtil.createDirectory(jacocoExecFilePath);
         Set<MethodElementName> testMethodNames = TestUtil.getTestMethods(testClassName);
         if(testMethodNames.isEmpty()) throw new RuntimeException("test method is not found. [CLASS] " + testMethodNames);

@@ -7,11 +7,13 @@ import jisd.fl.ranking.FLRankingElement;
 import jisd.fl.ranking.ScoreAdjustment;
 import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
 import jisd.fl.sbfl.Formula;
+import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.ranking.report.ScoreUpdateReport;
+import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.List;
 /**
@@ -31,6 +33,15 @@ public class FaultFinder {
     private final int rankingSize = 20;
     final Granularity granularity;
 
+    public FaultFinder(MethodElementName targetTestClassName){
+        this.granularity = Granularity.LINE;
+        Formula f = Formula.OCHIAI;
+        CoverageAnalyzer coverageAnalyzer = new CoverageAnalyzer();
+        coverageAnalyzer.analyze(targetTestClassName);
+        CoverageCollection sbflCoverage = coverageAnalyzer.result();
+        flRanking = new FLRanking(granularity);
+        calcSuspiciousness(sbflCoverage, granularity, f);
+    }
     public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
         this.granularity = granularity;
         flRanking = new FLRanking(granularity);
