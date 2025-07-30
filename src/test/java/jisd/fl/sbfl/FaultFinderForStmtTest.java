@@ -1,23 +1,21 @@
 package jisd.fl.sbfl;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.FaultFinderForStmt;
-import jisd.fl.probe.info.SuspiciousExpression;
+import jisd.fl.FaultFinder;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
+import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FaultFinderForStmtTest {
-    FaultFinderForStmt faultFinder;
+    FaultFinder faultFinder;
 
     @BeforeEach
     void init(){
@@ -32,7 +30,7 @@ public class FaultFinderForStmtTest {
         ca.analyze(testClassName);
         CoverageCollection coverageCollection = ca.result();
         // FaultFinderForStmtのインスタンス化
-        faultFinder = new FaultFinderForStmt(coverageCollection, Formula.OCHIAI);
+        faultFinder = new FaultFinder(coverageCollection, Granularity.LINE, Formula.OCHIAI);
     }
 
     @Test

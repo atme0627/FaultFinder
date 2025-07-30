@@ -1,7 +1,11 @@
 package jisd.fl;
 
+import jisd.fl.probe.Probe;
+import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.ranking.FLRanking;
 import jisd.fl.ranking.FLRankingElement;
+import jisd.fl.ranking.ScoreAdjustment;
+import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.CoverageOfTarget;
@@ -12,6 +16,7 @@ import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.ranking.report.ScoreUpdateReport;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.ToDoubleBiFunction;
 
@@ -212,5 +217,16 @@ public class FaultFinder {
         this.flRanking.setHighlightMethods(highlightMethods);
     }
 
-    
+
+    public void probe(SuspiciousVariable target){
+        Probe prb = new Probe(target);
+        probe(prb.run(2000));
+    }
+
+    public void probe(SuspiciousExpression causeTree){
+        TraceToScoreAdjustmentConverter converter = new TraceToScoreAdjustmentConverter(this.probeLambda, granularity);
+        List<ScoreAdjustment> adjustments = converter.toAdjustments(causeTree);
+        flRanking.adjustAll(adjustments);
+        printRanking(10);
+    }
 }
