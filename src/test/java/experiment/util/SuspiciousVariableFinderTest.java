@@ -1,6 +1,7 @@
 package experiment.util;
 
 import experiment.defect4j.Defects4jUtil;
+import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
@@ -8,6 +9,8 @@ import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +18,10 @@ class SuspiciousVariableFinderTest {
 
     @Test
     void find1() throws NoSuchFileException {
-        PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
-        PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/test/java");
+        Dotenv dotenv = Dotenv.load();
+        Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
+        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
+        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
 
         MethodElementName testMethodName = new MethodElementName("org.sample.coverage.ConditionalTest#testXEqualY()");
 

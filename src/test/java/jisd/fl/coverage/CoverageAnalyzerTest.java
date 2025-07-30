@@ -1,5 +1,6 @@
 package jisd.fl.coverage;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.Granularity;
@@ -16,8 +17,10 @@ import java.nio.file.Paths;
 class CoverageAnalyzerTest {
     @BeforeEach
     void initProperty() {
-        PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
-        PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/test/java");
+        Dotenv dotenv = Dotenv.load();
+        Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
+        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
+        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
     }
 
     @Nested

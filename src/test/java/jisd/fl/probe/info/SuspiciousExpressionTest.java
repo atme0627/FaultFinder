@@ -1,5 +1,6 @@
 package jisd.fl.probe.info;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.MethodElementName;
 import org.hamcrest.FeatureMatcher;
@@ -8,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,8 +42,10 @@ class SuspiciousExpressionTest {
 
         @BeforeEach
         void initProperty() {
-            PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
-            PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/test/java");
+            Dotenv dotenv = Dotenv.load();
+            Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
+            PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
+            PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
         }
 
         @Test

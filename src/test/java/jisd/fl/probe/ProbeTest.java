@@ -17,16 +17,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
 class ProbeTest {
+    Path jsonOutPutDir;
     @BeforeEach
     void initProperty() {
-        PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
-        PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/test/java");
+        Dotenv dotenv = Dotenv.load();
+        Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
+        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
+        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
+
+        Path currentDirectoryPath = FileSystems.getDefault().getPath("");
+        jsonOutPutDir = currentDirectoryPath.resolve("src/test/resources/json/SuspiciousExpression");
     }
 
     @Nested
@@ -45,7 +52,7 @@ class ProbeTest {
             Probe pfs = new Probe(target);
             SuspiciousExpression treeRoot = pfs.run(2000);
 
-            File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/CalcTest.json");
+            File output = jsonOutPutDir.resolve("CalcTest.json").toFile();
             JsonIO.export(treeRoot, output);
         }
     }
@@ -66,18 +73,17 @@ class ProbeTest {
             Probe pfs = new Probe(target);
             SuspiciousExpression treeRoot = pfs.run(2000);
 
-            File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest.json");
+            File output = jsonOutPutDir.resolve("ConditionalTest.json").toFile();
             JsonIO.export(treeRoot, output);
         }
 
         @Test
         void loadFromJson() throws IOException {
-            File input = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest.json");
+            File input = jsonOutPutDir.resolve("ConditionalTest.json").toFile();
             SuspiciousExpression loadedFromJson = SuspiciousExpression.loadFromJson(input);
-            File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/ConditionalTest2.json");
+            File output = jsonOutPutDir.resolve("ConditionalTest2.json").toFile();
             JsonIO.export(loadedFromJson, output);
             assertTrue(FileUtils.contentEquals(input, output), "File contents should match");
-
         }
     }
 
@@ -97,7 +103,7 @@ class ProbeTest {
             Probe pfs = new Probe(target);
             SuspiciousExpression treeRoot = pfs.run(2000);
 
-            File output = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/LoopTest1.json");
+            File output = jsonOutPutDir.resolve("LoopTest1.json").toFile();
             JsonIO.export(treeRoot, output);
         }
     }

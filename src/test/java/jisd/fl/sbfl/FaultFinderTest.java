@@ -1,5 +1,6 @@
 package jisd.fl.sbfl;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.FaultFinder;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
@@ -7,6 +8,9 @@ import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,8 +20,10 @@ public class FaultFinderTest {
 
     @BeforeEach
     void init(){
-        PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
-        PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/test/java");
+        Dotenv dotenv = Dotenv.load();
+        Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
+        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
+        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
 
         String testClassName = "org.sample.coverage.ConditionalTest";
         // カバレッジを分析

@@ -1,16 +1,16 @@
 package experiment.defect4j;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.LineElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.Level;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.*;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -32,10 +32,8 @@ class Defects4jUtilTest {
 
     @Nested
     class extractBuggyLines {
-        File d4jDir;
         @BeforeEach
         void init() {
-            d4jDir = new File("/Users/ezaki/Desktop/research/d4jProjects");
             Defects4jUtil.changeTargetVersion("Lang", 1);
         }
 

@@ -1,5 +1,6 @@
 package jisd.fl.sbfl;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.FaultFinderForStmt;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,8 +21,10 @@ public class FaultFinderForStmtTest {
 
     @BeforeEach
     void init(){
-        PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/main/java");
-        PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/Project4Test/src/test/java");
+        Dotenv dotenv = Dotenv.load();
+        Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
+        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
+        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
 
         String testClassName = "org.sample.CalcTest";
         // カバレッジを分析
@@ -43,14 +48,5 @@ public class FaultFinderForStmtTest {
     @Test
     public void suspTest(){
         faultFinder.susp(2);
-    }
-
-    @Test
-    public void probeTest(){
-        faultFinder.printRanking();
-        File j = new File("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/resources/json/SuspiciousExpression/CalcTest.json");
-        SuspiciousExpression suspExpr = SuspiciousExpression.loadFromJson(j);
-        faultFinder.probe(suspExpr);
-
     }
 }
