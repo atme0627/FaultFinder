@@ -1,0 +1,154 @@
+{
+  "type" : "assign",
+  "failedTest" : "org.sample.CalcTest#methodCall1()",
+  "locateMethod" : "org.sample.CalcTest#methodCall1()",
+  "locateLine" : 15,
+  "stmt" : "int actual = calc.methodCalling(a, b + c);",
+  "expr" : "calc.methodCalling(a, b + c)",
+  "actualValue" : "4",
+  "children" : [ {
+    "type" : "return",
+    "failedTest" : "org.sample.CalcTest#methodCall1()",
+    "locateMethod" : "org.sample.util.Calc#methodCalling(int, int)",
+    "locateLine" : 8,
+    "stmt" : "return result;",
+    "expr" : "result",
+    "actualValue" : "4",
+    "children" : [ {
+      "type" : "assign",
+      "failedTest" : "org.sample.CalcTest#methodCall1()",
+      "locateMethod" : "org.sample.util.Calc#methodCalling(int, int)",
+      "locateLine" : 7,
+      "stmt" : "int result = util.add(x, y) + util.mult(x, y) + z;",
+      "expr" : "util.add(x, y) + util.mult(x, y) + z",
+      "actualValue" : "4",
+      "children" : [ {
+        "type" : "return",
+        "failedTest" : "org.sample.CalcTest#methodCall1()",
+        "locateMethod" : "org.sample.util.Utils#add(int, int)",
+        "locateLine" : 8,
+        "stmt" : "return a + b;",
+        "expr" : "a + b",
+        "actualValue" : "5",
+        "children" : [ {
+          "type" : "argument",
+          "failedTest" : "org.sample.CalcTest#methodCall1()",
+          "locateMethod" : "org.sample.util.Calc#methodCalling(int, int)",
+          "locateLine" : 7,
+          "stmt" : "int result = util.add(x, y) + util.mult(x, y) + z;",
+          "expr" : "x",
+          "actualValue" : "2",
+          "children" : [ ],
+          "calleeMethodName" : "org.sample.util.Utils#add(int, int)",
+          "argIndex" : 0,
+          "CallCountAfterTargetInLine" : 1
+        }, {
+          "type" : "argument",
+          "failedTest" : "org.sample.CalcTest#methodCall1()",
+          "locateMethod" : "org.sample.util.Calc#methodCalling(int, int)",
+          "locateLine" : 7,
+          "stmt" : "int result = util.add(x, y) + util.mult(x, y) + z;",
+          "expr" : "y",
+          "actualValue" : "3",
+          "children" : [ ],
+          "calleeMethodName" : "org.sample.util.Utils#add(int, int)",
+          "argIndex" : 1,
+          "CallCountAfterTargetInLine" : 1
+        } ]
+      }, {
+        "type" : "return",
+        "failedTest" : "org.sample.CalcTest#methodCall1()",
+        "locateMethod" : "org.sample.util.Utils#mult(int, int)",
+        "locateLine" : 12,
+        "stmt" : "// buggy: - --> *\nreturn a - b;",
+        "expr" : "a - b",
+        "actualValue" : "-1",
+        "children" : [ {
+          "type" : "argument",
+          "failedTest" : "org.sample.CalcTest#methodCall1()",
+          "locateMethod" : "org.sample.util.Calc#methodCalling(int, int)",
+          "locateLine" : 7,
+          "stmt" : "int result = util.add(x, y) + util.mult(x, y) + z;",
+          "expr" : "y",
+          "actualValue" : "3",
+          "children" : [ {
+            "type" : "argument",
+            "failedTest" : "org.sample.CalcTest#methodCall1()",
+            "locateMethod" : "org.sample.CalcTest#methodCall1()",
+            "locateLine" : 15,
+            "stmt" : "int actual = calc.methodCalling(a, b + c);",
+            "expr" : "b + c",
+            "actualValue" : "3",
+            "children" : [ {
+              "type" : "assign",
+              "failedTest" : "org.sample.CalcTest#methodCall1()",
+              "locateMethod" : "org.sample.CalcTest#methodCall1()",
+              "locateLine" : 14,
+              "stmt" : "int c = 2;",
+              "expr" : "2",
+              "actualValue" : "2",
+              "children" : [ ]
+            }, {
+              "type" : "assign",
+              "failedTest" : "org.sample.CalcTest#methodCall1()",
+              "locateMethod" : "org.sample.CalcTest#methodCall1()",
+              "locateLine" : 13,
+              "stmt" : "int b = 1;",
+              "expr" : "1",
+              "actualValue" : "1",
+              "children" : [ ]
+            } ],
+            "calleeMethodName" : "org.sample.util.Calc#methodCalling(int, int)",
+            "argIndex" : 1,
+            "CallCountAfterTargetInLine" : 0
+          } ],
+          "calleeMethodName" : "org.sample.util.Utils#mult(int, int)",
+          "argIndex" : 1,
+          "CallCountAfterTargetInLine" : 0
+        }, {
+          "type" : "argument",
+          "failedTest" : "org.sample.CalcTest#methodCall1()",
+          "locateMethod" : "org.sample.util.Calc#methodCalling(int, int)",
+          "locateLine" : 7,
+          "stmt" : "int result = util.add(x, y) + util.mult(x, y) + z;",
+          "expr" : "x",
+          "actualValue" : "2",
+          "children" : [ {
+            "type" : "argument",
+            "failedTest" : "org.sample.CalcTest#methodCall1()",
+            "locateMethod" : "org.sample.CalcTest#methodCall1()",
+            "locateLine" : 15,
+            "stmt" : "int actual = calc.methodCalling(a, b + c);",
+            "expr" : "a",
+            "actualValue" : "2",
+            "children" : [ {
+              "type" : "assign",
+              "failedTest" : "org.sample.CalcTest#methodCall1()",
+              "locateMethod" : "org.sample.CalcTest#methodCall1()",
+              "locateLine" : 12,
+              "stmt" : "int a = 2;",
+              "expr" : "2",
+              "actualValue" : "2",
+              "children" : [ ]
+            } ],
+            "calleeMethodName" : "org.sample.util.Calc#methodCalling(int, int)",
+            "argIndex" : 0,
+            "CallCountAfterTargetInLine" : 0
+          } ],
+          "calleeMethodName" : "org.sample.util.Utils#mult(int, int)",
+          "argIndex" : 0,
+          "CallCountAfterTargetInLine" : 0
+        } ]
+      }, {
+        "type" : "assign",
+        "failedTest" : "org.sample.CalcTest#methodCall1()",
+        "locateMethod" : "org.sample.util.Calc#methodCalling(int, int)",
+        "locateLine" : 6,
+        "stmt" : "int z = 0;",
+        "expr" : "0",
+        "actualValue" : "0",
+        "children" : [ ]
+      } ]
+    } ]
+  } ]
+}

@@ -1,0 +1,97 @@
+{
+  "type" : "assign",
+  "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+  "locateMethod" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+  "locateLine" : 30,
+  "stmt" : "int result = s.calc();",
+  "expr" : "s.calc()",
+  "actualValue" : "2",
+  "children" : [ {
+    "type" : "return",
+    "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+    "locateMethod" : "org.sample.coverage.Conditional#calc()",
+    "locateLine" : 38,
+    "stmt" : "return result;",
+    "expr" : "result",
+    "actualValue" : "2",
+    "children" : [ {
+      "type" : "assign",
+      "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+      "locateMethod" : "org.sample.coverage.Conditional#calc()",
+      "locateLine" : 32,
+      "stmt" : "// y で剰余\nresult %= y;",
+      "expr" : "result %= y",
+      "actualValue" : "2",
+      "children" : [ {
+        "type" : "assign",
+        "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+        "locateMethod" : "org.sample.coverage.Conditional#Conditional(int, int)",
+        "locateLine" : 8,
+        "stmt" : "this.y = y;",
+        "expr" : "y",
+        "actualValue" : "4",
+        "children" : [ {
+          "type" : "argument",
+          "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+          "locateMethod" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+          "locateLine" : 29,
+          "stmt" : "// TC3: x=4, y=4 → x==y (falls into else if due to bug), even path, y!=0 path\nConditional s = new Conditional(4, 4);",
+          "expr" : "4",
+          "actualValue" : "4",
+          "children" : [ ],
+          "calleeMethodName" : "org.sample.coverage.Conditional#Conditional(int, int)",
+          "argIndex" : 1,
+          "CallCountAfterTargetInLine" : 0
+        } ]
+      }, {
+        "type" : "assign",
+        "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+        "locateMethod" : "org.sample.coverage.Conditional#calc()",
+        "locateLine" : 25,
+        "stmt" : "// 偶数なら半分に\nresult /= 2;",
+        "expr" : "result /= 2",
+        "actualValue" : "10",
+        "children" : [ {
+          "type" : "assign",
+          "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+          "locateMethod" : "org.sample.coverage.Conditional#calc()",
+          "locateLine" : 20,
+          "stmt" : "// 同じ値なら x*2 を加算 //buggy:  3 --> 2\nresult += x * 3;",
+          "expr" : "result += x * 3",
+          "actualValue" : "20",
+          "children" : [ {
+            "type" : "assign",
+            "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+            "locateMethod" : "org.sample.coverage.Conditional#Conditional(int, int)",
+            "locateLine" : 7,
+            "stmt" : "this.x = x;",
+            "expr" : "x",
+            "actualValue" : "4",
+            "children" : [ {
+              "type" : "argument",
+              "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+              "locateMethod" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+              "locateLine" : 29,
+              "stmt" : "// TC3: x=4, y=4 → x==y (falls into else if due to bug), even path, y!=0 path\nConditional s = new Conditional(4, 4);",
+              "expr" : "4",
+              "actualValue" : "4",
+              "children" : [ ],
+              "calleeMethodName" : "org.sample.coverage.Conditional#Conditional(int, int)",
+              "argIndex" : 0,
+              "CallCountAfterTargetInLine" : 0
+            } ]
+          }, {
+            "type" : "assign",
+            "failedTest" : "org.sample.coverage.ConditionalTest#testXEqualY()",
+            "locateMethod" : "org.sample.coverage.Conditional#calc()",
+            "locateLine" : 12,
+            "stmt" : "// ベースとなる合計\nint result = x + y;",
+            "expr" : "x + y",
+            "actualValue" : "8",
+            "children" : [ ]
+          } ]
+        } ]
+      } ]
+    } ]
+  } ]
+}
