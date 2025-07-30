@@ -13,7 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FaultFinderTest {
     FaultFinder faultFinder;
@@ -25,13 +24,13 @@ public class FaultFinderTest {
         PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
         PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
 
-        String testClassName = "org.sample.coverage.ConditionalTest";
+        String testClassName = "org.sample.CalcTest";
         // カバレッジを分析
         CoverageAnalyzer ca = new CoverageAnalyzer();
         ca.analyze(testClassName);
         CoverageCollection coverageCollection = ca.result();
         // FaultFinderForStmtのインスタンス化
-        faultFinder = new FaultFinder(coverageCollection, Granularity.METHOD, Formula.OCHIAI);
+        faultFinder = new FaultFinder(coverageCollection, Granularity.LINE, Formula.OCHIAI);
     }
 
     @Test
@@ -41,13 +40,11 @@ public class FaultFinderTest {
 
     @Test
     public void removeTest(){
-        faultFinder.printRanking();
-        faultFinder.remove(1);
+        faultFinder.remove(3);
     }
 
     @Test
     public void suspTest(){
-        faultFinder.printRanking();
         faultFinder.susp(2);
     }
 }
