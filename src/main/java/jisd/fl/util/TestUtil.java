@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 public  class TestUtil {
     public static String getJVMMain(MethodElementName testMethod){
-        compileForDebug(testMethod);
         return "jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
     }
 

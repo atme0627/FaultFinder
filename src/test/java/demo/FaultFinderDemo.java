@@ -35,6 +35,28 @@ public class FaultFinderDemo {
                 false
         );
         faultFinder.probe(targetValue);
+    }
+
+    @Test
+    void useCase(){
+        //既存のバグ局所化手法、SBFLに基づいた「怪しい行」ランキング
+        //テストケースが乏しいため、初めは全て同率になってしまう
         faultFinder.printRanking();
+
+        //間違った値を取る変数"actual"をヒントとしてランキングに与えることで、疑惑値に差が生まれ調べるべき行が絞られる。
+        SuspiciousVariable targetValue = new SuspiciousVariable(
+                failedTestMethodName,
+                failedTestMethodName.getFullyQualifiedMethodName(),
+                "actual",
+                "4",
+                true,
+                false
+        );
+        faultFinder.probe(targetValue);
+
+        //改善されたランキングの1位を調べた結果、methodCalling(..)メソッドにはバグは含まれていない
+        faultFinder.remove(1);
+
+        //add(...)を調べた結果バグが見つかる
     }
 }

@@ -1,5 +1,6 @@
 package jisd.fl.ranking.report;
 
+import jisd.fl.ranking.FLRanking;
 import jisd.fl.ranking.FLRankingElement;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class ScoreUpdateReport {
         int elementLength = shortElementNames.stream().map(String::length).max(Integer::compareTo).orElse(20);
 
         // ヘッダーの生成
-        String header = String.format("| %-" + classLength + "s | %-" + elementLength + "s | %-18s |", "CLASS NAME", "ELEMENT NAME", "OLD -> NEW");
+        String header = String.format("| %s | %s | %-18s |", FLRanking.leftPad("CLASS NAME", classLength), FLRanking.rightPad("ELEMENT NAME", elementLength), "OLD -> NEW");
         String partition = "=".repeat(header.length());
 
         System.out.println(partition);
@@ -46,8 +47,8 @@ public class ScoreUpdateReport {
         // 内容の出力
         for (int i = 0; i < changes.size(); i++) {
             ChangeEntry e = changes.get(i);
-            String row = String.format("| %-" + classLength + "s | %-" + elementLength + "s | %6.4f -> %6.4f |",
-                    shortClassNames.get(i), shortElementNames.get(i), e.oldScore(), e.newScore());
+            String row = String.format("| %s | %s |  %6.4f -> %6.4f  |",
+                    FLRanking.leftPad(shortClassNames.get(i), classLength), FLRanking.rightPad(shortElementNames.get(i), elementLength), e.oldScore(), e.newScore());
             System.out.println(row);
         }
         System.out.println(partition);

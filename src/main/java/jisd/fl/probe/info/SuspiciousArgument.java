@@ -472,7 +472,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
             }
         };
 
-        eDbg.enableOutput();
         eDbg.handleAtMethodEntry(calleeMethodName.getFullyQualifiedMethodName(), handler);
 
         //nullチェック

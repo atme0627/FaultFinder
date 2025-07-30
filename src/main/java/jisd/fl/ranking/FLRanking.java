@@ -47,9 +47,8 @@ public class FLRanking {
         int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
         int methodLength = shortMethodNames.stream().map(String::length).max(Integer::compareTo).get();
 
-        String header = "|      | RANK |" +
-                " ".repeat(classLength - "CLASS NAME".length()) + " CLASS NAME " +
-                "|" + " ".repeat(methodLength - "METHOD NAME".length()) + " METHOD NAME " +
+        String header = "|      | RANK |" + leftPad(" CLASS NAME ", classLength) +
+                "|" + rightPad(" METHOD NAME ", methodLength +2 )  +
                 "| SUSP SCORE |";
         String partition = "=".repeat(header.length());
 
@@ -81,8 +80,8 @@ public class FLRanking {
                 coloerEnd = "\u001b[00m";
             }
             System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
-                    shortClassNames.get(i) + " | " +
-                    shortMethodNames.get(i) + " | " +
+                    leftPad(shortClassNames.get(i), classLength) + " | " +
+                    rightPad(shortMethodNames.get(i), methodLength) + " | " +
                     String.format("  %.4f  ", element.getSuspiciousnessScore()) + " |" + coloerEnd);
             previousRank = rank;
         }
@@ -217,6 +216,14 @@ public class FLRanking {
      */
     public void adjustAll(List<ScoreAdjustment> adjustments){
         ScoreAdjuster.applyAll(this, adjustments);
+    }
+
+    public static String leftPad(String str, int size){
+        return ("%-" + size + "s").formatted(str);
+    }
+
+    public static String rightPad(String str, int size){
+        return ("%" + size + "s").formatted(str);
     }
 
 }
