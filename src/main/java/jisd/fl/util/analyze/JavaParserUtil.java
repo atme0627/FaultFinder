@@ -74,13 +74,7 @@ public class JavaParserUtil {
         return extractNode(targetClass, VariableDeclarator.class);
     }
 
-    @Deprecated
-    public static BlockStmt extractBodyOfMethod(String targetMethod) throws NoSuchFileException {
-        MethodElementName cd = new MethodElementName(targetMethod);
-        return extractBodyOfMethod(cd);
-    }
-
-    public static BlockStmt extractBodyOfMethod(MethodElementName targetMethod) throws NoSuchFileException {
+    public static BlockStmt searchBodyOfMethod(MethodElementName targetMethod) throws NoSuchFileException {
         CallableDeclaration<?> cd = getCallableDeclarationByName(targetMethod);
         return cd.isMethodDeclaration() ?
                 cd.asMethodDeclaration().getBody().orElseThrow() :

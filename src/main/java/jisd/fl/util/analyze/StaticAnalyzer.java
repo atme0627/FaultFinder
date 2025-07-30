@@ -2,6 +2,7 @@ package jisd.fl.util.analyze;
 
 import com.github.javaparser.Range;
 import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -109,7 +110,7 @@ public class StaticAnalyzer {
     //メソッド --> メソッドが呼ばれている行
     //methodNameはクラス、シグニチャを含む
     public static List<Integer> getMethodCallingLine(MethodElementName targetMethod) throws NoSuchFileException {
-        return JavaParserUtil.extractBodyOfMethod(targetMethod)
+        return JavaParserUtil.searchBodyOfMethod(targetMethod)
                         .findAll(MethodCallExpr.class)
                         .stream()
                         .filter(exp -> exp.getBegin().isPresent())
@@ -153,7 +154,7 @@ public class StaticAnalyzer {
         List<Integer> canSet = new ArrayList<>();
         BlockStmt bs = null;
         try {
-            bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
+            bs = JavaParserUtil.searchBodyOfMethod(targetMethod);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -177,6 +178,20 @@ public class StaticAnalyzer {
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+    //あるメソッド内の特定の変数の定義行を取得する。
+    public static List<VariableDeclarator> findLocalVarDeclaration(MethodElementName targetMethod, String localVarName){
+        try {
+            BlockStmt bs = JavaParserUtil.searchBodyOfMethod(targetMethod);
+            List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
+            return vds.stream()
+                    .filter(vd -> vd.getNameAsString().equals(localVarName))
+                    .toList();
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     static class ClassExplorer implements FileVisitor<Path> {

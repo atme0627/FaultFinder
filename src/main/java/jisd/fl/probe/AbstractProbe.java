@@ -52,17 +52,8 @@ public abstract class AbstractProbe {
     }
 
     protected TracedValueCollection traceValuesOfTarget(SuspiciousVariable target, int sleepTime) {
-        //実行しているメソッドを取得
-        MethodElement locateMethodElement;
-        try {
-            locateMethodElement = MethodElement.getMethodElementByName(target.getLocateMethodElement());
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
         //targetVariableのVariableDeclaratorを特定
-        List<Integer> vdLines = locateMethodElement
-                .findLocalVarDeclaration(target.getSimpleVariableName())
+        List<Integer> vdLines = StaticAnalyzer.findLocalVarDeclaration(target.getLocateMethodElement(), target.getSimpleVariableName())
                 .stream()
                 .map(vd -> vd.getRange().get().begin.line)
                 .toList();
@@ -120,17 +111,14 @@ public abstract class AbstractProbe {
             //対象の変数に値の変化が起きている行の特定
             List<Integer> valueChangingLines = valueChangingLine(vi);
 
-            //実行しているメソッドを取得
-            MethodElement locateMethodElement;
-            try {
-                locateMethodElement = MethodElement.getMethodElementByName(vi.getLocateMethodElement());
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
             //対象の変数を定義している行を追加
-            valueChangingLines.addAll(locateMethodElement
-                    .findLocalVarDeclaration(vi.getSimpleVariableName())
-                    .stream().map(vd -> vd.getRange().get().begin.line).toList());
+            valueChangingLines.addAll(
+                    //targetVariableのVariableDeclaratorを特定
+                    StaticAnalyzer.findLocalVarDeclaration(vi.getLocateMethodElement(), vi.getSimpleVariableName())
+                            .stream()
+                            .map(vd -> vd.getRange().get().begin.line)
+                            .toList()
+            );
 
             /* 1a. すでに定義されていた変数に代入が行われたパターン */
             //代入の実行後にactualの値に変化している行の特定(ない場合あり)
@@ -184,7 +172,7 @@ public abstract class AbstractProbe {
         } else {
             BlockStmt bs = null;
             try {
-                bs = JavaParserUtil.extractBodyOfMethod(locateElement);
+                bs = JavaParserUtil.searchBodyOfMethod(locateElement);
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }
