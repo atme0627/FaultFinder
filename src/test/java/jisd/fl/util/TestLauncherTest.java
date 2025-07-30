@@ -1,61 +1,112 @@
 package jisd.fl.util;
 
-import com.sun.jdi.*;
-import experiment.defect4j.Defects4jUtil;
-import jisd.debug.DebugResult;
-import jisd.debug.Debugger;
+import jisd.fl.util.analyze.MethodElementName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 class TestLauncherTest {
+    @Nested
+    class D4jCase {
+        @BeforeEach
+        void initProperty() {
+            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/d4jProject/Math_2_buggy/src/main/java");
+            PropertyLoader.setProperty("testSrcDir", "src/test/resources/d4jProject/Math_2_buggy/src/test/java");
+            PropertyLoader.setProperty("testBinDir", "src/test/resources/d4jProject/Math_2_buggy/target/test-classes");
+            PropertyLoader.setProperty("targetBinDir", "src/test/resources/d4jProject/Math_2_buggy/target/classes");
+        }
 
-    @Test
-    void launchTest(){
-        String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
-        //カッコつけたら動かない
-        TestLauncher tl = new TestLauncher(testMethodName);
-        tl.runTest();
-    }
+        @Test
+        void launchTest() throws IOException, InterruptedException {
+            String testClassName = "org.apache.commons.math3.distribution.HypergeometricDistributionTest";
+            String shortTestMethodName = "testMath1021";
+            String testMethodName = testClassName + "#" + shortTestMethodName + "()";
 
-    @Test
-    void jisdtest1(){
-        String testMethodName = "org.apache.commons.math3.fraction.BigFractionTest#testDigitLimitConstructor()";
-        String testSrcDir = PropertyLoader.getProperty("testSrcDir");
-        String targetSrcDir = PropertyLoader.getProperty("targetSrcDir");
+            Process proc = Runtime.getRuntime().exec(
+                    "java -cp ./build/classes/java/main"
+                            + ":" + PropertyLoader.getDebugBinDir()
+                            + ":" + PropertyLoader.getTargetBinDir()
+                            + ":" + PropertyLoader.getJunitClassPaths()
+                            + " jisd.fl.util.TestLauncher " + testMethodName
+            );
 
-        Debugger dbg = TestUtil.testDebuggerFactory(testMethodName);
-        dbg.setSrcDir(testSrcDir, targetSrcDir);
-
-        dbg.setMain("org.apache.commons.math3.fraction.BigFraction");
-        dbg.stopAt(274);
-        dbg.stopAt(283);
-        dbg.stopAt(284);
-        dbg.stopAt(300);
-        dbg.run(3000);
-        ThreadReference th = dbg.thread();
-        for(int i = 0; i < 4; i++) {
-            dbg.step();
-            try {
-                List<StackFrame> st = th.frames();
-                Location loc = st.get(0).location();
-                System.out.println(loc.method().toString());
-            } catch (IncompatibleThreadStateException e) {
-                throw new RuntimeException(e);
+            proc.waitFor();
+            String line = null;
+            System.out.println("STDOUT---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) System.out.println(line);
             }
-            dbg.cont(10);
+            System.out.println("STDERR---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = buf.readLine()) != null) System.err.println(line);
+            }
         }
     }
 
-    @Test
-    void launchTest2(){
-        String project = "Math";
-        int bugId = 22;
+    @Nested
+    class SimpleCase {
+        @BeforeEach
+        void initProperty() {
+            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/src/main/java");
+            PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/src/test/java");
+            PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/main");
+            PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/SampleProject/build/classes/java/test");
 
-        Defects4jUtil.changeTargetVersion(project, bugId);
-        String testMethodName = "org.apache.commons.math3.distribution.FDistributionTest#testIsSupportLowerBoundInclusive()";
-        //カッコつけたら動かない
-        TestLauncher tl = new TestLauncher(testMethodName);
-        tl.runTest();
+            TestUtil.compileForDebug(new MethodElementName("sample.MethodCallTest"));
+        }
+
+        @Test
+        void launchTest() throws IOException, InterruptedException {
+            String testMethodName = "sample.SampleTest#case2()";
+
+            Process proc = Runtime.getRuntime().exec(
+                    "java -cp ./build/classes/java/main"
+                            + ":" + PropertyLoader.getDebugBinDir()
+                            + ":" + PropertyLoader.getTargetBinDir()
+                            + ":" + PropertyLoader.getJunitClassPaths()
+                            + " jisd.fl.util.TestLauncher " + testMethodName
+            );
+
+            proc.waitFor();
+            String line = null;
+            System.out.println("STDOUT---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) System.out.println(line);
+            }
+            System.out.println("STDERR---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = buf.readLine()) != null) System.err.println(line);
+            }
+        }
+
+        @Test
+        void launchMethodCallTest() throws IOException, InterruptedException {
+            String testMethodName = "sample.MethodCallTest#methodCall1()";
+
+            Process proc = Runtime.getRuntime().exec(
+                    "java -cp ./build/classes/java/main"
+                            + ":" + PropertyLoader.getDebugBinDir()
+                            + ":" + PropertyLoader.getTargetBinDir()
+                            + ":" + PropertyLoader.getJunitClassPaths()
+                            + " jisd.fl.util.TestLauncher " + testMethodName
+            );
+
+            proc.waitFor();
+            String line = null;
+            System.out.println("STDOUT---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) System.out.println(line);
+            }
+            System.out.println("STDERR---------------");
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = buf.readLine()) != null) System.err.println(line);
+            }
+        }
+
+
     }
 }

@@ -1,7 +1,16 @@
 package experiment.defect4j;
 
+import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.util.FileUtil;
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.StaticAnalyzer;
+import jisd.fl.util.analyze.LineElementName;
+import jisd.fl.util.analyze.MethodElementName;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,46 +18,54 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Defects4jUtil {
-    static File defects4jDir = new File("/Users/ezaki/Desktop/tools/defects4j");
-    static String rootDir = "/Users/ezaki/Desktop/research/experiment/defects4j";
+    static Dotenv dotenv = Dotenv.load();
+    static File defects4jDir = Paths.get(dotenv.get("D4J_DIR")).toFile();
 
-    public static void CheckoutAll(String project, int numberOfBugs){
+    public static void CheckoutAll(String project, int numberOfBugs, File workDir){
         for(int i = 1; i <= numberOfBugs; i++){
-            CheckoutBuggySrc(project, i);
+            checkoutBuggySrc(project, i, workDir);
         }
     }
 
-    public static void CheckoutBuggySrc(String project, int bugId){
+    @Deprecated
+    public static void checkoutBuggySrc(String project, int bugId){
         String cmd = "defects4j checkout -p " + project + " -v " + bugId + "b " +
                 "-w " + getProjectDir(project, bugId, true);
         execCmd(cmd);
     }
 
-    public static void CompileBuggySrc(String project, int bugId){
-        String cmd = "defects4j compile -w " + getProjectDir(project, bugId, true);
+    public static void checkoutBuggySrc(String project, int bugId, File workDir){
+        String cmd = "defects4j checkout -p " + project + " -v " + bugId + "b " +
+                "-w " + workDir.getAbsolutePath() + "/" + project + "_" + bugId + "_buggy";
         execCmd(cmd);
     }
 
-
-    public static String getProjectDir(String project, int bugId, boolean buggy){
-        return rootDir + "/" + project + "/" + project + "_" + bugId + (buggy ? "_buggy" : "_fixed");
+    public static void compileBuggySrc(String project, int bugId){
+        FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
+        String cmd = "defects4j compile -w " + getProjectDir(project, bugId, true);
+        execCmd(cmd);
+        cmd = "cp -r " + PropertyLoader.getTargetBinDir() + "/. " + PropertyLoader.getDebugBinDir();
+        execCmd(cmd);
+        cmd = "cp -r " + PropertyLoader.getTestBinDir() + "/. " + PropertyLoader.getDebugBinDir();
+        execCmd(cmd);
     }
 
-
+    public static String getProjectDir(String project, int bugId, boolean buggy){
+        return defects4jDir + "/" + project + "/" + project + "_" + bugId + (buggy ? "_buggy" : "_fixed");
+    }
 
     public static void changeTargetVersion(String project, int bugId){
         Properties p = getD4jProperties(project, bugId);
 
         String targetSrcDir = getProjectDir(project, bugId, true) + "/" + p.getProperty("d4j.dir.src.classes");
         String testSrcDir = getProjectDir(project, bugId, true) + "/" + p.getProperty("d4j.dir.src.tests");
-        String targetBinDir = getProjectDir(project, bugId, true) + "/target/classes";
-        String testBinDir = getProjectDir(project, bugId, true) + "/target/test-classes";
+        String targetBinDir = getProjectDir(project, bugId, true) + "/" + exportProperty(project, bugId, "dir.bin.classes");
+        String testBinDir = getProjectDir(project, bugId, true) + "/" + exportProperty(project, bugId, "dir.bin.tests");
 
         PropertyLoader.setProperty("targetSrcDir", targetSrcDir);
         PropertyLoader.setProperty("testSrcDir", testSrcDir);
@@ -57,21 +74,21 @@ public class Defects4jUtil {
         PropertyLoader.store();
     }
 
-    public static List<String> getFailedTestMethods(String project, int bugId){
-        Properties properties = getD4jProperties(project, bugId);
-        String raw = properties.getProperty("d4j.tests.trigger");
-        List<String> failedTests = new ArrayList<>(List.of(raw.split(",")));
-        failedTests = failedTests.stream()
-                .map((s) -> s.replace("::", "#"))
-                .collect(Collectors.toList());
-        return failedTests;
+    private static String exportProperty(String project, int bugId, String key){
+        String cmd = "defects4j export -p " + key + " -w " + getProjectDir(project, bugId, true);
+        return execCmd(cmd);
     }
 
-    public static List<String> getModifiedClasses(String project, int bugId){
+    public static List<MethodElementName> getFailedTestMethods(String project, int bugId){
         Properties properties = getD4jProperties(project, bugId);
-        String raw = properties.getProperty("d4j.classes.modified");
-        List<String> modifiedClasses = new ArrayList<>(List.of(raw.split(",")));
-        return modifiedClasses;
+        String raw = properties.getProperty("d4j.tests.trigger");
+
+        return new ArrayList<>(List.of(raw.split(",")))
+                .stream()
+                .map((s) -> s.replace("::", "#"))
+                .map(s -> s + "()")
+                .map(MethodElementName::new)
+                .collect(Collectors.toList());
     }
 
     public static Properties getD4jProperties(String project, int bugId){
@@ -85,64 +102,63 @@ public class Defects4jUtil {
         return properties;
     }
 
-    public static List<String> getModifiedMethod(String project, int bugId) {
-        Set<String> modifiedMethods = new HashSet<>();
-
-        Defects4jUtil.changeTargetVersion(project, bugId);
-        List<String> modifiedClasses = Defects4jUtil.getModifiedClasses(project, bugId);
-        Properties p = Defects4jUtil.getD4jProperties(project, bugId);
-        String targetRootDir = p.getProperty("d4j.dir.src.classes");
-
-        for(String modifiedClass : modifiedClasses) {
-            String targetSrc = targetRootDir + "/" + modifiedClass.replace(".", "/") + ".java";
-            String[] cmd = new String[]
-                    {"src/main/java/experiment/defect4j/modified_method.sh",
-                            project, String.valueOf(bugId), targetSrc};
-
-            Process proc;
-            try {
-                proc = Runtime.getRuntime().exec(cmd);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            List<String> lines = new ArrayList<>();
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
-                String tmp;
-                while ((tmp = buf.readLine()) != null) {
-                    lines.add(tmp);
-                }
-                proc.waitFor();
-            } catch (InterruptedException | IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            List<Integer> modifiedLines = new ArrayList<>();
-            for (String l : lines) {
-                int modifiedLine = Integer.parseInt(l.split("[+,]")[0]
-                        .replaceAll("[^0-9]", ""));
-                modifiedLines.add(modifiedLine);
-            }
-
-            for(int modifiedLine : modifiedLines){
-                try {
-                    String m = StaticAnalyzer.getMethodNameFormLine(modifiedClass, modifiedLine);
-                    if(m != null) modifiedMethods.add(m);
-                } catch (NoSuchFileException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        return new ArrayList<>(modifiedMethods);
-    }
-
-    private static void execCmd(String cmd){
+    private static String execCmd(String cmd){
         try {
             Process proc = Runtime.getRuntime().exec(cmd, null, defects4jDir);
-            proc.waitFor();
+            String line = null;
+//            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+//                while ((line = buf.readLine()) != null) System.err.println(line);
+//            }
+            StringBuilder output = new StringBuilder();
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) output.append(line).append("\n");
+            }
+            int exitCode = proc.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Process exited with code " + exitCode);
+            }
+            return output.toString().replace("\n", "");
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static List<LineElementName> extractBuggyLines(File projectDir){
+        Repository repository;
+        try {
+            repository = new FileRepositoryBuilder()
+                    .setGitDir(new File(projectDir, ".git"))
+                    .build();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        BuggyElementExtractor extractor = new BuggyElementExtractor(repository);
+        return extractor.buggyLines(getBuggyVersionId(repository), getFixedVersionId(repository));
+    }
+
+    public static ObjectId getBuggyVersionId(Repository repository){
+        return findTagsContaining(repository, "BUGGY_VERSION");
+    }
+
+    public static ObjectId getFixedVersionId(Repository repository){
+        return findTagsContaining(repository, "FIXED_VERSION");
+    }
+
+    private static ObjectId findTagsContaining(Repository repository, String keyword) {
+        try (Git git = new Git(repository)) {
+            try {
+                for (Ref ref : git.tagList().call()) {
+                    String full = ref.getName();                  // 例: refs/tags/D4J_Lang_1b
+                    String tag = full.replace("refs/tags/", "");
+                    if (tag.contains(keyword)) {
+                        return ref.getObjectId();
+                    }
+                }
+            } catch (GitAPIException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        throw new RuntimeException("tag that contains \"" + keyword + "\" not found in " + repository.getDirectory().getAbsolutePath());
     }
 }

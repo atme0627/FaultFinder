@@ -14,24 +14,18 @@ public class PropertyLoader {
             "fl_properties/fl_jacoco.properties",
             "fl_properties/fl_junit.properties"
     };
-
     private static final String FL_CONF = "fl_properties/fl_config.properties";
-
     private static final Properties properties;
-
-    private PropertyLoader() throws Exception {
-    }
 
     static {
         properties = new Properties();
-        for(String CONF_FILE : CONF_FILES) {
+        for (String CONF_FILE : CONF_FILES) {
             try (InputStream input = PropertyLoader.class.getClassLoader().getResourceAsStream(CONF_FILE)) {
                 properties.load(input);
             } catch (IOException e) {
                 // ファイル読み込みに失敗
                 System.out.printf("Failed to load fi_config file. :%s%n", CONF_FILE);
-            }
-            catch (NullPointerException e){
+            } catch (NullPointerException e) {
                 try {
                     properties.load(Files.newBufferedReader(Paths.get(CONF_FILE), StandardCharsets.UTF_8));
                 } catch (IOException ex) {
@@ -45,47 +39,69 @@ public class PropertyLoader {
         return properties.getProperty(key);
     }
 
-    public static  String getJunitClassPaths(){
-        String junitPlatformLauncher = getProperty("junit-platform-launcher");
-        String junitPlatformEngine = getProperty("junit-platform-engine");
-        String junitPlatformCommons = getProperty("junit-platform-commons");
-        String junitJupiterEngine = getProperty("junit-jupiter-engine");
-        String junitJupiterApi = getProperty("junit-jupiter-api");
-        String openTest4j = getProperty("opentest4j");
-        String junit4 = getProperty("junit4");
-        String junitVintageEngine = getProperty("junit-vintage-engine");
-        String apiguardian = getProperty("apiguardian");
-        String hamcrest = getProperty("hamcrest");
-
-        String cp = junitPlatformLauncher +
-                ":" + junitPlatformEngine +
-                ":" + junitPlatformCommons +
-                ":" + junitJupiterEngine +
-                ":" + junitJupiterApi +
-                ":" + openTest4j +
-                ":" + junit4 +
-                ":" + apiguardian +
-                ":" + hamcrest +
-                ":" + junitVintageEngine;
-
-        return cp;
+    public static String getJunitClassPaths() {
+        return getProperty("junitDependencyJars");
     }
 
-    public static void setProperty(String key, String value){
+    public static void setProperty(String key, String value) {
         properties.setProperty(key, value);
     }
 
-    public static void store(){
+    public static void store() {
         Properties p = new Properties();
         p.setProperty("targetSrcDir", properties.getProperty("targetSrcDir"));
         p.setProperty("testSrcDir", properties.getProperty("testSrcDir"));
         p.setProperty("targetBinDir", properties.getProperty("targetBinDir"));
         p.setProperty("testBinDir", properties.getProperty("testBinDir"));
 
-        try(FileWriter fw = new FileWriter(FL_CONF)) {
+        try (FileWriter fw = new FileWriter(FL_CONF)) {
             p.store(fw, null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void setTargetSrcDir(String targetSrcDir) {
+        setProperty("targetSrcDir", targetSrcDir);
+    }
+
+    public static void setTargetBinDir(String targetBinDir) {
+        setProperty("targetBinDir", targetBinDir);
+    }
+
+    public static void setTestSrcDir(String testSrcDir) {
+        setProperty("testSrcDir", testSrcDir);
+    }
+
+    public static void setTestBinDir(String testBinDir) {
+        setProperty("testBinDir", testBinDir);
+    }
+
+    public static void setDebugBinDir(String debugBinDir) {
+        setProperty("debugBinDir", debugBinDir);
+    }
+
+    public static String getTargetSrcDir() {
+        return getProperty("targetSrcDir");
+    }
+
+    public static String getTargetBinDir() {
+        return getProperty("targetBinDir");
+    }
+
+    public static String getTestSrcDir() {
+        return getProperty("testSrcDir");
+    }
+
+    public static String getTestBinDir() {
+        return getProperty("testBinDir");
+    }
+
+    public static String getDebugBinDir() {
+        return getProperty("debugBinDir");
+    }
+
+    public static String getClassesForDebugDir(){
+        return "classesForDebug";
     }
 }

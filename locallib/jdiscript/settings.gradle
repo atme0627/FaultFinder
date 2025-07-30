@@ -1,5 +1,0 @@
-rootProject.name = 'jdiscript'
-
-include 'jdiscript'
-include 'generator'
-include 'example'

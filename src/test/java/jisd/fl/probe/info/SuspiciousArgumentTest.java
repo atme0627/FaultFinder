@@ -1,0 +1,37 @@
+package jisd.fl.probe.info;
+
+import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.analyze.MethodElementName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+class SuspiciousArgumentTest {
+    @BeforeEach
+    void initProperty() {
+        Dotenv dotenv = Dotenv.load();
+        Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
+        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
+        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
+    }
+
+    @Test
+    void searchSuspiciousArgument() {
+        MethodElementName calleeMethodName = new MethodElementName("org.sample.util.Calc#methodCalling(int, int)");
+        SuspiciousVariable suspVar = new SuspiciousVariable(
+                new MethodElementName("org.sample.CalcTest#methodCall1()"),
+                "org.sample.util.Calc#methodCalling(int, int)",
+                "y",
+                "3",
+                true,
+                false
+        );
+
+        SuspiciousArgument suspArg = SuspiciousArgument.searchSuspiciousArgument(calleeMethodName, suspVar).get();
+        System.out.println(suspArg);
+        System.out.println("expr: " + suspArg.expr);
+    }
+}
