@@ -39,28 +39,6 @@ class TestUtilTest {
     }
 
     @Nested
-    class TestDebuggerFactory {
-        @BeforeEach
-        void initProperty() {
-            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/main");
-            PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/test");
-            PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/main");
-            PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/test");
-        }
-
-        @Test
-        void simpleCase(){
-            TestUtil.compileForDebug(new MethodElementName("sample.SampleTest"));
-            MethodElementName targetMethod = new MethodElementName("sample.SampleTest#case2()");
-            Debugger dbg = TestUtil.testDebuggerFactory(targetMethod);
-            dbg.stopAt("sample.SampleTest", 19);
-            dbg.run(1000);
-            dbg.locals();
-            dbg.exit();
-        }
-    }
-
-    @Nested
     class compileForDebug{
         @BeforeEach
         void initProperty() {

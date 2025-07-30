@@ -1,7 +1,5 @@
 package jisd.fl.util;
 
-import jisd.debug.DebugResult;
-import jisd.debug.Debugger;
 import jisd.fl.util.analyze.MethodElementName;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
@@ -140,39 +138,6 @@ public  class TestUtil {
         System.out.println("Success to generate " + generatedFilePath + ".");
         System.out.println("testResult " + (proc.exitValue() == 0 ? "o" : "x"));
         return proc.exitValue() == 0;
-    }
-
-    public static Debugger testDebuggerFactory(MethodElementName testMethod){
-        return testDebuggerFactory(testMethod, "");
-    }
-
-    public static Debugger testDebuggerFactory(MethodElementName testMethod, String option) {
-        compileForDebug(testMethod);
-        Debugger dbg;
-        while(true) {
-            try {
-                dbg = new Debugger(
-                          "jisd.fl.util.TestLauncher "
-                                + testMethod.getFullyQualifiedMethodName(),
-                        "-cp " + "./build/classes/java/main"
-                                + ":" + PropertyLoader.getDebugBinDir()
-                                + ":" + PropertyLoader.getJunitClassPaths()
-                                + " " + option
-                );
-
-                break;
-            } catch (RuntimeException e1) {
-                System.err.println(e1);
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e2) {
-                    throw new RuntimeException(e2);
-                }
-            }
-        }
-        dbg.setSrcDir(PropertyLoader.getTargetSrcDir(), PropertyLoader.getTestSrcDir());
-        DebugResult.setDefaultMaxRecordNoOfValue(500);
-        return dbg;
     }
 
     public static Set<MethodElementName> getTestMethods(MethodElementName testMethodName){
