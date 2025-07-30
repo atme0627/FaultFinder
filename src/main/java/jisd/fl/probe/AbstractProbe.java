@@ -9,7 +9,6 @@ import jisd.fl.probe.info.*;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesOfTarget;
-import jisd.fl.util.QuietStdOut;
 import jisd.fl.util.analyze.*;
 import jisd.fl.util.TestUtil;
 
@@ -107,7 +106,6 @@ public abstract class AbstractProbe {
      * @return
      */
     private Optional<SuspiciousExpression> searchProbeLine(List<TracedValue> tracedValues, SuspiciousVariable vi) {
-        try (QuietStdOut q = QuietStdOut.suppress()) {
             //対象の変数に値の変化が起きている行の特定
             List<Integer> valueChangingLines = valueChangingLine(vi);
 
@@ -144,7 +142,6 @@ public abstract class AbstractProbe {
             /* 3. throw内などブレークポイントが置けない行で、代入が行われているパターン */
 //            System.err.println("There is no value which same to actual.");
 //            return Optional.empty();
-        }
     }
 
     //TODO: refactor
