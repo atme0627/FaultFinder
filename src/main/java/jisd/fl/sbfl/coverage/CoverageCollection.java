@@ -9,7 +9,9 @@ import java.util.*;
 
 import jisd.fl.util.JsonIO;
 
-//あるテストケースを実行したときの、ターゲットのクラスごとのカバレッジ (Tester)
+/**
+あるテストクラス実行時のSBFL用カバレッジ情報を保持するクラス
+ */
 public class CoverageCollection {
 
     public Set<String> targetClassNames;

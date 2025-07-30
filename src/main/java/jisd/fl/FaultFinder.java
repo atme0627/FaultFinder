@@ -10,49 +10,32 @@ import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.probe.SimpleProbe;
-import jisd.fl.probe.info.SimpleProbeResult;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.ranking.report.ScoreUpdateReport;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.ToDoubleBiFunction;
-
-
+/**
+ * テストスイートのカバレッジ情報から疑惑値ランキングを生成・操作するためのクラス。
+ * CoverageCollectionを解析し、各対象要素の疑惑値を計算してFLRankingに設定します。
+ * remove(), susp(), probe()によってランキングに開発者の知識を与えランキングを更新できる。
+ *
+ */
 public class FaultFinder {
     FLRanking flRanking;
-    private Set<String> highlightMethods = new HashSet<>();
-
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
     protected double removeConst = 0.8;
     //susp時に同じクラスの他のメソッドの疑惑値にかける定数
     protected double suspConst = 1.2;
-    //probe時に使用する定数
-    protected double probeC1 = 0.2;
-    protected double probeC2 = 0.1;
-    protected double probeC3 = 0.1;
-
-    //probeExの疑惑値計算に使用する変数
+    //probeの疑惑値計算に使用する変数
     protected double probeLambda = 0.8;
 
-    //probeExの疑惑値計算に使用する変数
-    private int rankingSize = 20;
+    private final int rankingSize = 20;
     final Granularity granularity;
 
     public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
         this.granularity = granularity;
         flRanking = new FLRanking(granularity);
         calcSuspiciousness(covForTestSuite, granularity, f);
-    }
-
-    public void printRanking(){
-        flRanking.printFLResults();
-    }
-
-    public void printRanking(int top){
-        flRanking.printFLResults(top);
     }
 
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
@@ -64,8 +47,13 @@ public class FaultFinder {
         flRanking.sort();
     }
 
-    public FLRanking getFLResults(){
-        return flRanking;
+
+    public void printRanking(){
+        flRanking.printFLResults();
+    }
+
+    public void printRanking(int top){
+        flRanking.printFLResults(top);
     }
 
     public void remove(int rank) {
@@ -84,7 +72,7 @@ public class FaultFinder {
 
         report.print();
         flRanking.sort();
-        flRanking.printFLResults(getRankingSize());
+        flRanking.printFLResults(rankingSize);
     }
 
     public void susp(int rank) {
@@ -103,118 +91,7 @@ public class FaultFinder {
 
         report.print();
         flRanking.sort();
-        flRanking.printFLResults(getRankingSize());
-    }
-
-    public void simpleProbe(SuspiciousVariable target){
-        simpleProbe(target, 3000);
-    }
-
-    public void simpleProbe(SuspiciousVariable target, int sleepTime){
-        System.out.println("[  PROBE (simple)  ] " + target);
-        SimpleProbe prbEx = new SimpleProbe(target);
-        SimpleProbeResult simpleProbeResult = null;
-
-        //TODO: SuspiciousStatementに変換
-        //probeExResult = prbEx.run(sleepTime);
-        //probeEx(probeExResult);
-    }
-
-    public void simpleProbe(SimpleProbeResult simpleProbeResult){
-        System.out.println("[  PROBE (simple) ]");
-        //set suspicious score
-        ScoreUpdateReport report = new ScoreUpdateReport();
-        double preScore;
-        for(String markingMethod : simpleProbeResult.markingMethods()){
-            if(!flRanking.isElementExist(markingMethod)) continue;
-            preScore = flRanking.getSuspicious(markingMethod);
-
-            double finalPreScore = preScore;
-            ToDoubleBiFunction<Integer, Integer> probeExFunction
-                    = (depth, countInLine) -> finalPreScore * (Math.pow(getProbeLambda(), depth));
-
-            double newScore = preScore + simpleProbeResult.probeExSuspScore(markingMethod, probeExFunction);
-            flRanking.updateSuspiciousScore(markingMethod, newScore);
-        }
-
-        report.print();
-        flRanking.sort();
         flRanking.printFLResults(rankingSize);
-    }
-
-    private boolean validCheck(int rank){
-        if(granularity != Granularity.METHOD){
-            System.err.println("Only method granularity is supported.");
-            return false;
-        }
-        if(!flRanking.rankValidCheck(rank)) return false;
-        return true;
-    }
-
-
-    public double getRemoveConst() {
-        return removeConst;
-    }
-
-    public void setRemoveConst(double removeConst) {
-        this.removeConst = removeConst;
-    }
-
-    public double getSuspConst() {
-        return suspConst;
-    }
-
-    public void setSuspConst(double suspConst) {
-        this.suspConst = suspConst;
-    }
-
-    public double getProbeC1() {
-        return probeC1;
-    }
-
-    public void setProbeC1(double probeC1) {
-        this.probeC1 = probeC1;
-    }
-
-    public double getProbeC2() {
-        return probeC2;
-    }
-
-    public void setProbeC2(double probeC2) {
-        this.probeC2 = probeC2;
-    }
-
-    public double getProbeC3() {
-        return probeC3;
-    }
-
-    public void setProbeC3(double probeC3) {
-        this.probeC3 = probeC3;
-    }
-
-    public double getProbeLambda() {
-        return probeLambda;
-    }
-
-    public void setProbeLambda(double probeLambda) {
-        this.probeLambda = probeLambda;
-    }
-
-    public int getRankingSize() {
-        return rankingSize;
-    }
-
-    public void setRankingSize(int rankingSize) {
-        this.rankingSize = rankingSize;
-    }
-
-    public Set<String> getHighlightMethods() {
-        return highlightMethods;
-    }
-
-    public void setHighlightMethods(Set<String> highlightMethods) {
-        this.highlightMethods = highlightMethods;
-        this.flRanking.setHighlightMethods(highlightMethods);
     }
 
 
