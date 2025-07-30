@@ -18,7 +18,6 @@ import java.util.List;
  * テストスイートのカバレッジ情報から疑惑値ランキングを生成・操作するためのクラス。
  * CoverageCollectionを解析し、各対象要素の疑惑値を計算してFLRankingに設定します。
  * remove(), susp(), probe()によってランキングに開発者の知識を与えランキングを更新できる。
- *
  */
 public class FaultFinder {
     FLRanking flRanking;
