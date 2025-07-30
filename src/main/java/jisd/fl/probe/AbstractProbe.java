@@ -1,13 +1,10 @@
 package jisd.fl.probe;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.sun.jdi.*;
 import jisd.debug.*;
-import jisd.debug.Location;
-import jisd.debug.value.ValueInfo;
 import jisd.fl.probe.info.*;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
@@ -19,7 +16,6 @@ import jisd.fl.util.TestUtil;
 import java.nio.file.NoSuchFileException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static jisd.fl.probe.info.SuspiciousExpression.getValueString;
 
@@ -27,12 +23,10 @@ public abstract class AbstractProbe {
 
     SuspiciousVariable firstTarget;
     MethodElementName failedTest;
-    Debugger dbg;
 
     public AbstractProbe(SuspiciousVariable target) {
         this.firstTarget = target;
         this.failedTest = firstTarget.getFailedTest();
-        this.dbg = createDebugger();
     }
 
     /**
@@ -308,36 +302,6 @@ public abstract class AbstractProbe {
         }
     }
 
-
-    protected Debugger createDebugger() {
-        return createDebugger(failedTest.getFullyQualifiedMethodName());
-    }
-
-    protected Debugger createDebugger(String targetMethod) {
-        //使い終わったTestLauncherのプロセスが生き残り続ける問題の対策
-        if (dbg != null) {
-            ThreadReference tr = null;
-            try {
-                tr = dbg.thread();
-            } catch (VMDisconnectedException ignored) {
-            }
-
-            try {
-                if (tr != null && tr.isAtBreakpoint()) {
-                    dbg.cont();
-                }
-            } catch (VMDisconnectedException ignored) {
-            }
-            dbg.exit();
-        }
-
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return TestUtil.testDebuggerFactory(new MethodElementName(targetMethod));
-    }
 
     protected Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousVariable sv, LocalDateTime watchedAt) {
         int locateLine = frame.location().lineNumber();

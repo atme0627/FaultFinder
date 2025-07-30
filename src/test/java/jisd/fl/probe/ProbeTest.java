@@ -52,8 +52,8 @@ class ProbeTest {
             Probe pfs = new Probe(target);
             SuspiciousExpression treeRoot = pfs.run(2000);
 
-            File output = jsonOutPutDir.resolve("CalcTest.json").toFile();
-            JsonIO.export(treeRoot, output);
+            //File output = jsonOutPutDir.resolve("CalcTest.json").toFile();
+            //JsonIO.export(treeRoot, output);
         }
     }
 
