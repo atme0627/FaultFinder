@@ -1,20 +1,11 @@
 package experiment.util;
 
 import experiment.defect4j.Defects4jUtil;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.MethodElement;
 import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Optional;
-import java.util.OptionalInt;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TestLauncherForFinderTest {
 
