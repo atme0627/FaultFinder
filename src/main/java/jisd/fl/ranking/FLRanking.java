@@ -52,7 +52,7 @@ public class FLRanking {
                 "| SUSP SCORE |";
         String partition = "=".repeat(header.length());
 
-        System.out.println("[  SBFL RANKING  ]");
+        System.out.println("[  RANKING  ]");
         System.out.println(partition);
         System.out.println(header);
         System.out.println(partition);
