@@ -8,39 +8,16 @@ import org.junit.jupiter.api.Test;
 
 public class FaultFinderDemo {
     MethodElementName failedTestMethodName = new MethodElementName("demo.SampleTest#sampleTest()");
-    FaultFinder faultFinder;
-
     @BeforeEach
     void init(){
         TestUtil.compileForDebug(failedTestMethodName);
     }
-    @BeforeEach
-    void initFaultFinder(){
-        faultFinder = new FaultFinder(failedTestMethodName);
-    }
 
     @Test
-    void displaySBFLRanking(){
-        faultFinder.printRanking();
-    }
-
-    @Test
-    void probe(){
-        SuspiciousVariable targetValue = new SuspiciousVariable(
-                failedTestMethodName,
-                failedTestMethodName.getFullyQualifiedMethodName(),
-                "actual",
-                "4",
-                true,
-                false
-        );
-        faultFinder.probe(targetValue);
-    }
-
-    @Test
-    void useCase(){
+    void example(){
         //既存のバグ局所化手法、SBFLに基づいた「怪しい行」ランキング
         //テストケースが乏しいため、初めは全て同率になってしまう
+        FaultFinder faultFinder = new FaultFinder(failedTestMethodName);
         faultFinder.printRanking();
 
         //間違った値を取る変数"actual"をヒントとしてランキングに与えることで、疑惑値に差が生まれ調べるべき行が絞られる。
