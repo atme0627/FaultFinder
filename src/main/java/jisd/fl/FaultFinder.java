@@ -1,0 +1,119 @@
+package jisd.fl;
+
+import jisd.fl.probe.Probe;
+import jisd.fl.probe.info.SuspiciousExpression;
+import jisd.fl.ranking.FLRanking;
+import jisd.fl.ranking.FLRankingElement;
+import jisd.fl.ranking.ScoreAdjustment;
+import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
+import jisd.fl.sbfl.Formula;
+import jisd.fl.sbfl.coverage.CoverageAnalyzer;
+import jisd.fl.sbfl.coverage.CoverageCollection;
+import jisd.fl.sbfl.coverage.CoverageOfTarget;
+import jisd.fl.sbfl.coverage.Granularity;
+import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.ranking.report.ScoreUpdateReport;
+import jisd.fl.util.analyze.MethodElementName;
+
+import java.util.List;
+/**
+ * テストスイートのカバレッジ情報から疑惑値ランキングを生成・操作するためのクラス。
+ * CoverageCollectionを解析し、各対象要素の疑惑値を計算してFLRankingに設定します。
+ * remove(), susp(), probe()によってランキングに開発者の知識を与えランキングを更新できる。
+ */
+public class FaultFinder {
+    FLRanking flRanking;
+    //remove時に同じクラスの他のメソッドの疑惑値にかける定数
+    protected double removeConst = 0.8;
+    //susp時に同じクラスの他のメソッドの疑惑値にかける定数
+    protected double suspConst = 1.2;
+    //probeの疑惑値計算に使用する変数
+    protected double probeLambda = 0.8;
+
+    private final int rankingSize = 20;
+    final Granularity granularity;
+
+    public FaultFinder(MethodElementName targetTestClassName){
+        this.granularity = Granularity.LINE;
+        Formula f = Formula.OCHIAI;
+        CoverageAnalyzer coverageAnalyzer = new CoverageAnalyzer();
+        coverageAnalyzer.analyze(targetTestClassName);
+        CoverageCollection sbflCoverage = coverageAnalyzer.result();
+        flRanking = new FLRanking(granularity);
+        calcSuspiciousness(sbflCoverage, granularity, f);
+    }
+    public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
+        this.granularity = granularity;
+        flRanking = new FLRanking(granularity);
+        calcSuspiciousness(covForTestSuite, granularity, f);
+    }
+
+    private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
+        for(CoverageOfTarget coverageOfTarget : covForTestSuite.getCoverages()) {
+            coverageOfTarget.getCoverage(granularity).forEach((element, status) -> {
+                flRanking.setElement(element, status, f);
+            });
+        }
+        flRanking.sort();
+    }
+
+
+    public void printRanking(){
+        flRanking.printFLResults();
+    }
+
+    public void printRanking(int top){
+        flRanking.printFLResults(top);
+    }
+
+    public void remove(int rank) {
+        ScoreUpdateReport report = new ScoreUpdateReport();
+        FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
+                () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
+
+        System.out.println("[  REMOVE  ] " + target);
+        report.recordChange(target);
+
+        target.multipleSuspiciousnessScore(0);
+        flRanking.getNeighborElements(target).forEach(e -> {
+            report.recordChange(e);
+            e.multipleSuspiciousnessScore(this.removeConst);
+        });
+
+        report.print();
+        flRanking.sort();
+        flRanking.printFLResults(rankingSize);
+    }
+
+    public void susp(int rank) {
+        ScoreUpdateReport report = new ScoreUpdateReport();
+        FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
+                () -> new RuntimeException("rank: " + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
+
+        System.out.println("[  SUSP  ] " + target);
+        report.recordChange(target);
+
+        target.multipleSuspiciousnessScore(0);
+        flRanking.getNeighborElements(target).forEach(e -> {
+            report.recordChange(e);
+            e.multipleSuspiciousnessScore(this.suspConst);
+        });
+
+        report.print();
+        flRanking.sort();
+        flRanking.printFLResults(rankingSize);
+    }
+
+
+    public void probe(SuspiciousVariable target){
+        Probe prb = new Probe(target);
+        probe(prb.run(2000));
+    }
+
+    public void probe(SuspiciousExpression causeTree){
+        TraceToScoreAdjustmentConverter converter = new TraceToScoreAdjustmentConverter(this.probeLambda, granularity);
+        List<ScoreAdjustment> adjustments = converter.toAdjustments(causeTree);
+        flRanking.adjustAll(adjustments);
+        printRanking(10);
+    }
+}

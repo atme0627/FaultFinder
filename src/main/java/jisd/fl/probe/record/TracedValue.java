@@ -4,20 +4,40 @@ import jisd.debug.Location;
 
 import java.time.LocalDateTime;
 
+//TODO: これを継承した配列バージョンのクラスを作る
 public class TracedValue implements Comparable<TracedValue>{
-    public LocalDateTime createAt;
-    public Location loc;
-    public String variableName;
-    public String value;
+    public final LocalDateTime createAt;
+    public final int lineNumber;
+    public final String variableName;
+    public final String value;
+    public final boolean isReference;
+    public final boolean isField;
+    public long objectID = 0;
 
     public TracedValue(LocalDateTime createAt,
-                       Location loc,
                        String variableName,
-                       String value){
+                       String value,
+                       int lineNumber){
         this.createAt = createAt;
-        this.loc = loc;
-        this.variableName = variableName;
+        this.lineNumber = lineNumber;
+        this.variableName = variableName.contains("this.") ? variableName.split("\\.")[1] : variableName;
         this.value = value;
+        this.isReference = false;
+        this.isField = variableName.contains("this.");
+    }
+
+    public TracedValue(LocalDateTime createAt,
+                       String variableName,
+                       String value,
+                       int lineNumber,
+                       boolean isReference){
+
+        this.createAt = createAt;
+        this.lineNumber = lineNumber;
+        this.variableName = variableName.contains("this.") ? variableName.split("\\.")[1] : variableName;
+        this.value = value;
+        this.isReference = isReference;
+        this.isField = variableName.contains("this.");
     }
 
     @Override
@@ -27,9 +47,9 @@ public class TracedValue implements Comparable<TracedValue>{
 
     @Override
     public String toString(){
-        return   "[CreateAt] " + createAt +
-                " [Variable] " + variableName +
-                " [Line] " + loc.getLineNumber() +
-                " [value] " + value;
+        return
+                "[ObjectID] " + objectID +
+                " [Line] " + lineNumber +
+                " [Variable] " + variableName + " == " + value;
     }
 }

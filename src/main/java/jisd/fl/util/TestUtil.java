@@ -1,24 +1,28 @@
 package jisd.fl.util;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import jisd.debug.DebugResult;
-import jisd.debug.Debugger;
-import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.JavaParserUtil;
+import jisd.fl.util.analyze.MethodElementName;
+import org.junit.platform.engine.DiscoverySelector;
+import org.junit.platform.engine.discovery.DiscoverySelectors;
+import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.TestIdentifier;
+import org.junit.platform.launcher.TestPlan;
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.launcher.core.LauncherFactory;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.NoSuchFileException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public  class TestUtil {
-    public static String getJVMMain(CodeElementName testMethod){
+    public static String getJVMMain(MethodElementName testMethod){
         return "jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
     }
 
@@ -28,13 +32,12 @@ public  class TestUtil {
                 + ":" + PropertyLoader.getJunitClassPaths();
     }
 
-    @Deprecated
-    public static void compileForDebug(String testClassName) {
-        compileForDebug(new CodeElementName(testClassName));
+    public static void compileForDebug(String targetTestClass) {
+        compileForDebug(new MethodElementName(targetTestClass));
     }
-
     //-gつきでコンパイル
-    public static void compileForDebug(CodeElementName targetTestClass) {
+    @Deprecated
+    public static void compileForDebug(MethodElementName targetTestClass) {
         FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
         String classpath = "locallib/junit-dependency/*";
         String sourcepath = PropertyLoader.getTargetSrcDir() + ":" + PropertyLoader.getTestSrcDir();
@@ -43,34 +46,62 @@ public  class TestUtil {
                 "-g",
                 "-cp", classpath,
                 "-sourcepath", sourcepath,
-                "-d", "classesForDebug/",
+                "-d", PropertyLoader.getDebugBinDir(),
                 targetTestClass.getFilePath(true).toString()
         };
         try {
             ProcessBuilder pb = new ProcessBuilder(cmdArray);
             Process proc = pb.start();
+            proc.waitFor();
+            System.out.println("Success to compile " + targetTestClass.getFullyQualifiedClassName() + ".");
             String line = null;
             try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
                 while ((line = buf.readLine()) != null) System.err.println(line);
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    //現状外部ライブラリに非対応
+    //gradleなどでやる方法を検討
+    public static void compileForDebug() {
+        FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
+        String classpath = "'locallib/junit-dependency/*'";
+        String sourcepath = PropertyLoader.getTargetSrcDir() + ":" + PropertyLoader.getTestSrcDir();
+        String cmd = String.join(" ",
+                "javac",
+                "-g",
+                "-cp", classpath,
+                "-sourcepath ", sourcepath,
+                "-d ", PropertyLoader.getDebugBinDir(),
+                "$(find " +  PropertyLoader.getTargetSrcDir() + " " + PropertyLoader.getTestSrcDir() + " -name *.java)"
+        );
+        try {
+            ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd);
+            Process proc = pb.start();
+            proc.waitFor();
+            System.out.println("Success to compile " + PropertyLoader.getTargetSrcDir() + ".");
+            String line = null;
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                while ((line = buf.readLine()) != null) System.err.println(line);
+            }
+            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
+                while ((line = buf.readLine()) != null) System.out.println(line);
+            }
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
 
-    @Deprecated
-    public static boolean execTestCaseWithJacocoAgent(String testMethodNameWithSignature, String execFileName) throws IOException, InterruptedException {
-        return execTestCaseWithJacocoAgent(new CodeElementName(testMethodNameWithSignature), execFileName);
-    }
     //TestLauncherにjacoco agentをつけて起動
     //methodNameは次のように指定: org.example.order.OrderTests#test1(int a)
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
-    public static boolean execTestCaseWithJacocoAgent(CodeElementName testMethod, String execFileName) throws IOException, InterruptedException {
+    public static boolean execTestCaseWithJacocoAgent(MethodElementName testMethod, String execFileName) throws IOException, InterruptedException {
         final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
         final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-        final String targetBinDir = PropertyLoader.getProperty("targetBinDir");
+        final String debugBinDir = PropertyLoader.getDebugBinDir();
         final String junitClassPath = PropertyLoader.getJunitClassPaths();
         String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
 
@@ -79,13 +110,17 @@ public  class TestUtil {
         // 2: テストが見つからないかつ--fail-if-no-testsが指定されている
         // 0: それ以外
         String cmd =
-                "java -javaagent:" + jacocoAgentPath + "=destfile=" + generatedFilePath +
-                " -cp " + ":./.probe_test_classes"
-                        + "./build/classes/java/main"
-                        + ":" + targetBinDir
-                        + ":" + junitClassPath
-                + " jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
-        Process proc = Runtime.getRuntime().exec(cmd);
+                "java " +
+                "--add-opens java.base/java.lang=ALL-UNNAMED " +
+                "--add-opens java.base/java.lang.reflect=ALL-UNNAMED " +
+                "-javaagent:" + jacocoAgentPath + "=destfile='" + generatedFilePath + "'" +
+                " -cp " + "./build/classes/java/main"
+                        + ":" + debugBinDir
+                        + ":'" + junitClassPath + "'"
+                + " jisd.fl.util.TestLauncher '" + testMethod.getFullyQualifiedMethodName() + "'";
+
+        ProcessBuilder pb = new ProcessBuilder("zsh", "-ic", cmd);
+        Process proc = pb.start();
         proc.waitFor();
 
         boolean DEBUG=false;
@@ -101,154 +136,58 @@ public  class TestUtil {
             }
         }
 
-        //execファイルが生成されるまで待機
-        while(true){
-            File f = new File(generatedFilePath);
-            if(f.exists()){
-                break;
-            }
-        }
         //ファイルの生成が行われたことを出力
         System.out.println("Success to generate " + generatedFilePath + ".");
         System.out.println("testResult " + (proc.exitValue() == 0 ? "o" : "x"));
         return proc.exitValue() == 0;
     }
 
-    @Deprecated
-    public static Debugger testDebuggerFactory(String testMethodName) {
-        return testDebuggerFactory(new CodeElementName(testMethodName));
-    }
-
-    @Deprecated
-    public static Debugger testDebuggerFactory(String testMethodName, String option) {
-        return testDebuggerFactory(new CodeElementName(testMethodName), option);
-    }
-
-    public static Debugger testDebuggerFactory(CodeElementName testMethod){
-        return testDebuggerFactory(testMethod, "");
-    }
-
-    public static Debugger testDebuggerFactory(CodeElementName testMethod, String option) {
-        compileForDebug(testMethod);
-        Debugger dbg;
-        while(true) {
-            try {
-                dbg = new Debugger(
-                          "jisd.fl.util.TestLauncher "
-                                + testMethod.getFullyQualifiedMethodName(),
-                        "-cp " + "./build/classes/java/main"
-                                + ":" + PropertyLoader.getDebugBinDir()
-                                + ":" + PropertyLoader.getJunitClassPaths()
-                                + " " + option
-                );
-
-                break;
-            } catch (RuntimeException e1) {
-                System.err.println(e1);
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e2) {
-                    throw new RuntimeException(e2);
-                }
-            }
-        }
-        dbg.setSrcDir(PropertyLoader.getTargetSrcDir(), PropertyLoader.getTestSrcDir());
-        DebugResult.setDefaultMaxRecordNoOfValue(500);
-        return dbg;
-    }
-
-
-    @Deprecated
-    public static Set<String> getTestMethods(String targetClassName)  {
-        return getTestMethods(new CodeElementName(targetClassName))
-                .stream()
-                .map(CodeElementName::getFullyQualifiedMethodName)
-                .collect(Collectors.toSet());
-    }
-
-    //targetSrcPathは最後"/"なし
-    //targetClassNameはdemo.SortTestのように記述
-    //返り値は demo.SortTest#test1(int a)の形式
-    //publicメソッド以外は取得しない
-    //どうせjunitの実行時にはクラスパスにテストクラスを含める必要があるので
-    //junitのorg.junit.platform.launcherを使う方法にした方がいい
-    @Deprecated
-    public static Set<CodeElementName> getTestMethods(CodeElementName targetClass)  {
-        Set<CodeElementName> methodNames = new LinkedHashSet<>();
-        CompilationUnit unit = getUnitFromCodeElement(targetClass);
-        ClassOrInterfaceDeclaration cd = getClassNodeFromCodeElement(targetClass);
-
-        //親クラスが存在する場合、そのClassも探索
-        getAncestorClasses(targetClass)
-                .stream()
-                .map(TestUtil::getTestMethodsInClass)
-                .forEach(methodNames::addAll);
-
-        //targetClass内のtestClassを探索
-        if (!isJunit4Style(unit)) {
-            //@Nestedクラスがある場合、再帰的に探索
-            cd.findAll(ClassOrInterfaceDeclaration.class)
-                    .stream()
-                    .filter(c -> !c.equals(cd))
-                    .forEach(c -> {
-                        if(c.isAnnotationPresent("Nested")) {
-                            methodNames.addAll(getTestMethods(new CodeElementName(c)));
-                        }
-                        cd.remove(c);
-                    });
-        }
-
-        //targetClassに含まれるmethodを探索
-        methodNames.addAll(getTestMethodsInClass(targetClass));
-        return methodNames;
-    }
-
-
-    //あるクラス内にあるテストメソッドのみ集める（親クラス、入れ子クラスは考えない）
-    private static Set<CodeElementName> getTestMethodsInClass(CodeElementName targetClass){
-        return getClassNodeFromCodeElement(targetClass)
-                .findAll(MethodDeclaration.class)
-                .stream()
-                .filter(md -> md.isAnnotationPresent("Test"))
-                .map(CodeElementName::new)
-                .collect(Collectors.toSet());
-    }
-
-    private static Set<CodeElementName> getAncestorClasses(CodeElementName targetClass){
-       Set<CodeElementName> result = new HashSet<>();
-       CompilationUnit unit = getUnitFromCodeElement(targetClass);
-       ClassOrInterfaceDeclaration cd = getClassNodeFromCodeElement(targetClass);
-       if(cd.getExtendedTypes().isEmpty()) return result;
-
-       String parentPackageName = JavaParserUtil.getPackageName(unit);
-       cd.getExtendedTypes()
-               .stream()
-               .map(type -> new CodeElementName(parentPackageName, type.getNameAsString()))
-               .forEach(ce -> {
-                   result.add(ce);
-                   result.addAll(getAncestorClasses(ce));
-               });
-       return result;
-    }
-
-    private static ClassOrInterfaceDeclaration getClassNodeFromCodeElement(CodeElementName targetClass){
-        return getUnitFromCodeElement(targetClass).getClassByName(targetClass.getShortClassName()).orElseThrow();
-    }
-
-    private static CompilationUnit getUnitFromCodeElement(CodeElementName targetClass){
-        CompilationUnit unit;
+    public static Set<MethodElementName> getTestMethods(MethodElementName testMethodName){
+        //テスト対象クラスの.classを含むディレクトリを動的にロード
+        //テストクラスはコンパイル済みと仮定
+        URL[] url;
         try {
-            unit = JavaParserUtil.parseClass(targetClass);
-        } catch (NoSuchFileException e) {
+            url = new URL[]{Paths.get(PropertyLoader.getDebugBinDir()).toUri().toURL()};
+        } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-        return unit;
+
+        ClassLoader original = Thread.currentThread().getContextClassLoader();
+        try (URLClassLoader testClassLoader = new URLClassLoader(url, original)){
+            //ClassLoaderを切り替え
+            Thread.currentThread().setContextClassLoader(testClassLoader);
+            //対象のテストクラスをロード
+            Class<?> targetTestClass = testClassLoader.loadClass(testMethodName.getFullyQualifiedClassName());
+
+            // JUnit Launcher API を使用してテストを検出
+            DiscoverySelector selector = DiscoverySelectors.selectClass(targetTestClass);
+            LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
+                    .selectors(selector)
+                    .build();
+
+            Launcher launcher = LauncherFactory.create();
+            TestPlan testPlan = launcher.discover(request);
+
+            return testPlan.getRoots().stream()
+                    .flatMap(root -> testPlan.getDescendants(root).stream())
+                    .filter(TestIdentifier::isTest)
+                    .map(TestUtil::getFQMNName)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toSet());
+
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } finally {
+            Thread.currentThread().setContextClassLoader(original);
+        }
     }
 
-    //テストクラスがjunit4スタイルのものか判定
-    private static boolean isJunit4Style(CompilationUnit unit){
-        return unit.findAll(ImportDeclaration.class)
-                .stream()
-                .anyMatch(id -> id.getName().toString().equals("org.junit.Test"));
+    private static Optional<MethodElementName> getFQMNName(TestIdentifier id) {
+        if(id.getSource().isEmpty()) return Optional.empty();
+        MethodSource source = (MethodSource) id.getSource().get();
+        String className = source.getClassName();
+        String methodName = source.getMethodName();
+        return Optional.of(new MethodElementName(className + "#" + methodName + "()"));
     }
 }

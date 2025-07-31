@@ -1,116 +1,50 @@
 package jisd.fl.sbfl;
 
-import experiment.coverage.CoverageGenerator;
-import experiment.defect4j.Defects4jUtil;
-import experiment.sbfl.RankingEvaluator;
-import jisd.fl.coverage.CoverageAnalyzer;
-import jisd.fl.coverage.CoverageCollection;
-import jisd.fl.coverage.Granularity;
-import jisd.fl.probe.assertinfo.FailedAssertEqualInfo;
-import jisd.fl.probe.assertinfo.FailedAssertInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
+import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.FaultFinder;
+import jisd.fl.sbfl.coverage.CoverageAnalyzer;
+import jisd.fl.sbfl.coverage.CoverageCollection;
+import jisd.fl.sbfl.coverage.Granularity;
+import jisd.fl.util.PropertyLoader;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-class FaultFinderTest {
-    String testClassName = "org.apache.commons.math.optimization.linear.SimplexSolverTest";
-    String testMethodName = "org.apache.commons.math.optimization.linear.SimplexSolverTest#testSingleVariableAndConstraint";
-    String variableType = "org.apache.commons.math.optimization.RealPointValuePair";
-    String fieldName = "point";
-    String actual = "0.0";
-    String rootDir = "src/main/resources/coverages";
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-    VariableInfo field = new VariableInfo(
-            variableType,
-            fieldName,
-            false,
-            true,
-            true,
-            0,
-            actual,
-            null
-    );
+public class FaultFinderTest {
+    FaultFinder faultFinder;
 
-    FailedAssertInfo fai = new FailedAssertEqualInfo(
-            testMethodName,
-            actual,
-            field);
-    FaultFinderTest() throws IOException {
-    }
+    @BeforeEach
+    void init(){
+        Dotenv dotenv = Dotenv.load();
+        Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
+        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
+        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
 
-    private String outputDir(String project, int bugId){
-        return rootDir + "/" + project + "/" + project + bugId + "_buggy/" + testClassName;
-    }
-
-
-
-    @Test
-    void removeTest() throws Exception {
-        String project = "Math";
-        int bugId = 87;
-
-        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName);
-        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.remove(1);
+        String testClassName = "org.sample.CalcTest";
+        // カバレッジを分析
+        CoverageAnalyzer ca = new CoverageAnalyzer();
+        ca.analyze(testClassName);
+        CoverageCollection coverageCollection = ca.result();
+        // FaultFinderForStmtのインスタンス化
+        faultFinder = new FaultFinder(coverageCollection, Granularity.LINE, Formula.OCHIAI);
     }
 
     @Test
-    void suspTest() throws Exception {
-        String project = "Math";
-        int bugId = 87;
-
-        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName);
-        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.susp(2);
+    public void printRankingTest() {
+        assertDoesNotThrow(() -> faultFinder.printRanking());
     }
 
     @Test
-    void probeExTest() {
-        String project = "Math";
-        int bugId = 87;
-
-        Defects4jUtil.changeTargetVersion(project, bugId);
-        CoverageAnalyzer ca = new CoverageAnalyzer(outputDir(project, bugId));
-        CoverageCollection cov = ca.analyzeAll(testClassName);
-        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-        ff.probeEx(fai, 3000);
+    public void removeTest(){
+        faultFinder.remove(3);
     }
 
     @Test
-    void loadTest() throws NoSuchFileException {
-        String project = "Math";
-        int bugId = 47;
-        boolean probe = true;
-
-        CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
-        FaultFinder ff = new FaultFinder(cov, Granularity.METHOD, Formula.OCHIAI);
-
-        ff.setHighlightMethods(RankingEvaluator.loadBugMethods(project, bugId));
-        ff.getFLResults().printFLResults(50, cov);
-        System.out.println();
-        if(probe) {
-            RankingEvaluator re = new RankingEvaluator(ff);
-            re.loadAndApplyProbeEx(project, bugId);
-        }
-        ff.getFLResults().printFLResults(50, cov);
-        //System.out.println(ff.getFLResults().getNumOfTie(ff.getFLResults().getElementAtPlace(49)));
+    public void suspTest(){
+        faultFinder.susp(2);
     }
-
-    @Test
-    void printFLResultsTest() {
-        String project = "Math";
-        int bugId = 87;
-        CoverageCollection cov = CoverageGenerator.loadAll(project, bugId);
-        FaultFinder ff = new FaultFinder(cov, Formula.OCHIAI);
-
-
-
-        ff.printRanking(20);
-    }
-
-
 }

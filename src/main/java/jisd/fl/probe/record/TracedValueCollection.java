@@ -3,7 +3,6 @@ package jisd.fl.probe.record;
 import com.sun.jdi.*;
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.assertinfo.VariableInfo;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -14,6 +13,10 @@ public abstract class TracedValueCollection {
     protected List<TracedValue> record;
 
     protected TracedValueCollection(){
+    }
+
+    protected TracedValueCollection(List<TracedValue> record){
+        this.record = record;
     }
 
     public List<TracedValue> filterByVariableName(String varName){
@@ -36,6 +39,7 @@ public abstract class TracedValueCollection {
     }
 
     protected List<TracedValue> convertValueInfo(ValueInfo vi, Location loc){
+        if(vi.getJValue() == null) return convertPrimitiveInfo(vi, loc);
         Type typeOfValue = vi.getJValue().type();
         //変数が配列の場合
         if(typeOfValue instanceof ArrayType){
@@ -62,9 +66,9 @@ public abstract class TracedValueCollection {
         for(int i = 0; i < children.size(); i++){
             result.add(new TracedValue(
                     children.get(i).getCreatedAt(),
-                    loc,
                     vi.getName() + "[" + i + "]",
-                    children.get(i).getValue()
+                    children.get(i).getValue(),
+                    loc.getLineNumber()
             ));
         }
         return result;
@@ -73,9 +77,9 @@ public abstract class TracedValueCollection {
     protected List<TracedValue> convertPrimitiveInfo(ValueInfo vi, Location loc){
         return List.of(new TracedValue(
                 vi.getCreatedAt(),
-                loc,
                 vi.getName(),
-                vi.getValue()
+                vi.getValue(),
+                loc.getLineNumber()
         ));
     }
 
@@ -88,9 +92,10 @@ public abstract class TracedValueCollection {
     protected List<TracedValue> convertReferenceInfo(ValueInfo vi, Location loc){
         return List.of(new TracedValue(
                 vi.getCreatedAt(),
-                loc,
                 vi.getName(),
-                vi.getValue()
+                vi.getValue(),
+                loc.getLineNumber(),
+                true
         ));
     }
 
@@ -121,6 +126,7 @@ public abstract class TracedValueCollection {
     }
 
     public void printAll(){
+        record.sort(TracedValue::compareTo);
         for(TracedValue tv : record){
             System.out.println("    >> " + tv);
         }

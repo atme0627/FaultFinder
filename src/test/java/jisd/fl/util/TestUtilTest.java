@@ -1,7 +1,8 @@
 package jisd.fl.util;
 
+import experiment.defect4j.Defects4jUtil;
 import jisd.debug.Debugger;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,61 +26,15 @@ class TestUtilTest {
 
         @Test
         void voidGaussNewtonOptimizerTest() {
-            CodeElementName testClass = new CodeElementName("TestUtilTest.getTestMethodsTest.d4jMath6.GaussNewtonOptimizerTest");
-            Set<CodeElementName> testMethods = TestUtil.getTestMethods(testClass);
-            for(CodeElementName ce : testMethods){
+            String project = "Lang";
+            int bugId = 11;
+            Defects4jUtil.changeTargetVersion(project, bugId);
+            MethodElementName targetTestClass = new MethodElementName("org.apache.commons.lang3.RandomStringUtilsTest");
+            TestUtil.compileForDebug(targetTestClass);
+            Set<MethodElementName> testMethods = TestUtil.getTestMethods(targetTestClass);
+            for(MethodElementName ce : testMethods){
                 System.out.println(ce);
             }
-        }
-
-        @Test
-        void getTestMethodsByJunit(){
-            LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
-                    .selectors(
-                            DiscoverySelectors.selectPackage("jisd.fl.util")
-                    )
-                    .build();
-
-            Launcher launcher = LauncherFactory.create();
-            TestPlan testPlan = launcher.discover(request);
-
-            for (TestIdentifier identifier : testPlan.getRoots()) {
-                printTestIdentifiers(testPlan, identifier, 0);
-            }
-        }
-
-        void printTestIdentifiers(TestPlan plan, TestIdentifier id, int level) {
-            if (id.isTest()) {
-                System.out.println("  ".repeat(level) + "Test: " + id.getDisplayName());
-            } else if (id.isContainer()) {
-                System.out.println("  ".repeat(level) + "Container: " + id.getDisplayName());
-            }
-
-            for (TestIdentifier child : plan.getChildren(id)) {
-                printTestIdentifiers(plan, child, level + 1);
-            }
-        }
-    }
-
-    @Nested
-    class TestDebuggerFactory {
-        @BeforeEach
-        void initProperty() {
-            PropertyLoader.setProperty("targetSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/main");
-            PropertyLoader.setProperty("testSrcDir", "src/test/resources/jisd/fl/probe/ProbeExTest/src/test");
-            PropertyLoader.setProperty("testBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/main");
-            PropertyLoader.setProperty("targetBinDir", "src/test/resources/jisd/fl/probe/ProbeExTest/build/test");
-        }
-
-        @Test
-        void simpleCase(){
-            TestUtil.compileForDebug(new CodeElementName("sample.SampleTest"));
-            CodeElementName targetMethod = new CodeElementName("sample.SampleTest#case2()");
-            Debugger dbg = TestUtil.testDebuggerFactory(targetMethod);
-            dbg.stopAt("sample.SampleTest", 19);
-            dbg.run(1000);
-            dbg.locals();
-            dbg.exit();
         }
     }
 
@@ -95,7 +50,7 @@ class TestUtilTest {
 
        @Test
        void simpleCase(){
-           CodeElementName targetMethod = new CodeElementName("sample.SampleTest#case2()");
+           MethodElementName targetMethod = new MethodElementName("sample.SampleTest#case2()");
            TestUtil.compileForDebug(targetMethod);
        }
     }
