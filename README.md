@@ -116,7 +116,6 @@ printRankingメソッドによって上位から与えられた要素数まで�
 
 このように、開発者によるフィードバックによって効率的にバグ箇所特定作業を進めることができます。
 
-## 参考文献
 [^1]: F.Horváth et al. A new interactive fault localization method with context aware user feedback. In IBF, pp. 23–28, 2019.
 
 [^2]: 江﨑 政哉，小林 隆志, 観測に基づく表明違反原因推定を用いた対話的欠陥箇所特定, 電子情報通信学会 信学技報 No. SS2024-68 (Vol.124, No.429, pp.146 - 151), ソフトウェアサイエンス研究専門委員会 2025年3月研究会
