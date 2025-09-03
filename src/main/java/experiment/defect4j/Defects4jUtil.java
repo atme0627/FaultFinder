@@ -104,17 +104,29 @@ public class Defects4jUtil {
 
     private static String execCmd(String cmd){
         try {
-            Process proc = Runtime.getRuntime().exec(cmd, null, defects4jDir);
+            String prefix = "export JAVA_HOME=$(/usr/libexec/java_home -v 11); export PATH=\"$JAVA_HOME/bin:$PATH\"; ";
+            ProcessBuilder pb = new ProcessBuilder("/bin/zsh", "-lc", prefix + cmd);
+            pb.directory(defects4jDir);
+
+            //環境変数の設定
+            String home = System.getProperty("user.home");
+            var env = pb.environment();
+            env.put("PATH", home + "/perl5/bin:/opt/homebrew/opt/perl/bin:" + System.getenv("PATH"));
+            env.put("PERL5LIB", home + "/perl5/lib/perl5");
+
+            Process proc = pb.start();
+            System.out.println("execCmd: " + cmd);
             String line = null;
-//            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
-//                while ((line = buf.readLine()) != null) System.err.println(line);
-//            }
+
             StringBuilder output = new StringBuilder();
             try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
                 while ((line = buf.readLine()) != null) output.append(line).append("\n");
             }
             int exitCode = proc.waitFor();
             if (exitCode != 0) {
+                try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                    while ((line = buf.readLine()) != null) System.err.println(line);
+                }
                 throw new IOException("Process exited with code " + exitCode);
             }
             return output.toString().replace("\n", "");

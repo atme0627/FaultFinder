@@ -18,17 +18,18 @@ import java.util.List;
 
 public class FindProbeTarget {
     static Dotenv dotenv = Dotenv.load();
-    static Path expDir = Paths.get(dotenv.get("EXP_20250726_DIR"));
+    static Path expDir = Paths.get(dotenv.get("EXP_20250904_DIR"));
 
     public static void main(String[] args) throws IOException {
         String project = "Lang";
         int numberOfBugs = 61;
         List<Integer> duplicatedBugs = List.of(2, 18, 25, 48);
 
-        for(int bugId = 58; bugId <= numberOfBugs; bugId++) {
+        for(int bugId = 1; bugId <= numberOfBugs; bugId++) {
             if (duplicatedBugs.contains(bugId)) continue;
             File outputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probeTargets.json").toFile();
             Path path = outputFile.toPath();
+            Files.createDirectories(path.getParent());
             Files.deleteIfExists(path);
             Files.createFile(path);
 

@@ -12,6 +12,6 @@ public class Defects4j {
     static Path d4jDir = Paths.get(dotenv.get("D4J_DIR"));
     public static void main(String[] arg){
         String project = "Lang";
-        Defects4jUtil.checkoutBuggySrc(project, 1, d4jDir.toFile());
+        Defects4jUtil.checkoutBuggySrc(project, 8, d4jDir.toFile());
     }
 }
