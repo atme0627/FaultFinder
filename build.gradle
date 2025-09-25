@@ -56,6 +56,11 @@ dependencies {
 
     // undertow
     implementation 'org.jboss.resteasy:resteasy-undertow:4.5.12.Final'
+
+    //org.json
+    //JSON出力用ライブラリ
+    // https://mvnrepository.com/artifact/org.json/json
+    implementation("org.json:json:20250517")
 }
 
 test {

@@ -115,7 +115,7 @@ public class Defects4jUtil {
             env.put("PERL5LIB", home + "/perl5/lib/perl5");
 
             Process proc = pb.start();
-            System.out.println("execCmd: " + cmd);
+//            System.out.println("execCmd: " + cmd);
             String line = null;
 
             StringBuilder output = new StringBuilder();

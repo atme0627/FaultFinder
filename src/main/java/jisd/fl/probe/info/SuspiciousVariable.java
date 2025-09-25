@@ -2,7 +2,10 @@ package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.*;
 import jisd.fl.util.analyze.MethodElementName;
+import org.json.*;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -168,5 +171,56 @@ public class SuspiciousVariable {
 
     public void setParent(SuspiciousExpression parent) {
         this.parent = parent;
+    }
+
+    /**
+     * @return Json
+     * {
+     *     failedTest: org.example.sampleTest
+     *     locateMethod: org.example.sample#sampleMethod(x, y)
+     *     isPrimitive: true
+     *     isArray: false
+     *     ArrayIndex: 10 (option)
+     *     variableName: result
+     *     actualValue: 10
+     * }
+     */
+    public JSONObject toJson() {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("failedTest", failedTest.toString());
+        map.put("locateMethod", locateMethod.toString());
+        map.put("isPrimitive", isPrimitive);
+        map.put("isArray", isArray);
+        if (isArray) {
+            map.put("ArrayIndex", arrayNth);
+        }
+        map.put("variableName", variableName);
+        map.put("actualValue", actualValue);
+        return new JSONObject(map);
+    }
+
+    static public SuspiciousVariable fromJson(String jsonString) {
+        try {
+            JSONObject json = new JSONObject(jsonString);
+            MethodElementName failedTest = new MethodElementName(json.getString("failedTest"));
+            MethodElementName locateMethod = new MethodElementName(json.getString("locateMethod"));
+            boolean isPrimitive = json.getBoolean("isPrimitive");
+            boolean isArray = json.getBoolean("isArray");
+            int arrayNth = isArray ? json.getInt("ArrayIndex") : -1;
+            String variableName = json.getString("variableName");
+            String actualValue = json.getString("actualValue");
+
+            return new SuspiciousVariable(
+                    failedTest,
+                    locateMethod.getFullyQualifiedMethodName(),
+                    variableName,
+                    actualValue,
+                    isPrimitive,
+                    false,
+                    arrayNth
+            );
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
