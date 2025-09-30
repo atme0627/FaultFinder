@@ -43,7 +43,7 @@ public class LineValueWatcher {
     }
 
 
-    protected List<SuspiciousVariable> watchAllVariablesInLine(StackFrame frame, MethodElementName locateMethod){
+    private List<SuspiciousVariable> watchAllVariablesInLine(StackFrame frame, MethodElementName locateMethod){
         List<SuspiciousVariable> result = new ArrayList<>();
 
         // （1）ローカル変数
