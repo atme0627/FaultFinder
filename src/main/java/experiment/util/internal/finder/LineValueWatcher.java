@@ -62,7 +62,7 @@ public class LineValueWatcher {
                 result.add(new SuspiciousVariable(
                         this.targetTestCaseName,
                         locateMethod.getFullyQualifiedMethodName(),
-                        lv.name() + "[0]",
+                        lv.name(),
                         ar.getValue(0).toString(),
                         true,
                         false,
@@ -91,7 +91,7 @@ public class LineValueWatcher {
 
                 result.add(new SuspiciousVariable(
                         this.targetTestCaseName,
-                        locateMethod.getFullyQualifiedMethodName(),
+                        locateMethod.getFullyQualifiedClassName(),
                         f.name(),
                         thisObj.getValue(f).toString(),
                         true,
