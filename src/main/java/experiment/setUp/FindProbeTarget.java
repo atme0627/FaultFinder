@@ -12,7 +12,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -51,7 +50,7 @@ public class FindProbeTarget {
         List<MethodElementName> failedMethods = Defects4jUtil.getFailedTestMethods("Lang", bugId);
         for (MethodElementName me : failedMethods) {
             SuspiciousVariableFinder finder = new SuspiciousVariableFinder(me);
-            result.addAll(finder.find());
+            result.addAll(finder.findSuspiciousVariableInAssertLine());
         }
 
         result.forEach(vi -> System.out.println(vi.toString()));

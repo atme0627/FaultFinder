@@ -1,7 +1,5 @@
 package experiment.util;
 
-import com.github.javaparser.ast.body.BodyDeclaration;
-import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
@@ -19,6 +17,11 @@ import java.nio.file.NoSuchFileException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 失敗テストに対して、probeの対象とする変数を自動で抽出するクラス
+ * assertion fail または crash が起きた行に含まれるprimitive変数、
+ * 及びそこで呼び出されているメソッドの返り値に含まれるprimitive変数を全てSuspiciousVariableとして抽出する。
+ */
 public class SuspiciousVariableFinder {
     private final MethodElementName targetTestCaseName;
 
@@ -26,40 +29,41 @@ public class SuspiciousVariableFinder {
         this.targetTestCaseName = targetTestCaseName;
     }
 
-    private Optional<TestLauncherForFinder.TestFailureInfo> getAssertLine(){
-        TestLauncherForFinder tl = new TestLauncherForFinder(targetTestCaseName);
-        return tl.runTestAndGetFailureLine();
-    }
 
-    public List<SuspiciousVariable> find() throws NoSuchFileException {
+    public List<SuspiciousVariable> findSuspiciousVariableInAssertLine() throws NoSuchFileException {
+        //失敗テストを実行し、失敗したAssert行、またはクラッシュ時に最後に実行された行（失敗行）を取得
         TestLauncherForFinder.TestFailureInfo info = getAssertLine().orElse(null);
         if(info == null) return Collections.emptyList();
 
+        //失敗行のロケーション情報を取得
         int failureLine = info.line();
         MethodElementName locateClass = info.locateClass();
         MethodElementName locateMethod = StaticAnalyzer.getMethodNamesWithLine(locateClass).get(failureLine);
 
-        System.out.println("failure test: " + targetTestCaseName);
+        //ログ
+        System.out.println("****** failure test: " + targetTestCaseName + "   location:  " + locateMethod + " ( line: "+ failureLine +" ) " + "*****************");
 
-        System.out.println("failure location: [method] " + locateMethod + " [line] " + failureLine);
-
-
-        List<SuspiciousVariable> result = new ArrayList<>();
-
+        //失敗行に含まれる変数の情報を抽出する。
         //assert文の場合、まずAssert文で使われてる変数全て取ってくる(actualかどうか考えない)
-        Statement stmt = extractStmt(failureLine, locateMethod);
-        result.addAll(valuesInAssert(failureLine, locateMethod));
-        List<String> neighborVariableNames = extractNeighborVariableNames(stmt);
+        List<SuspiciousVariable> result = new ArrayList<>();
+        Statement stmtInFailureLine = extractStmtInFailureLine(failureLine, locateMethod);
+        result.addAll(watchAllValuesInAssertLine(failureLine, locateMethod));
+        List<String> neighborVariableNames = extractNeighborVariableNames(stmtInFailureLine);
         result = result.stream().filter(sv -> neighborVariableNames.contains(sv.getSimpleVariableName()))
                 .collect(Collectors.toList());
 
-        List<SuspiciousExpression> returns = searchSuspiciousReturns(failureLine, locateMethod, getMethodCallCount(stmt));
+        List<SuspiciousExpression> returns = searchSuspiciousReturns(failureLine, locateMethod, getMethodCallCount(stmtInFailureLine));
         for (SuspiciousExpression r : returns) {
             List<SuspiciousVariable> neighbor = r.neighborSuspiciousVariables(2000, false);
             result.addAll(neighbor);
         }
 
         return result;
+    }
+
+    private Optional<TestLauncherForFinder.TestFailureInfo> getAssertLine(){
+        TestLauncherForFinder tl = new TestLauncherForFinder(targetTestCaseName);
+        return tl.runTestAndGetFailureLine();
     }
 
     private List<SuspiciousExpression> searchSuspiciousReturns(int failureLine, MethodElementName locateMethod, int callCount){
@@ -148,17 +152,29 @@ public class SuspiciousVariableFinder {
         return result;
     }
 
-    private List<SuspiciousVariable> valuesInAssert(int failureLine, MethodElementName locateMethod){
+
+    /**
+     * 失敗行でsuspendした際に観測可能な変数を全て取得し、SuspiciousVariableとして返す。
+     * @param failureLine
+     * @param locateMethod
+     * @return　観測された変数
+     */
+    private List<SuspiciousVariable> watchAllValuesInAssertLine(int failureLine, MethodElementName locateMethod){
         final List<SuspiciousVariable> result = new ArrayList<>();
         //Debugger生成
         String main = TestUtil.getJVMMain(this.targetTestCaseName);
         String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
-        //調査対象の行実行に到達した時に行う処理を定義
+
+        //失敗行にブレークポイントを置きsuspend
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
             try {
                 ThreadReference thread = bpe.thread();
+                //その行が実際には複数回実行される可能性がある。
+                //その際には失敗する時の情報（つまり、一番最後に実行された時の情報）を取得する。
+                //そのために、まずresultを初期化することで暫定の最終実行時の情報がresultに保持される。
                 result.clear();
+
                 result.addAll(watchAllVariablesInLine(thread.frame(0), locateMethod));
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
@@ -298,7 +314,8 @@ public class SuspiciousVariableFinder {
         }
     }
 
-    private Statement extractStmt(int failureLine, MethodElementName locateMethod){
+
+    private Statement extractStmtInFailureLine(int failureLine, MethodElementName locateMethod){
         try {
             return JavaParserUtil.getStatementByLine(locateMethod, failureLine).orElseThrow();
         } catch (NoSuchFileException e) {

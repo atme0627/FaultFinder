@@ -26,6 +26,10 @@ import java.util.stream.Collectors;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
+/**
+ * ある失敗テストを実行し、失敗したAssert行、またはクラッシュ時に最後に実行された行を返す。
+ * SuspiciousVariableFinderでその行に含まれる変数の情報を抽出する。
+ */
 public class TestLauncherForFinder {
     private final MethodElementName testMethodName;
     private final Set<String> targetClassNames;
@@ -83,7 +87,7 @@ public class TestLauncherForFinder {
                         return Optional.of(new TestFailureInfo(ste.getLineNumber(), new MethodElementName(ste.getClassName())));
                     }
                 }
-                System.err.println("Failed to find the line number of the failure. " + Arrays.stream(ex.getStackTrace()).limit(10).map(StackTraceElement::toString).collect(Collectors.joining("\n")));
+                System.err.println("Failed to findSuspiciousVariableInAssertLine the line number of the failure. " + Arrays.stream(ex.getStackTrace()).limit(10).map(StackTraceElement::toString).collect(Collectors.joining("\n")));
                 return Optional.empty();
             }
 
@@ -99,6 +103,5 @@ public class TestLauncherForFinder {
     }
 
     public record TestFailureInfo(int line, MethodElementName locateClass){
-
     }
 }
