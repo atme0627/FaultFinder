@@ -26,11 +26,20 @@ public  class TestUtil {
         return "jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
     }
 
-    public static String getJVMOption(){
+    @Deprecated
+    public static String getJVMOptionWithGetDebugBinDir(){
         return "-cp " + "./build/classes/java/main"
                 + ":" + PropertyLoader.getDebugBinDir()
                 + ":" + PropertyLoader.getJunitClassPaths();
     }
+
+    public static String getJVMOption(){
+        return "-cp " + "./build/classes/java/main"
+                + ":" + PropertyLoader.getTargetBinDir()
+                + ":" + PropertyLoader.getTestBinDir()
+                + ":" + PropertyLoader.getJunitClassPaths();
+    }
+
 
     public static void compileForDebug(String targetTestClass) {
         compileForDebug(new MethodElementName(targetTestClass));
