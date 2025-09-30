@@ -1,30 +1,49 @@
-package jisd.debug;
+package experiment.util.internal.finder;
 
 import com.sun.jdi.*;
+import jisd.debug.EnhancedDebugger;
 import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * EnhancedDebuggerで使用するユーティリティクラス。
- * 例えばstackFrameに対する処理など。
- * ゆくゆくはEnhanceDebuggerに統合したい。
- */
-public class EnhancedDebuggerUtils {
+public class LineValueWatcher {
+    private final MethodElementName targetTestCaseName;
+    public LineValueWatcher(MethodElementName targetTestCaseName) {
+        this.targetTestCaseName = targetTestCaseName;
+    }
+    public List<SuspiciousVariable> watchAllValuesInAssertLine(int failureLine, MethodElementName locateMethod){
+        final List<SuspiciousVariable> result = new ArrayList<>();
+        //Debugger生成
+        String main = TestUtil.getJVMMain(this.targetTestCaseName);
+        String options = TestUtil.getJVMOption();
+        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
 
-    /**
-     * suspiciousVariableFinderのwatchAllValuesInAssertLineで使われるメソッド。
-     * stackframeから変数情報を取得して、SuspiciousVariableに変換する。
-     * 他のとこでも使ってそうだから切り分けて共通化を図る。
-     * @param targetTestCaseName
-     * @param frame
-     * @param locateMethod
-     * @return
-     */
-    public static List<SuspiciousVariable> watchAllVariablesInLineForSuspiciousVariableFinder(MethodElementName targetTestCaseName, StackFrame frame, MethodElementName locateMethod){
+        //失敗行にブレークポイントを置きsuspend
+        EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
+            try {
+                ThreadReference thread = bpe.thread();
+                //その行が実際には複数回実行される可能性がある。
+                //その際には失敗する時の情報（つまり、一番最後に実行された時の情報）を取得する。
+                //そのために、まずresultを初期化することで暫定の最終実行時の情報がresultに保持される。
+                result.clear();
+
+                result.addAll(watchAllVariablesInLine(thread.frame(0), locateMethod));
+            } catch (IncompatibleThreadStateException e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        //VMを実行し情報を収集
+        eDbg.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
+        return result;
+    }
+
+
+    protected List<SuspiciousVariable> watchAllVariablesInLine(StackFrame frame, MethodElementName locateMethod){
         List<SuspiciousVariable> result = new ArrayList<>();
 
         // （1）ローカル変数
@@ -41,7 +60,7 @@ public class EnhancedDebuggerUtils {
                 if(ar.length() == 0) return;
                 if(ar.getValue(0) == null) return;
                 result.add(new SuspiciousVariable(
-                        targetTestCaseName,
+                        this.targetTestCaseName,
                         locateMethod.getFullyQualifiedMethodName(),
                         lv.name() + "[0]",
                         ar.getValue(0).toString(),
@@ -52,7 +71,7 @@ public class EnhancedDebuggerUtils {
             }
             if(v instanceof PrimitiveValue || (v != null && v.type().name().equals("java.lang.String"))) {
                 result.add(new SuspiciousVariable(
-                        targetTestCaseName,
+                        this.targetTestCaseName,
                         locateMethod.getFullyQualifiedMethodName(),
                         lv.name(),
                         v.toString(),
@@ -71,7 +90,7 @@ public class EnhancedDebuggerUtils {
                 if(thisObj.getValue(f) == null) continue;
 
                 result.add(new SuspiciousVariable(
-                        targetTestCaseName,
+                        this.targetTestCaseName,
                         locateMethod.getFullyQualifiedMethodName(),
                         f.name(),
                         thisObj.getValue(f).toString(),
