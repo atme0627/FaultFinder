@@ -62,7 +62,7 @@ public abstract class AbstractProbe {
 
         //Debugger生成
         String main = TestUtil.getJVMMain(target.getFailedTest());
-        String options = TestUtil.getJVMOption();
+        String options = TestUtil.getJVMOptionWithGetDebugBinDir();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
         List<TracedValue> result = new ArrayList<>();
 
