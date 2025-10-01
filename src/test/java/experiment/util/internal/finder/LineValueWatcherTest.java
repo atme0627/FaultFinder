@@ -31,7 +31,6 @@ class LineValueWatcherTest {
         PropertyLoader.setTestBinDir(testProjectDir.resolve("build/classes/java/test").toString());
 
         targetTestClassName = new MethodElementName("experiment.util.internal.finder.LineValueWatcherTest");
-
     }
 
     @Test
