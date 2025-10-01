@@ -354,4 +354,9 @@ public abstract class SuspiciousExpression {
                 this.locateLine == se.locateLine &&
                 this.actualValue.equals(se.actualValue);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(failedTest, locateMethod, locateLine, actualValue);
+    }
 }
