@@ -345,4 +345,13 @@ public abstract class SuspiciousExpression {
         }
         return false;
     }
+
+    @Override
+    public boolean equals(Object obj){
+        if(!(obj instanceof SuspiciousExpression se)) return false;
+        return this.failedTest.equals(se.failedTest) &&
+                this.locateMethod.equals(se.locateMethod) &&
+                this.locateLine == se.locateLine &&
+                this.actualValue.equals(se.actualValue);
+    }
 }
