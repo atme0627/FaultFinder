@@ -54,7 +54,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
 
         //Debugger生成
         String main = TestUtil.getJVMMain(this.failedTest);
-        String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+        String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
         //ブレークポイントにヒットした時に行う処理を定義
         //ここではその行で呼ばれてるメソッド情報を抽出
