@@ -1,7 +1,6 @@
 package experiment.util.internal.finder;
 
-import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.stmt.Statement;
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequest;
@@ -12,12 +11,15 @@ import jisd.debug.EnhancedDebugger;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
 import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.util.analyze.MethodElementName;
 
-import java.nio.file.NoSuchFileException;
 import java.util.*;
 
+/**
+ * 指定された行で呼び出されているメソッドのreturn文内で使われている変数の情報をSuspiciousReturnValueとして返す。
+ * return文内でもメソッドが呼び出されている場合は、再帰的にその変数の情報も返す。
+ * 同一のSuspiciousReturnValueが検出された場合はそのうち1つ飲みを返す。
+ */
 public class LineMethodCallWatcher {
     private final MethodElementName targetTestCaseName;
     public LineMethodCallWatcher(MethodElementName targetTestCaseName) {
@@ -26,8 +28,7 @@ public class LineMethodCallWatcher {
 
     public List<SuspiciousExpression> searchSuspiciousReturns(int failureLine, MethodElementName locateMethod){
         List<SuspiciousExpression> result = new ArrayList<>();
-        int callCount = getMethodCallCount(failureLine, locateMethod);
-        Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>(returnsInAssert(failureLine, locateMethod, callCount));
+        Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>(returnsInAssert(failureLine, locateMethod));
 
         System.out.println("------------------------------------------------------------------------------------------------------------");
         while(!suspExprQueue.isEmpty()){
@@ -51,14 +52,13 @@ public class LineMethodCallWatcher {
         return result.stream().distinct().toList();
     }
 
-    private List<SuspiciousReturnValue> returnsInAssert(int failureLine, MethodElementName locateMethod, int callCount){
+    private List<SuspiciousReturnValue> returnsInAssert(int failureLine, MethodElementName locateMethod){
         final List<SuspiciousReturnValue> result = new ArrayList<>();
 
         //Debugger生成
         String main = TestUtil.getJVMMain(this.targetTestCaseName);
-        String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+        String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
-
         //対象の引数が属する行にたどり着いた時に行う処理を定義
         //ここではその行で呼ばれてるメソッド情報を抽出
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
@@ -68,16 +68,24 @@ public class LineMethodCallWatcher {
             ThreadReference thread = bpe.thread();
             /**
              * 方針
-             * あらかじめその行で行われるメソッド呼び出しの回数を特定し、その回数だけ以下を行う。
+             * 0. あらかじめブレークポイント行でのcallStackCountを記録する。
              * 1. ブレークポイント行からStepInする
+             * 1-2. その時点でのcallStackCountがブレークポイント行時点での count + 1 出なければ終了
              * 2. その地点のクラス、メソッド名を取得する。
              * 3. そのクラス名でフィルターをかけたMethodExitRequestを生成、有効化する。
              * 4. MethodExitEventを捕捉し、メソッド名が一致していればそれを使う。
              * 5. stepOutし 1.に戻る。
              */
 
+            int baseStackCallCount;
+            int currentStackCallCount = 0;
+            try {
+                baseStackCallCount = thread.frameCount();
+            } catch (IncompatibleThreadStateException e) {
+                throw new RuntimeException(e);
+            }
 
-            for (int i = 0; i < callCount; i++) {
+            while (true) {
                 // 1. ブレークポイント行からStepInする
                 StepRequest stepIn = manager.createStepRequest(
                         thread,
@@ -89,21 +97,32 @@ public class LineMethodCallWatcher {
                 stepIn.enable();
                 vm.resume();
 
-                // 2. その地点のクラス、メソッド名を取得する。
+
+
                 String locateClassName = null;
                 String locateMethodName = null;
                 EventSet es = vm.eventQueue().remove();
                 for (Event ev : es) {
                     if (ev instanceof StepEvent se) {
                         stepIn.disable();
+                        //1-2. その時点でのcallStackCountがブレークポイント行時点での count + 1 出なければ終了
+                        try {
+                            currentStackCallCount = se.thread().frameCount();
+                        } catch (IncompatibleThreadStateException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        // 2. その地点のクラス、メソッド名を取得する。
                         locateClassName = se.location().declaringType().name();
                         locateMethodName = se.location().method().name();
                     }
                 }
 
+                if(!(currentStackCallCount == baseStackCallCount + 1)) break;
+
                 //もしjava.*等なら飛ばす。
                 if(locateClassName.startsWith("java.") || locateClassName.startsWith("sun.") || locateClassName.startsWith("jdk.")) {
-                    i--;
+                    continue;
                 }
                 else {
                     // 3. そのクラス名でフィルターをかけたMethodExitRequestを生成、有効化する。
@@ -170,16 +189,4 @@ public class LineMethodCallWatcher {
         eDbg.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
         return result;
     }
-
-    private int getMethodCallCount(int failureLine, MethodElementName locateMethod){
-        try {
-            Statement stmt = JavaParserUtil.getStatementByLine(locateMethod, failureLine).orElseThrow();
-            return stmt.findAll(MethodCallExpr.class).size();
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException("Class [" + locateMethod + "] is not found.");
-        } catch (NoSuchElementException e){
-            throw new RuntimeException("Cannot extract Statement from [" + locateMethod + ":" + failureLine + "].");
-        }
-    }
-
 }
