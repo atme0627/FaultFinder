@@ -59,6 +59,7 @@ public class LineValueWatcher {
             if(v instanceof ArrayReference ar){
                 if(ar.length() == 0) return;
                 if(ar.getValue(0) == null) return;
+                if(!(ar.getValue(0) instanceof PrimitiveValue)) return;
                 result.add(new SuspiciousVariable(
                         this.targetTestCaseName,
                         locateMethod.getFullyQualifiedMethodName(),
