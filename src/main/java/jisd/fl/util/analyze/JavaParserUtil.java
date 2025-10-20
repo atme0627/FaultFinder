@@ -1,5 +1,6 @@
 package jisd.fl.util.analyze;
 
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -18,6 +19,11 @@ import java.util.List;
 import java.util.Optional;
 
 public class JavaParserUtil {
+    static {
+        ParserConfiguration config = new ParserConfiguration()
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17); // または JAVA_16/21 など
+        StaticJavaParser.setConfiguration(config);
+    }
     //引数に与えられるclassNameがpackageを含まない可能性あり
     @Deprecated
     public static CompilationUnit parseClass(String className) throws NoSuchFileException {
