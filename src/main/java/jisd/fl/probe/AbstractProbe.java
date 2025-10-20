@@ -32,14 +32,13 @@ public abstract class AbstractProbe {
      * 与えられたSuspiciousVariableに対して、その直接的な原因となるExpressionをSuspiciousExpressionとして返す
      * 原因が呼び出し元の引数にある場合は、その引数のExprに対応するものを返す
      *
-     * @param sleepTime
      * @param suspVar
      * @return
      */
-    protected Optional<SuspiciousExpression> probing(int sleepTime, SuspiciousVariable suspVar) {
+    protected Optional<SuspiciousExpression> probing(SuspiciousVariable suspVar) {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         System.out.println("    >> Probe Info: Running debugger and extract watched info.");
-        TracedValueCollection tracedValues = traceValuesOfTarget(suspVar, sleepTime);
+        TracedValueCollection tracedValues = traceValuesOfTarget(suspVar);
 
         tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
@@ -50,7 +49,7 @@ public abstract class AbstractProbe {
         return result;
     }
 
-    protected TracedValueCollection traceValuesOfTarget(SuspiciousVariable target, int sleepTime) {
+    protected TracedValueCollection traceValuesOfTarget(SuspiciousVariable target) {
         //targetVariableのVariableDeclaratorを特定
         List<Integer> vdLines = StaticAnalyzer.findLocalVarDeclaration(target.getLocateMethodElement(), target.getSimpleVariableName())
                 .stream()
@@ -62,7 +61,7 @@ public abstract class AbstractProbe {
 
         //Debugger生成
         String main = TestUtil.getJVMMain(target.getFailedTest());
-        String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+        String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
         List<TracedValue> result = new ArrayList<>();
 

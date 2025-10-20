@@ -32,7 +32,7 @@ public class Probe extends AbstractProbe{
             printProbeExInfoHeader(target);
 
             //search cause line
-            Optional<SuspiciousExpression> suspExprOpt = probing(sleepTime, target);
+            Optional<SuspiciousExpression> suspExprOpt = probing(target);
             if(suspExprOpt.isEmpty()){
                 System.err.println("[Probe For STATEMENT] Cause line is not found.");
                 System.err.println("[Probe For STATEMENT] Skip probing");
@@ -63,22 +63,9 @@ public class Probe extends AbstractProbe{
     }
 
     @Override
-    protected Optional<SuspiciousExpression> probing(int sleepTime, SuspiciousVariable suspVar) {
-        Optional<SuspiciousExpression> result = super.probing(sleepTime, suspVar);
-        int loop = 0;
-        int LOOP_LIMIT = 1;
-        while(result.isEmpty()) {
-            loop++;
-            if (loop == LOOP_LIMIT) {
-                System.err.println("[Probe For STATEMENT] Failed to collect information.");
-                return Optional.empty();
-            }
-            System.err.println("[Probe For STATEMENT] Cannot get enough information.");
-            System.err.println("[Probe For STATEMENT] Retry to collect information.");
-            sleepTime += 2000;
-            result = super.probing(sleepTime, suspVar);
-
-        }
+    protected Optional<SuspiciousExpression> probing(SuspiciousVariable suspVar) {
+        Optional<SuspiciousExpression> result = super.probing(suspVar);
+        if(result.isEmpty()) throw new RuntimeException("Cause line is not found.");
         return result;
     }
 

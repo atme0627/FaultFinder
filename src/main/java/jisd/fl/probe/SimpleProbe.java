@@ -36,7 +36,7 @@ public class SimpleProbe extends Probe {
         while(!probingTargets.isEmpty()) {
             for (SuspiciousVariable target : probingTargets) {
                 printProbeExInfoHeader(target);
-                SuspiciousExpression suspExpr = probing(sleepTime, target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
+                SuspiciousExpression suspExpr = probing(target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
 
                 nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
                 nextTargets.removeAll(investigatedTargets);
