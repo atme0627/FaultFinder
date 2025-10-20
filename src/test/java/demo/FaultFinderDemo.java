@@ -1,6 +1,7 @@
 package demo;
 import jisd.fl.FaultFinder;
 import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,11 +13,16 @@ public class FaultFinderDemo {
 
     @BeforeEach
     void init(){
-        TestUtil.compileForDebug(failedTestMethodName);
+        PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/MyFaultFinder/src/main/java");
+        PropertyLoader.setTargetBinDir("/Users/ezaki/IdeaProjects/MyFaultFinder/build/classes/java/main");
+        PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/java");
+        PropertyLoader.setTestBinDir("/Users/ezaki/IdeaProjects/MyFaultFinder/build/classes/java/test");
+        PropertyLoader.store();
     }
     @BeforeEach
     void initFaultFinder(){
         faultFinder = new FaultFinder(failedTestMethodName);
+        faultFinder.includeClassFilter("demo.");
     }
 
     @Test

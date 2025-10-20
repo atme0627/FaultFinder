@@ -210,6 +210,11 @@ public class FLRanking {
                 .collect(Collectors.toSet());
     }
 
+    //以下の文字列が含むもの以外を消去する。
+    public void includeClassFilter(String pattern){
+        ranking = ranking.stream().filter(re -> re.getCodeElementName().toString().contains(pattern)).collect(Collectors.toList());
+    }
+
     /**
      * ランキングの要素を再計算
      * @param adjustments

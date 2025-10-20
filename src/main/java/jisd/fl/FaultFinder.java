@@ -16,6 +16,8 @@ import jisd.fl.ranking.report.ScoreUpdateReport;
 import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * テストスイートのカバレッジ情報から疑惑値ランキングを生成・操作するためのクラス。
  * CoverageCollectionを解析し、各対象要素の疑惑値を計算してFLRankingに設定します。
@@ -115,5 +117,10 @@ public class FaultFinder {
         List<ScoreAdjustment> adjustments = converter.toAdjustments(causeTree);
         flRanking.adjustAll(adjustments);
         printRanking(10);
+    }
+
+    //以下の文字列が含むもの以外を消去する。
+    public void includeClassFilter(String pattern){
+        flRanking.includeClassFilter(pattern);
     }
 }
