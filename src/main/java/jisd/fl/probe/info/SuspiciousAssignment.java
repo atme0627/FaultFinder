@@ -57,7 +57,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
         //Debugger生成
         String main = TestUtil.getJVMMain(this.failedTest);
-        String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+        String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
 
         //対象の引数が属する行にたどり着いた時に行う処理を定義
@@ -292,7 +292,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
         //Debugger生成
         String main = TestUtil.getJVMMain(this.failedTest);
-        String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+        String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
 
         //対象の引数が属する行にたどり着いた時に行う処理を定義

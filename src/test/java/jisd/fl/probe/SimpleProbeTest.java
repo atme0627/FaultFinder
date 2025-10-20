@@ -64,7 +64,7 @@ class SimpleProbeTest {
         void VMLaunchDemo() throws IOException {
             //vm生成
             String main = TestUtil.getJVMMain(new MethodElementName(testMethodName));
-            String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+            String options = TestUtil.getJVMOption();
             VirtualMachine vm;
 
             try {
@@ -140,7 +140,7 @@ class SimpleProbeTest {
         void VMLaunchDemo() throws IOException {
             //vm生成
             String main = TestUtil.getJVMMain(new MethodElementName(testMethodName));
-            String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+            String options = TestUtil.getJVMOption();
             VirtualMachine vm;
 
             try {

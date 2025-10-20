@@ -26,12 +26,12 @@ public  class TestUtil {
         return "jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
     }
 
-    @Deprecated
-    public static String getJVMOptionWithGetDebugBinDir(){
-        return "-cp " + "./build/classes/java/main"
-                + ":" + PropertyLoader.getDebugBinDir()
-                + ":" + PropertyLoader.getJunitClassPaths();
-    }
+//    @Deprecated
+//    public static String getJVMOption(){
+//        return "-cp " + "./build/classes/java/main"
+//                + ":" + PropertyLoader.getDebugBinDir()
+//                + ":" + PropertyLoader.getJunitClassPaths();
+//    }
 
     public static String getJVMOption(){
         return "-cp " + "./build/classes/java/main"
@@ -110,7 +110,8 @@ public  class TestUtil {
     public static boolean execTestCaseWithJacocoAgent(MethodElementName testMethod, String execFileName) throws IOException, InterruptedException {
         final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
         final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
-        final String debugBinDir = PropertyLoader.getDebugBinDir();
+        final String targetBinDir = PropertyLoader.getTargetBinDir();
+        final String testBinDir = PropertyLoader.getTestBinDir();
         final String junitClassPath = PropertyLoader.getJunitClassPaths();
         String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
 
@@ -124,7 +125,8 @@ public  class TestUtil {
                 "--add-opens java.base/java.lang.reflect=ALL-UNNAMED " +
                 "-javaagent:" + jacocoAgentPath + "=destfile='" + generatedFilePath + "'" +
                 " -cp " + "./build/classes/java/main"
-                        + ":" + debugBinDir
+                        + ":" + targetBinDir
+                        + ":" + testBinDir
                         + ":'" + junitClassPath + "'"
                 + " jisd.fl.util.TestLauncher '" + testMethod.getFullyQualifiedMethodName() + "'";
 
@@ -132,7 +134,7 @@ public  class TestUtil {
         Process proc = pb.start();
         proc.waitFor();
 
-        boolean DEBUG=false;
+        boolean DEBUG=true;
         if(DEBUG) {
             String line = null;
             System.out.println("STDOUT---------------");

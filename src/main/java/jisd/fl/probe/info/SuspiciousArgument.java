@@ -88,7 +88,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
         //Debugger生成
         String main = TestUtil.getJVMMain(this.failedTest);
-        String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+        String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
         //調査対象の行実行に到達した時に行う処理を定義
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
@@ -256,7 +256,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
         //Debugger生成
         String main = TestUtil.getJVMMain(this.failedTest);
-        String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+        String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
         //調査対象の行実行に到達した時に行う処理を定義
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
@@ -415,7 +415,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
     static public Optional<SuspiciousArgument> searchSuspiciousArgument(MethodElementName calleeMethodName, SuspiciousVariable suspVar){
         //Debugger生成
         String main = TestUtil.getJVMMain(suspVar.getFailedTest());
-        String options = TestUtil.getJVMOptionWithGetDebugBinDir();
+        String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
 
         //探索によって求める値
