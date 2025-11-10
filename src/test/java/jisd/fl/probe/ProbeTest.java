@@ -39,6 +39,27 @@ class ProbeTest {
     }
 
     @Nested
+    class MinimumTest {
+        /*
+        最小限、Junitのテストの実行と変数の観測ができてることを確認する。
+         */
+        @Test
+        void CheckRunTestAndWatchVariable() {
+            SuspiciousVariable target = new SuspiciousVariable(
+                    new MethodElementName("org.sample.MinimumTest#CheckRunTestAndWatchVariable()"),
+                    "org.sample.MinimumTest#CheckRunTestAndWatchVariable()",
+                    "x",
+                    "6",
+                    true,
+                    false
+            );
+
+            Probe pfs = new Probe(target);
+            SuspiciousExpression treeRoot = pfs.run(2000);
+        }
+    }
+
+    @Nested
     class CalcTest {
         @Test
         void runTest() {
