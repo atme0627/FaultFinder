@@ -1,10 +1,10 @@
 package jisd.debug.util;
 
-import experiment.util.internal.finder.LineValueWatcher;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
+import jisd.fl.probe.util.TargetVariableTracer;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
