@@ -26,7 +26,7 @@ public class TargetVariableTracer {
         this.target = target;
     }
 
-    protected TracedValueCollection traceValuesOfTarget() {
+    public TracedValueCollection traceValuesOfTarget() {
         //targetVariableのVariableDeclaratorを特定
         List<Integer> vdLines = StaticAnalyzer.findLocalVarDeclaration(target.getLocateMethodElement(), target.getSimpleVariableName())
                 .stream()
@@ -69,7 +69,7 @@ public class TargetVariableTracer {
         return TracedValuesOfTarget.of(result, target);
     }
 
-    protected Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousVariable sv, LocalDateTime watchedAt) {
+    private Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousVariable sv, LocalDateTime watchedAt) {
         int locateLine = frame.location().lineNumber();
         // （1）ローカル変数
         if (!sv.isField()) {
