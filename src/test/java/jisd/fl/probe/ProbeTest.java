@@ -31,6 +31,8 @@ class ProbeTest {
         Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
         PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
         PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
+        PropertyLoader.setTargetBinDir(testProjectDir.resolve("build/classes/java/main").toString());
+        PropertyLoader.setTestBinDir(testProjectDir.resolve("build/classes/java/test").toString());
 
         Path currentDirectoryPath = FileSystems.getDefault().getPath("");
         jsonOutPutDir = currentDirectoryPath.resolve("src/test/resources/json/SuspiciousExpression");
