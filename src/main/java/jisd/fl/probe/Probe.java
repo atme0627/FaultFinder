@@ -3,20 +3,17 @@ package jisd.fl.probe;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
 import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.probe.internal.CauseLineFinder;
 import jisd.fl.util.analyze.*;
 
 import java.util.*;
 
-public class Probe extends AbstractProbe{
-    Set<SuspiciousVariable> probedValue;
-    Set<String> targetClasses;
+public class Probe{
     SuspiciousExpression suspiciousExprTreeRoot = null;
-
+    SuspiciousVariable firstTarget;
 
     public Probe(SuspiciousVariable target) {
-        super(target);
-        probedValue = new HashSet<>();
-        targetClasses = StaticAnalyzer.getClassNames();
+        this.firstTarget = target;
     }
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
@@ -32,7 +29,8 @@ public class Probe extends AbstractProbe{
             printProbeExInfoHeader(target);
 
             //search cause line
-            Optional<SuspiciousExpression> suspExprOpt = probing(target);
+            CauseLineFinder finder = new CauseLineFinder(target);
+            Optional<SuspiciousExpression> suspExprOpt = finder.find();
             if(suspExprOpt.isEmpty()){
                 System.err.println("[Probe For STATEMENT] Cause line is not found.");
                 System.err.println("[Probe For STATEMENT] Skip probing");
@@ -60,13 +58,6 @@ public class Probe extends AbstractProbe{
             printProbeExInfoFooter(suspExpr, newTargets);
         }
         return suspiciousExprTreeRoot;
-    }
-
-    @Override
-    protected Optional<SuspiciousExpression> probing(SuspiciousVariable suspVar) {
-        Optional<SuspiciousExpression> result = super.probing(suspVar);
-        if(result.isEmpty()) throw new RuntimeException("Cause line is not found.");
-        return result;
     }
 
     private List<SuspiciousExpression> searchSuspiciousReturns(SuspiciousExpression targetCauseExpr){

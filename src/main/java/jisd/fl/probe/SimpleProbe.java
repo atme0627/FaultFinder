@@ -2,6 +2,8 @@ package jisd.fl.probe;
 
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.probe.internal.CauseLineFinder;
+import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 
 import java.util.*;
@@ -13,14 +15,13 @@ import java.util.*;
  * 卒論での実装
  */
 public class SimpleProbe extends Probe {
-    Set<SuspiciousVariable> probedValue;
-    Set<String> targetClasses;
+    Set<SuspiciousVariable> probedValue = new HashSet<>();
+    Set<String> targetClasses = StaticAnalyzer.getClassNames();
     SuspiciousExpression suspiciousExprTreeRoot = null;
+    SuspiciousVariable firstTarget;
 
     public SimpleProbe(SuspiciousVariable target) {
         super(target);
-        probedValue = new HashSet<>();
-        targetClasses = StaticAnalyzer.getClassNames();
     }
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
@@ -36,7 +37,8 @@ public class SimpleProbe extends Probe {
         while(!probingTargets.isEmpty()) {
             for (SuspiciousVariable target : probingTargets) {
                 printProbeExInfoHeader(target);
-                SuspiciousExpression suspExpr = probing(target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
+                CauseLineFinder finder = new CauseLineFinder(target);
+                SuspiciousExpression suspExpr = finder.find().orElseThrow(() -> new RuntimeException("Cause line is not found."));
 
                 nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
                 nextTargets.removeAll(investigatedTargets);
