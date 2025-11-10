@@ -1,4 +1,4 @@
-package jisd.fl.probe.util;
+package jisd.fl.probe.internal;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.expr.AssignExpr;

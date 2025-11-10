@@ -1,4 +1,4 @@
-package jisd.fl.probe.util;
+package jisd.fl.probe.internal;
 
 import com.sun.jdi.*;
 import jisd.debug.EnhancedDebugger;

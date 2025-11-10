@@ -1,7 +1,7 @@
 package jisd.fl.probe;
 
-import jisd.fl.probe.util.ProbeLineSearcher;
-import jisd.fl.probe.util.TargetVariableTracer;
+import jisd.fl.probe.internal.ProbeLineSearcher;
+import jisd.fl.probe.internal.TargetVariableTracer;
 import jisd.fl.probe.info.*;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
