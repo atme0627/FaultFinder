@@ -1,6 +1,8 @@
 package jisd.fl.probe.record;
 
 import com.sun.jdi.*;
+import de.vandermeer.asciitable.*;
+import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
 
@@ -128,11 +130,28 @@ public abstract class TracedValueCollection {
     public void printAll(){
         record.sort(TracedValue::compareTo);
         for(TracedValue tv : record){
-            System.out.println("    >> " + tv);
+            System.out.println("     " + tv);
         }
     }
 
     public List<TracedValue> getAll(){
         return record;
+    }
+
+    public String toTableString(){
+        AsciiTable at = new AsciiTable();
+        at.addRow("[LINE]", "[VARIABLE]");
+        for (TracedValue tv : record){
+            at.addRow(tv.lineNumber, tv.variableName + " == " + tv.value);
+        }
+        at.getRenderer().setCWC(new CWC_LongestLine());
+        at.setPaddingLeftRight(1);
+
+        for(AT_Row row : at.getRawContent()){
+            List<AT_Cell> cells = row.getCells();
+            cells.get(0).getContext().setTextAlignment(TextAlignment.RIGHT);
+            cells.get(1).getContext().setTextAlignment(TextAlignment.LEFT);
+        }
+        return at.render();
     }
 }
