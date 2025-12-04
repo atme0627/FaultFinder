@@ -36,7 +36,6 @@ public class SimpleProbe extends Probe {
         int depth = 0;
         while(!probingTargets.isEmpty()) {
             for (SuspiciousVariable target : probingTargets) {
-                printProbeExInfoHeader(target);
                 CauseLineFinder finder = new CauseLineFinder(target);
                 SuspiciousExpression suspExpr = finder.find().orElseThrow(() -> new RuntimeException("Cause line is not found."));
 

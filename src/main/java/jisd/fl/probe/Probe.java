@@ -86,16 +86,6 @@ public class Probe{
         return result;
     }
 
-    protected void printProbeExInfoHeader(SuspiciousVariable target){
-        System.out.println("============================================================================================================");
-        System.out.println(" Probe For STATEMENT");
-        System.out.println(target.toString());
-        if(target.getParent() != null) {
-            System.out.println(target.getParent().toString());
-        }
-        System.out.println("============================================================================================================");
-    }
-
     protected void printProbeExInfoFooter(SuspiciousExpression suspExpr, List<SuspiciousVariable> nextTarget){
         System.out.println("------------------------------------------------------------------------------------------------------------");
         System.out.println(suspExpr);
