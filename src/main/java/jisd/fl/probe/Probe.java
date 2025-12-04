@@ -4,16 +4,18 @@ import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.probe.internal.CauseLineFinder;
-import jisd.fl.util.analyze.*;
+import jisd.fl.probe.util.ProbeReporter;
 
 import java.util.*;
 
 public class Probe{
     SuspiciousExpression suspiciousExprTreeRoot = null;
     SuspiciousVariable firstTarget;
+    ProbeReporter reporter;
 
     public Probe(SuspiciousVariable target) {
         this.firstTarget = target;
+        this.reporter = new ProbeReporter();
     }
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
@@ -26,7 +28,7 @@ public class Probe{
 
         while(!probingTargets.isEmpty()) {
             SuspiciousVariable target = probingTargets.removeLast();
-            printProbeExInfoHeader(target);
+            reporter.reportProbeTarget(target);
 
             //search cause line
             CauseLineFinder finder = new CauseLineFinder(target);
@@ -37,9 +39,9 @@ public class Probe{
                 continue;
             }
             SuspiciousExpression suspExpr = suspExprOpt.get();
-;
+;           reporter.reportCauseExpression(suspExpr);
             //include return line of callee method to cause lines
-            List<SuspiciousExpression> causeExprs = searchSuspiciousReturns(suspExpr);
+            List<SuspiciousExpression> causeExprs = collectInvokedReturnExpressions(suspExpr);
 
             //search next target
             System.out.println(" >>> search next target");
@@ -60,7 +62,7 @@ public class Probe{
         return suspiciousExprTreeRoot;
     }
 
-    private List<SuspiciousExpression> searchSuspiciousReturns(SuspiciousExpression targetCauseExpr){
+    private List<SuspiciousExpression> collectInvokedReturnExpressions(SuspiciousExpression targetCauseExpr){
         List<SuspiciousExpression> result = new ArrayList<>();
         Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>();
         suspExprQueue.add(targetCauseExpr);
