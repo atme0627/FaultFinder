@@ -21,14 +21,13 @@ public class CauseLineFinder {
      */
     public Optional<SuspiciousExpression> find() {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
-        System.out.println("    >> Probe Info: Running debugger and extract watched info.");
         TargetVariableTracer tracer = new TargetVariableTracer(target);
         TracedValueCollection tracedValues = tracer.traceValuesOfTarget();
 
+        //System.out.println(tracedValues.toTableString());
         tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
         List<TracedValue> watchedValues = tracedValues.getAll();
-        System.out.println("    >> Probe Info: Searching probe line.");
         ProbeLineSearcher searcher = new ProbeLineSearcher(watchedValues, target);
         Optional<SuspiciousExpression> result = searcher.searchProbeLine();
         return result;
