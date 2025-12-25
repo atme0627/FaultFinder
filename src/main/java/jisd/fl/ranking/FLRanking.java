@@ -6,6 +6,7 @@ import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.analyze.CodeElementName;
 
 import java.util.*;
+import java.util.function.DoubleFunction;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.min;
@@ -111,6 +112,12 @@ public class FLRanking {
     public void includeClassFilter(String pattern){
         ranking = ranking.stream().filter(re -> re.getCodeElementName().toString().contains(pattern)).collect(Collectors.toList());
     }
+
+    public void updateSuspiciousnessScore(CodeElementName target, DoubleFunction<Double> f){
+        FLRankingElement e = searchElement(target).get();
+        e.sbflScore = f.apply(e.sbflScore);
+    }
+
 
     /**
      * ランキングの要素を再計算

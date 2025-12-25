@@ -13,9 +13,11 @@ import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.ranking.report.ScoreUpdateReport;
+import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.MethodElementName;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -77,8 +79,8 @@ public class FaultFinder {
         report.recordChange(target);
 
         target.sbflScore = 0;
-        flRanking.getNeighborElements(target).forEach(e -> {
-            e.sbflScore *= this.removeConst;
+        getNeighborElements(target).forEach(e -> {
+            flRanking.updateSuspiciousnessScore(e, score -> score * this.removeConst);
         });
 
         report.print();
@@ -95,8 +97,8 @@ public class FaultFinder {
         report.recordChange(target);
 
         target.sbflScore = 0;
-        flRanking.getNeighborElements(target).forEach(e -> {
-            e.sbflScore *= this.suspConst;
+        getNeighborElements(target).forEach(e -> {
+            flRanking.updateSuspiciousnessScore(e, score -> score * this.suspConst);
         });
 
         report.print();
@@ -121,4 +123,13 @@ public class FaultFinder {
     public void includeClassFilter(String pattern){
         flRanking.includeClassFilter(pattern);
     }
+
+    //リファクタリングのための一時メソッド
+    @Deprecated
+    public Set<CodeElementName> getNeighborElements(FLRankingElement target){
+        return flRanking.getAllElements().stream()
+                .filter(e -> e.isNeighbor(target.getCodeElementName()) && !e.equals(target.getCodeElementName()))
+                .collect(Collectors.toSet());
+    }
+
 }

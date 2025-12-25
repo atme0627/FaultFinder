@@ -31,11 +31,6 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
         return sbflScore;
     }
 
-    //与えられた要素の周辺要素であるかを判定
-    public boolean isNeighbor(FLRankingElement target){
-        return this.getCodeElementName().isNeighbor(target.getCodeElementName());
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;
