@@ -89,55 +89,8 @@ public class FLRanking {
         System.out.println();
     }
 
-    @Deprecated
-    public String getElementNameAtPlace(int place){
-        if(!rankValidCheck(place)) return "";
-        return ranking.get(place - 1).toString();
-    }
-
     public Optional<FLRankingElement> getElementAtPlace(int place){
         return place <= ranking.size() ? Optional.of(ranking.get(place - 1)) : Optional.empty();
-    }
-
-    public boolean rankValidCheck(int rank){
-        if(rank > getSize()) {
-            System.err.println("Set valid rank.");
-            return false;
-        }
-        return true;
-    }
-
-    public double getSuspicious(String targetElementName){
-        Optional<FLRankingElement> element = searchElement(targetElementName);
-        if(element.isPresent()){
-            return element.get().getSuspiciousnessScore();
-        }
-        throw new RuntimeException(targetElementName + " is not exist.");
-    }
-
-    public void updateSuspiciousScore(String targetElementName, double suspicious){
-        Optional<FLRankingElement> oldElement = searchElement(targetElementName);
-        if(oldElement.isPresent()) {
-            oldElement.get().multipleSuspiciousnessScore(suspicious);
-            return;
-        }
-        throw new RuntimeException(targetElementName + " is not exist.");
-    }
-
-    @Deprecated
-    private Optional<FLRankingElement> searchElement(String targetElementName){
-        for(FLRankingElement element : ranking){
-            if(element.toString().equals(targetElementName)) return Optional.of(element);
-        }
-        return Optional.empty();
-    }
-
-    @Deprecated
-    public boolean isElementExist(String targetElementName){
-        for(FLRankingElement element : ranking){
-            if(element.getCodeElementName().equals(targetElementName)) return true;
-        }
-        return false;
     }
 
     Optional<FLRankingElement> searchElement(CodeElementName target){
