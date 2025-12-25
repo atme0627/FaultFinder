@@ -27,12 +27,7 @@ public class TraceToScoreAdjustmentConverter {
         this.g = granularity;
     }
 
-    /**
-     * root を起点に木を探索し、
-     * 「CodeElementName → 最小深さ」を集計してから
-     * ScoreAdjustment を返す
-     */
-    public List<ScoreAdjustment> toAdjustments(SuspiciousExpression root) {
+    public Map<CodeElementName, Double> toAdjustments(SuspiciousExpression root) {
         // ノードごとの最小深さを保持するマップ
         Map<CodeElementName, Integer> minDepth   = new HashMap<>();
         Queue<SuspiciousExpression>   queue      = new LinkedList<>();
@@ -57,10 +52,10 @@ public class TraceToScoreAdjustmentConverter {
         }
 
         // ScoreAdjustment のリスト化
-        List<ScoreAdjustment> adjustments = new ArrayList<>();
+        Map<CodeElementName, Double> adjustments = new HashMap<>();
         for (var entry : minDepth.entrySet()) {
             double multiplier = 1 + Math.pow(baseFactor, entry.getValue());
-            adjustments.add(new ScoreAdjustment(entry.getKey(), multiplier));
+            adjustments.put(entry.getKey(), multiplier);
         }
         return adjustments;
     }

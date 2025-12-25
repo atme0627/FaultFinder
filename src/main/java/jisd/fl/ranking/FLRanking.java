@@ -123,26 +123,16 @@ public class FLRanking {
      * ランキングの要素を再計算
      * @param adjustments
      */
-    public void adjustAll(List<ScoreAdjustment> adjustments){
-        applyAll(this, adjustments);
-    }
-
-    /**
-     * rankingに対して、adjustmentsで指定された全要素の疑惑値倍率を適用する
-     *
-     * @param ranking     更新対象のFLRanking
-     * @param adjustments 調整項目（要素＋倍率）のリスト
-     */
-    public static void applyAll(FLRanking ranking, List<ScoreAdjustment> adjustments) {
+    public void adjustAll(Map<CodeElementName, Double> adjustments) {
         ScoreUpdateReport report = new ScoreUpdateReport();
-        for (ScoreAdjustment adj : adjustments) {
-            Optional<FLRankingElement> target = ranking.searchElement(adj.getElement());
-            if(target.isEmpty()) continue;
+        for ( Map.Entry<CodeElementName, Double> adj : adjustments.entrySet()) {
+            Optional<FLRankingElement> target = searchElement(adj.getKey());
+            if (target.isEmpty()) continue;
             report.recordChange(target.get());
-            target.get().sbflScore *= adj.getMultiplier();
+            target.get().sbflScore *= adj.getValue();
         }
         report.print();
-        ranking.sort();
+        sort();
     }
 
 }
