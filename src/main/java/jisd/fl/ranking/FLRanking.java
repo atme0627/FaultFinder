@@ -124,15 +124,25 @@ public class FLRanking {
      * @param adjustments
      */
     public void adjustAll(List<ScoreAdjustment> adjustments){
-        ScoreAdjuster.applyAll(this, adjustments);
+        applyAll(this, adjustments);
     }
 
-    public static String leftPad(String str, int size){
-        return ("%-" + size + "s").formatted(str);
-    }
-
-    public static String rightPad(String str, int size){
-        return ("%" + size + "s").formatted(str);
+    /**
+     * rankingに対して、adjustmentsで指定された全要素の疑惑値倍率を適用する
+     *
+     * @param ranking     更新対象のFLRanking
+     * @param adjustments 調整項目（要素＋倍率）のリスト
+     */
+    public static void applyAll(FLRanking ranking, List<ScoreAdjustment> adjustments) {
+        ScoreUpdateReport report = new ScoreUpdateReport();
+        for (ScoreAdjustment adj : adjustments) {
+            Optional<FLRankingElement> target = ranking.searchElement(adj.getElement());
+            if(target.isEmpty()) continue;
+            report.recordChange(target.get());
+            target.get().sbflScore *= adj.getMultiplier();
+        }
+        report.print();
+        ranking.sort();
     }
 
 }
