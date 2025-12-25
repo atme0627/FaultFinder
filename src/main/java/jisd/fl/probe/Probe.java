@@ -67,24 +67,17 @@ public class Probe{
         Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>();
         suspExprQueue.add(targetCauseExpr);
 
-        System.out.println("------------------------------------------------------------------------------------------------------------");
         while(!suspExprQueue.isEmpty()){
             SuspiciousExpression target = suspExprQueue.removeFirst();
 
             List<SuspiciousReturnValue> returnsOfTarget = target.searchSuspiciousReturns();
             if(!returnsOfTarget.isEmpty()) {
-                System.out.println(" >>> search return line");
-                System.out.println(" >>> target: " + target);
-                System.out.println(" >>> ");
-                System.out.println(" >>> return lines");
-                for (SuspiciousReturnValue r : returnsOfTarget) {
-                    System.out.println(" >>> " + r);
-                }
                 target.addChild(returnsOfTarget);
                 suspExprQueue.addAll(returnsOfTarget);
             }
             result.add(target);
         }
+        reporter.reportInvokedReturnExpression(targetCauseExpr);
         return result;
     }
 

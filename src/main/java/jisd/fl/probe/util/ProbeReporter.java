@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ProbeReporter {
+    static private final int HEADER_LENGTH = 100;
+
     public void reportProbeTarget(SuspiciousVariable target) {
         Map<String, String> infoMap = new HashMap<String, String>();
         infoMap.put("LOCATION", target.getLocateMethod(true));
@@ -19,8 +21,29 @@ public class ProbeReporter {
     public void reportCauseExpression(SuspiciousExpression cause){
         Map<String, String> infoMap = new HashMap<String, String>();
         infoMap.put("LOCATION", cause.getLocateMethod() + ": line " + cause.getLocateLine());
-        infoMap.put("LINE", cause.getStatementStr());
+        infoMap.put("LINE", cause.getStatementStr().replace("\n", " "));
         printWithHeader("CAUSE LINE", formattedMapString(infoMap, 1));
+
+    }
+
+    public void reportInvokedReturnExpression(SuspiciousExpression root){
+        if(root.getChildren().isEmpty()) return;
+        printHeader("INVOKED RETURNS", HEADER_LENGTH);
+        reportInvokedReturnExpression(root, 1);
+    }
+
+    private void reportInvokedReturnExpression(SuspiciousExpression target, int indentLevel){
+        Map<String, String> infoMap = new HashMap<String, String>();
+        infoMap.put("LOCATION", target.getLocateMethod() + ": line " + target.getLocateLine());
+        infoMap.put("LINE", target.getStatementStr().replace("\n", " "));
+        List<String> formatted = formattedMapString(infoMap, indentLevel);
+        for (String line : formatted) {
+            System.out.println(line);
+        }
+        printHeader("", HEADER_LENGTH);
+        for(SuspiciousExpression child : target.getChildren()) {
+            reportInvokedReturnExpression(child, indentLevel + 1);
+        }
 
     }
 
@@ -41,13 +64,22 @@ public class ProbeReporter {
 
     private void printWithHeader(String title, List<String> body){
         int maxLen = body.stream().mapToInt(String::length).max().orElse(0);
-
-        String header    = "── " + title + " " + "─".repeat(Math.max(0, maxLen - title.length()));
-        System.out.println(header);
+        printHeader(title, HEADER_LENGTH);
         for (String line : body) {
             System.out.println(line);
         }
     }
+
+    private void printHeader(String title, int length){
+        String header;
+        if(title.isEmpty()) {
+            header = "─".repeat(length);
+        } else {
+            header = "── " + title + " " + "─".repeat(Math.max(0, length - title.length()) - 4);
+        }
+        System.out.println(header);
+    }
+
 
     static private String padLeft(String s, int length) {
         if (s == null) s = "";
