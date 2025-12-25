@@ -76,10 +76,9 @@ public class FaultFinder {
         System.out.println("[  REMOVE  ] " + target);
         report.recordChange(target);
 
-        target.multipleSuspiciousnessScore(0);
+        target.sbflScore = 0;
         flRanking.getNeighborElements(target).forEach(e -> {
-            report.recordChange(e);
-            e.multipleSuspiciousnessScore(this.removeConst);
+            e.sbflScore *= this.removeConst;
         });
 
         report.print();
@@ -95,10 +94,9 @@ public class FaultFinder {
         System.out.println("[  SUSP  ] " + target);
         report.recordChange(target);
 
-        target.multipleSuspiciousnessScore(0);
+        target.sbflScore = 0;
         flRanking.getNeighborElements(target).forEach(e -> {
-            report.recordChange(e);
-            e.multipleSuspiciousnessScore(this.suspConst);
+            e.sbflScore *= this.suspConst;
         });
 
         report.print();

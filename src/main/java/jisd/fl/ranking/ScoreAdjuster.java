@@ -19,7 +19,7 @@ class ScoreAdjuster {
             Optional<FLRankingElement> target = ranking.searchElement(adj.getElement());
             if(target.isEmpty()) continue;
             report.recordChange(target.get());
-            target.get().multipleSuspiciousnessScore(adj.getMultiplier());
+            target.get().sbflScore *= adj.getMultiplier();
         }
         report.print();
         ranking.sort();

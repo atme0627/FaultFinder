@@ -5,8 +5,8 @@ import jisd.fl.util.analyze.CodeElementName;
 import java.util.Objects;
 
 public class FLRankingElement implements Comparable<FLRankingElement> {
-    private final CodeElementName e;
-    private double sbflScore;
+    public final CodeElementName e;
+    public double sbflScore;
 
     FLRankingElement(CodeElementName e, double sbflScore) {
         this.e = e;
@@ -29,10 +29,6 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
 
     public double getSuspiciousnessScore() {
         return sbflScore;
-    }
-
-    public void multipleSuspiciousnessScore(double ratio){
-        this.sbflScore *= ratio;
     }
 
     //与えられた要素の周辺要素であるかを判定
