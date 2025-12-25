@@ -99,33 +99,6 @@ public class FLRanking {
         return place <= ranking.size() ? Optional.of(ranking.get(place - 1)) : Optional.empty();
     }
 
-    //同率も考慮した絶対順位
-    public double getRankOfElement(String elementName){
-        FLRankingElement target = searchElement(elementName).orElseThrow(() -> new RuntimeException(elementName + " is not exist."));
-
-        int rankTieIgnored = 0;
-        for(int i = 0; i < getSize(); i++){
-            if(target.compareTo(ranking.get(i)) < 0) {
-                rankTieIgnored++;
-            }
-            else {
-                break;
-            }
-        }
-
-        int numOfTie = getNumOfTie(elementName);
-        return rankTieIgnored + (double) (numOfTie + 1) / 2;
-    }
-
-    public int getNumOfTie(String elementName){
-        FLRankingElement target = searchElement(elementName).orElseThrow(() -> new RuntimeException(elementName + " is not exist."));
-        int numOfTie = 0;
-        for(int i = 0; i < getSize(); i++){
-            if(target.compareTo(ranking.get(i)) == 0) numOfTie++;
-        }
-        return numOfTie;
-    }
-
     public boolean rankValidCheck(int rank){
         if(rank > getSize()) {
             System.err.println("Set valid rank.");
@@ -174,35 +147,6 @@ public class FLRanking {
         return Optional.empty();
     }
 
-
-    /**
-     * Adjusts the ranking by applying a list of score adjustments to its elements.
-     * Each adjustment specifies a target code element and a multiplier to modify its suspiciousness score.
-     *
-     * @param adjustments the list of score adjustments to be applied; each containing a target code element and a multiplier
-     */
-    void adjust(List<ScoreAdjustment> adjustments){
-        ScoreAdjuster.applyAll(this, adjustments);
-    }
-
-    public boolean isTop(String targetElementName){
-        Optional<FLRankingElement> element = searchElement(targetElementName);
-        if(element.isPresent()){
-            return element.get().isSameScore(ranking.get(0));
-        }
-        throw new RuntimeException(targetElementName + " is not exist.");
-    }
-
-    public Set<String> getAllElements() {
-        return ranking.stream()
-                .map(FLRankingElement::getCodeElementName)
-                .map(CodeElementName::toString)
-                .collect(Collectors.toSet());
-    }
-
-    public void setHighlightMethods(Set<String> highlightMethods) {
-        this.highlightMethods = highlightMethods;
-    }
 
     public Set<FLRankingElement> getNeighborElements(FLRankingElement target){
         return ranking.stream()
