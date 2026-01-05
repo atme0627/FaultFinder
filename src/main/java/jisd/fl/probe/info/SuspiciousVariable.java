@@ -80,6 +80,14 @@ public class SuspiciousVariable {
         return arrayNth;
     }
 
+    public String getActualValue() {
+        return actualValue;
+    }
+
+    public MethodElementName getFailedTest() {
+        return failedTest;
+    }
+
     public String getLocateMethod(boolean withClass) {
         if (withClass) {
             return locateMethod.getFullyQualifiedMethodName();
@@ -120,19 +128,11 @@ public class SuspiciousVariable {
         );
     }
 
-    public String getActualValue() {
-        return actualValue;
-    }
-
     @Override
     public String toString() {
         return  "     [LOCATION] " + locateMethod +
                 " [PROBE TARGET] " + getVariableName(true, true) + " == " + getActualValue();
 
-    }
-
-    public MethodElementName getFailedTest() {
-        return failedTest;
     }
 
     public SuspiciousExpression getParent() {
