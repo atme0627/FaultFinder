@@ -1,10 +1,10 @@
 package jisd.fl;
 
+import jisd.fl.presenter.FLRankingPresenter;
 import jisd.fl.probe.Probe;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.ranking.FLRanking;
 import jisd.fl.ranking.FLRankingElement;
-import jisd.fl.ranking.ScoreAdjustment;
 import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
@@ -16,7 +16,7 @@ import jisd.fl.ranking.report.ScoreUpdateReport;
 import jisd.fl.util.analyze.CodeElementName;
 import jisd.fl.util.analyze.MethodElementName;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
  */
 public class FaultFinder {
     FLRanking flRanking;
+    FLRankingPresenter presenter;
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
     protected double removeConst = 0.8;
     //susp時に同じクラスの他のメソッドの疑惑値にかける定数
@@ -43,12 +44,13 @@ public class FaultFinder {
         CoverageAnalyzer coverageAnalyzer = new CoverageAnalyzer();
         coverageAnalyzer.analyze(targetTestClassName);
         CoverageCollection sbflCoverage = coverageAnalyzer.result();
-        flRanking = new FLRanking(granularity);
+        flRanking = new FLRanking();
+        presenter = new FLRankingPresenter(flRanking);
         calcSuspiciousness(sbflCoverage, granularity, f);
     }
     public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
         this.granularity = granularity;
-        flRanking = new FLRanking(granularity);
+        flRanking = new FLRanking();
         calcSuspiciousness(covForTestSuite, granularity, f);
     }
 
@@ -63,11 +65,11 @@ public class FaultFinder {
 
 
     public void printRanking(){
-        flRanking.printFLResults();
+        presenter.printFLResults();
     }
 
     public void printRanking(int top){
-        flRanking.printFLResults(top);
+        presenter.printFLResults(top);
     }
 
     public void remove(int rank) {
@@ -85,7 +87,7 @@ public class FaultFinder {
 
         report.print();
         flRanking.sort();
-        flRanking.printFLResults(rankingSize);
+        presenter.printFLResults(rankingSize);
     }
 
     public void susp(int rank) {
@@ -103,7 +105,7 @@ public class FaultFinder {
 
         report.print();
         flRanking.sort();
-        flRanking.printFLResults(rankingSize);
+        presenter.printFLResults(rankingSize);
     }
 
 
@@ -114,7 +116,7 @@ public class FaultFinder {
 
     public void probe(SuspiciousExpression causeTree){
         TraceToScoreAdjustmentConverter converter = new TraceToScoreAdjustmentConverter(this.probeLambda, granularity);
-        List<ScoreAdjustment> adjustments = converter.toAdjustments(causeTree);
+        Map<CodeElementName, Double> adjustments = converter.toAdjustments(causeTree);
         flRanking.adjustAll(adjustments);
         printRanking(10);
     }
