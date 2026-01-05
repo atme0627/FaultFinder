@@ -1,9 +1,7 @@
 package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.*;
-import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.*;
-import com.github.javaparser.ast.stmt.ForStmt;
 import com.sun.jdi.*;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
@@ -206,65 +204,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     }
 
     protected Expression extractExprAssign() {
-        return extractExprAssign(true);
-    }
-
-    protected Expression extractExprAssign(boolean deleteParentNode){
-        try {
-            Expression result = extractExpressionFromStatement();
-            return finalizeResult(result, deleteParentNode);
-        } catch (NoSuchElementException e) {
-            throw new RuntimeException(
-                    String.format("Cannot extract expression from [%s:%d].", locateMethod, locateLine));
-        }
-    }
-
-    private Expression extractExpressionFromStatement() {
-        //更新式は1つであると仮定
-        if(stmt instanceof ForStmt forStmt){
-            return forStmt.getUpdate().getFirst().get();
-        }
-        // Try to extract from assignment expression
-        Optional<AssignExpr> assignExpr = stmt.findFirst(AssignExpr.class);
-        if (assignExpr.isPresent()) {
-            return extractFromAssignExpr(assignExpr.get());
-        }
-
-        // Try to extract from variable declaration
-        Optional<VariableDeclarationExpr> vdExpr = stmt.findFirst(VariableDeclarationExpr.class);
-        if (vdExpr.isPresent()) {
-            return extractFromVariableDeclaration(vdExpr.get());
-        }
-
-        // Try to extract from unary expression
-        Optional<UnaryExpr> unaryExpr = stmt.findFirst(UnaryExpr.class);
-        if (unaryExpr.isPresent()) {
-            return unaryExpr.get().getExpression();
-        }
-
-        throw new RuntimeException(
-                String.format("Cannot extract expression from [%s:%d].", locateMethod, locateLine));
-    }
-
-    private Expression extractFromAssignExpr (AssignExpr assignExpr){
-        return assignExpr.getOperator() == AssignExpr.Operator.ASSIGN
-                ? assignExpr.getValue()
-                : assignExpr;
-    }
-
-    private Expression extractFromVariableDeclaration (VariableDeclarationExpr vdExpr){
-        // 代入文がひとつであると仮定
-        VariableDeclarator var = vdExpr.getVariable(0);
-        return var.getInitializer().orElseThrow();
-    }
-
-    private Expression finalizeResult (Expression result,boolean deleteParentNode){
-        if (!deleteParentNode) {
-            return result;
-        }
-        Expression clonedResult = result.clone();
-        clonedResult.setParentNode(null);
-        return clonedResult;
+        return ExtractExpr.ExtractExprAssignment.extractExprAssign(true, stmt);
     }
 
     static private void waitForThreadPreparation(ThreadReference thread){
