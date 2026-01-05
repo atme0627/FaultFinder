@@ -11,7 +11,7 @@ import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.core.entity.SuspiciousVariable;
 import jisd.fl.ranking.report.ScoreUpdateReport;
 import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.MethodElementName;

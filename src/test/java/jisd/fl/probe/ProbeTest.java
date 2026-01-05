@@ -1,11 +1,10 @@
 package jisd.fl.probe;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import experiment.defect4j.Defects4jUtil;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.core.entity.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;

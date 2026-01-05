@@ -18,6 +18,7 @@ import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.entity.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;

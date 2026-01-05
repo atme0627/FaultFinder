@@ -2,7 +2,7 @@ package jisd.fl.probe;
 
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
-import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.core.entity.SuspiciousVariable;
 import jisd.fl.probe.internal.CauseLineFinder;
 import jisd.fl.probe.util.ProbeReporter;
 

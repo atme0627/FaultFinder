@@ -1,7 +1,7 @@
 package jisd.fl.probe.util;
 
 import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.core.entity.SuspiciousVariable;
 
 import java.util.ArrayList;
 import java.util.HashMap;

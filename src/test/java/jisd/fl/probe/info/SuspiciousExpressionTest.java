@@ -1,6 +1,7 @@
 package jisd.fl.probe.info;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.core.entity.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.hamcrest.FeatureMatcher;

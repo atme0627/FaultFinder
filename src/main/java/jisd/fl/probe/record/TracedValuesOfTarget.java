@@ -2,7 +2,7 @@ package jisd.fl.probe.record;
 
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
-import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.core.entity.SuspiciousVariable;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
