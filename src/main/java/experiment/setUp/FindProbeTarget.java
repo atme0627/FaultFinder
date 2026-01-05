@@ -3,6 +3,7 @@ package experiment.setUp;
 import experiment.defect4j.Defects4jUtil;
 import experiment.util.SuspiciousVariableFinder;
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
 import jisd.fl.core.entity.MethodElementName;
@@ -60,7 +61,7 @@ public class FindProbeTarget {
     private static JSONObject convertToJsonAndBundle(List<SuspiciousVariable> result){
         JSONArray array = new JSONArray();
         for(SuspiciousVariable vi : result) {
-            array.put(vi.toJson());
+            array.put(SuspiciousVariableMapper.toJson(vi));
         }
         JSONObject bundle = new JSONObject();
         bundle.put("suspiciousVariables", array);
