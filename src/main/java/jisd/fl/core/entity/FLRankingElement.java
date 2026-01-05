@@ -9,11 +9,25 @@ class FLRankingElement implements Comparable<FLRankingElement> {
         this.suspScore = suspScore;
     }
 
+    public CodeElementIdentifier getCodeElementName() {
+        return element;
+    }
+
+    public double getSuspScore() {
+        return suspScore;
+    }
 
     @Override
     public int compareTo(FLRankingElement o) {
         return (this.suspScore == o.suspScore) ?
                 this.element.toString().compareTo(o.element.toString())
                 : Double.compare(this.suspScore, o.suspScore);
+    }
+
+    @Override
+    public String toString() {
+        return "FLRankingElement[" +
+                "e=" + element + ", " +
+                "sbflScore=" + suspScore + ']';
     }
 }
