@@ -172,7 +172,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
                                 if (targetMethodName.contains(mee.method().name())) {
                                     MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                                     int locateLine = mee.location().lineNumber();
-                                    String actualValue = getValueString(mee.returnValue());
+                                    String actualValue = TmpStaticUtils.getValueString(mee.returnValue());
                                     try {
                                         SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                                                 this.failedTest,
@@ -221,7 +221,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         try {
             //対象の引数が目的の値を取っている
             List<Value> args = mEntry.thread().frame(0).getArgumentValues();
-            return args.size() > argIndex && getValueString(args.get(argIndex)).equals(actualValue);
+            return args.size() > argIndex && TmpStaticUtils.getValueString(args.get(argIndex)).equals(actualValue);
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException("Target thread must be suspended.");
         }
@@ -443,7 +443,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
                 LocalVariable topVar = topFrame.visibleVariableByName(suspVar.getSimpleVariableName());
                 if(topVar == null) return;
                 Value argValue = topFrame.getValue(topVar);
-                if(!getValueString(argValue).equals(suspVar.getActualValue())) return;
+                if(!TmpStaticUtils.getValueString(argValue).equals(suspVar.getActualValue())) return;
                 //対象の引数のインデックスを取得
                 List<LocalVariable> args = mEntry.method().arguments();
                 for(int idx = 0; idx < args.size(); idx++){
@@ -510,7 +510,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         // ブレークポイント地点でのコールスタックの深さを取得
         // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
         // 再帰呼び出し含め、その行で直接呼ばれたメソッドの呼び出し回数をカウントするため
-        int depthBeforeCall = getCallStackDepth(thisThread);
+        int depthBeforeCall = TmpStaticUtils.getCallStackDepth(thisThread);
 
         //この行の終わりを検知するためstepOverRequestを設置
         StepRequest stepOverReq = EnhancedDebugger.createStepOverRequest(manager, thisThread);
@@ -529,7 +529,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
                     MethodExitEvent mee = (MethodExitEvent) ev;
 
                     //meeのthreadは抜ける直前のもののため+1が必要
-                    if(getCallStackDepth(mee.thread()) == depthBeforeCall + 1) result++;
+                    if(TmpStaticUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) result++;
                     vm.resume();
                     continue;
                 }

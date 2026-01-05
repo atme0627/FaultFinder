@@ -79,7 +79,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
             // ブレークポイント地点でのコールスタックの深さを取得
             // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
             // 再帰呼び出し含め、その行で直接呼ばれたメソッドのみ取ってこれる
-            int depthBeforeCall = getCallStackDepth(thread);
+            int depthBeforeCall = TmpStaticUtils.getCallStackDepth(thread);
             //一旦 resume して、内部ループで MethodExit／Step を待つ
             vm.resume();
             boolean done = false;
@@ -102,10 +102,10 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
 
                         //収集するのは指定した行で直接呼び出したメソッドのみ
                         //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
-                        if (mee.thread().equals(thread) && getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
+                        if (mee.thread().equals(thread) && TmpStaticUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
                             MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                             int locateLine = mee.location().lineNumber();
-                            String actualValue = getValueString(mee.returnValue());
+                            String actualValue = TmpStaticUtils.getValueString(mee.returnValue());
                             try {
                                 SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                                         this.failedTest,
@@ -114,8 +114,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
                                         actualValue
                                 );
                                 resultCandidate.add(suspReturn);
-                            }
-                            catch (RuntimeException e){
+                            } catch (RuntimeException e) {
                                 System.out.println("cannot create SuspiciousReturnValue: " + e.getMessage() + " at " + invokedMethod + " line:" + locateLine);
                             }
                         }
@@ -151,7 +150,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
     }
 
     static private boolean validateIsTargetExecution(MethodExitEvent recent, String actualValue){
-        return getValueString(recent.returnValue()).equals(actualValue);
+        return TmpStaticUtils.getValueString(recent.returnValue()).equals(actualValue);
     };
 
 
@@ -227,7 +226,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
                             //ここには到達しないはず
                             throw new RuntimeException("Something is wrong.");
                         }
-                        System.out.println(" >>> [DEBUG] Return: " + getValueString(recentMee.returnValue()));
+                        System.out.println(" >>> [DEBUG] Return: " + TmpStaticUtils.getValueString(recentMee.returnValue()));
                         if(validateIsTargetExecution(recentMee, this.actualValue)) result.addAll(resultCandidate);
                         //vmをresumeしない
                     }

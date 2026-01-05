@@ -3,6 +3,7 @@ package jisd.fl.probe.internal;
 import com.sun.jdi.*;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.probe.info.TmpStaticUtils;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesOfTarget;
@@ -13,8 +14,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static jisd.fl.probe.info.SuspiciousExpression.getValueString;
 
 /**
  * 指定されたsuspiciousVariableに基づき、各行で怪しい変数が取る値を観測、記録する。
@@ -99,7 +98,7 @@ public class TargetVariableTracer {
                     return Optional.of(new TracedValue(
                             watchedAt,
                             local.name() + "[0]",
-                            getValueString(ar.getValue(0)),
+                            TmpStaticUtils.getValueString(ar.getValue(0)),
                             locateLine
                     ));
                 }
@@ -108,7 +107,7 @@ public class TargetVariableTracer {
             return Optional.of(new TracedValue(
                     watchedAt,
                     local.name(),
-                    getValueString(v),
+                    TmpStaticUtils.getValueString(v),
                     locateLine
             ));
         } else {
@@ -121,7 +120,7 @@ public class TargetVariableTracer {
                     return Optional.of(new TracedValue(
                             watchedAt,
                             "this." + f.name(),
-                            getValueString(thisObj.getValue(f)),
+                            TmpStaticUtils.getValueString(thisObj.getValue(f)),
                             locateLine
                     ));
                 }
@@ -133,7 +132,7 @@ public class TargetVariableTracer {
                 return Optional.of(new TracedValue(
                         watchedAt,
                         "this." + f.name(),
-                        getValueString(rt.getValue(f)),
+                        TmpStaticUtils.getValueString(rt.getValue(f)),
                         locateLine
                 ));
             }

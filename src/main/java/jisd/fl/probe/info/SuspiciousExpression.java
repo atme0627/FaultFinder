@@ -1,7 +1,6 @@
 package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -16,7 +15,6 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import javax.validation.constraints.NotNull;
-import java.io.File;
 import java.nio.file.NoSuchFileException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -139,14 +137,6 @@ public abstract class SuspiciousExpression {
     }
 
 
-    protected static int getCallStackDepth(ThreadReference th){
-        try {
-            return th.frameCount();
-        } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * このSuspiciousExprで観測できる全ての変数とその値の情報をJISDを用いて取得
      * 複数回SuspiciousExpressionが実行されているときは、最後に実行された時の値を使用する
@@ -221,7 +211,7 @@ public abstract class SuspiciousExpression {
                 result.add(new TracedValue(
                         LocalDateTime.MIN,
                         lv.name() + "[0]",
-                        getValueString(ar.getValue(0)),
+                        TmpStaticUtils.getValueString(ar.getValue(0)),
                         locateLine
                 ));
             }
@@ -229,7 +219,7 @@ public abstract class SuspiciousExpression {
             result.add(new TracedValue(
                     LocalDateTime.MIN,
                     lv.name(),
-                    getValueString(v),
+                    TmpStaticUtils.getValueString(v),
                     locateLine
             ));
         });
@@ -243,7 +233,7 @@ public abstract class SuspiciousExpression {
                 result.add(new TracedValue(
                         LocalDateTime.MIN,
                         "this." + f.name(),
-                        getValueString(thisObj.getValue(f)),
+                        TmpStaticUtils.getValueString(thisObj.getValue(f)),
                         locateLine
                 ));
             }
@@ -256,7 +246,7 @@ public abstract class SuspiciousExpression {
             result.add(new TracedValue(
                     LocalDateTime.MIN,
                     "this." + f.name(),
-                    getValueString(rt.getValue(f)),
+                    TmpStaticUtils.getValueString(rt.getValue(f)),
                     locateLine
             ));
         }
@@ -298,53 +288,6 @@ public abstract class SuspiciousExpression {
     @JsonProperty("children")
     public List<SuspiciousExpression> getChildren() {
         return childSuspExprs;
-    }
-
-    //Jackson デシリアライズ用メソッド
-    public static SuspiciousExpression loadFromJson(File f){
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.readValue(f, SuspiciousExpression.class);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String getValueString(Value v){
-        if(v == null) return "null";
-        if(v instanceof ObjectReference obj){
-            if(isPrimitiveWrapper(obj.referenceType())) {
-                try {
-                    Field valueField = obj.referenceType().fieldByName("value");
-                    Value primitiveValue = obj.getValue(valueField);
-                    return primitiveValue.toString();
-                } catch (Exception e) {
-                    return v.toString();
-                }
-            }
-            return v.toString();
-        }
-        return v.toString();
-    }
-
-    protected static boolean isPrimitiveWrapper(Type type) {
-        //プリミティブ型のラッパークラスの名前
-        final Set<String> WRAPPER_CLASS_NAMES = new HashSet<>(Arrays.asList(
-                Boolean.class.getName(),
-                Byte.class.getName(),
-                Character.class.getName(),
-                Short.class.getName(),
-                Integer.class.getName(),
-                Long.class.getName(),
-                Float.class.getName(),
-                Double.class.getName(),
-                Void.class.getName()
-        ));
-
-        if (type instanceof ClassType) {
-            return WRAPPER_CLASS_NAMES.contains(type.name());
-        }
-        return false;
     }
 
     @Override

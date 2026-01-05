@@ -5,6 +5,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.probe.info.TmpJsonUtils;
 import jisd.fl.util.JsonIO;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
@@ -103,7 +104,7 @@ class ProbeTest {
         @Test
         void loadFromJson() throws IOException {
             File input = jsonOutPutDir.resolve("ConditionalTest.json").toFile();
-            SuspiciousExpression loadedFromJson = SuspiciousExpression.loadFromJson(input);
+            SuspiciousExpression loadedFromJson = TmpJsonUtils.loadFromJson(input);
             File output = jsonOutPutDir.resolve("ConditionalTest2.json").toFile();
             JsonIO.export(loadedFromJson, output);
             assertTrue(FileUtils.contentEquals(input, output), "File contents should match");
