@@ -5,19 +5,13 @@ import jisd.fl.core.entity.MethodElementName;
 
 import java.util.Objects;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class SuspiciousVariable {
     //ローカル変数の場合のみ
     private final MethodElementName failedTest;
-    @JsonProperty("locateMethodElement")
     private final MethodElementName locateMethod;
-    @JsonProperty("simpleVariableName")
     private final String variableName;
-    @JsonProperty("primitive")
     private final boolean isPrimitive;
-    @JsonProperty("field")
     private final boolean isField;
-    @JsonProperty("array")
     private final boolean isArray;
     private final int arrayNth;
     private final String actualValue;
@@ -55,27 +49,6 @@ public class SuspiciousVariable {
         this.isField = isField;
         this.arrayNth = arrayNth;
         this.isArray = (arrayNth >= 0);
-        this.actualValue = actualValue;
-    }
-
-    @JsonCreator
-    protected SuspiciousVariable(
-            @JsonProperty("failedTest") MethodElementName failedTest,
-            @JsonProperty("locateMethod") MethodElementName locateMethod,
-            @JsonProperty("variableName") String variableName,
-            @JsonProperty("isPrimitive") boolean isPrimitive,
-            @JsonProperty("isField") boolean isField,
-            @JsonProperty("isArray") boolean isArray,
-            @JsonProperty("arrayNth") int arrayNth,
-            @JsonProperty("actualValue") String actualValue
-    ) {
-        this.failedTest = failedTest;
-        this.locateMethod = locateMethod;
-        this.variableName = variableName;
-        this.isPrimitive = isPrimitive;
-        this.isField = isField;
-        this.isArray = isArray;
-        this.arrayNth = arrayNth;
         this.actualValue = actualValue;
     }
 
