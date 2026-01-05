@@ -30,7 +30,7 @@ public class FLRanking {
         return ranking.size();
     }
 
-    Optional<FLRankingElement> searchElement(CodeElementName target){
+    public Optional<FLRankingElement> searchElement(CodeElementName target){
         for(FLRankingElement element : ranking){
             if(element.getCodeElementName().equals(target)) return Optional.of(element);
         }
