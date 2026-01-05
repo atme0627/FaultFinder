@@ -41,7 +41,7 @@ public class FLRanking {
 
     public void updateSuspiciousnessScore(CodeElementName target, double newScore){
         FLRankingElement e = searchElement(target).get();
-        e.sbflScore = newScore;
+        e.suspScore = newScore;
         sort();
     }
 }
