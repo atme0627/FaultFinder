@@ -22,12 +22,12 @@ public class FLRanking {
         ranking.sort(FLRankingElement::compareTo);
     }
 
+    public FLRankingElement at(int i){
+        if(i < getSize()) return ranking.get(i);
+        return null;
+    }
     public int getSize(){
         return ranking.size();
-    }
-
-    public Optional<FLRankingElement> getElementAtPlace(int place){
-        return place <= ranking.size() ? Optional.of(ranking.get(place - 1)) : Optional.empty();
     }
 
     Optional<FLRankingElement> searchElement(CodeElementName target){
