@@ -16,7 +16,7 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
     @Override
     public int compareTo(FLRankingElement o) {
         if(Double.compare(this.suspScore, o.suspScore) != 0){
-            return -Double.compare(this.suspScore, o.suspScore)
+            return -Double.compare(this.suspScore, o.suspScore);
         }
         return element.compareTo(o.element);
     }
