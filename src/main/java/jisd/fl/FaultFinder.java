@@ -59,7 +59,8 @@ public class FaultFinder {
     private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
         for(CoverageOfTarget coverageOfTarget : covForTestSuite.getCoverages()) {
             coverageOfTarget.getCoverage(granularity).forEach((element, status) -> {
-                flRanking.add(element, status, f);
+                double suspScore = status.getSuspiciousness(f);
+                flRanking.add(element, suspScore);
             });
         }
         flRanking.sort();

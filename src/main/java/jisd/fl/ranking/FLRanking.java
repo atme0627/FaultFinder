@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 public class FLRanking {
     List<FLRankingElement> ranking = new ArrayList<>();
 
-    public void add(CodeElementIdentifier element, SbflStatus status, Formula f){
-        ranking.add(new FLRankingElement(element, status.getSuspiciousness(f)));
+    public void add(CodeElementIdentifier element, double suspScore){
+        ranking.add(new FLRankingElement(element, suspScore));
     }
 
     public void sort(){
