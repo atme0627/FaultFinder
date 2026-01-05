@@ -8,7 +8,7 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.core.entity.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
 
 import java.io.IOException;

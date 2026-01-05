@@ -8,7 +8,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.probe.info.SuspiciousArgument;
 import jisd.fl.probe.info.SuspiciousAssignment;
 import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.core.entity.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.core.entity.MethodElementName;

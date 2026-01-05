@@ -5,7 +5,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.probe.Probe;
 import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.core.entity.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
 
 import java.io.File;

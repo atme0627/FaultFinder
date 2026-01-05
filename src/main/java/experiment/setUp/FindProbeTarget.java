@@ -4,7 +4,7 @@ import experiment.defect4j.Defects4jUtil;
 import experiment.util.SuspiciousVariableFinder;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.mapper.SuspiciousVariableMapper;
-import jisd.fl.core.entity.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
 import jisd.fl.core.entity.MethodElementName;
 import org.json.JSONArray;

@@ -1,7 +1,7 @@
 package jisd.fl.mapper;
 
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.core.entity.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
