@@ -38,10 +38,8 @@ public class FLRanking {
     }
 
 
-    public Set<FLRankingElement> getNeighborElements(FLRankingElement target){
-        return ranking.stream()
-                .filter(e -> e.isNeighbor(target) && !e.equals(target))
-                .collect(Collectors.toSet());
+    public Set<CodeElementName> getAllElements(){
+        return ranking.stream().map(FLRankingElement::getCodeElementName).collect(Collectors.toSet());
     }
 
 
