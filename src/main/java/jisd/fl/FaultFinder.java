@@ -84,7 +84,7 @@ public class FaultFinder {
         System.out.println("[  REMOVE  ] " + target);
         report.recordChange(target);
 
-        target.sbflScore = 0;
+        target.suspScore = 0;
         getNeighborElements(target).forEach(e -> {
             updateSuspiciousnessScore(e, score -> score * this.removeConst);
         });
@@ -104,7 +104,7 @@ public class FaultFinder {
         System.out.println("[  SUSP  ] " + target);
         report.recordChange(target);
 
-        target.sbflScore = 0;
+        target.suspScore = 0;
         getNeighborElements(target).forEach(e -> {
             updateSuspiciousnessScore(e, score -> score * this.suspConst);
         });
@@ -143,14 +143,14 @@ public class FaultFinder {
         for ( Map.Entry<CodeElementName, Double> adj : adjustments.entrySet()) {
             Optional<FLRankingElement> target = flRanking.searchElement(adj.getKey());
             if (target.isEmpty()) continue;
-            target.get().sbflScore *= adj.getValue();
+            target.get().suspScore *= adj.getValue();
         }
         flRanking.sort();
     }
 
     public void updateSuspiciousnessScore(CodeElementName target, DoubleFunction<Double> f){
         FLRankingElement e = flRanking.searchElement(target).get();
-        double newScore = f.apply(e.sbflScore);
+        double newScore = f.apply(e.suspScore);
         flRanking.updateSuspiciousnessScore(target, newScore);
     }
 }
