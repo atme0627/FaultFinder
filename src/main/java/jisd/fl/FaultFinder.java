@@ -84,7 +84,7 @@ public class FaultFinder {
 
         target.sbflScore = 0;
         getNeighborElements(target).forEach(e -> {
-            flRanking.updateSuspiciousnessScore(e, score -> score * this.removeConst);
+            updateSuspiciousnessScore(e, score -> score * this.removeConst);
         });
 
         report.print();
@@ -104,7 +104,7 @@ public class FaultFinder {
 
         target.sbflScore = 0;
         getNeighborElements(target).forEach(e -> {
-            flRanking.updateSuspiciousnessScore(e, score -> score * this.suspConst);
+            updateSuspiciousnessScore(e, score -> score * this.suspConst);
         });
 
         report.print();
@@ -121,7 +121,7 @@ public class FaultFinder {
     public void probe(SuspiciousExpression causeTree){
         TraceToScoreAdjustmentConverter converter = new TraceToScoreAdjustmentConverter(this.probeLambda, granularity);
         Map<CodeElementName, Double> adjustments = converter.toAdjustments(causeTree);
-        flRanking.adjustAll(adjustments);
+        adjustAll(adjustments);
         printRanking(10);
     }
 
@@ -133,4 +133,22 @@ public class FaultFinder {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * ランキングの要素を再計算
+     * @param adjustments
+     */
+    public void adjustAll(Map<CodeElementName, Double> adjustments) {
+        for ( Map.Entry<CodeElementName, Double> adj : adjustments.entrySet()) {
+            Optional<FLRankingElement> target = flRanking.searchElement(adj.getKey());
+            if (target.isEmpty()) continue;
+            target.get().sbflScore *= adj.getValue();
+        }
+        flRanking.sort();
+    }
+
+    public void updateSuspiciousnessScore(CodeElementName target, DoubleFunction<Double> f){
+        FLRankingElement e = flRanking.searchElement(target).get();
+        double newScore = f.apply(e.sbflScore);
+        flRanking.updateSuspiciousnessScore(target, newScore);
+    }
 }
