@@ -1,5 +1,4 @@
 package jisd.fl.ranking;
-
 import jisd.fl.util.analyze.CodeElementName;
 
 public class FLRankingElement implements Comparable<FLRankingElement> {
