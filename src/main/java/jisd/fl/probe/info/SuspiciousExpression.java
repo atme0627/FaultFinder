@@ -79,8 +79,6 @@ public abstract class SuspiciousExpression {
      */
     abstract public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException;
 
-    abstract protected Expression extractExpr();
-
     /**
      * exprから次に探索の対象となる変数の名前を取得する。
      * exprの演算に直接用いられている変数のみが対象で、引数やメソッド呼び出しの対象となる変数は除外する。

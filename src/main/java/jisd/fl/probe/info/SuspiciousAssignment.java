@@ -205,7 +205,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                 .collect(Collectors.toList());
     }
 
-    @Override
     protected Expression extractExpr() {
         return extractExpr(true);
     }

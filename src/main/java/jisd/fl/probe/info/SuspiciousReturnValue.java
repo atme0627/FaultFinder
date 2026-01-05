@@ -154,7 +154,6 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
     };
 
 
-    @Override
     protected Expression extractExpr() {
         try {
             if(!stmt.isReturnStmt()) throw new NoSuchElementException();
