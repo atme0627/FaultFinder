@@ -3,6 +3,7 @@ package jisd.fl.probe;
 import com.fasterxml.jackson.core.type.TypeReference;
 import experiment.defect4j.Defects4jUtil;
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
@@ -143,7 +144,8 @@ class ProbeTest {
         Defects4jUtil.changeTargetVersion(project, bugId);
         Defects4jUtil.compileBuggySrc(project, bugId);
 
-        List<?> probeTargets = JsonIO.importFromJson(inputFile, new TypeReference<List<SuspiciousVariable>>() {});
+        String jsonString = Files.readString(inputFile.toPath());
+        List<SuspiciousVariable> probeTargets = SuspiciousVariableMapper.fromJsonArray(jsonString);
 
         System.out.println("Finding target: [PROJECT] " + project + "  [BUG ID] " + bugId);
 
