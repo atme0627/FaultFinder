@@ -30,20 +30,6 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (FLRankingElement) obj;
-        return Objects.equals(this.element, that.element) &&
-                Double.doubleToLongBits(this.suspScore) == Double.doubleToLongBits(that.suspScore);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(element, suspScore);
-    }
-
-    @Override
     public String toString() {
         return "FLRankingElement[" +
                 "e=" + element + ", " +
