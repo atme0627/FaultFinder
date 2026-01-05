@@ -47,22 +47,4 @@ public class FLRanking {
         FLRankingElement e = searchElement(target).get();
         e.sbflScore = f.apply(e.sbflScore);
     }
-
-
-    /**
-     * ランキングの要素を再計算
-     * @param adjustments
-     */
-    public void adjustAll(Map<CodeElementName, Double> adjustments) {
-        ScoreUpdateReport report = new ScoreUpdateReport();
-        for ( Map.Entry<CodeElementName, Double> adj : adjustments.entrySet()) {
-            Optional<FLRankingElement> target = searchElement(adj.getKey());
-            if (target.isEmpty()) continue;
-            report.recordChange(target.get());
-            target.get().sbflScore *= adj.getValue();
-        }
-        report.print();
-        sort();
-    }
-
 }
