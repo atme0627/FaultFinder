@@ -2,7 +2,7 @@ package jisd.fl.ranking;
 
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.core.entity.CodeElementName;
+import jisd.fl.core.entity.CodeElementIdentifier;
 
 import java.util.*;
 
@@ -27,9 +27,9 @@ public class TraceToScoreAdjustmentConverter {
         this.g = granularity;
     }
 
-    public Map<CodeElementName, Double> toAdjustments(SuspiciousExpression root) {
+    public Map<CodeElementIdentifier, Double> toAdjustments(SuspiciousExpression root) {
         // ノードごとの最小深さを保持するマップ
-        Map<CodeElementName, Integer> minDepth   = new HashMap<>();
+        Map<CodeElementIdentifier, Integer> minDepth   = new HashMap<>();
         Queue<SuspiciousExpression>   queue      = new LinkedList<>();
         Queue<Integer>                depths     = new LinkedList<>();
 
@@ -40,7 +40,7 @@ public class TraceToScoreAdjustmentConverter {
             SuspiciousExpression suspExpr = queue.poll();
             int depth = depths.poll();
 
-            CodeElementName elem = suspExpr.convertToCodeElementName(g);
+            CodeElementIdentifier elem = suspExpr.convertToCodeElementName(g);
 
             // 最小深さをマージ
             minDepth.merge(elem, depth, Math::min);
@@ -52,7 +52,7 @@ public class TraceToScoreAdjustmentConverter {
         }
 
         // ScoreAdjustment のリスト化
-        Map<CodeElementName, Double> adjustments = new HashMap<>();
+        Map<CodeElementIdentifier, Double> adjustments = new HashMap<>();
         for (var entry : minDepth.entrySet()) {
             double multiplier = 1 + Math.pow(baseFactor, entry.getValue());
             adjustments.put(entry.getKey(), multiplier);

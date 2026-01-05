@@ -2,7 +2,7 @@ package jisd.fl.sbfl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import jisd.fl.sbfl.SbflStatus;
-import jisd.fl.core.entity.CodeElementName;
+import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.LineElementName;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
@@ -18,9 +18,9 @@ import java.util.*;
 public class CoverageOfTarget {
     public String targetClassName;
     //各行のカバレッジ情報
-    public Map<CodeElementName, SbflStatus> lineCoverage;
-    public Map<CodeElementName, SbflStatus> methodCoverage;
-    public Map<CodeElementName, SbflStatus> classCoverage;
+    public Map<CodeElementIdentifier, SbflStatus> lineCoverage;
+    public Map<CodeElementIdentifier, SbflStatus> methodCoverage;
+    public Map<CodeElementIdentifier, SbflStatus> classCoverage;
 
     //行 --> MethodElementName
     private Map<Integer, MethodElementName> methodElementNames;
@@ -66,7 +66,7 @@ public class CoverageOfTarget {
         putCoverageStatus(classCoverage, ce, getClassSbflStatus(cc, isTestPassed));
     }
 
-    protected void putCoverageStatus(Map<CodeElementName, SbflStatus> coverage, CodeElementName element, SbflStatus status) {
+    protected void putCoverageStatus(Map<CodeElementIdentifier, SbflStatus> coverage, CodeElementIdentifier element, SbflStatus status) {
         if(!coverage.containsKey(element)){
             coverage.put(element, status);
             return;
@@ -89,7 +89,7 @@ public class CoverageOfTarget {
     }
 
 
-    public Map<CodeElementName, SbflStatus> getCoverage(Granularity granularity){
+    public Map<CodeElementIdentifier, SbflStatus> getCoverage(Granularity granularity){
         return switch (granularity) {
             case LINE -> new TreeMap<>(lineCoverage);
             case METHOD -> new TreeMap<>(methodCoverage);
@@ -168,9 +168,9 @@ public class CoverageOfTarget {
     }
 
 
-    private int maxLengthOfName(Map<CodeElementName, SbflStatus> cov, boolean isMethod){
+    private int maxLengthOfName(Map<CodeElementIdentifier, SbflStatus> cov, boolean isMethod){
         int maxLength = 0;
-        for(CodeElementName name : cov.keySet()){
+        for(CodeElementIdentifier name : cov.keySet()){
             int l = (isMethod) ? name.getShortMethodName().length() : name.toString().length();
             maxLength = Math.max(maxLength, l);
         }

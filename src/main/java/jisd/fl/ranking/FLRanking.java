@@ -2,7 +2,7 @@ package jisd.fl.ranking;
 
 import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.SbflStatus;
-import jisd.fl.core.entity.CodeElementName;
+import jisd.fl.core.entity.CodeElementIdentifier;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class FLRanking {
     List<FLRankingElement> ranking = new ArrayList<>();
 
-    public void add(CodeElementName element, SbflStatus status, Formula f){
+    public void add(CodeElementIdentifier element, SbflStatus status, Formula f){
         ranking.add(new FLRankingElement(element, status.getSuspiciousness(f)));
     }
 
@@ -26,7 +26,7 @@ public class FLRanking {
         return ranking.size();
     }
 
-    public Optional<FLRankingElement> searchElement(CodeElementName target){
+    public Optional<FLRankingElement> searchElement(CodeElementIdentifier target){
         for(FLRankingElement element : ranking){
             if(element.getCodeElementName().equals(target)) return Optional.of(element);
         }
@@ -34,12 +34,12 @@ public class FLRanking {
     }
 
 
-    public Set<CodeElementName> getAllElements(){
+    public Set<CodeElementIdentifier> getAllElements(){
         return ranking.stream().map(FLRankingElement::getCodeElementName).collect(Collectors.toSet());
     }
 
 
-    public void updateSuspiciousnessScore(CodeElementName target, double newScore){
+    public void updateSuspiciousnessScore(CodeElementIdentifier target, double newScore){
         FLRankingElement e = searchElement(target).get();
         e.suspScore = newScore;
         sort();

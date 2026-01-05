@@ -26,7 +26,7 @@ public class FindProbeTarget {
         int numberOfBugs = 61;
         //43はheap space不足でできない
         List<Integer> duplicatedBugs = List.of(2, 18, 25, 43, 48);
-        int targetBugId = 9;
+        int targetBugId = 21;
 
         for(int bugId = targetBugId; bugId <= targetBugId; bugId++) {
             File outputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probeTargets_new.json").toFile();

@@ -10,7 +10,7 @@ import com.sun.jdi.*;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.core.entity.CodeElementName;
+import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
@@ -194,7 +194,7 @@ public abstract class SuspiciousExpression {
         this.childSuspExprs.addAll(chs);
     }
 
-    public CodeElementName convertToCodeElementName(Granularity granularity){
+    public CodeElementIdentifier convertToCodeElementName(Granularity granularity){
         return switch (granularity){
             case LINE -> locateMethod.toLineElementName(locateLine);
             case METHOD, CLASS -> locateMethod;

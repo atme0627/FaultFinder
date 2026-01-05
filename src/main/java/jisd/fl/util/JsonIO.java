@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import jisd.fl.sbfl.coverage.CoverageCollection;
-import jisd.fl.core.entity.CodeElementName;
+import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.MethodElementName;
 import org.json.JSONObject;
 
@@ -30,7 +30,7 @@ public class JsonIO {
     public static CoverageCollection importCoverage(File input){
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
-        module.addKeyDeserializer(CodeElementName.class,
+        module.addKeyDeserializer(CodeElementIdentifier.class,
                 new CodeElementNameKeyDeserializer());
         mapper.registerModule(module);
 
@@ -53,7 +53,7 @@ public class JsonIO {
 
     public static class CodeElementNameKeyDeserializer extends KeyDeserializer {
         @Override
-        public CodeElementName deserializeKey(String key, DeserializationContext ctxt) {
+        public CodeElementIdentifier deserializeKey(String key, DeserializationContext ctxt) {
             // key は toString() の結果
             // 例: "com.example.Foo#bar() line: 42"
             if(key.contains("line")) {

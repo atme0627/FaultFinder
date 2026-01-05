@@ -2,7 +2,7 @@ package jisd.fl.core.entity;
 
 import java.nio.file.Path;
 
-public interface CodeElementName extends Comparable<CodeElementName> {
+public interface CodeElementIdentifier extends Comparable<CodeElementIdentifier> {
     String getFullyQualifiedClassName();
     String getFullyQualifiedMethodName();
     String getShortClassName();
@@ -23,5 +23,5 @@ public interface CodeElementName extends Comparable<CodeElementName> {
         return shortClassName.toString();
     }
 
-    boolean isNeighbor(CodeElementName target);
+    boolean isNeighbor(CodeElementIdentifier target);
 }

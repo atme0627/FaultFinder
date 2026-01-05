@@ -1,11 +1,11 @@
 package jisd.fl.ranking;
-import jisd.fl.core.entity.CodeElementName;
+import jisd.fl.core.entity.CodeElementIdentifier;
 
 public class FLRankingElement implements Comparable<FLRankingElement> {
-    public final CodeElementName element;
+    public final CodeElementIdentifier element;
     public double suspScore;
 
-    FLRankingElement(CodeElementName e, double suspScore) {
+    FLRankingElement(CodeElementIdentifier e, double suspScore) {
         this.element = e;
         this.suspScore = suspScore;
     }
@@ -18,7 +18,7 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
         return element.compareTo(o.element);
     }
 
-    public CodeElementName getCodeElementName() {
+    public CodeElementIdentifier getCodeElementName() {
         return element;
     }
 

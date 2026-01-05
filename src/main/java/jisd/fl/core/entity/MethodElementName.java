@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MethodElementName implements CodeElementName {
+public class MethodElementName implements CodeElementIdentifier {
     @NotNull
     final public String packageName;
     @NotBlank
@@ -160,13 +160,13 @@ public class MethodElementName implements CodeElementName {
     }
 
     @Override
-    public boolean isNeighbor(CodeElementName target){
+    public boolean isNeighbor(CodeElementIdentifier target){
         if(!(target instanceof MethodElementName methodElementTarget)) return false;
         return this.getFullyQualifiedClassName().equals(methodElementTarget.getFullyQualifiedClassName());
     }
 
     @Override
-    public int compareTo(CodeElementName o) {
+    public int compareTo(CodeElementIdentifier o) {
         return this.getFullyQualifiedMethodName().compareTo(o.getFullyQualifiedMethodName());
     }
 

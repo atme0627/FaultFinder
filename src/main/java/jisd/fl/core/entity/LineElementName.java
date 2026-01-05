@@ -2,7 +2,7 @@ package jisd.fl.core.entity;
 
 import java.nio.file.Path;
 
-public class LineElementName implements CodeElementName {
+public class LineElementName implements CodeElementIdentifier {
     private final MethodElementName methodElementName;
     private final int line;
 
@@ -52,13 +52,13 @@ public class LineElementName implements CodeElementName {
     }
 
     @Override
-    public boolean isNeighbor(CodeElementName target){
+    public boolean isNeighbor(CodeElementIdentifier target){
         if(!(target instanceof LineElementName lineElementTarget)) return false;
         return this.methodElementName.equals(lineElementTarget.methodElementName);
     }
 
     @Override
-    public int compareTo(CodeElementName o) {
+    public int compareTo(CodeElementIdentifier o) {
         if(o instanceof LineElementName) {
             if (this.getFullyQualifiedMethodName().equals(o.getFullyQualifiedMethodName())) {
                 return Integer.compare(this.line, ((LineElementName) o).line);

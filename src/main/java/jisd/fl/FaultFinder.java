@@ -13,7 +13,7 @@ import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.ranking.report.ScoreUpdateReport;
-import jisd.fl.core.entity.CodeElementName;
+import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.Map;
@@ -122,14 +122,14 @@ public class FaultFinder {
 
     public void probe(SuspiciousExpression causeTree){
         TraceToScoreAdjustmentConverter converter = new TraceToScoreAdjustmentConverter(this.probeLambda, granularity);
-        Map<CodeElementName, Double> adjustments = converter.toAdjustments(causeTree);
+        Map<CodeElementIdentifier, Double> adjustments = converter.toAdjustments(causeTree);
         adjustAll(adjustments);
         printRanking(10);
     }
 
     //リファクタリングのための一時メソッド
     @Deprecated
-    public Set<CodeElementName> getNeighborElements(FLRankingElement target){
+    public Set<CodeElementIdentifier> getNeighborElements(FLRankingElement target){
         return flRanking.getAllElements().stream()
                 .filter(e -> e.isNeighbor(target.getCodeElementName()) && !e.equals(target.getCodeElementName()))
                 .collect(Collectors.toSet());
@@ -139,8 +139,8 @@ public class FaultFinder {
      * ランキングの要素を再計算
      * @param adjustments
      */
-    public void adjustAll(Map<CodeElementName, Double> adjustments) {
-        for ( Map.Entry<CodeElementName, Double> adj : adjustments.entrySet()) {
+    public void adjustAll(Map<CodeElementIdentifier, Double> adjustments) {
+        for ( Map.Entry<CodeElementIdentifier, Double> adj : adjustments.entrySet()) {
             Optional<FLRankingElement> target = flRanking.searchElement(adj.getKey());
             if (target.isEmpty()) continue;
             target.get().suspScore *= adj.getValue();
@@ -148,7 +148,7 @@ public class FaultFinder {
         flRanking.sort();
     }
 
-    public void updateSuspiciousnessScore(CodeElementName target, DoubleFunction<Double> f){
+    public void updateSuspiciousnessScore(CodeElementIdentifier target, DoubleFunction<Double> f){
         FLRankingElement e = flRanking.searchElement(target).get();
         double newScore = f.apply(e.suspScore);
         flRanking.updateSuspiciousnessScore(target, newScore);
