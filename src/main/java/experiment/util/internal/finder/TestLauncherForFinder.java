@@ -1,7 +1,7 @@
 package experiment.util.internal.finder;
 
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;

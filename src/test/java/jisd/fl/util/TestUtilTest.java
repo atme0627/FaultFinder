@@ -1,8 +1,7 @@
 package jisd.fl.util;
 
 import experiment.defect4j.Defects4jUtil;
-import jisd.debug.Debugger;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

@@ -10,8 +10,8 @@ import com.sun.jdi.*;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.CodeElementName;
+import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import javax.validation.constraints.NotNull;

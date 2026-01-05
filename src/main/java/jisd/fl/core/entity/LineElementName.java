@@ -1,4 +1,4 @@
-package jisd.fl.util.analyze;
+package jisd.fl.core.entity;
 
 import java.nio.file.Path;
 

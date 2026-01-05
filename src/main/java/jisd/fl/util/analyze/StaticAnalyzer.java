@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
 

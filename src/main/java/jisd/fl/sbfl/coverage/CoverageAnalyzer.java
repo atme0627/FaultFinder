@@ -1,7 +1,7 @@
 package jisd.fl.sbfl.coverage;
 
 import jisd.fl.util.*;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 import org.jacoco.core.data.ExecutionDataStore;
 

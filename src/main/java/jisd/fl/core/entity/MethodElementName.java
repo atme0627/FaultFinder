@@ -1,4 +1,4 @@
-package jisd.fl.util.analyze;
+package jisd.fl.core.entity;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -8,6 +8,8 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.analyze.JavaParserUtil;
+import jisd.fl.util.analyze.StaticAnalyzer;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class MethodElementName implements CodeElementName{
+public class MethodElementName implements CodeElementName {
     @NotNull
     final public String packageName;
     @NotBlank

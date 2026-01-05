@@ -1,7 +1,7 @@
 package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.*;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.MethodElementName;
 import org.json.*;
 
 import java.util.LinkedHashMap;

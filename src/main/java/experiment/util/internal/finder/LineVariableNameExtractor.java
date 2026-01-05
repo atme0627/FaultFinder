@@ -3,7 +3,7 @@ package experiment.util.internal.finder;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.util.analyze.JavaParserUtil;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.MethodElementName;
 
 import java.nio.file.NoSuchFileException;
 import java.util.List;

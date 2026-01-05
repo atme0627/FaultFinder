@@ -2,7 +2,7 @@ package jisd.fl.ranking;
 
 import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.SbflStatus;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.core.entity.CodeElementName;
 
 import java.util.*;
 import java.util.stream.Collectors;

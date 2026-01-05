@@ -3,7 +3,6 @@ package jisd.fl.probe;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.probe.internal.CauseLineFinder;
-import jisd.fl.util.analyze.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 
 import java.util.*;

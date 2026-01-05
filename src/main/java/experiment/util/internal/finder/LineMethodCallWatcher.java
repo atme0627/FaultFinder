@@ -11,7 +11,7 @@ import jisd.debug.EnhancedDebugger;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
 import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
 

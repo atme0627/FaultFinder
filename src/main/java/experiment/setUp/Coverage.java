@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.JsonIO;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.MethodElementName;
 
 public class Coverage {
     static Dotenv dotenv = Dotenv.load();

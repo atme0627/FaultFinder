@@ -2,7 +2,7 @@ package jisd.fl.ranking;
 
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.core.entity.CodeElementName;
 
 import java.util.*;
 
