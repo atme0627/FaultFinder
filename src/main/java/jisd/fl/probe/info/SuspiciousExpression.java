@@ -12,10 +12,8 @@ import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.util.analyze.JavaParserUtil;
 
 import javax.validation.constraints.NotNull;
-import java.nio.file.NoSuchFileException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,7 +49,7 @@ public abstract class SuspiciousExpression {
         this.locateMethod = locateMethod;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
-        this.stmt = extractStmt();
+        this.stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
     }
 
     @JsonCreator
@@ -67,7 +65,7 @@ public abstract class SuspiciousExpression {
         this.locateLine = locateLine;
         this.actualValue = actualValue;
         this.childSuspExprs = children;
-        this.stmt = extractStmt();
+        this.stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
     }
 
     /**
@@ -101,17 +99,6 @@ public abstract class SuspiciousExpression {
      */
     protected boolean hasMethodCalling(){
         return !expr.findAll(MethodCallExpr.class).isEmpty();
-    }
-
-    private Statement extractStmt(){
-        try {
-
-            return JavaParserUtil.getStatementByLine(locateMethod, locateLine).orElseThrow();
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException("Class [" + locateMethod + "] is not found.");
-        } catch (NoSuchElementException e){
-            throw new RuntimeException("Cannot extract Statement from [" + locateMethod + ":" + locateLine + "].");
-        }
     }
 
     public Statement getStmt(){
