@@ -2,14 +2,10 @@ package jisd.fl.ranking;
 
 import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.SbflStatus;
-import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.analyze.CodeElementName;
 
 import java.util.*;
-import java.util.function.DoubleFunction;
 import java.util.stream.Collectors;
-
-import static java.lang.Math.min;
 
 public class FLRanking {
     List<FLRankingElement> ranking = new ArrayList<>();
