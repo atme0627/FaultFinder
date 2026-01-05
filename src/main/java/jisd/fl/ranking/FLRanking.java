@@ -1,7 +1,5 @@
 package jisd.fl.ranking;
 
-import jisd.fl.sbfl.Formula;
-import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.core.entity.CodeElementIdentifier;
 
 import java.util.*;
