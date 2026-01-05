@@ -1,10 +1,10 @@
 package jisd.fl.core.entity;
 
-class FLRankingElement implements Comparable<FLRankingElement> {
+public class FLRankingElement implements Comparable<FLRankingElement> {
     final CodeElementIdentifier element;
-    double suspScore;
+    public double suspScore;
 
-    FLRankingElement(CodeElementIdentifier element, double suspScore) {
+    public FLRankingElement(CodeElementIdentifier element, double suspScore) {
         this.element = element;
         this.suspScore = suspScore;
     }
