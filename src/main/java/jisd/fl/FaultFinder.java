@@ -121,11 +121,6 @@ public class FaultFinder {
         printRanking(10);
     }
 
-    //以下の文字列が含むもの以外を消去する。
-    public void includeClassFilter(String pattern){
-        flRanking.includeClassFilter(pattern);
-    }
-
     //リファクタリングのための一時メソッド
     @Deprecated
     public Set<CodeElementName> getNeighborElements(FLRankingElement target){

@@ -22,7 +22,6 @@ public class FaultFinderDemo {
     @BeforeEach
     void initFaultFinder(){
         faultFinder = new FaultFinder(failedTestMethodName);
-        faultFinder.includeClassFilter("demo.");
     }
 
     @Test
