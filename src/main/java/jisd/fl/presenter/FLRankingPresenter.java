@@ -55,7 +55,7 @@ public class FLRankingPresenter {
                 rank = i+1;
             }
             else {
-                if(element.isSameScore(ranking.at(i-1))){
+                if(element.compareTo(ranking.at(i-1)) == 0){
                     rank = previousRank;
                 }
                 else {

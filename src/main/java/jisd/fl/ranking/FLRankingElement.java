@@ -15,12 +15,10 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
 
     @Override
     public int compareTo(FLRankingElement o) {
-        return isSameScore(o) ? element.compareTo(o.element) : -Double.compare(this.suspScore, o.suspScore);
-    }
-
-    //小数点以下4桁までで比較
-    public boolean isSameScore(FLRankingElement e) {
-        return String.format("%.4f", this.suspScore).equals(String.format("%.4f", e.suspScore));
+        if(Double.compare(this.suspScore, o.suspScore) != 0){
+            return -Double.compare(this.suspScore, o.suspScore)
+        }
+        return element.compareTo(o.element);
     }
 
     public CodeElementName getCodeElementName() {
