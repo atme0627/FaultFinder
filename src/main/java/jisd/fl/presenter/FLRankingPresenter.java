@@ -68,7 +68,7 @@ public class FLRankingPresenter {
             System.out.println(colorBegin + "| " + String.format("%3d ", i + 1) + " | " + String.format("%3d ", rank) + " | " +
                     leftPad(shortClassNames.get(i), classLength) + " | " +
                     rightPad(shortMethodNames.get(i), methodLength) + " | " +
-                    String.format("  %.4f  ", element.getSuspiciousnessScore()) + " |" + coloerEnd);
+                    String.format("  %.4f  ", element.getSuspScore()) + " |" + coloerEnd);
             previousRank = rank;
         }
         System.out.println(partition);

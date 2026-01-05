@@ -14,7 +14,7 @@ public class ScoreUpdateReport {
     private final List<ChangeEntry> changes = new ArrayList<>();
 
     public void recordChange(FLRankingElement changeTarget) {
-        changes.add(new ChangeEntry(changeTarget, changeTarget.getSuspiciousnessScore()));
+        changes.add(new ChangeEntry(changeTarget, changeTarget.getSuspScore()));
     }
 
     /**
@@ -60,7 +60,7 @@ public class ScoreUpdateReport {
      */
     private record ChangeEntry(FLRankingElement updatedElement, Double oldScore) {
         public double newScore(){
-            return updatedElement.getSuspiciousnessScore();
+            return updatedElement.getSuspScore();
     }
 
     }
