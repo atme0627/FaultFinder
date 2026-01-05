@@ -1,6 +1,6 @@
 package jisd.fl.presenter;
 
-import jisd.fl.ranking.FLRanking;
+import jisd.fl.core.entity.FLRanking;
 import jisd.fl.core.entity.FLRankingElement;
 
 import java.util.ArrayList;
