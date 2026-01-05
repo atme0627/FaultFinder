@@ -6,21 +6,21 @@ import java.util.Objects;
 
 public class FLRankingElement implements Comparable<FLRankingElement> {
     public final CodeElementName e;
-    public double sbflScore;
+    public double suspScore;
 
-    FLRankingElement(CodeElementName e, double sbflScore) {
+    FLRankingElement(CodeElementName e, double suspScore) {
         this.e = e;
-        this.sbflScore = sbflScore;
+        this.suspScore = suspScore;
     }
 
     @Override
     public int compareTo(FLRankingElement o) {
-        return isSameScore(o) ? e.compareTo(o.e) : -Double.compare(this.sbflScore, o.sbflScore);
+        return isSameScore(o) ? e.compareTo(o.e) : -Double.compare(this.suspScore, o.suspScore);
     }
 
     //小数点以下4桁までで比較
-    boolean isSameScore(FLRankingElement e) {
-        return String.format("%.4f", this.sbflScore).equals(String.format("%.4f", e.sbflScore));
+    public boolean isSameScore(FLRankingElement e) {
+        return String.format("%.4f", this.suspScore).equals(String.format("%.4f", e.suspScore));
     }
 
     public CodeElementName getCodeElementName() {
@@ -28,7 +28,7 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
     }
 
     public double getSuspiciousnessScore() {
-        return sbflScore;
+        return suspScore;
     }
 
     @Override
@@ -37,19 +37,19 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
         if (obj == null || obj.getClass() != this.getClass()) return false;
         var that = (FLRankingElement) obj;
         return Objects.equals(this.e, that.e) &&
-                Double.doubleToLongBits(this.sbflScore) == Double.doubleToLongBits(that.sbflScore);
+                Double.doubleToLongBits(this.suspScore) == Double.doubleToLongBits(that.suspScore);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(e, sbflScore);
+        return Objects.hash(e, suspScore);
     }
 
     @Override
     public String toString() {
         return "FLRankingElement[" +
                 "e=" + e + ", " +
-                "sbflScore=" + sbflScore + ']';
+                "sbflScore=" + suspScore + ']';
     }
 
 
