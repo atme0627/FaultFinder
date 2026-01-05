@@ -74,8 +74,10 @@ public class FaultFinder {
 
     public void remove(int rank) {
         ScoreUpdateReport report = new ScoreUpdateReport();
-        FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
-                () -> new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
+        FLRankingElement target = flRanking.at(rank);
+        if(target == null){
+                throw new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")");
+        }
 
         System.out.println("[  REMOVE  ] " + target);
         report.recordChange(target);
@@ -92,8 +94,10 @@ public class FaultFinder {
 
     public void susp(int rank) {
         ScoreUpdateReport report = new ScoreUpdateReport();
-        FLRankingElement target = flRanking.getElementAtPlace(rank).orElseThrow(
-                () -> new RuntimeException("rank: " + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")"));
+        FLRankingElement target = flRanking.at(rank);
+        if(target == null){
+            throw new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")");
+        }
 
         System.out.println("[  SUSP  ] " + target);
         report.recordChange(target);
