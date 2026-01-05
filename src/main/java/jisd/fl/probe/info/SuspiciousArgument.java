@@ -365,11 +365,11 @@ public class SuspiciousArgument extends SuspiciousExpression {
     }
 
 
-    protected Expression extractExpr() {
-        return extractExpr(true);
+    protected Expression extractExprArg() {
+        return extractExprArg(true);
     }
 
-    protected Expression extractExpr(boolean deleteParentNode) {
+    protected Expression extractExprArg(boolean deleteParentNode) {
         int methodCallCount = stmt.findAll(MethodCallExpr.class).size() + stmt.findAll(ObjectCreationExpr.class).size();
         if(isAssert(stmt)) methodCallCount--;
         int nthCallInLine = methodCallCount - this.CallCountAfterTargetInLine;
