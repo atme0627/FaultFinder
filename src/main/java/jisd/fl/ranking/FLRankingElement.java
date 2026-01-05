@@ -2,8 +2,6 @@ package jisd.fl.ranking;
 
 import jisd.fl.util.analyze.CodeElementName;
 
-import java.util.Objects;
-
 public class FLRankingElement implements Comparable<FLRankingElement> {
     public final CodeElementName element;
     public double suspScore;
@@ -25,7 +23,7 @@ public class FLRankingElement implements Comparable<FLRankingElement> {
         return element;
     }
 
-    public double getSuspiciousnessScore() {
+    public double getSuspScore() {
         return suspScore;
     }
 

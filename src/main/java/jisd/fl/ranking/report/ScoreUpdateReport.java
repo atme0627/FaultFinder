@@ -37,7 +37,7 @@ public class ScoreUpdateReport {
         int elementLength = shortElementNames.stream().map(String::length).max(Integer::compareTo).orElse(20);
 
         // ヘッダーの生成
-        String header = String.format("| %s | %s | %-18s |", FLRanking.leftPad("CLASS NAME", classLength), FLRanking.rightPad("ELEMENT NAME", elementLength), "OLD -> NEW");
+        String header = String.format("| %s | %s | %-18s |", leftPad("CLASS NAME", classLength), rightPad("ELEMENT NAME", elementLength), "OLD -> NEW");
         String partition = "=".repeat(header.length());
 
         System.out.println(partition);
@@ -48,7 +48,7 @@ public class ScoreUpdateReport {
         for (int i = 0; i < changes.size(); i++) {
             ChangeEntry e = changes.get(i);
             String row = String.format("| %s | %s |  %6.4f -> %6.4f  |",
-                    FLRanking.leftPad(shortClassNames.get(i), classLength), FLRanking.rightPad(shortElementNames.get(i), elementLength), e.oldScore(), e.newScore());
+                    leftPad(shortClassNames.get(i), classLength), rightPad(shortElementNames.get(i), elementLength), e.oldScore(), e.newScore());
             System.out.println(row);
         }
         System.out.println(partition);
@@ -63,5 +63,13 @@ public class ScoreUpdateReport {
             return updatedElement.getSuspiciousnessScore();
     }
 
+    }
+
+    public static String leftPad(String str, int size){
+        return ("%-" + size + "s").formatted(str);
+    }
+
+    public static String rightPad(String str, int size) {
+        return ("%" + size + "s").formatted(str);
     }
 }
