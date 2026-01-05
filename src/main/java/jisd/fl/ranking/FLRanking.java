@@ -14,7 +14,7 @@ import static java.lang.Math.min;
 public class FLRanking {
     List<FLRankingElement> ranking = new ArrayList<>();
 
-    public void setElement(CodeElementName element, SbflStatus status, Formula f){
+    public void add(CodeElementName element, SbflStatus status, Formula f){
         ranking.add(new FLRankingElement(element, status.getSuspiciousness(f)));
     }
 
