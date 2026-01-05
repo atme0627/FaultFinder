@@ -1,6 +1,5 @@
 package experiment.util;
 
-import experiment.defect4j.Defects4jUtil;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.PropertyLoader;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 class SuspiciousVariableFinderTest {

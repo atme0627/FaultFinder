@@ -2,20 +2,17 @@ package experiment.setUp;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import experiment.defect4j.Defects4jUtil;
-import experiment.util.SuspiciousVariableFinder;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.probe.Probe;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
-import jisd.fl.util.analyze.MethodElementName;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 public class doProbe {

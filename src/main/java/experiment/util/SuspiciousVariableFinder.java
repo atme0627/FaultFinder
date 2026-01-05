@@ -1,6 +1,5 @@
 package experiment.util;
 
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import experiment.util.internal.finder.LineMethodCallWatcher;
 import experiment.util.internal.finder.LineVariableNameExtractor;

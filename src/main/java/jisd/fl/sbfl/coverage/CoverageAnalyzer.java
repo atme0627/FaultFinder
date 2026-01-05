@@ -6,14 +6,12 @@ import jisd.fl.util.analyze.StaticAnalyzer;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {

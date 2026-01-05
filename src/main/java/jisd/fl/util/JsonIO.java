@@ -6,10 +6,9 @@ import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.sbfl.coverage.CoverageCollection;
-import jisd.fl.util.analyze.CodeElementName;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.CodeElementName;
+import jisd.fl.core.entity.MethodElementName;
 import org.json.JSONObject;
 
 
