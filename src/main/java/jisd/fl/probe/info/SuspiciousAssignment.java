@@ -33,7 +33,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
     public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue());
-        this.expr = extractExpr();
+        this.expr = extractExprAssign();
         this.assignTarget = assignTarget;
     }
 
@@ -47,7 +47,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             ){
         super(failedTest, locateMethod, locateLine, actualValue, children);
         this.assignTarget = null;
-        this.expr = extractExpr();
+        this.expr = extractExprAssign();
     }
 
     @Override
@@ -205,11 +205,11 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                 .collect(Collectors.toList());
     }
 
-    protected Expression extractExpr() {
-        return extractExpr(true);
+    protected Expression extractExprAssign() {
+        return extractExprAssign(true);
     }
 
-    protected Expression extractExpr (boolean deleteParentNode){
+    protected Expression extractExprAssign(boolean deleteParentNode){
         try {
             Expression result = extractExpressionFromStatement();
             return finalizeResult(result, deleteParentNode);

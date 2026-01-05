@@ -49,7 +49,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.argIndex = argIndex;
         this.calleeMethodName = calleeMethodName;
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
-        this.expr = extractExpr();
+        this.expr = extractExprArg();
     }
     
     @JsonCreator
@@ -67,7 +67,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.calleeMethodName = new MethodElementName(calleeMethodName);
         this.argIndex = argIndex;
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
-        this.expr = extractExpr();
+        this.expr = extractExprArg();
     }
     
 
@@ -241,7 +241,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
     //はじめのノードから順に探し、親にexprを持つものがあったら、その時のindexが求めたい値
     private int getCallCountBeforeTargetArgEval(){
         List<Expression> calls = new ArrayList<>();
-        Expression targetExpr = extractExpr(false);
+        Expression targetExpr = extractExprArg(false);
         stmt.accept(new EvalOrderVisitor(), calls);
         for(Expression call : calls){
             if(call == targetExpr || call.findAncestor(Node.class, anc -> anc == targetExpr).isPresent()){
@@ -555,7 +555,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         final String RESET    = "\u001B[0m";
 
         LexicalPreservingPrinter.setup(stmt);
-        extractExpr(false).getTokenRange().ifPresent(tokenRange -> {
+        extractExprArg(false).getTokenRange().ifPresent(tokenRange -> {
             // 子ノードに属するすべてのトークンに色付け
             tokenRange.forEach(token -> {
                 String original = token.getText();
