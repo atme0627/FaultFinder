@@ -1,6 +1,6 @@
 package jisd.fl.ranking;
-
 import jisd.fl.core.entity.CodeElementIdentifier;
+import jisd.fl.core.entity.FLRankingElement;
 
 import java.util.*;
 import java.util.stream.Collectors;

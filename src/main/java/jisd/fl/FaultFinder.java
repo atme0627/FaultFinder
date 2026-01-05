@@ -4,7 +4,7 @@ import jisd.fl.presenter.FLRankingPresenter;
 import jisd.fl.probe.Probe;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.ranking.FLRanking;
-import jisd.fl.ranking.FLRankingElement;
+import jisd.fl.core.entity.FLRankingElement;
 import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
