@@ -26,7 +26,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
     //左辺で値が代入されている変数の情報
     @JsonIgnore
-    private final SuspiciousVariable assignTarget;
+    public final SuspiciousVariable assignTarget;
 
     public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue());
@@ -144,59 +144,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     }
 
     @Override
-    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime){
-        final List<TracedValue> result = new ArrayList<>();
-
-        //Debugger生成
-        String main = TestUtil.getJVMMain(this.failedTest);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
-
-        //対象の引数が属する行にたどり着いた時に行う処理を定義
-        //ここではその行で呼ばれてるメソッド情報を抽出
-        EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
-            //既に情報が取得できている場合は終了
-            if(!result.isEmpty()) return;
-
-            EventRequestManager manager = vm.eventRequestManager();
-
-            //この行の実行が終わったことを検知するステップリクエストを作成
-            //この具象クラスではステップイベントの通知タイミングで、今調査していた行が調べたい行だったかを確認
-            ThreadReference thread = bpe.thread();
-            StepRequest stepReq = EnhancedDebugger.createStepOverRequest(manager, thread);
-
-            //周辺の値を観測
-            List<TracedValue> resultCandidate;
-            try {
-                StackFrame frame = thread.frame(0);
-                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, locateLine);
-            } catch (IncompatibleThreadStateException e) {
-                throw new RuntimeException(e);
-            }
-
-
-            //resume してステップイベントを待つ
-            vm.resume();
-            boolean done = false;
-            while (!done) {
-                EventSet es = vm.eventQueue().remove();
-                for (Event ev : es) {
-                    //調査対象の行の実行(実行インスタンス)が終了
-                    //ここで、調査した行が目的のものであったかチェック
-                    if (ev instanceof StepEvent) {
-                        done = true;
-                        StepEvent se = (StepEvent) ev;
-                        if(JDISuspAssign.validateIsTargetExecution(se, this.getAssignTarget())) result.addAll(resultCandidate);
-                        //vmをresumeしない
-                    }
-                }
-            }
-            //動的に作ったリクエストを無効化
-            stepReq.disable();
-        };
-
-        //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(this.locateMethod.getFullyQualifiedClassName(), this.locateLine, handler);
-        return TracedValuesAtLine.of(result);
+    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousExpression thisSuspExpr){
+        return JDISuspAssign.traceAllValuesAtSuspExpr(sleepTime, (SuspiciousAssignment) thisSuspExpr);
     }
 }
