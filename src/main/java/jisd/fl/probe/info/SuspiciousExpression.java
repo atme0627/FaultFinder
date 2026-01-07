@@ -1,12 +1,10 @@
 package jisd.fl.probe.info;
 
-import com.fasterxml.jackson.annotation.*;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
-import javax.validation.constraints.NotNull;
 import java.util.*;
 
 public abstract class SuspiciousExpression {
