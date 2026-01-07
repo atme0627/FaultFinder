@@ -190,19 +190,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         }
     }
 
-    /**
-     * exprから次に探索の対象となる変数の名前を取得する。
-     * exprの演算に直接用いられている変数のみが対象で、引数やメソッド呼び出しの対象となる変数は除外する。
-     * @return 変数名のリスト
-     */
-    protected List<String> extractNeighborVariableNames(boolean includeIndirectUsedVariable){
-        return expr.findAll(NameExpr.class).stream()
-                //引数やメソッド呼び出しに用いられる変数を除外
-                .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
-                .map(NameExpr::toString)
-                .collect(Collectors.toList());
-    }
-
     public SuspiciousVariable getAssignTarget() {
         return assignTarget;
     }
