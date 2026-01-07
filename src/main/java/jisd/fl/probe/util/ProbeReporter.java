@@ -1,5 +1,6 @@
 package jisd.fl.probe.util;
 
+import jisd.fl.probe.info.SuspiciousExprTreeNode;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 
@@ -20,28 +21,28 @@ public class ProbeReporter {
 
     public void reportCauseExpression(SuspiciousExpression cause){
         Map<String, String> infoMap = new HashMap<String, String>();
-        infoMap.put("LOCATION", cause.getLocateMethod() + ": line " + cause.getLocateLine());
-        infoMap.put("LINE", cause.getStatementStr().replace("\n", " "));
+        infoMap.put("LOCATION", cause.locateMethod + ": line " + cause.locateLine);
+        infoMap.put("LINE", cause.stmt.toString().replace("\n", " "));
         printWithHeader("CAUSE LINE", formattedMapString(infoMap, 1));
 
     }
 
-    public void reportInvokedReturnExpression(SuspiciousExpression root){
-        if(root.getChildren().isEmpty()) return;
+    public void reportInvokedReturnExpression(SuspiciousExprTreeNode root){
+        if(root.childSuspExprs.isEmpty()) return;
         printHeader("INVOKED RETURNS", HEADER_LENGTH);
         reportInvokedReturnExpression(root, 1);
     }
 
-    private void reportInvokedReturnExpression(SuspiciousExpression target, int indentLevel){
+    private void reportInvokedReturnExpression(SuspiciousExprTreeNode target, int indentLevel){
         Map<String, String> infoMap = new HashMap<String, String>();
-        infoMap.put("LOCATION", target.getLocateMethod() + ": line " + target.getLocateLine());
-        infoMap.put("LINE", target.getStatementStr().replace("\n", " "));
+        infoMap.put("LOCATION", target.suspExpr.locateMethod + ": line " + target.suspExpr.locateLine);
+        infoMap.put("LINE", target.suspExpr.stmt.toString().replace("\n", " "));
         List<String> formatted = formattedMapString(infoMap, indentLevel);
         for (String line : formatted) {
             System.out.println(line);
         }
         printHeader("", HEADER_LENGTH);
-        for(SuspiciousExpression child : target.getChildren()) {
+        for(SuspiciousExprTreeNode child : target.childSuspExprs) {
             reportInvokedReturnExpression(child, indentLevel + 1);
         }
 
