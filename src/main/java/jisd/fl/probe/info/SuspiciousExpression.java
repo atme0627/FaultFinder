@@ -47,14 +47,6 @@ public abstract class SuspiciousExpression {
         return JDISuspExpr.neighborSuspiciousVariables(sleepTime, includeIndirectUsedVariable, suspExpr);
     }
 
-    public void addChild(SuspiciousExpression ch){
-        this.childSuspExprs.add(ch);
-    }
-
-    public void addChild(List<? extends SuspiciousExpression> chs){
-        this.childSuspExprs.addAll(chs);
-    }
-
     @Override
     public boolean equals(Object obj){
         if(!(obj instanceof SuspiciousExpression se)) return false;
@@ -68,22 +60,4 @@ public abstract class SuspiciousExpression {
     public int hashCode() {
         return Objects.hash(failedTest, locateMethod, locateLine, actualValue);
     }
-
-//    @Override
-//    public String toString() {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("        // At ");
-//        sb.append(locateMethod);
-//        sb.append("\n");
-//        sb.append(String.format(
-//                "%d: %s%-50s %s%s",
-//                locateLine,
-//                "    ",
-//                expr.toString(),
-//                " == ",
-//                actualValue
-//        ));
-//        sb.append("\n");
-//        return sb.toString();
-//    }
 }
