@@ -203,15 +203,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                 .collect(Collectors.toList());
     }
 
-    static private void waitForThreadPreparation(ThreadReference thread){
-        try {
-            while(!thread.isSuspended()){
-                    Thread.sleep(10);
-            }
-        } catch (InterruptedException ignored) {
-        }
-    }
-
     public SuspiciousVariable getAssignTarget() {
         return assignTarget;
     }
