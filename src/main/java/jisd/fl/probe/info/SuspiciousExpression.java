@@ -103,7 +103,7 @@ public abstract class SuspiciousExpression {
      * @param sleepTime
      * @return
      */
-    protected abstract TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime);
+    protected abstract TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousExpression thisSuspExpr);
 
     /**
      * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得

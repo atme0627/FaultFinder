@@ -236,7 +236,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
     }
 
     @Override
-    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime){
+    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousExpression thisSuspExpr){
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成
