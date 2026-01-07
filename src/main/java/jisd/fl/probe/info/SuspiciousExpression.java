@@ -13,7 +13,7 @@ public abstract class SuspiciousExpression {
     //フィールドの場合は<ulinit>で良い
     public final MethodElementName locateMethod;
     public final int locateLine;
-    protected final Statement stmt;
+    public final Statement stmt;
     protected  Expression expr;
     protected final String actualValue;
     //木構造にしてvisualizationをできるようにする
