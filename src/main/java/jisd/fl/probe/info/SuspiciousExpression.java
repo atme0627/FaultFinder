@@ -151,7 +151,7 @@ public abstract class SuspiciousExpression {
                 "%d: %s%-50s %s%s",
                 locateLine,
                 "    ",
-                stmt.toString(),
+                expr.toString(),
                 " == ",
                 actualValue
         ));
