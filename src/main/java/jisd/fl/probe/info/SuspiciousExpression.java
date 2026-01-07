@@ -9,28 +9,14 @@ import jisd.fl.core.entity.MethodElementName;
 import javax.validation.constraints.NotNull;
 import java.util.*;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
-        property = "type"
-)
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = SuspiciousAssignment.class, name = "assign"),
-        @JsonSubTypes.Type(value = SuspiciousReturnValue.class, name = "return"),
-        @JsonSubTypes.Type(value = SuspiciousArgument.class, name = "argument")
-})
-
-@JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
-
 public abstract class SuspiciousExpression {
     //どのテスト実行時の話かを指定
     protected final MethodElementName failedTest;
     //フィールドの場合は<ulinit>で良い
     protected final MethodElementName locateMethod;
     protected final int locateLine;
-    @JsonIgnore protected final Statement stmt;
-    @JsonIgnore @NotNull protected  Expression expr;
+    protected final Statement stmt;
+    protected  Expression expr;
     protected final String actualValue;
     //木構造にしてvisualizationをできるようにする
     //保持するのは自分の子要素のみ
@@ -41,22 +27,6 @@ public abstract class SuspiciousExpression {
         this.locateMethod = locateMethod;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
-        this.stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
-    }
-
-    @JsonCreator
-    protected SuspiciousExpression(
-            @JsonProperty("failedTest") String failedTest,
-            @JsonProperty("locateMethod") String locateMethod,
-            @JsonProperty("locateLine") int locateLine,
-            @JsonProperty("actualValue") String actualValue,
-            @JsonProperty("children") List<SuspiciousExpression> children
-    ){
-        this.failedTest = new MethodElementName(failedTest);
-        this.locateMethod = new MethodElementName(locateMethod);
-        this.locateLine = locateLine;
-        this.actualValue = actualValue;
-        this.childSuspExprs = children;
         this.stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
     }
 
@@ -73,10 +43,6 @@ public abstract class SuspiciousExpression {
 
     /**
      * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得
-     *
-     * @param sleepTime
-     * @param suspExpr
-     * @return
      */
     static public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
         //SuspExprで観測できる全ての変数
@@ -89,42 +55,6 @@ public abstract class SuspiciousExpression {
 
     public void addChild(List<? extends SuspiciousExpression> chs){
         this.childSuspExprs.addAll(chs);
-    }
-
-    //Jackson シリアライズ用メソッド
-    @JsonProperty("failedTest")
-    public String getFailedTest() {
-        return failedTest.toString();
-    }
-
-    @JsonProperty("locateMethod")
-    public String getLocateMethod() {
-        return locateMethod.toString();
-    }
-
-    @JsonProperty("locateLine")
-    public int getLocateLine() {
-        return locateLine;
-    }
-
-    @JsonProperty("stmt")
-    public String getStatementStr() {
-        return stmt.toString();
-    }
-
-    @JsonProperty("expr")
-    public String getExpressionStr() {
-        return expr.toString();
-    }
-
-    @JsonProperty("actualValue")
-    public String getActualValue() {
-        return actualValue;
-    }
-
-    @JsonProperty("children")
-    public List<SuspiciousExpression> getChildren() {
-        return childSuspExprs;
     }
 
     @Override
