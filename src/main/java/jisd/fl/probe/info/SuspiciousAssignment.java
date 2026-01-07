@@ -114,7 +114,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                     if (ev instanceof StepEvent) {
                         done = true;
                         StepEvent se = (StepEvent) ev;
-                        if(validateIsTargetExecution(se, this.getAssignTarget())) result.addAll(resultCandidate);
+                        if(JDISuspAssign.validateIsTargetExecution(se, this.getAssignTarget())) result.addAll(resultCandidate);
                         //vmをresumeしない
                     }
                 }
@@ -132,61 +132,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                     + " ] on " + this.locateMethod + " line:" + this.locateLine);
         }
         return result;
-    }
-
-    //この行の評価結果( = assignTargetへ代入された値)がactualValueと一致するか確認
-    //TODO: 配列はとりあえず考えない
-    static private boolean validateIsTargetExecution(StepEvent se, SuspiciousVariable assignTarget){
-        try {
-            if (!assignTarget.isPrimitive()) throw new RuntimeException("Reference type has not been supported yet.");
-            if (assignTarget.isArray()) throw new RuntimeException("Array type has not been supported yet.");
-
-            if (assignTarget.isField()) {
-                //フィールドを持つクラスの型情報を取得
-                ReferenceType refType;
-                StackFrame frame = se.thread().frame(0);
-                ObjectReference targetObject = frame.thisObject();
-                if (targetObject != null) {
-                    refType = targetObject.referenceType();
-                } else {
-                    refType = frame.location().declaringType();
-                }
-
-                //フィールド情報を取得
-                Field field = refType.fieldByName(assignTarget.getSimpleVariableName());
-                if(field == null) throw new NoSuchElementException();
-
-                //評価結果を比較
-                String evaluatedValue;
-                if(field.isStatic()){
-                    evaluatedValue = refType.getValue(field).toString();
-                }
-                else {
-                    if(targetObject == null) throw new RuntimeException("Something is wrong.");
-                    evaluatedValue = targetObject.getValue(field).toString();
-                }
-                return evaluatedValue.equals(assignTarget.getActualValue());
-
-            } else {
-                //ローカル変数を取り出す
-                StackFrame frame = se.thread().frame(0);
-                List<LocalVariable> lvs = frame.visibleVariables();
-                LocalVariable lvalue = lvs.stream().filter(lv -> lv.name().equals(assignTarget.getSimpleVariableName()))
-                        .findFirst()
-                        .orElseThrow();
-
-                //評価結果を比較
-                String evaluatedValue = TmpJDIUtils.getValueString(frame.getValue(lvalue));
-                return evaluatedValue.equals(assignTarget.getActualValue());
-            }
-        } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException("Target thread must be suspended.");
-        } catch (AbsentInformationException e){
-            throw new RuntimeException("Something is wrong.");
-        } catch (NoSuchElementException e){
-            //値がそもそも存在しない --> 目的の実行ではない
-            return false;
-        }
     }
 
     public SuspiciousVariable getAssignTarget() {
@@ -241,7 +186,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                     if (ev instanceof StepEvent) {
                         done = true;
                         StepEvent se = (StepEvent) ev;
-                        if(validateIsTargetExecution(se, this.getAssignTarget())) result.addAll(resultCandidate);
+                        if(JDISuspAssign.validateIsTargetExecution(se, this.getAssignTarget())) result.addAll(resultCandidate);
                         //vmをresumeしない
                     }
                 }
