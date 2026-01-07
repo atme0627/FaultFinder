@@ -78,7 +78,7 @@ public class Probe{
             }
             result.add(target);
         }
-        reporter.reportInvokedReturnExpression(targetCauseExpr);
+        reporter.reportInvokedReturnExpression(suspiciousExprTreeRoot);
         return result;
     }
 
