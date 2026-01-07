@@ -69,21 +69,21 @@ public abstract class SuspiciousExpression {
         return Objects.hash(failedTest, locateMethod, locateLine, actualValue);
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("        // At ");
-        sb.append(locateMethod);
-        sb.append("\n");
-        sb.append(String.format(
-                "%d: %s%-50s %s%s",
-                locateLine,
-                "    ",
-                expr.toString(),
-                " == ",
-                actualValue
-        ));
-        sb.append("\n");
-        return sb.toString();
-    }
+//    @Override
+//    public String toString() {
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("        // At ");
+//        sb.append(locateMethod);
+//        sb.append("\n");
+//        sb.append(String.format(
+//                "%d: %s%-50s %s%s",
+//                locateLine,
+//                "    ",
+//                expr.toString(),
+//                " == ",
+//                actualValue
+//        ));
+//        sb.append("\n");
+//        return sb.toString();
+//    }
 }

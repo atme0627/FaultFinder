@@ -23,8 +23,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     }
 
     @Override
-    public String toString(){
-        return "[ SUSPICIOUS ASSIGNMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
+    public String toString() {
+        return "[ SUSPICIOUS ASSIGNMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + expr.toString();
     }
-
 }

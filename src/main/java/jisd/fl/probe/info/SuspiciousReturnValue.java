@@ -19,7 +19,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
 
     @Override
     public String toString(){
-        return "[ SUSPICIOUS RETURN VALUE ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
+        return "[ SUSPICIOUS RETURN VALUE ] ( " + locateMethod + " line:" + locateLine + " ) " + expr.toString();
     }
 
 }
