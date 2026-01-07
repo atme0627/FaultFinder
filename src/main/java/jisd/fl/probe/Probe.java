@@ -40,6 +40,7 @@ public class Probe{
                 continue;
             }
             SuspiciousExpression suspExpr = suspExprOpt.get();
+            addTreeElement(suspExpr, target);
 ;           reporter.reportCauseExpression(suspExpr);
             //include return line of callee method to cause lines
             List<SuspiciousExpression> causeExprs = collectInvokedReturnExpressions(suspExpr);
