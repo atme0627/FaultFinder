@@ -71,11 +71,6 @@ public abstract class SuspiciousExpression {
      */
     abstract public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException;
 
-    public Statement getStmt(){
-        return stmt;
-    }
-
-
     /**
      * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得
      *
