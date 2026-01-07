@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 public class SuspiciousReturnValue extends SuspiciousExpression {
     public SuspiciousReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
         super(failedTest, locateMethod, locateLine, actualValue);
-        this.expr = ExtractExprReturnValue.extractExprReturnValue(stmt);
+        this.expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
     }
 
     @JsonCreator
@@ -28,7 +28,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
             @JsonProperty("children") List<SuspiciousExpression> children
     ){
         super(failedTest, locateMethod, locateLine, actualValue, children);
-        this.expr = ExtractExprReturnValue.extractExprReturnValue(stmt);
+        this.expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
     }
     
     @Override
