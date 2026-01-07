@@ -78,24 +78,6 @@ public abstract class SuspiciousExpression {
         return stmt;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("        // At ");
-        sb.append(locateMethod);
-        sb.append("\n");
-        sb.append(String.format(
-                "%d: %s%-50s %s%s",
-                locateLine,
-                "    ",
-                stmt.toString(),
-                " == ",
-                actualValue
-        ));
-        sb.append("\n");
-        return sb.toString();
-    }
-
 
     /**
      * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得
@@ -116,14 +98,6 @@ public abstract class SuspiciousExpression {
     public void addChild(List<? extends SuspiciousExpression> chs){
         this.childSuspExprs.addAll(chs);
     }
-
-    public CodeElementIdentifier convertToCodeElementName(Granularity granularity){
-        return switch (granularity){
-            case LINE -> locateMethod.toLineElementName(locateLine);
-            case METHOD, CLASS -> locateMethod;
-        };
-    }
-
 
     //Jackson シリアライズ用メソッド
     @JsonProperty("failedTest")
@@ -173,5 +147,23 @@ public abstract class SuspiciousExpression {
     @Override
     public int hashCode() {
         return Objects.hash(failedTest, locateMethod, locateLine, actualValue);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("        // At ");
+        sb.append(locateMethod);
+        sb.append("\n");
+        sb.append(String.format(
+                "%d: %s%-50s %s%s",
+                locateLine,
+                "    ",
+                stmt.toString(),
+                " == ",
+                actualValue
+        ));
+        sb.append("\n");
+        return sb.toString();
     }
 }

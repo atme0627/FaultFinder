@@ -1,5 +1,6 @@
 package jisd.fl.ranking;
 
+import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.core.entity.CodeElementIdentifier;
@@ -40,7 +41,7 @@ public class TraceToScoreAdjustmentConverter {
             SuspiciousExpression suspExpr = queue.poll();
             int depth = depths.poll();
 
-            CodeElementIdentifier elem = suspExpr.convertToCodeElementName(g);
+            CodeElementIdentifier elem = convertToCodeElementName(new MethodElementName(suspExpr.getLocateMethod()), suspExpr.getLocateLine(), g);
 
             // 最小深さをマージ
             minDepth.merge(elem, depth, Math::min);
@@ -58,5 +59,12 @@ public class TraceToScoreAdjustmentConverter {
             adjustments.put(entry.getKey(), multiplier);
         }
         return adjustments;
+    }
+
+    public static CodeElementIdentifier convertToCodeElementName(MethodElementName locateMethod, int locateLine, Granularity granularity){
+        return switch (granularity){
+            case LINE -> locateMethod.toLineElementName(locateLine);
+            case METHOD, CLASS -> locateMethod;
+        };
     }
 }
