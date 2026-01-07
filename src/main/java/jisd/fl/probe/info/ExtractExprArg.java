@@ -1,5 +1,6 @@
 package jisd.fl.probe.info;
 
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExtractExprArg {
-    static public Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
+    static Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
         int methodCallCount = stmt.findAll(MethodCallExpr.class).size() + stmt.findAll(ObjectCreationExpr.class).size();
         if(isAssert(stmt)) methodCallCount--;
         int nthCallInLine = methodCallCount - callCountAfterTargetInLine;
@@ -48,7 +49,22 @@ public class ExtractExprArg {
 
     //assert文はMethodExitが起きず、例外で終わることによるCallCountAfterTargetInLine
     //のずれ解消のための処置
-    public static boolean isAssert(Statement stmt){
+    static boolean isAssert(Statement stmt){
         return stmt.toString().startsWith("assert");
+    }
+
+    //対象の引数の演算の前に何回メソッド呼び出しが行われるかを計算する。
+    //まず、stmtでのメソッド呼び出しをJava の実行時評価順でソートしたリストを取得
+    //はじめのノードから順に探し、親にexprを持つものがあったら、その時のindexが求めたい値
+    static int getCallCountBeforeTargetArgEval(Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName){
+        List<Expression> calls = new ArrayList<>();
+        Expression targetExpr = extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
+        stmt.accept(new SuspiciousArgument.EvalOrderVisitor(), calls);
+        for(Expression call : calls){
+            if(call == targetExpr || call.findAncestor(Node.class, anc -> anc == targetExpr).isPresent()){
+                return calls.indexOf(call) + 1;
+            }
+        }
+        throw new RuntimeException("Something is wrong.");
     }
 }

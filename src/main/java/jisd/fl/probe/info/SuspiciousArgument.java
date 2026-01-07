@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
@@ -83,7 +82,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         //探索対象のmethod名リストを取得
         List<String> targetMethodName = targetMethodName();
         //対象の引数内の最初のmethodCallがstmtで何番目か
-        int targetCallCount = getCallCountBeforeTargetArgEval();
+        int targetCallCount = ExtractExprArg.getCallCountBeforeTargetArgEval(stmt, CallCountAfterTargetInLine, argIndex, calleeMethodName);
         //methodCallの回数をカウント
         int[] callCount = new int[]{0};
 
@@ -234,21 +233,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
                 .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(mce -> mce.getName().toString())
                 .collect(Collectors.toList());
-    }
-
-    //対象の引数の演算の前に何回メソッド呼び出しが行われるかを計算する。
-    //まず、stmtでのメソッド呼び出しをJava の実行時評価順でソートしたリストを取得
-    //はじめのノードから順に探し、親にexprを持つものがあったら、その時のindexが求めたい値
-    private int getCallCountBeforeTargetArgEval(){
-        List<Expression> calls = new ArrayList<>();
-        Expression targetExpr = extractExprArg(false, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
-        stmt.accept(new EvalOrderVisitor(), calls);
-        for(Expression call : calls){
-            if(call == targetExpr || call.findAncestor(Node.class, anc -> anc == targetExpr).isPresent()){
-                return calls.indexOf(call) + 1;
-            }
-        }
-        throw new RuntimeException("Something is wrong.");
     }
 
     @Override
