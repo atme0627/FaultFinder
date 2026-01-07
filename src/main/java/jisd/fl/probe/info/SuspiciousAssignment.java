@@ -1,20 +1,8 @@
 package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.*;
-import com.sun.jdi.*;
-import com.sun.jdi.event.Event;
-import com.sun.jdi.event.EventSet;
-import com.sun.jdi.event.MethodExitEvent;
-import com.sun.jdi.event.StepEvent;
-import com.sun.jdi.request.EventRequestManager;
-import com.sun.jdi.request.MethodExitRequest;
-import com.sun.jdi.request.StepRequest;
-import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
-import jisd.fl.probe.record.TracedValuesAtLine;
-import jisd.fl.util.TestUtil;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
