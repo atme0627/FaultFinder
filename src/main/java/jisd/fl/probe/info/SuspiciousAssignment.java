@@ -6,32 +6,15 @@ import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
-
 public class SuspiciousAssignment extends SuspiciousExpression {
 
     //左辺で値が代入されている変数の情報
-    @JsonIgnore
     public final SuspiciousVariable assignTarget;
 
     public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue());
         this.expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
         this.assignTarget = assignTarget;
-    }
-
-    @JsonCreator
-    private SuspiciousAssignment(
-            @JsonProperty("failedTest") String failedTest,
-            @JsonProperty("locateMethod") String locateMethod,
-            @JsonProperty("locateLine") int locateLine,
-            @JsonProperty("actualValue") String actualValue,
-            @JsonProperty("children") List<SuspiciousExpression> children
-            ){
-        super(failedTest, locateMethod, locateLine, actualValue, children);
-        this.assignTarget = null;
-        this.expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
     }
 
     @Override
