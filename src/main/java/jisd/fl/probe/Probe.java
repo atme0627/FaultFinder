@@ -56,8 +56,6 @@ public class Probe{
 
             investigatedTargets.addAll(newTargets);
             probingTargets.addAll(newTargets);
-
-            addTreeElement(suspExpr, target);
             printProbeExInfoFooter(suspExpr, newTargets);
         }
         return suspiciousExprTreeRoot;
@@ -68,17 +66,20 @@ public class Probe{
         Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>();
         suspExprQueue.add(targetCauseExpr);
 
+        SuspiciousExprTreeNode targetNode = suspiciousExprTreeRoot.find(targetCauseExpr);
+        if(targetNode == null) throw new RuntimeException("Target node is not found.");
+
         while(!suspExprQueue.isEmpty()){
             SuspiciousExpression target = suspExprQueue.removeFirst();
 
             List<SuspiciousReturnValue> returnsOfTarget = target.searchSuspiciousReturns();
             if(!returnsOfTarget.isEmpty()) {
-                suspiciousExprTreeRoot.addChild(returnsOfTarget);
+                targetNode.addChild(returnsOfTarget);
                 suspExprQueue.addAll(returnsOfTarget);
             }
             result.add(target);
         }
-        reporter.reportInvokedReturnExpression(suspiciousExprTreeRoot);
+        reporter.reportInvokedReturnExpression(targetNode);
         return result;
     }
 
@@ -90,7 +91,7 @@ public class Probe{
     }
 
     protected void addTreeElement(SuspiciousExpression suspExpr, SuspiciousVariable targetSuspVar){
-        if(suspiciousExprTreeRoot == null){
+        if(suspiciousExprTreeRoot.suspExpr == null){
             suspiciousExprTreeRoot = new SuspiciousExprTreeNode(suspExpr);
             return;
         }
@@ -99,6 +100,10 @@ public class Probe{
         }
         SuspiciousExprTreeNode parent = suspiciousExprTreeRoot.find(targetSuspVar.getParent());
         if(parent == null) {
+            suspiciousExprTreeRoot.print();
+            System.out.println("===================================================================================");
+            System.out.println(targetSuspVar.getParent());
+            System.out.println("===================================================================================");
             throw new RuntimeException("Parent node is not found.");
         }
         parent.addChild(suspExpr);
