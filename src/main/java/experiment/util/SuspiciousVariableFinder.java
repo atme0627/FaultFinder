@@ -62,10 +62,12 @@ public class SuspiciousVariableFinder {
                 .collect(Collectors.toList());
 
         //失敗行で呼び出しが行われているメソッドの情報を動的解析で取得し、それらのreturn行で使用されている変数の情報を抽出する。
+        //TODO: treeNodeをなんとかする
         List<SuspiciousExpression> returns = methodCallWatcher.searchSuspiciousReturns(failureLine, locateMethod);
         for (SuspiciousExpression r : returns) {
             List<SuspiciousVariable> neighbor = r.neighborSuspiciousVariables(2000, false, r);
             result.addAll(neighbor);
+
         }
 
         return result;
