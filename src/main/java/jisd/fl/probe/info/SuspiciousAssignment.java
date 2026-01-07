@@ -1,7 +1,6 @@
 package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.*;
-import com.github.javaparser.ast.expr.*;
 import com.sun.jdi.*;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
@@ -19,7 +18,7 @@ import jisd.fl.util.TestUtil;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
 
@@ -224,7 +223,8 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             //周辺の値を観測
             List<TracedValue> resultCandidate;
             try {
-                resultCandidate = watchAllVariablesInLine(thread.frame(0));
+                StackFrame frame = thread.frame(0);
+                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, locateLine);
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
             }

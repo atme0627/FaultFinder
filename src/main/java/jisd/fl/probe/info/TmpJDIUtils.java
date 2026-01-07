@@ -1,10 +1,10 @@
 package jisd.fl.probe.info;
 
 import com.sun.jdi.*;
+import jisd.fl.probe.record.TracedValue;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class TmpJDIUtils {
     //SuspiciousExpressionリファクタリングのための一時的なクラス
@@ -52,5 +52,66 @@ public class TmpJDIUtils {
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    static List<TracedValue> watchAllVariablesInLine(StackFrame frame, int locateLine){
+        List<TracedValue> result = new ArrayList<>();
+
+        // （1）ローカル変数
+        List<LocalVariable> locals;
+        try {
+            locals = frame.visibleVariables();
+        } catch (AbsentInformationException e) {
+            throw new RuntimeException(e);
+        }
+        Map<LocalVariable, Value> localVals = frame.getValues(locals);
+        localVals.forEach((lv, v) -> {
+            if(v == null) return;
+            //配列の場合[0]のみ観測
+            if(v instanceof ArrayReference ar){
+                if(ar.length() == 0) return;
+                result.add(new TracedValue(
+                        LocalDateTime.MIN,
+                        lv.name() + "[0]",
+                        TmpJDIUtils.getValueString(ar.getValue(0)),
+                        locateLine
+                ));
+            }
+
+            result.add(new TracedValue(
+                    LocalDateTime.MIN,
+                    lv.name(),
+                    TmpJDIUtils.getValueString(v),
+                    locateLine
+            ));
+        });
+
+        // (2) インスタンスフィールド
+        ObjectReference thisObj = frame.thisObject();
+        if (thisObj != null) {
+            ReferenceType  rt = thisObj.referenceType();
+            for (Field f : rt.visibleFields()) {
+                if (f.isStatic()) continue;
+                result.add(new TracedValue(
+                        LocalDateTime.MIN,
+                        "this." + f.name(),
+                        TmpJDIUtils.getValueString(thisObj.getValue(f)),
+                        locateLine
+                ));
+            }
+        }
+
+        // (3) static フィールド
+        ReferenceType rt = frame.location().declaringType();
+        for (Field f : rt.visibleFields()) {
+            if (!f.isStatic()) continue;
+            result.add(new TracedValue(
+                    LocalDateTime.MIN,
+                    "this." + f.name(),
+                    TmpJDIUtils.getValueString(rt.getValue(f)),
+                    locateLine
+            ));
+        }
+        return result;
     }
 }

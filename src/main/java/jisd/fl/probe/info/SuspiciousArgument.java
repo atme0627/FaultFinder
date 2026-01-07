@@ -259,7 +259,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
             //周辺の値を観測
             List<TracedValue> resultCandidate;
             try {
-                resultCandidate = watchAllVariablesInLine(thread.frame(0));
+                StackFrame frame = thread.frame(0);
+                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, locateLine);
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
             }

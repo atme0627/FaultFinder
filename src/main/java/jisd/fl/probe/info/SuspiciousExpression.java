@@ -3,16 +3,13 @@ package jisd.fl.probe.info;
 import com.fasterxml.jackson.annotation.*;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.Statement;
-import com.sun.jdi.*;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.MethodElementName;
 
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -153,67 +150,6 @@ public abstract class SuspiciousExpression {
             case LINE -> locateMethod.toLineElementName(locateLine);
             case METHOD, CLASS -> locateMethod;
         };
-    }
-
-    protected List<TracedValue> watchAllVariablesInLine(StackFrame frame){
-        List<TracedValue> result = new ArrayList<>();
-
-        // （1）ローカル変数
-        List<LocalVariable> locals;
-        try {
-            locals = frame.visibleVariables();
-        } catch (AbsentInformationException e) {
-            throw new RuntimeException(e);
-        }
-        Map<LocalVariable, Value> localVals = frame.getValues(locals);
-        localVals.forEach((lv, v) -> {
-            if(v == null) return;
-            //配列の場合[0]のみ観測
-            if(v instanceof ArrayReference ar){
-                if(ar.length() == 0) return;
-                result.add(new TracedValue(
-                        LocalDateTime.MIN,
-                        lv.name() + "[0]",
-                        TmpJDIUtils.getValueString(ar.getValue(0)),
-                        locateLine
-                ));
-            }
-
-            result.add(new TracedValue(
-                    LocalDateTime.MIN,
-                    lv.name(),
-                    TmpJDIUtils.getValueString(v),
-                    locateLine
-            ));
-        });
-
-        // (2) インスタンスフィールド
-        ObjectReference thisObj = frame.thisObject();
-        if (thisObj != null) {
-            ReferenceType  rt = thisObj.referenceType();
-            for (Field f : rt.visibleFields()) {
-                if (f.isStatic()) continue;
-                result.add(new TracedValue(
-                        LocalDateTime.MIN,
-                        "this." + f.name(),
-                        TmpJDIUtils.getValueString(thisObj.getValue(f)),
-                        locateLine
-                ));
-            }
-        }
-
-        // (3) static フィールド
-        ReferenceType rt = frame.location().declaringType();
-        for (Field f : rt.visibleFields()) {
-            if (!f.isStatic()) continue;
-            result.add(new TracedValue(
-                    LocalDateTime.MIN,
-                    "this." + f.name(),
-                    TmpJDIUtils.getValueString(rt.getValue(f)),
-                    locateLine
-            ));
-        }
-        return result;
     }
 
 
