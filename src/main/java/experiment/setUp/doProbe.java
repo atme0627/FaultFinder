@@ -57,7 +57,7 @@ public class doProbe {
                 }
 
                 Probe prb = new Probe(target);
-                SuspiciousExpression result = prb.run(2000);
+                SuspiciousExpression result = prb.run(2000).suspExpr;
                 JsonIO.export(result, outputFile);
             }
         }

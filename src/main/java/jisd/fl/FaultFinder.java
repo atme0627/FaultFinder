@@ -2,6 +2,7 @@ package jisd.fl;
 
 import jisd.fl.presenter.FLRankingPresenter;
 import jisd.fl.probe.Probe;
+import jisd.fl.probe.info.SuspiciousExprTreeNode;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.core.entity.FLRanking;
 import jisd.fl.core.entity.FLRankingElement;
@@ -121,7 +122,7 @@ public class FaultFinder {
         probe(prb.run(2000));
     }
 
-    public void probe(SuspiciousExpression causeTree){
+    public void probe(SuspiciousExprTreeNode causeTree){
         TraceToScoreAdjustmentConverter converter = new TraceToScoreAdjustmentConverter(this.probeLambda, granularity);
         Map<CodeElementIdentifier, Double> adjustments = converter.toAdjustments(causeTree);
         adjustAll(adjustments);

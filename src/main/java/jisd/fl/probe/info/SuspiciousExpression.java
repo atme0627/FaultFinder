@@ -11,8 +11,8 @@ public abstract class SuspiciousExpression {
     //どのテスト実行時の話かを指定
     protected final MethodElementName failedTest;
     //フィールドの場合は<ulinit>で良い
-    protected final MethodElementName locateMethod;
-    protected final int locateLine;
+    public final MethodElementName locateMethod;
+    public final int locateLine;
     protected final Statement stmt;
     protected  Expression expr;
     protected final String actualValue;

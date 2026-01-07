@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import jisd.fl.probe.info.SuspiciousExprTreeNode;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.internal.CauseLineFinder;
@@ -16,7 +17,7 @@ import java.util.*;
 public class SimpleProbe extends Probe {
     Set<SuspiciousVariable> probedValue = new HashSet<>();
     Set<String> targetClasses = StaticAnalyzer.getClassNames();
-    SuspiciousExpression suspiciousExprTreeRoot = null;
+    SuspiciousExprTreeNode suspiciousExprTreeRoot = null;
     SuspiciousVariable firstTarget;
 
     public SimpleProbe(SuspiciousVariable target) {
@@ -24,7 +25,7 @@ public class SimpleProbe extends Probe {
     }
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
-    public SuspiciousExpression run(int sleepTime) {
+    public SuspiciousExprTreeNode run(int sleepTime) {
         List<SuspiciousVariable> probingTargets = new ArrayList<>();
         List<SuspiciousVariable> nextTargets = new ArrayList<>();
         List<SuspiciousVariable> investigatedTargets = new ArrayList<>();

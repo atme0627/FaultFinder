@@ -56,7 +56,7 @@ class ProbeTest {
             );
 
             Probe pfs = new Probe(target);
-            SuspiciousExpression treeRoot = pfs.run(2000);
+            SuspiciousExpression treeRoot = pfs.run(2000).suspExpr;
         }
     }
 
@@ -74,7 +74,7 @@ class ProbeTest {
             );
 
             Probe pfs = new Probe(target);
-            SuspiciousExpression treeRoot = pfs.run(2000);
+            SuspiciousExpression treeRoot = pfs.run(2000).suspExpr;
 
             //File output = jsonOutPutDir.resolve("CalcTest.json").toFile();
             //JsonIO.export(treeRoot, output);
@@ -95,7 +95,7 @@ class ProbeTest {
             );
 
             Probe pfs = new Probe(target);
-            SuspiciousExpression treeRoot = pfs.run(2000);
+            SuspiciousExpression treeRoot = pfs.run(2000).suspExpr;
 
             File output = jsonOutPutDir.resolve("ConditionalTest.json").toFile();
             JsonIO.export(treeRoot, output);
@@ -125,7 +125,7 @@ class ProbeTest {
             );
 
             Probe pfs = new Probe(target);
-            SuspiciousExpression treeRoot = pfs.run(2000);
+            SuspiciousExpression treeRoot = pfs.run(2000).suspExpr;
 
             File output = jsonOutPutDir.resolve("LoopTest1.json").toFile();
             JsonIO.export(treeRoot, output);
@@ -160,7 +160,7 @@ class ProbeTest {
             Files.createFile(path);
 
             Probe prb = new Probe(target);
-            SuspiciousExpression result = prb.run(2000);
+            SuspiciousExpression result = prb.run(2000).suspExpr;
             JsonIO.export(result, outputFile);
         }
     }
