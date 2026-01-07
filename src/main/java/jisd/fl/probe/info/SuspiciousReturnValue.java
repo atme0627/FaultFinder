@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.github.javaparser.ast.expr.Expression;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
@@ -32,7 +31,7 @@ import java.util.NoSuchElementException;
 public class SuspiciousReturnValue extends SuspiciousExpression {
     public SuspiciousReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
         super(failedTest, locateMethod, locateLine, actualValue);
-        this.expr = extractExprReturnValue();
+        this.expr = ExtractExprReturnValue.extractExprReturnValue(stmt);
     }
 
     @JsonCreator
@@ -44,7 +43,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
             @JsonProperty("children") List<SuspiciousExpression> children
     ){
         super(failedTest, locateMethod, locateLine, actualValue, children);
-        this.expr = extractExprReturnValue();
+        this.expr = ExtractExprReturnValue.extractExprReturnValue(stmt);
     }
     
     @Override
@@ -151,17 +150,8 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
 
     static private boolean validateIsTargetExecution(MethodExitEvent recent, String actualValue){
         return TmpJDIUtils.getValueString(recent.returnValue()).equals(actualValue);
-    };
-
-
-    protected Expression extractExprReturnValue() {
-        try {
-            if(!stmt.isReturnStmt()) throw new NoSuchElementException();
-            return stmt.asReturnStmt().getExpression().orElseThrow();
-        } catch (NoSuchElementException e){
-            throw new RuntimeException("Cannot extract expression from [" + locateMethod + ":" + locateLine + "].");
-        }
     }
+
 
     @Override
     public String toString(){
