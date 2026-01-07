@@ -44,7 +44,7 @@ public class LineMethodCallWatcher {
                 for (SuspiciousReturnValue r : returnsOfTarget) {
                     System.out.println(" >>> " + r);
                 }
-                target.addChild(returnsOfTarget);
+
                 suspExprQueue.addAll(returnsOfTarget);
             }
             result.add(target);
