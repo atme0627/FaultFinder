@@ -1,9 +1,5 @@
 package jisd.fl.probe.info;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
@@ -11,9 +7,6 @@ import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({ "failedTest", "locateMethod", "locateLine", "stmt", "expr", "actualValue", "children" })
 
 public class SuspiciousArgument extends SuspiciousExpression {
     //引数を与え実行しようとしているメソッド
@@ -36,25 +29,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
         this.expr = extractExprArg();
     }
-    
-    @JsonCreator
-    private SuspiciousArgument(
-        @JsonProperty("failedTest") String failedTest,
-        @JsonProperty("locateMethod") String locateMethod,
-        @JsonProperty("locateLine") int locateLine,
-        @JsonProperty("actualValue") String actualValue,
-        @JsonProperty("children") List<SuspiciousExpression> children,
-        @JsonProperty("calleeMethodName") String calleeMethodName,
-        @JsonProperty("argIndex") int argIndex,
-        @JsonProperty("CallCountAfterTargetInLine") int CallCountAfterTargetInLine
-    ) {
-        super(failedTest, locateMethod, locateLine, actualValue, children);
-        this.calleeMethodName = new MethodElementName(calleeMethodName);
-        this.argIndex = argIndex;
-        this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
-        this.expr = extractExprArg();
-    }
-    
 
     @Override
     //引数のindexを指定してその引数の評価の直前でsuspendするのは激ムズなのでやらない
@@ -81,7 +55,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
         return JDISuspArg.searchSuspiciousArgument(calleeMethodName, suspVar);
     }
 
-
     @Override
     public String toString(){
         final String BG_GREEN = "\u001B[42m";
@@ -99,21 +72,5 @@ public class SuspiciousArgument extends SuspiciousExpression {
         );
 
         return "[ SUSPICIOUS ARGUMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + LexicalPreservingPrinter.print(stmt) + "\n       ...\n    }";
-    }
-
-    //Jackson シリアライズ用メソッド
-    @JsonProperty("calleeMethodName")
-    public String getCalleeMethodName() {
-        return calleeMethodName.toString();
-    }
-
-    @JsonProperty("argIndex")
-    public int getArgIndex(){
-        return argIndex;
-    }
-
-    @JsonProperty("CallCountAfterTargetInLine")
-    public int geCallCountAfterTargetInLine(){
-        return CallCountAfterTargetInLine;
     }
 }
