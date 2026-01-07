@@ -1,6 +1,7 @@
 package jisd.fl.ranking;
 
 import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.probe.info.SuspiciousExprTreeNode;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.core.entity.CodeElementIdentifier;
@@ -28,25 +29,26 @@ public class TraceToScoreAdjustmentConverter {
         this.g = granularity;
     }
 
-    public Map<CodeElementIdentifier, Double> toAdjustments(SuspiciousExpression root) {
+    public Map<CodeElementIdentifier, Double> toAdjustments(SuspiciousExprTreeNode root) {
         // ノードごとの最小深さを保持するマップ
         Map<CodeElementIdentifier, Integer> minDepth   = new HashMap<>();
-        Queue<SuspiciousExpression>   queue      = new LinkedList<>();
+        Queue<SuspiciousExprTreeNode>   queue      = new LinkedList<>();
         Queue<Integer>                depths     = new LinkedList<>();
 
         queue.add(root);
         depths.add(1);
 
         while (!queue.isEmpty()) {
-            SuspiciousExpression suspExpr = queue.poll();
+            SuspiciousExprTreeNode suspExprNode = queue.poll();
+            SuspiciousExpression suspExpr = suspExprNode.suspExpr;
             int depth = depths.poll();
 
-            CodeElementIdentifier elem = convertToCodeElementName(new MethodElementName(suspExpr.getLocateMethod()), suspExpr.getLocateLine(), g);
+            CodeElementIdentifier elem = convertToCodeElementName(new MethodElementName(suspExpr.locateMethod.toString()), suspExpr.locateLine, g);
 
             // 最小深さをマージ
             minDepth.merge(elem, depth, Math::min);
 
-            for (SuspiciousExpression child : suspExpr.getChildren()) {
+            for (SuspiciousExprTreeNode child : suspExprNode.childSuspExprs) {
                 queue.add(child);
                 depths.add(depth + 1);
             }
