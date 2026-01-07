@@ -114,7 +114,7 @@ public abstract class SuspiciousExpression {
      */
     public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
         //SuspExprで観測できる全ての変数
-        TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime, suspExpr);
+        TracedValueCollection tracedNeighborValue = JDISuspExpr.traceAllValuesAtSuspExpr(sleepTime, suspExpr);
         //SuspExpr内で使用されている変数を静的解析により取得
         List<String> neighborVariableNames = TmpJavaParserUtils.extractNeighborVariableNames(suspExpr.expr, includeIndirectUsedVariable || suspExpr.childSuspExprs.isEmpty());
 
