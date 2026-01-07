@@ -4,14 +4,11 @@ import com.fasterxml.jackson.annotation.*;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.record.TracedValueCollection;
-import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.MethodElementName;
 
 import javax.validation.constraints.NotNull;
 import java.util.*;
-import java.util.stream.Collectors;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
