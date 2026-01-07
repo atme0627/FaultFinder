@@ -3,7 +3,6 @@ package jisd.fl.probe.info;
 import com.fasterxml.jackson.annotation.*;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
-import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import com.sun.jdi.*;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
@@ -80,19 +79,6 @@ public abstract class SuspiciousExpression {
     abstract public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException;
 
     /**
-     * exprから次に探索の対象となる変数の名前を取得する。
-     * exprの演算に直接用いられている変数のみが対象で、引数やメソッド呼び出しの対象となる変数は除外する。
-     * @return 変数名のリスト
-     */
-    protected List<String> extractNeighborVariableNames(boolean includeIndirectUsedVariable){
-        return expr.findAll(NameExpr.class).stream()
-                //引数やメソッド呼び出しに用いられる変数を除外
-                .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
-                .map(NameExpr::toString)
-                .collect(Collectors.toList());
-    }
-
-    /**
      * exprにメソッド呼び出しが含まれているかを判定
      */
     protected boolean hasMethodCalling(){
@@ -139,7 +125,7 @@ public abstract class SuspiciousExpression {
         //SuspExprで観測できる全ての変数
         TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime);
         //SuspExpr内で使用されている変数を静的解析により取得
-        List<String> neighborVariableNames = extractNeighborVariableNames(includeIndirectUsedVariable || this.childSuspExprs.isEmpty());
+        List<String> neighborVariableNames = TmpJavaParserUtils.extractNeighborVariableNames(expr, includeIndirectUsedVariable || this.childSuspExprs.isEmpty());
 
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         //TODO: 今の実装だと、変数がローカルかフィールドか区別できない
