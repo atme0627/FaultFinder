@@ -1,6 +1,5 @@
 package jisd.fl.probe.info;
 
-import com.fasterxml.jackson.annotation.*;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
