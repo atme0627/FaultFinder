@@ -31,7 +31,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
     public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue());
-        this.expr = extractExprAssign();
+        this.expr = ExtractExprAssignment.extractExprAssign(true, stmt);
         this.assignTarget = assignTarget;
     }
 
@@ -45,7 +45,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             ){
         super(failedTest, locateMethod, locateLine, actualValue, children);
         this.assignTarget = null;
-        this.expr = extractExprAssign();
+        this.expr = ExtractExprAssignment.extractExprAssign(true, stmt);
     }
 
     @Override
@@ -201,10 +201,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                 .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(NameExpr::toString)
                 .collect(Collectors.toList());
-    }
-
-    protected Expression extractExprAssign() {
-        return ExtractExpr.ExtractExprAssignment.extractExprAssign(true, stmt);
     }
 
     static private void waitForThreadPreparation(ThreadReference thread){
