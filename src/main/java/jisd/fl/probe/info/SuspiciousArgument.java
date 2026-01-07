@@ -71,6 +71,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
             }
         );
 
-        return "[ SUSPICIOUS ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + expr.toString();
+        return "[ SUSPICIOUS ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + LexicalPreservingPrinter.print(stmt);
     }
 }
