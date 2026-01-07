@@ -196,7 +196,7 @@ public abstract class SuspiciousExpression {
                 result.add(new TracedValue(
                         LocalDateTime.MIN,
                         lv.name() + "[0]",
-                        TmpStaticUtils.getValueString(ar.getValue(0)),
+                        TmpJDIUtils.getValueString(ar.getValue(0)),
                         locateLine
                 ));
             }
@@ -204,7 +204,7 @@ public abstract class SuspiciousExpression {
             result.add(new TracedValue(
                     LocalDateTime.MIN,
                     lv.name(),
-                    TmpStaticUtils.getValueString(v),
+                    TmpJDIUtils.getValueString(v),
                     locateLine
             ));
         });
@@ -218,7 +218,7 @@ public abstract class SuspiciousExpression {
                 result.add(new TracedValue(
                         LocalDateTime.MIN,
                         "this." + f.name(),
-                        TmpStaticUtils.getValueString(thisObj.getValue(f)),
+                        TmpJDIUtils.getValueString(thisObj.getValue(f)),
                         locateLine
                 ));
             }
@@ -231,7 +231,7 @@ public abstract class SuspiciousExpression {
             result.add(new TracedValue(
                     LocalDateTime.MIN,
                     "this." + f.name(),
-                    TmpStaticUtils.getValueString(rt.getValue(f)),
+                    TmpJDIUtils.getValueString(rt.getValue(f)),
                     locateLine
             ));
         }

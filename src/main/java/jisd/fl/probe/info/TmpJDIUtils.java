@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class TmpStaticUtils {
+public class TmpJDIUtils {
     //SuspiciousExpressionリファクタリングのための一時的なクラス
     protected static boolean isPrimitiveWrapper(Type type) {
         //プリミティブ型のラッパークラスの名前
@@ -32,7 +32,7 @@ public class TmpStaticUtils {
         if(v == null) return "null";
         if(v instanceof ObjectReference obj){
             //プリミティブ型のラッパークラスの名前
-            if(TmpStaticUtils.isPrimitiveWrapper(obj.referenceType())) {
+            if(TmpJDIUtils.isPrimitiveWrapper(obj.referenceType())) {
                 try {
                     Field valueField = obj.referenceType().fieldByName("value");
                     Value primitiveValue = obj.getValue(valueField);

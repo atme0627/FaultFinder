@@ -3,7 +3,7 @@ package jisd.fl.probe.internal;
 import com.sun.jdi.*;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.info.TmpStaticUtils;
+import jisd.fl.probe.info.TmpJDIUtils;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesOfTarget;
@@ -98,7 +98,7 @@ public class TargetVariableTracer {
                     return Optional.of(new TracedValue(
                             watchedAt,
                             local.name() + "[0]",
-                            TmpStaticUtils.getValueString(ar.getValue(0)),
+                            TmpJDIUtils.getValueString(ar.getValue(0)),
                             locateLine
                     ));
                 }
@@ -107,7 +107,7 @@ public class TargetVariableTracer {
             return Optional.of(new TracedValue(
                     watchedAt,
                     local.name(),
-                    TmpStaticUtils.getValueString(v),
+                    TmpJDIUtils.getValueString(v),
                     locateLine
             ));
         } else {
@@ -120,7 +120,7 @@ public class TargetVariableTracer {
                     return Optional.of(new TracedValue(
                             watchedAt,
                             "this." + f.name(),
-                            TmpStaticUtils.getValueString(thisObj.getValue(f)),
+                            TmpJDIUtils.getValueString(thisObj.getValue(f)),
                             locateLine
                     ));
                 }
@@ -132,7 +132,7 @@ public class TargetVariableTracer {
                 return Optional.of(new TracedValue(
                         watchedAt,
                         "this." + f.name(),
-                        TmpStaticUtils.getValueString(rt.getValue(f)),
+                        TmpJDIUtils.getValueString(rt.getValue(f)),
                         locateLine
                 ));
             }

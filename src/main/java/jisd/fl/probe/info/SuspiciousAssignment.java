@@ -78,7 +78,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             // ブレークポイント地点でのコールスタックの深さを取得
             // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
             // 再帰呼び出し含め、その行で直接呼ばれたメソッドのみ取ってこれる
-            int depthBeforeCall = TmpStaticUtils.getCallStackDepth(thread);
+            int depthBeforeCall = TmpJDIUtils.getCallStackDepth(thread);
 
             //一旦 resume して、内部ループで MethodExit／Step を待つ
             vm.resume();
@@ -92,10 +92,10 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
                         //収集するのは指定した行で直接呼び出したメソッドのみ
                         //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
-                        if (mee.thread().equals(thread) && TmpStaticUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
+                        if (mee.thread().equals(thread) && TmpJDIUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
                             MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                             int locateLine = mee.location().lineNumber();
-                            String actualValue = TmpStaticUtils.getValueString(mee.returnValue());
+                            String actualValue = TmpJDIUtils.getValueString(mee.returnValue());
                             try {
                                 SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                                         this.failedTest,
@@ -177,7 +177,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
                         .orElseThrow();
 
                 //評価結果を比較
-                String evaluatedValue = TmpStaticUtils.getValueString(frame.getValue(lvalue));
+                String evaluatedValue = TmpJDIUtils.getValueString(frame.getValue(lvalue));
                 return evaluatedValue.equals(assignTarget.getActualValue());
             }
         } catch (IncompatibleThreadStateException e) {

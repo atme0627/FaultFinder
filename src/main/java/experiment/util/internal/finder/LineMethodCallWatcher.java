@@ -10,7 +10,7 @@ import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
-import jisd.fl.probe.info.TmpStaticUtils;
+import jisd.fl.probe.info.TmpJDIUtils;
 import jisd.fl.util.TestUtil;
 import jisd.fl.core.entity.MethodElementName;
 
@@ -147,7 +147,7 @@ public class LineMethodCallWatcher {
                                     //ブレークポイント行で直接呼び出されているMethodの名前、return行、実際の返り値を取得
                                     MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                                     int locateLine = mee.location().lineNumber();
-                                    String actualValue = TmpStaticUtils.getValueString(mee.returnValue());
+                                    String actualValue = TmpJDIUtils.getValueString(mee.returnValue());
                                     try {
                                         SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                                                 this.targetTestCaseName,
