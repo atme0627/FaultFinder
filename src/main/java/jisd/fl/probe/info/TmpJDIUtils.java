@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class TmpJDIUtils {
     //SuspiciousExpressionリファクタリングのための一時的なクラス
-    protected static boolean isPrimitiveWrapper(Type type) {
+    static boolean isPrimitiveWrapper(Type type) {
         //プリミティブ型のラッパークラスの名前
         final Set<String> WRAPPER_CLASS_NAMES = new HashSet<>(Arrays.asList(
                 Boolean.class.getName(),
@@ -46,7 +46,7 @@ public class TmpJDIUtils {
         return v.toString();
     }
 
-    protected static int getCallStackDepth(ThreadReference th){
+    static int getCallStackDepth(ThreadReference th){
         try {
             return th.frameCount();
         } catch (IncompatibleThreadStateException e) {
