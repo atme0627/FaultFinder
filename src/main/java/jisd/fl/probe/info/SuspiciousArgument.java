@@ -7,8 +7,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
-import com.sun.jdi.*;
-import com.sun.jdi.event.*;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.core.entity.MethodElementName;
@@ -66,16 +64,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
     //ex.) expressionがx.f(y.g())の時、fのみとる。y.g()はfの探索の後行われるはず
     public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException{
         return JDISuspArg.searchSuspiciousReturns(this);
-    }
-
-    static private boolean validateIsTargetExecution(MethodEntryEvent mEntry, String actualValue, int argIndex){
-        try {
-            //対象の引数が目的の値を取っている
-            List<Value> args = mEntry.thread().frame(0).getArgumentValues();
-            return args.size() > argIndex && TmpJDIUtils.getValueString(args.get(argIndex)).equals(actualValue);
-        } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException("Target thread must be suspended.");
-        }
     }
 
     @Override
