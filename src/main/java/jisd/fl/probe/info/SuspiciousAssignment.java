@@ -53,10 +53,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         return JDISuspAssign.searchSuspiciousReturns(this);
     }
 
-    public SuspiciousVariable getAssignTarget() {
-        return assignTarget;
-    }
-
     @Override
     public String toString(){
         return "[ SUSPICIOUS ASSIGNMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
