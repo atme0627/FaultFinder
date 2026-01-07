@@ -80,7 +80,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         if(!TmpJavaParserUtils.hasMethodCalling(expr)) return result;
 
         //探索対象のmethod名リストを取得
-        List<String> targetMethodName = targetMethodName();
+        List<String> targetMethodName = JavaParserSuspArg.targetMethodName(expr);
         //対象の引数内の最初のmethodCallがstmtで何番目か
         int targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, CallCountAfterTargetInLine, argIndex, calleeMethodName);
         //methodCallの回数をカウント
@@ -224,15 +224,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException("Target thread must be suspended.");
         }
-    }
-
-    //引数の静的解析により、return位置を調べたいmethod一覧を取得する
-    private List<String> targetMethodName(){
-        return this.expr.findAll(MethodCallExpr.class)
-                .stream()
-                .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
-                .map(mce -> mce.getName().toString())
-                .collect(Collectors.toList());
     }
 
     @Override
