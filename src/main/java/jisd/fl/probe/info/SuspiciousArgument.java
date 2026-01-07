@@ -82,7 +82,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         //探索対象のmethod名リストを取得
         List<String> targetMethodName = targetMethodName();
         //対象の引数内の最初のmethodCallがstmtで何番目か
-        int targetCallCount = ExtractExprArg.getCallCountBeforeTargetArgEval(stmt, CallCountAfterTargetInLine, argIndex, calleeMethodName);
+        int targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, CallCountAfterTargetInLine, argIndex, calleeMethodName);
         //methodCallの回数をカウント
         int[] callCount = new int[]{0};
 
@@ -355,7 +355,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
     }
 
     static protected Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
-        return ExtractExprArg.extractExprArg(deleteParentNode, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
+        return JavaParserSuspArg.extractExprArg(deleteParentNode, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
     }
     /**
      * ある変数がその値を取る原因が呼び出し元の引数のあると判明した場合に使用

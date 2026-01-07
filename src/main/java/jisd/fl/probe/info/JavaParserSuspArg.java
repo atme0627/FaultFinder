@@ -10,7 +10,7 @@ import jisd.fl.core.entity.MethodElementName;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExtractExprArg {
+public class JavaParserSuspArg {
     static Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
         int methodCallCount = stmt.findAll(MethodCallExpr.class).size() + stmt.findAll(ObjectCreationExpr.class).size();
         if(isAssert(stmt)) methodCallCount--;
