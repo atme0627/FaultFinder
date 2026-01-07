@@ -241,7 +241,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
     //はじめのノードから順に探し、親にexprを持つものがあったら、その時のindexが求めたい値
     private int getCallCountBeforeTargetArgEval(){
         List<Expression> calls = new ArrayList<>();
-        Expression targetExpr = extractExprArg(false);
+        Expression targetExpr = extractExprArg(false, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
         stmt.accept(new EvalOrderVisitor(), calls);
         for(Expression call : calls){
             if(call == targetExpr || call.findAncestor(Node.class, anc -> anc == targetExpr).isPresent()){
@@ -366,49 +366,11 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
 
     protected Expression extractExprArg() {
-        return extractExprArg(true);
+        return extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
     }
 
-    protected Expression extractExprArg(boolean deleteParentNode) {
-        int methodCallCount = stmt.findAll(MethodCallExpr.class).size() + stmt.findAll(ObjectCreationExpr.class).size();
-        if(isAssert(stmt)) methodCallCount--;
-        int nthCallInLine = methodCallCount - this.CallCountAfterTargetInLine;
-        if(nthCallInLine <= 0) {
-            if(nthCallInLine == 0 && isAssert(stmt)) {
-                nthCallInLine = 1;
-            } else {
-                throw new RuntimeException("something is wrong");
-            }
-        }
-
-        Expression result;
-        List<Expression> calls = new ArrayList<>();
-        stmt.accept(new EvalOrderVisitor(), calls);
-        if(calls.get(nthCallInLine - 1) instanceof MethodCallExpr mce) {
-            if(!mce.getNameAsString().equals(this.calleeMethodName.getShortMethodName())) throw new RuntimeException("something is wrong");
-            result = mce.getArgument(argIndex);
-        }
-        else if (calls.get(nthCallInLine - 1) instanceof ObjectCreationExpr oce){
-            if(!oce.getType().asString().equals(this.calleeMethodName.getShortMethodName())) throw new RuntimeException("something is wrong");
-            result = oce.getArgument(argIndex);
-        }
-        else {
-            throw new RuntimeException("something is wrong");
-        }
-
-        if(deleteParentNode) {
-            result = result.clone();
-            //親ノードの情報を消す
-            result.setParentNode(null);
-            return result;
-        }
-        return result;
-    }
-
-    //assert文はMethodExitが起きず、例外で終わることによるCallCountAfterTargetInLine
-    //のずれ解消のための処置
-    public boolean isAssert(Statement stmt){
-        return stmt.toString().startsWith("assert");
+    static protected Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
+        return ExtractExprArg.extractExprArg(deleteParentNode, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
     }
     /**
      * ある変数がその値を取る原因が呼び出し元の引数のあると判明した場合に使用
@@ -555,7 +517,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         final String RESET    = "\u001B[0m";
 
         LexicalPreservingPrinter.setup(stmt);
-        extractExprArg(false).getTokenRange().ifPresent(tokenRange -> {
+        extractExprArg(false, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName).getTokenRange().ifPresent(tokenRange -> {
             // 子ノードに属するすべてのトークンに色付け
             tokenRange.forEach(token -> {
                 String original = token.getText();
