@@ -10,7 +10,7 @@ import jisd.fl.probe.util.ProbeReporter;
 import java.util.*;
 
 public class Probe{
-    SuspiciousExprTreeNode suspiciousExprTreeRoot = null;
+    SuspiciousExprTreeNode suspiciousExprTreeRoot = new SuspiciousExprTreeNode(null);
     SuspiciousVariable firstTarget;
     ProbeReporter reporter;
 
