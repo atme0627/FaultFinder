@@ -5,6 +5,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class JavaParserSuspArg {
 
         Expression result;
         List<Expression> calls = new ArrayList<>();
-        stmt.accept(new SuspiciousArgument.EvalOrderVisitor(), calls);
+        stmt.accept(new EvalOrderVisitor(), calls);
         if(calls.get(nthCallInLine - 1) instanceof MethodCallExpr mce) {
             if(!mce.getNameAsString().equals(calleeMethodName.getShortMethodName())) throw new RuntimeException("something is wrong");
             result = mce.getArgument(argIndex);
@@ -60,7 +61,7 @@ public class JavaParserSuspArg {
     static int getCallCountBeforeTargetArgEval(Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName){
         List<Expression> calls = new ArrayList<>();
         Expression targetExpr = extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
-        stmt.accept(new SuspiciousArgument.EvalOrderVisitor(), calls);
+        stmt.accept(new EvalOrderVisitor(), calls);
         for(Expression call : calls){
             if(call == targetExpr || call.findAncestor(Node.class, anc -> anc == targetExpr).isPresent()){
                 return calls.indexOf(call) + 1;
@@ -76,5 +77,39 @@ public class JavaParserSuspArg {
                 .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(mce -> mce.getName().toString())
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Java の実行時評価順で MethodCallExpr を収集する Visitor
+     */
+    private static class EvalOrderVisitor extends VoidVisitorAdapter<List<Expression>> {
+        @Override
+        public void visit(MethodCallExpr mce, List<Expression> collector) {
+            // 1) レシーバ（scope）があれば先に評価
+            mce.getScope().ifPresent(scope -> scope.accept(this, collector));
+            // 2) 引数を左から順に評価
+            for (Expression arg : mce.getArguments()) {
+                arg.accept(this, collector);
+            }
+            // 3) 最後に「呼び出しイベント」として自分自身を追加
+            collector.add(mce);
+        }
+
+        @Override
+        public void visit(ObjectCreationExpr oce, List<Expression> collector) {
+            // 1) コンストラクタのスコープ（new Outer.Inner() の Outer など）がある場合は先に評価
+            oce.getScope().ifPresent(scope -> scope.accept(this, collector));
+            // 2) 引数を左から順に評価
+            for (Expression arg : oce.getArguments()) {
+                arg.accept(this, collector);
+            }
+            // 3) 匿名クラスボディ内にある式（必要なら追加）
+            if (oce.getAnonymousClassBody().isPresent()) {
+                oce.getAnonymousClassBody().get().forEach(body -> body.accept(this, collector));
+            }
+
+            // 3) 最後に「呼び出しイベント」として自分自身を追加
+            collector.add(oce);
+        }
     }
 }
