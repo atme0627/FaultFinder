@@ -18,7 +18,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
     public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue());
-        this.expr = ExtractExprAssignment.extractExprAssign(true, stmt);
+        this.expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
         this.assignTarget = assignTarget;
     }
 
@@ -32,7 +32,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             ){
         super(failedTest, locateMethod, locateLine, actualValue, children);
         this.assignTarget = null;
-        this.expr = ExtractExprAssignment.extractExprAssign(true, stmt);
+        this.expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
     }
 
     @Override

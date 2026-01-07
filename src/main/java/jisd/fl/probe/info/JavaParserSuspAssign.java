@@ -11,11 +11,11 @@ import com.github.javaparser.ast.stmt.Statement;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-class ExtractExprAssignment {
+class JavaParserSuspAssign {
     static Expression extractExprAssign(boolean deleteParentNode, Statement stmt) {
         try {
-            Expression result = ExtractExprAssignment.extractExpressionFromStatement(stmt);
-            return ExtractExprAssignment.finalizeResult(result, deleteParentNode);
+            Expression result = JavaParserSuspAssign.extractExpressionFromStatement(stmt);
+            return JavaParserSuspAssign.finalizeResult(result, deleteParentNode);
         } catch (NoSuchElementException e) {
             throw new RuntimeException(
                     String.format("Cannot extract expression from [%s].", stmt));
@@ -30,14 +30,14 @@ class ExtractExprAssignment {
         // Try to extract from assignment expression
         Optional<AssignExpr> assignExpr = stmt.findFirst(AssignExpr.class);
         if (assignExpr.isPresent()) {
-            return ExtractExprAssignment.extractFromAssignExpr(assignExpr.get());
+            return JavaParserSuspAssign.extractFromAssignExpr(assignExpr.get());
         }
 
         // Try to extract from variable declaration
         Optional<VariableDeclarationExpr> vdExpr = stmt.findFirst(VariableDeclarationExpr.class);
         if (vdExpr.isPresent()) {
             // 代入文がひとつであると仮定
-            return ExtractExprAssignment.extractFromVariableDeclaration(vdExpr.get());
+            return JavaParserSuspAssign.extractFromVariableDeclaration(vdExpr.get());
         }
 
         // Try to extract from unary expression
