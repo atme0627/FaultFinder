@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import jisd.fl.probe.info.SuspiciousExprTreeNode;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
@@ -9,7 +10,7 @@ import jisd.fl.probe.util.ProbeReporter;
 import java.util.*;
 
 public class Probe{
-    SuspiciousExpression suspiciousExprTreeRoot = null;
+    SuspiciousExprTreeNode suspiciousExprTreeRoot = null;
     SuspiciousVariable firstTarget;
     ProbeReporter reporter;
 
@@ -19,7 +20,7 @@ public class Probe{
     }
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
-    public SuspiciousExpression run(int sleepTime) {
+    public SuspiciousExprTreeNode run(int sleepTime) {
         Deque<SuspiciousVariable> probingTargets = new ArrayDeque<>();
         List<SuspiciousVariable> investigatedTargets = new ArrayList<>();
 
@@ -72,7 +73,7 @@ public class Probe{
 
             List<SuspiciousReturnValue> returnsOfTarget = target.searchSuspiciousReturns();
             if(!returnsOfTarget.isEmpty()) {
-                target.addChild(returnsOfTarget);
+                suspiciousExprTreeRoot.addChild(returnsOfTarget);
                 suspExprQueue.addAll(returnsOfTarget);
             }
             result.add(target);
@@ -90,12 +91,16 @@ public class Probe{
 
     protected void addTreeElement(SuspiciousExpression suspExpr, SuspiciousVariable targetSuspVar){
         if(suspiciousExprTreeRoot == null){
-            suspiciousExprTreeRoot = suspExpr;
+            suspiciousExprTreeRoot = new SuspiciousExprTreeNode(suspExpr);
             return;
         }
         if(targetSuspVar.getParent() == null){
             System.out.println("Something is wrong");
         }
-        targetSuspVar.getParent().addChild(suspExpr);
+        SuspiciousExprTreeNode parent = suspiciousExprTreeRoot.find(targetSuspVar.getParent());
+        if(parent == null) {
+            throw new RuntimeException("Parent node is not found.");
+        }
+        parent.addChild(suspExpr);
     }
 }
