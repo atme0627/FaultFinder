@@ -2,7 +2,6 @@ package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.*;
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import com.sun.jdi.*;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
@@ -77,13 +76,6 @@ public abstract class SuspiciousExpression {
      * @return return文を表すSuspiciousReturnValueのリスト
      */
     abstract public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException;
-
-    /**
-     * exprにメソッド呼び出しが含まれているかを判定
-     */
-    protected boolean hasMethodCalling(){
-        return !expr.findAll(MethodCallExpr.class).isEmpty();
-    }
 
     public Statement getStmt(){
         return stmt;

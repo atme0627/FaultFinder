@@ -37,4 +37,11 @@ public class TmpJavaParserUtils {
                 .map(NameExpr::toString)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * exprにメソッド呼び出しが含まれているかを判定
+     */
+    protected static boolean hasMethodCalling(Expression expr){
+        return !expr.findAll(MethodCallExpr.class).isEmpty();
+    }
 }

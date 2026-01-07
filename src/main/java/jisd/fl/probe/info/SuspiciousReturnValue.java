@@ -49,7 +49,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
     @Override
     public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
-        if(!hasMethodCalling()) return result;
+        if(!TmpJavaParserUtils.hasMethodCalling(expr)) return result;
 
         //Debugger生成
         String main = TestUtil.getJVMMain(this.failedTest);
