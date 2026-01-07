@@ -98,14 +98,6 @@ public abstract class SuspiciousExpression {
 
 
     /**
-     * このSuspiciousExprで観測できる全ての変数とその値の情報をJISDを用いて取得
-     * 複数回SuspiciousExpressionが実行されているときは、最後に実行された時の値を使用する
-     * @param sleepTime
-     * @return
-     */
-    protected abstract TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousExpression thisSuspExpr);
-
-    /**
      * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得
      *
      * @param sleepTime

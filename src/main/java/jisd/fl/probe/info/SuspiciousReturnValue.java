@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.List;
@@ -42,8 +41,4 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
         return "[ SUSPICIOUS RETURN VALUE ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
     }
 
-    @Override
-    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousExpression thisSuspExpr){
-        return JDISuspReturn.traceAllValuesAtSuspExpr(sleepTime, thisSuspExpr);
-    }
 }

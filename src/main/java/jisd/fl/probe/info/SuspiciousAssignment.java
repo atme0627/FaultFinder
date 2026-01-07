@@ -2,7 +2,6 @@ package jisd.fl.probe.info;
 
 import com.fasterxml.jackson.annotation.*;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
@@ -46,8 +45,4 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         return "[ SUSPICIOUS ASSIGNMENT ]\n" + "    " + locateMethod.methodSignature + "{\n       ...\n" + super.toString() + "\n       ...\n    }";
     }
 
-    @Override
-    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousExpression thisSuspExpr){
-        return JDISuspAssign.traceAllValuesAtSuspExpr(sleepTime, (SuspiciousAssignment) thisSuspExpr);
-    }
 }

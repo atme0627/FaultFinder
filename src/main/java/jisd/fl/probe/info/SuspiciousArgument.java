@@ -8,7 +8,6 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
@@ -64,11 +63,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
     //ex.) expressionがx.f(y.g())の時、fのみとる。y.g()はfの探索の後行われるはず
     public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException{
         return JDISuspArg.searchSuspiciousReturns(this);
-    }
-
-    @Override
-    protected TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousExpression thisSuspExpr){
-        return JDISuspArg.traceAllValuesAtSuspExpr(sleepTime, (SuspiciousArgument) thisSuspExpr);
     }
 
 
