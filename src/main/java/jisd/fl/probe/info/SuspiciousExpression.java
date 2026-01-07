@@ -107,14 +107,16 @@ public abstract class SuspiciousExpression {
 
     /**
      * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得
+     *
      * @param sleepTime
+     * @param suspExpr
      * @return
      */
-    public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable){
+    public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
         //SuspExprで観測できる全ての変数
-        TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime);
+        TracedValueCollection tracedNeighborValue = traceAllValuesAtSuspExpr(sleepTime, suspExpr);
         //SuspExpr内で使用されている変数を静的解析により取得
-        List<String> neighborVariableNames = TmpJavaParserUtils.extractNeighborVariableNames(expr, includeIndirectUsedVariable || this.childSuspExprs.isEmpty());
+        List<String> neighborVariableNames = TmpJavaParserUtils.extractNeighborVariableNames(suspExpr.expr, includeIndirectUsedVariable || suspExpr.childSuspExprs.isEmpty());
 
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         //TODO: 今の実装だと、変数がローカルかフィールドか区別できない
@@ -125,8 +127,8 @@ public abstract class SuspiciousExpression {
                 .filter(t -> !t.isReference)
                         //
                 .map(t -> new SuspiciousVariable(
-                        failedTest,
-                        locateMethod.getFullyQualifiedMethodName(),
+                        suspExpr.failedTest,
+                        suspExpr.locateMethod.getFullyQualifiedMethodName(),
                         t.variableName,
                         t.value,
                         true,

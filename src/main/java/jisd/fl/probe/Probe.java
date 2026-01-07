@@ -47,7 +47,7 @@ public class Probe{
             System.out.println(" >>> search next target");
             List<SuspiciousVariable> newTargets = new ArrayList<>();
             for (SuspiciousExpression ce : causeExprs) {
-                List<SuspiciousVariable> neighbor = ce.neighborSuspiciousVariables(sleepTime, false);
+                List<SuspiciousVariable> neighbor = ce.neighborSuspiciousVariables(sleepTime, false, ce);
                 neighbor.removeAll(investigatedTargets);
                 newTargets.addAll(neighbor);
             }

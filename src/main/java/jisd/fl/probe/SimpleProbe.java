@@ -38,7 +38,7 @@ public class SimpleProbe extends Probe {
                 CauseLineFinder finder = new CauseLineFinder(target);
                 SuspiciousExpression suspExpr = finder.find().orElseThrow(() -> new RuntimeException("Cause line is not found."));
 
-                nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true);
+                nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true, suspExpr);
                 nextTargets.removeAll(investigatedTargets);
 
                 addTreeElement(suspExpr, target);
