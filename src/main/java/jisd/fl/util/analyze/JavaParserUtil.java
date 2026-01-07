@@ -22,7 +22,7 @@ import java.util.Optional;
 public class JavaParserUtil {
     static {
         ParserConfiguration config = new ParserConfiguration()
-                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17); // または JAVA_16/21 など
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21); // または JAVA_16/21 など
         StaticJavaParser.setConfiguration(config);
     }
     //引数に与えられるclassNameがpackageを含まない可能性あり
