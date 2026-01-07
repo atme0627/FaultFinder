@@ -119,7 +119,9 @@ public class FaultFinder {
 
     public void probe(SuspiciousVariable target){
         Probe prb = new Probe(target);
-        probe(prb.run(2000));
+        SuspiciousExprTreeNode causeTree = prb.run(2000);
+        causeTree.print();
+        probe(causeTree);
     }
 
     public void probe(SuspiciousExprTreeNode causeTree){
