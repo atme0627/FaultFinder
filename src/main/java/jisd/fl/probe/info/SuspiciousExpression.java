@@ -2,10 +2,12 @@ package jisd.fl.probe.info;
 
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class SuspiciousExpression {
     //どのテスト実行時の話かを指定
@@ -64,5 +66,18 @@ public abstract class SuspiciousExpression {
 
     public boolean hasMethodCalling(){
         return !this.expr.findAll(MethodCallExpr.class).isEmpty();
+    }
+
+    /**
+     * exprから次に探索の対象となる変数の名前を取得する。
+     * exprの演算に直接用いられている変数のみが対象で、引数やメソッド呼び出しの対象となる変数は除外する。
+     * @return 変数名のリスト
+     */
+    public List<String> extractNeighborVariableNames(boolean includeIndirectUsedVariable){
+        return expr.findAll(NameExpr.class).stream()
+                //引数やメソッド呼び出しに用いられる変数を除外
+                .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
+                .map(NameExpr::toString)
+                .collect(Collectors.toList());
     }
 }
