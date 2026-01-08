@@ -60,4 +60,8 @@ public abstract class SuspiciousExpression {
     public int hashCode() {
         return Objects.hash(failedTest, locateMethod, locateLine, actualValue);
     }
+
+    String stmtString(){
+        return stmt.toString();
+    }
 }

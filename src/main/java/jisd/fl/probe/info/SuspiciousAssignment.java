@@ -24,6 +24,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
 
     @Override
     public String toString() {
-        return "[ SUSPICIOUS ASSIGNMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + stmt.toString();
+        return "[ SUSPICIOUS ASSIGNMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
     }
 }
