@@ -28,7 +28,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.argIndex = argIndex;
         this.calleeMethodName = calleeMethodName;
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
-        this.expr = extractExprArg();
+        this.expr = extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
 
         this.stmtString = createStmtString(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
 
@@ -43,10 +43,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
         return JDISuspArg.searchSuspiciousReturns(this);
     }
 
-
-    protected Expression extractExprArg() {
-        return extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
-    }
 
     static protected Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
         return JavaParserSuspArg.extractExprArg(deleteParentNode, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
