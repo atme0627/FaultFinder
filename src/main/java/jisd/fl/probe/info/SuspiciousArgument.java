@@ -15,7 +15,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
     final int targetCallCount;
 
     //return位置を調べたいmethod一覧
-    final List<String> targetMethodName;
+    final List<String> targetMethodNames;
 
     public SuspiciousArgument(MethodElementName failedTest,
                               MethodElementName locateMethod,
@@ -27,14 +27,14 @@ public class SuspiciousArgument extends SuspiciousExpression {
                               boolean hasMethodCalling,
                               List<String> directNeighborVariableNames,
                               List<String> indirectNeighborVariableNames,
-                              List<String> targetMethodName,
+                              List<String> targetMethodNames,
                               int targetCallCount
     ) {
         super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
         this.argIndex = argIndex;
         this.calleeMethodName = calleeMethodName;
         this.targetCallCount = targetCallCount;
-        this.targetMethodName = targetMethodName;
+        this.targetMethodNames = targetMethodNames;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
     }
 
     //引数の静的解析により、return位置を調べたいmethod一覧を取得する
-    List<String> targetMethodName() {
-        return targetMethodName;
+    List<String> targetMethodNames() {
+        return targetMethodNames;
     }
 }
