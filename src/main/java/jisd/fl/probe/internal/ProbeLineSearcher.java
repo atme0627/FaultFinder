@@ -5,6 +5,8 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
+import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.probe.info.SuspiciousArgument;
 import jisd.fl.probe.info.SuspiciousAssignment;
 import jisd.fl.probe.info.SuspiciousExpression;
@@ -23,10 +25,12 @@ import java.util.Optional;
 public class ProbeLineSearcher {
     List<TracedValue> tracedValues;
     SuspiciousVariable vi;
+    SuspiciousExpressionFactory factory;
 
     public ProbeLineSearcher(List<TracedValue> tracedValues, SuspiciousVariable vi) {
         this.tracedValues = tracedValues;
         this.vi = vi;
+        this.factory = new JavaParserSuspiciousExpressionFactory();
     }
 
     /**
@@ -183,7 +187,7 @@ public class ProbeLineSearcher {
             //TODO: 毎回静的解析するのは遅すぎるため、キャッシュする方がいい
             Map<Integer, MethodElementName> methodElementNames = StaticAnalyzer.getMethodNamesWithLine(vi.getLocateMethodElement());
             MethodElementName locateMethodElementName = methodElementNames.get(causeLineNumber);
-            return new SuspiciousAssignment(vi.getFailedTest(), locateMethodElementName, causeLineNumber, vi);
+            return factory.createAssignment(vi.getFailedTest(), locateMethodElementName, causeLineNumber, vi);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }

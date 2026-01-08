@@ -18,6 +18,13 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         this.assignTarget = assignTarget;
     }
 
+    public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget, String stmtString) {
+        super(failedTest, locateMethod, locateLine, assignTarget.getActualValue(), stmtString);
+        Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
+        this.expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
+        this.assignTarget = assignTarget;
+    }
+
     @Override
     //TODO: 今はオブジェクトの違いを考慮していない
     public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException {

@@ -27,6 +27,14 @@ public abstract class SuspiciousExpression {
         this.stmtString = stmt.toString();
     }
 
+    SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString) {
+        this.failedTest = failedTest;
+        this.locateMethod = locateMethod;
+        this.locateLine = locateLine;
+        this.actualValue = actualValue;
+        this.stmtString = stmtString;
+    }
+
     /**
      * デバッグ対象プログラム内の行の、ある特定の実行に対してその中で呼び出されたすべてのメソッドのreturn行を特定する
      * 一般に、コード行は複数実行され得るため、行番号の指定のみではプログラム状態が特定したい状況のものと同一であることを保証できない。

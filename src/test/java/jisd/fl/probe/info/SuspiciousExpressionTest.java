@@ -1,7 +1,9 @@
 package jisd.fl.probe.info;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.hamcrest.FeatureMatcher;
@@ -18,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 class SuspiciousExpressionTest {
+    SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
     /**
      * SuspiciousExpression.toString()がexpectedと同じである要素がリスト内にあるかを確かめるMatcher
      */
@@ -63,7 +66,7 @@ class SuspiciousExpressionTest {
                     false
             );
 
-            SuspiciousAssignment suspAssignment = new SuspiciousAssignment(
+            SuspiciousAssignment suspAssignment = factory.createAssignment(
                     new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
@@ -121,7 +124,7 @@ class SuspiciousExpressionTest {
                     false
             );
 
-            SuspiciousAssignment suspAssignment = new SuspiciousAssignment(
+            SuspiciousAssignment suspAssignment = factory.createAssignment(
                     new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
