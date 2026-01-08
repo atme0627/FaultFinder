@@ -4,7 +4,6 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 public class SuspiciousAssignment extends SuspiciousExpression {
 
@@ -23,12 +22,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     ) {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue(), stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
         this.assignTarget = assignTarget;
-    }
-
-    @Override
-    //TODO: 今はオブジェクトの違いを考慮していない
-    public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException {
-        return JDISuspAssign.searchSuspiciousReturns(this);
     }
 
     @Override

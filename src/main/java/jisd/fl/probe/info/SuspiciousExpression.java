@@ -40,17 +40,6 @@ public abstract class SuspiciousExpression {
     }
 
     /**
-     * デバッグ対象プログラム内の行の、ある特定の実行に対してその中で呼び出されたすべてのメソッドのreturn行を特定する
-     * 一般に、コード行は複数実行され得るため、行番号の指定のみではプログラム状態が特定したい状況のものと同一であることを保証できない。
-     * したがって、行番号 + 監視対象の変数が取る値 + (今後: メソッドが実行されるオブジェクトのID)によって、目的の行実行を特定する。
-     * 監視対象が変数の場合、step実行後に、その値を見れば良い
-     * 監視対象がreturn文の演算結果の場合、methodExitEventのreturnValue()を見れば良い
-     *
-     * @return return文を表すSuspiciousReturnValueのリスト
-     */
-    abstract public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException;
-
-    /**
      * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得
      */
     static public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
