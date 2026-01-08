@@ -30,8 +30,11 @@ public class SuspiciousArgument extends SuspiciousExpression {
                               int argIndex,
                               int CallCountAfterTargetInLine,
                               String stmtString,
-                              boolean hasMethodCalling) {
-        super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling);
+                              boolean hasMethodCalling,
+                              List<String> directNeighborVariableNames,
+                              List<String> indirectNeighborVariableNames
+    ) {
+        super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
         this.argIndex = argIndex;
         this.calleeMethodName = calleeMethodName;
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;

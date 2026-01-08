@@ -2,12 +2,16 @@ package jisd.fl.infra.javaparser;
 
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.info.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressionFactory {
@@ -17,7 +21,10 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
         Expression expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
-        return new SuspiciousAssignment(failedTest, locateMethod, locateLine, assignTarget, stmt.toString(), hasMethodCalling);
+
+        List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
+        List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
+        return new SuspiciousAssignment(failedTest, locateMethod, locateLine, assignTarget, stmt.toString(), hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
     }
 
     @Override
@@ -25,7 +32,10 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
         Expression expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
-        return new SuspiciousReturnValue(failedTest, locateMethod, locateLine, actualValue, stmt.toString(), hasMethodCalling);
+
+        List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
+        List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
+        return new SuspiciousReturnValue(failedTest, locateMethod, locateLine, actualValue, stmt.toString(), hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
     }
 
     @Override
@@ -34,8 +44,12 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
         String stmtString = createArgStmtString(stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
         Expression expr = JavaParserSuspArg.extractExprArg(true, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
-        return new SuspiciousArgument(failedTest, locateMethod, locateLine, actualValue, calleeMethodName, argIndex, callCountAfterTargetInLine, stmtString, hasMethodCalling);
+
+        List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
+        List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
+        return new SuspiciousArgument(failedTest, locateMethod, locateLine, actualValue, calleeMethodName, argIndex, callCountAfterTargetInLine, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
     }
+
 
     private static String createArgStmtString(Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
         final String BG_GREEN = "\u001B[42m";
@@ -51,5 +65,29 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 }
         );
         return LexicalPreservingPrinter.print(stmt);
+    }
+
+    /**
+     * exprから次に探索の対象となる変数の名前を取得する。
+     * exprの演算に直接用いられている変数が対象。
+     */
+    public List<String> extractDirectNeighborVariableNames(Expression expr){
+        return expr.findAll(NameExpr.class).stream()
+                //引数やメソッド呼び出しに用いられる変数を除外
+                .filter(nameExpr -> nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
+                .map(NameExpr::toString)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * exprから次に探索の対象となる変数の名前を取得する。
+     * expr内で間接的に使用されている変数が対象。
+     */
+    public List<String> extractIndirectNeighborVariableNames(Expression expr){
+        return expr.findAll(NameExpr.class).stream()
+                //引数やメソッド呼び出しに用いられる変数を除外
+                .filter(nameExpr -> !nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
+                .map(NameExpr::toString)
+                .collect(Collectors.toList());
     }
 }

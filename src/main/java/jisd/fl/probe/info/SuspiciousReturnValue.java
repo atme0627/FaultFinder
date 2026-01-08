@@ -9,8 +9,17 @@ import java.util.NoSuchElementException;
 
 public class SuspiciousReturnValue extends SuspiciousExpression {
 
-    public SuspiciousReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString, boolean hasMethodCalling) {
-        super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling);
+    public SuspiciousReturnValue(
+            MethodElementName failedTest,
+            MethodElementName locateMethod,
+            int locateLine,
+            String actualValue,
+            String stmtString,
+            boolean hasMethodCalling,
+            List<String> directNeighborVariableNames,
+            List<String> indirectNeighborVariableNames
+    ) {
+        super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
         this.expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
     }

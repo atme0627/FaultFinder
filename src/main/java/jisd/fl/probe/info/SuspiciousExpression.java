@@ -19,14 +19,29 @@ public abstract class SuspiciousExpression {
     protected final String actualValue;
     private final String stmtString;
     public final boolean hasMethodCalling;
+    public final List<String> directNeighborVariableNames;
+    public final List<String> indirectNeighborVariableNames;
 
-    SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString, boolean hasMethodCalling) {
+
+    SuspiciousExpression(
+            MethodElementName failedTest,
+            MethodElementName locateMethod,
+            int locateLine,
+            String actualValue,
+            String stmtString,
+            boolean hasMethodCalling,
+            List<String> directNeighborVariableNames,
+            List<String> indirectNeighborVariableNames
+    ) {
         this.failedTest = failedTest;
         this.locateMethod = locateMethod;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
         this.stmtString = stmtString;
         this.hasMethodCalling = hasMethodCalling;
+        this.directNeighborVariableNames = directNeighborVariableNames;
+        this.indirectNeighborVariableNames = indirectNeighborVariableNames;
+
     }
 
     /**
@@ -76,10 +91,8 @@ public abstract class SuspiciousExpression {
      * @return 変数名のリスト
      */
     public List<String> extractNeighborVariableNames(boolean includeIndirectUsedVariable){
-        return expr.findAll(NameExpr.class).stream()
-                //引数やメソッド呼び出しに用いられる変数を除外
-                .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
-                .map(NameExpr::toString)
-                .collect(Collectors.toList());
+        List<String> ret = new ArrayList<>(directNeighborVariableNames);
+        if(includeIndirectUsedVariable) ret.addAll(indirectNeighborVariableNames);
+        return ret;
     }
 }
