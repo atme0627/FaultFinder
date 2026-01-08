@@ -32,7 +32,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
                               String stmtString,
                               boolean hasMethodCalling,
                               List<String> directNeighborVariableNames,
-                              List<String> indirectNeighborVariableNames
+                              List<String> indirectNeighborVariableNames,
+                              List<String> targetMethodName
     ) {
         super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
         this.argIndex = argIndex;
@@ -42,12 +43,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
         this.expr = JavaParserSuspArg.extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
         this.targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
-
-        this.targetMethodName = this.expr.findAll(MethodCallExpr.class)
-                .stream()
-                .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
-                .map(mce -> mce.getName().toString())
-                .collect(Collectors.toList());
+        this.targetMethodName = targetMethodName;
     }
 
     @Override

@@ -24,7 +24,16 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
 
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
         List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
-        return new SuspiciousAssignment(failedTest, locateMethod, locateLine, assignTarget, stmt.toString(), hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
+        return new SuspiciousAssignment(
+                failedTest,
+                locateMethod,
+                locateLine,
+                assignTarget,
+                stmt.toString(),
+                hasMethodCalling,
+                directNeighborVariableNames,
+                indirectNeighborVariableNames
+        );
     }
 
     @Override
@@ -35,7 +44,16 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
 
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
         List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
-        return new SuspiciousReturnValue(failedTest, locateMethod, locateLine, actualValue, stmt.toString(), hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
+        return new SuspiciousReturnValue(
+                failedTest,
+                locateMethod,
+                locateLine,
+                actualValue,
+                stmt.toString(),
+                hasMethodCalling,
+                directNeighborVariableNames,
+                indirectNeighborVariableNames
+        );
     }
 
     @Override
@@ -47,7 +65,21 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
 
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
         List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
-        return new SuspiciousArgument(failedTest, locateMethod, locateLine, actualValue, calleeMethodName, argIndex, callCountAfterTargetInLine, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
+        List<String> targetMethodName = extractArgTargetMethodNames(expr);
+        return new SuspiciousArgument(
+                failedTest,
+                locateMethod,
+                locateLine,
+                actualValue,
+                calleeMethodName,
+                argIndex,
+                callCountAfterTargetInLine,
+                stmtString,
+                hasMethodCalling,
+                directNeighborVariableNames,
+                indirectNeighborVariableNames,
+                targetMethodName
+        );
     }
 
 
@@ -88,6 +120,14 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 //引数やメソッド呼び出しに用いられる変数を除外
                 .filter(nameExpr -> !nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(NameExpr::toString)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> extractArgTargetMethodNames(Expression expr){
+        return expr.findAll(MethodCallExpr.class)
+                .stream()
+                .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
+                .map(mce -> mce.getName().toString())
                 .collect(Collectors.toList());
     }
 }
