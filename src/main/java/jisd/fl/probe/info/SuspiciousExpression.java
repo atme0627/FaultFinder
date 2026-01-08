@@ -1,7 +1,6 @@
 package jisd.fl.probe.info;
 
 import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
@@ -16,16 +15,6 @@ public abstract class SuspiciousExpression {
     protected  Expression expr;
     protected final String actualValue;
     private final String stmtString;
-
-    protected SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
-        this.failedTest = failedTest;
-        this.locateMethod = locateMethod;
-        this.locateLine = locateLine;
-        this.actualValue = actualValue;
-
-        Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
-        this.stmtString = stmt.toString();
-    }
 
     SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString) {
         this.failedTest = failedTest;
