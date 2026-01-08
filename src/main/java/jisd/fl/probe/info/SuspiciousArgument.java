@@ -90,8 +90,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
     }
 
     //引数の静的解析により、return位置を調べたいmethod一覧を取得する
-    static List<String> targetMethodName(Expression expr){
-        return expr.findAll(MethodCallExpr.class)
+    List<String> targetMethodName(){
+        return this.expr.findAll(MethodCallExpr.class)
                 .stream()
                 .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(mce -> mce.getName().toString())
