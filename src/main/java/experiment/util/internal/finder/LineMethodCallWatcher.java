@@ -8,6 +8,7 @@ import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.probe.info.SuspiciousExpression;
@@ -37,10 +38,11 @@ public class LineMethodCallWatcher {
         Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>(returnsInAssert(failureLine, locateMethod));
 
         System.out.println("------------------------------------------------------------------------------------------------------------");
+        SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
         while(!suspExprQueue.isEmpty()){
             SuspiciousExpression target = suspExprQueue.removeFirst();
 
-            List<SuspiciousReturnValue> returnsOfTarget = target.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> returnsOfTarget = searcher.search(target);
             if(!returnsOfTarget.isEmpty()) {
                 System.out.println(" >>> search return line");
                 System.out.println(" >>> target: " + target);

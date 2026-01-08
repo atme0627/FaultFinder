@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.probe.info.SuspiciousExprTreeNode;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
@@ -70,10 +71,11 @@ public class Probe{
         SuspiciousExprTreeNode targetNode = suspiciousExprTreeRoot.find(targetCauseExpr);
         if(targetNode == null) throw new RuntimeException("Target node is not found.");
 
+        SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
         while(!suspExprQueue.isEmpty()){
             SuspiciousExpression target = suspExprQueue.removeFirst();
 
-            List<SuspiciousReturnValue> returnsOfTarget = target.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> returnsOfTarget = searcher.search(target);
             if(!returnsOfTarget.isEmpty()) {
                 targetNode.addChild(returnsOfTarget);
                 suspExprQueue.addAll(returnsOfTarget);
