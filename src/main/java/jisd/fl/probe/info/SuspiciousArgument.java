@@ -1,9 +1,7 @@
 package jisd.fl.probe.info;
 
-import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
-import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
@@ -17,7 +15,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
     final int argIndex;
     //その行の中で呼び出し元のメソッドの後に何回他のメソッドが呼ばれるか
     final int CallCountAfterTargetInLine;
-    final String stmtString;
 
     //対象の引数内の最初のmethodCallがstmtで何番目か
     final int targetCallCount;
@@ -39,13 +36,10 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
 
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
-        this.expr = extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
-        this.stmtString = createStmtString(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
+        this.expr = JavaParserSuspArg.extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
         this.targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
 
         this.hasMethodCalling = !this.expr.findAll(MethodCallExpr.class).isEmpty();
-
-
         this.targetMethodName = this.expr.findAll(MethodCallExpr.class)
                 .stream()
                 .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
@@ -62,11 +56,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
         return JDISuspArg.searchSuspiciousReturns(this);
     }
 
-
-    static protected Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
-        return JavaParserSuspArg.extractExprArg(deleteParentNode, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
-    }
-
     /**
      * ある変数がその値を取る原因が呼び出し元の引数のあると判明した場合に使用
      */
@@ -77,28 +66,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
     @Override
     public String toString() {
         return "[ SUSPICIOUS ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
-    }
-
-
-    private static String createStmtString(Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
-        final String BG_GREEN = "\u001B[42m";
-        final String RESET = "\u001B[0m";
-        LexicalPreservingPrinter.setup(stmt);
-        extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName).getTokenRange().ifPresent(tokenRange -> {
-                    // 子ノードに属するすべてのトークンに色付け
-                    tokenRange.forEach(token -> {
-                        String original = token.getText();
-                        // ANSI エスケープシーケンスで背景黄色
-                        token.setText(BG_GREEN + original + RESET);
-                    });
-                }
-        );
-        return LexicalPreservingPrinter.print(stmt);
-    }
-
-    @Override
-    public String stmtString() {
-        return stmtString;
     }
 
     //引数の静的解析により、return位置を調べたいmethod一覧を取得する

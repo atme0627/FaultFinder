@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JavaParserSuspArg {
-    static Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
+    public static Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
         int methodCallCount = stmt.findAll(MethodCallExpr.class).size() + stmt.findAll(ObjectCreationExpr.class).size();
         if(isAssert(stmt)) methodCallCount--;
         int nthCallInLine = methodCallCount - callCountAfterTargetInLine;
