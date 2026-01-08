@@ -61,7 +61,7 @@ public abstract class SuspiciousExpression {
         return Objects.hash(failedTest, locateMethod, locateLine, actualValue);
     }
 
-    String stmtString(){
+    public String stmtString(){
         return stmt.toString();
     }
 }

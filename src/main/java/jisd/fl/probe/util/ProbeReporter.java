@@ -22,7 +22,7 @@ public class ProbeReporter {
     public void reportCauseExpression(SuspiciousExpression cause){
         Map<String, String> infoMap = new HashMap<String, String>();
         infoMap.put("LOCATION", cause.locateMethod + ": line " + cause.locateLine);
-        infoMap.put("LINE", cause.stmt.toString().replace("\n", " "));
+        infoMap.put("LINE", cause.stmtString().replace("\n", " "));
         printWithHeader("CAUSE LINE", formattedMapString(infoMap, 1));
 
     }
@@ -36,7 +36,7 @@ public class ProbeReporter {
     private void reportInvokedReturnExpression(SuspiciousExprTreeNode target, int indentLevel){
         Map<String, String> infoMap = new HashMap<String, String>();
         infoMap.put("LOCATION", target.suspExpr.locateMethod + ": line " + target.suspExpr.locateLine);
-        infoMap.put("LINE", target.suspExpr.stmt.toString().replace("\n", " "));
+        infoMap.put("LINE", target.suspExpr.stmtString().replace("\n", " "));
         List<String> formatted = formattedMapString(infoMap, indentLevel);
         for (String line : formatted) {
             System.out.println(line);
