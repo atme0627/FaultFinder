@@ -57,6 +57,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
     }
 
     @Override
+    //callCountAfterTargetInLineその行の中で呼び出し元のメソッドの後に何回他のメソッドが呼ばれるか
     public SuspiciousArgument createArgument(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, MethodElementName calleeMethodName, int argIndex, int callCountAfterTargetInLine) {
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
         String stmtString = createArgStmtString(stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
@@ -74,7 +75,6 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 actualValue,
                 calleeMethodName,
                 argIndex,
-                callCountAfterTargetInLine,
                 stmtString,
                 hasMethodCalling,
                 directNeighborVariableNames,

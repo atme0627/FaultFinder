@@ -1,6 +1,5 @@
 package jisd.fl.probe.info;
 
-import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
@@ -11,8 +10,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
     final MethodElementName calleeMethodName;
     //何番目の引数に与えられたexprかを指定
     final int argIndex;
-    //その行の中で呼び出し元のメソッドの後に何回他のメソッドが呼ばれるか
-    final int CallCountAfterTargetInLine;
 
     //対象の引数内の最初のmethodCallがstmtで何番目か
     final int targetCallCount;
@@ -26,7 +23,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
                               String actualValue,
                               MethodElementName calleeMethodName,
                               int argIndex,
-                              int CallCountAfterTargetInLine,
                               String stmtString,
                               boolean hasMethodCalling,
                               List<String> directNeighborVariableNames,
@@ -37,7 +33,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
         super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
         this.argIndex = argIndex;
         this.calleeMethodName = calleeMethodName;
-        this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
         this.targetCallCount = targetCallCount;
         this.targetMethodName = targetMethodName;
     }
