@@ -10,7 +10,6 @@ import jisd.fl.core.entity.MethodElementName;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class JavaParserSuspArg {
     static Expression extractExprArg(boolean deleteParentNode, Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
@@ -70,15 +69,6 @@ public class JavaParserSuspArg {
 
 
         throw new RuntimeException("Something is wrong. (stmt: " + stmt + ", callCountAfterTargetInLine: " + callCountAfterTargetInLine + ", argIndex: " + argIndex + ", calleeMethodName: " + calleeMethodName + " ) ");
-    }
-
-    //引数の静的解析により、return位置を調べたいmethod一覧を取得する
-    static List<String> targetMethodName(Expression expr){
-        return expr.findAll(MethodCallExpr.class)
-                .stream()
-                .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
-                .map(mce -> mce.getName().toString())
-                .collect(Collectors.toList());
     }
 
     /**

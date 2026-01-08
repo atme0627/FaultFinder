@@ -1,12 +1,14 @@
 package jisd.fl.probe.info;
 
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SuspiciousArgument extends SuspiciousExpression {
     //引数を与え実行しようとしているメソッド
@@ -85,5 +87,14 @@ public class SuspiciousArgument extends SuspiciousExpression {
     @Override
     public String stmtString(){
         return stmtString;
+    }
+
+    //引数の静的解析により、return位置を調べたいmethod一覧を取得する
+    static List<String> targetMethodName(Expression expr){
+        return expr.findAll(MethodCallExpr.class)
+                .stream()
+                .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
+                .map(mce -> mce.getName().toString())
+                .collect(Collectors.toList());
     }
 }

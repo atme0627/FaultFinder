@@ -33,7 +33,7 @@ public class JDISuspArg {
         if(!thisSuspArg.hasMethodCalling()) return result;
 
         //探索対象のmethod名リストを取得
-        List<String> targetMethodName = JavaParserSuspArg.targetMethodName(thisSuspArg.expr);
+        List<String> targetMethodName = thisSuspArg.targetMethodName(thisSuspArg.expr);
         //対象の引数内の最初のmethodCallがstmtで何番目か
         int targetCallCount = thisSuspArg.targetCallCount;
         //methodCallの回数をカウント
