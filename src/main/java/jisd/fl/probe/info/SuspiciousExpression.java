@@ -27,7 +27,9 @@ public abstract class SuspiciousExpression {
         this.locateMethod = locateMethod;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
-        this.stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
+
+        Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
+        this.stmt = stmt;
         this.stmtString = stmt.toString();
     }
 
