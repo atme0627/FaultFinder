@@ -105,7 +105,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
      * exprから次に探索の対象となる変数の名前を取得する。
      * exprの演算に直接用いられている変数が対象。
      */
-    public List<String> extractDirectNeighborVariableNames(Expression expr){
+    private List<String> extractDirectNeighborVariableNames(Expression expr){
         return expr.findAll(NameExpr.class).stream()
                 //引数やメソッド呼び出しに用いられる変数を除外
                 .filter(nameExpr -> nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
@@ -117,7 +117,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
      * exprから次に探索の対象となる変数の名前を取得する。
      * expr内で間接的に使用されている変数が対象。
      */
-    public List<String> extractIndirectNeighborVariableNames(Expression expr){
+    private List<String> extractIndirectNeighborVariableNames(Expression expr){
         return expr.findAll(NameExpr.class).stream()
                 //引数やメソッド呼び出しに用いられる変数を除外
                 .filter(nameExpr -> !nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
@@ -125,7 +125,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 .collect(Collectors.toList());
     }
 
-    public List<String> extractArgTargetMethodNames(Expression expr){
+    private List<String> extractArgTargetMethodNames(Expression expr){
         return expr.findAll(MethodCallExpr.class)
                 .stream()
                 .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
