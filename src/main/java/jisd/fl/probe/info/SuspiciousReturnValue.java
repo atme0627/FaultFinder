@@ -19,8 +19,6 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
             List<String> indirectNeighborVariableNames
     ) {
         super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
-        Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
-        this.expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
     }
     
     @Override

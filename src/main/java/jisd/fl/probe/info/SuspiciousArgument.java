@@ -39,7 +39,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
 
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
-        this.expr = JavaParserSuspArg.extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
         this.targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
         this.targetMethodName = targetMethodName;
     }

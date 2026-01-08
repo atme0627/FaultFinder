@@ -1,6 +1,5 @@
 package jisd.fl.probe.info;
 
-import com.github.javaparser.ast.expr.Expression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
@@ -12,7 +11,6 @@ public abstract class SuspiciousExpression {
     //フィールドの場合は<ulinit>で良い
     public final MethodElementName locateMethod;
     public final int locateLine;
-    protected  Expression expr;
     protected final String actualValue;
     private final String stmtString;
     public final boolean hasMethodCalling;

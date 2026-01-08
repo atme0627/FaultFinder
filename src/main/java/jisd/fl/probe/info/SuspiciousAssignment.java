@@ -23,8 +23,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             List<String> indirectNeighborVariableNames
     ) {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue(), stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
-        Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
-        this.expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
         this.assignTarget = assignTarget;
     }
 
