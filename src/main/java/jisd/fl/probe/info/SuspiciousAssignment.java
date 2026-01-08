@@ -1,11 +1,11 @@
 package jisd.fl.probe.info;
 
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 
-import java.util.*;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class SuspiciousAssignment extends SuspiciousExpression {
 
