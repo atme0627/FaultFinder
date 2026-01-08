@@ -15,10 +15,6 @@ public abstract class SuspiciousExpression {
     public final int locateLine;
     protected  Expression expr;
     protected final String actualValue;
-    //木構造にしてvisualizationをできるようにする
-    //保持するのは自分の子要素のみ
-    List<SuspiciousExpression> childSuspExprs = new ArrayList<>();
-
     private final String stmtString;
 
     protected SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
