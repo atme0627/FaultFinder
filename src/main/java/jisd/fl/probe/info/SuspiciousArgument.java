@@ -17,6 +17,9 @@ public class SuspiciousArgument extends SuspiciousExpression {
     final int CallCountAfterTargetInLine;
     final String stmtString;
 
+    //対象の引数内の最初のmethodCallがstmtで何番目か
+    final int targetCallCount;
+
     protected SuspiciousArgument(MethodElementName failedTest,
                                  MethodElementName locateMethod,
                                  int locateLine,
@@ -31,7 +34,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.expr = extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
 
         this.stmtString = createStmtString(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
-
+        this.targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
     }
 
     @Override
