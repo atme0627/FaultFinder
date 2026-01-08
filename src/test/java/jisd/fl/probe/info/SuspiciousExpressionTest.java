@@ -1,6 +1,7 @@
 package jisd.fl.probe.info;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
@@ -21,6 +22,7 @@ import static org.hamcrest.Matchers.*;
 
 class SuspiciousExpressionTest {
     SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
+    SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
     /**
      * SuspiciousExpression.toString()がexpectedと同じである要素がリスト内にあるかを確かめるMatcher
      */
@@ -73,7 +75,7 @@ class SuspiciousExpressionTest {
                     suspVariable
             );
 
-            List<SuspiciousReturnValue> actualResult = suspAssignment.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> actualResult = searcher.search(suspAssignment);
             //actualResult.forEach(System.out::println);
             assertThat(actualResult, hasSize(3));
             assertThat(actualResult, hasItems(
@@ -131,7 +133,7 @@ class SuspiciousExpressionTest {
                     suspVariable
             );
 
-            List<SuspiciousReturnValue> result = suspAssignment.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> result = searcher.search(suspAssignment);
             result.forEach(System.out::println);
         }
 
@@ -148,7 +150,7 @@ class SuspiciousExpressionTest {
                     "8"
             );
 
-            List<SuspiciousReturnValue> result = suspReturn.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> result = searcher.search(suspReturn);
             result.forEach(System.out::println);
         }
 
@@ -168,7 +170,7 @@ class SuspiciousExpressionTest {
                     1,-1
             );
 
-            List<SuspiciousReturnValue> result = suspArg.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> result = searcher.search(suspArg);
             result.forEach(System.out::println);
         }
 
