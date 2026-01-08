@@ -28,7 +28,7 @@ public class JDISuspArg {
     //引数を区別せず、引数の評価の際に呼ばれたすべてのメソッドについて情報を取得し
     //Expressionを静的解析してexpressionで直接呼ばれてるメソッドのみに絞る
     //ex.) expressionがx.f(y.g())の時、fのみとる。y.g()はfの探索の後行われるはず
-    static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousArgument thisSuspArg) throws NoSuchElementException {
+    public static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousArgument thisSuspArg) throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
         if(!thisSuspArg.hasMethodCalling()) return result;
 

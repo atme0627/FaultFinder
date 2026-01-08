@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
 
 public class JDISuspReturn {
     static final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
-    static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousReturnValue thisSuspReturn) throws NoSuchElementException {
+    public static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousReturnValue thisSuspReturn) throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
         if(!thisSuspReturn.hasMethodCalling()) return result;
 

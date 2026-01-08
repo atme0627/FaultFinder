@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
 public class JDISuspAssign {
     static final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
     //TODO: 今はオブジェクトの違いを考慮していない
-    static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousAssignment thisSuspAssign) throws NoSuchElementException {
+    public static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousAssignment thisSuspAssign) throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
         if(!thisSuspAssign.hasMethodCalling()) return result;
 
