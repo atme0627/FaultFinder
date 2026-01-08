@@ -7,11 +7,11 @@ import java.util.*;
 
 public abstract class SuspiciousExpression {
     //どのテスト実行時の話かを指定
-    protected final MethodElementName failedTest;
+    public final MethodElementName failedTest;
     //フィールドの場合は<ulinit>で良い
     public final MethodElementName locateMethod;
     public final int locateLine;
-    protected final String actualValue;
+    public final String actualValue;
     private final String stmtString;
     public final boolean hasMethodCalling;
     public final List<String> directNeighborVariableNames;

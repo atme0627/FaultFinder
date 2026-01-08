@@ -7,12 +7,12 @@ import java.util.*;
 
 public class SuspiciousArgument extends SuspiciousExpression {
     //引数を与え実行しようとしているメソッド
-    final MethodElementName calleeMethodName;
+    public final MethodElementName calleeMethodName;
     //何番目の引数に与えられたexprかを指定
-    final int argIndex;
+    public final int argIndex;
 
     //対象の引数内の最初のmethodCallがstmtで何番目か
-    final int targetCallCount;
+    public final int targetCallCount;
 
     //return位置を調べたいmethod一覧
     final List<String> targetMethodNames;
@@ -50,7 +50,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
     }
 
     //引数の静的解析により、return位置を調べたいmethod一覧を取得する
-    List<String> targetMethodNames() {
+    public List<String> targetMethodNames() {
         return targetMethodNames;
     }
 }
