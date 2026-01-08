@@ -30,7 +30,7 @@ public class JDISuspArg {
     //ex.) expressionがx.f(y.g())の時、fのみとる。y.g()はfの探索の後行われるはず
     static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousArgument thisSuspArg) throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
-        if(!TmpJavaParserUtils.hasMethodCalling(thisSuspArg.expr)) return result;
+        if(!thisSuspArg.hasMethodCalling()) return result;
 
         //探索対象のmethod名リストを取得
         List<String> targetMethodName = JavaParserSuspArg.targetMethodName(thisSuspArg.expr);

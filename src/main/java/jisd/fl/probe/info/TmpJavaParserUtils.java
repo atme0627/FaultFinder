@@ -1,6 +1,5 @@
 package jisd.fl.probe.info;
 
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -9,7 +8,6 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.nio.file.NoSuchFileException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -36,12 +34,5 @@ public class TmpJavaParserUtils {
                 .filter(nameExpr -> includeIndirectUsedVariable || nameExpr.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(NameExpr::toString)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * exprにメソッド呼び出しが含まれているかを判定
-     */
-    protected static boolean hasMethodCalling(Expression expr){
-        return !expr.findAll(MethodCallExpr.class).isEmpty();
     }
 }

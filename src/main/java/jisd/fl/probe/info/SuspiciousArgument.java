@@ -86,5 +86,4 @@ public class SuspiciousArgument extends SuspiciousExpression {
     public String stmtString(){
         return stmtString;
     }
-
 }

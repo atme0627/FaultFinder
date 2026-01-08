@@ -1,6 +1,7 @@
 package jisd.fl.probe.info;
 
 import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
@@ -59,5 +60,9 @@ public abstract class SuspiciousExpression {
 
     public String stmtString(){
         return stmtString;
+    }
+
+    public boolean hasMethodCalling(){
+        return !this.expr.findAll(MethodCallExpr.class).isEmpty();
     }
 }

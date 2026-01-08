@@ -27,7 +27,7 @@ public class JDISuspReturn {
     static final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
     static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousReturnValue thisSuspReturn) throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
-        if(!TmpJavaParserUtils.hasMethodCalling(thisSuspReturn.expr)) return result;
+        if(!thisSuspReturn.hasMethodCalling()) return result;
 
         //Debugger生成
         String main = TestUtil.getJVMMain(thisSuspReturn.failedTest);

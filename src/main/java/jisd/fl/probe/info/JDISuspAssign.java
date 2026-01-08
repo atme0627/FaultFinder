@@ -27,7 +27,7 @@ public class JDISuspAssign {
     //TODO: 今はオブジェクトの違いを考慮していない
     static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousAssignment thisSuspAssign) throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
-        if(!TmpJavaParserUtils.hasMethodCalling(thisSuspAssign.expr)) return result;
+        if(!thisSuspAssign.hasMethodCalling()) return result;
 
         //Debugger生成
         String main = TestUtil.getJVMMain(thisSuspAssign.failedTest);
