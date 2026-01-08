@@ -20,12 +20,15 @@ public abstract class SuspiciousExpression {
     //保持するのは自分の子要素のみ
     List<SuspiciousExpression> childSuspExprs = new ArrayList<>();
 
+    private final String stmtString;
+
     protected SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
         this.failedTest = failedTest;
         this.locateMethod = locateMethod;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
         this.stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
+        this.stmtString = stmt.toString();
     }
 
     /**
@@ -62,6 +65,6 @@ public abstract class SuspiciousExpression {
     }
 
     public String stmtString(){
-        return stmt.toString();
+        return stmtString;
     }
 }
