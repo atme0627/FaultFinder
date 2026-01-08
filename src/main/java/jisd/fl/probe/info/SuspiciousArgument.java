@@ -20,14 +20,15 @@ public class SuspiciousArgument extends SuspiciousExpression {
     //対象の引数内の最初のmethodCallがstmtで何番目か
     final int targetCallCount;
 
-    protected SuspiciousArgument(MethodElementName failedTest,
-                                 MethodElementName locateMethod,
-                                 int locateLine,
-                                 String actualValue,
-                                 MethodElementName calleeMethodName,
-                                 int argIndex,
-                                 int CallCountAfterTargetInLine) {
-        super(failedTest, locateMethod, locateLine, actualValue);
+    public SuspiciousArgument(MethodElementName failedTest,
+                               MethodElementName locateMethod,
+                               int locateLine,
+                               String actualValue,
+                               MethodElementName calleeMethodName,
+                               int argIndex,
+                               int CallCountAfterTargetInLine,
+                               String stmtString) {
+        super(failedTest, locateMethod, locateLine, actualValue, stmtString);
         this.argIndex = argIndex;
         this.calleeMethodName = calleeMethodName;
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;

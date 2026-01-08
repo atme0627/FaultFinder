@@ -159,7 +159,7 @@ class SuspiciousExpressionTest {
             MethodElementName locateClass = new MethodElementName("org.sample.MethodCallingTest");
             int locateLine = 70;
 
-            SuspiciousArgument suspArg = new SuspiciousArgument(
+            SuspiciousArgument suspArg = factory.createArgument(
                     new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,

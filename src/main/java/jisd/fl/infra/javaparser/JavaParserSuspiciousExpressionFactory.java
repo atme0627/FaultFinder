@@ -25,6 +25,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
 
     @Override
     public SuspiciousArgument createArgument(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, MethodElementName calleeMethodName, int argIndex, int callCountAfterTargetInLine) {
-        return null;
+        Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
+        return new SuspiciousArgument(failedTest, locateMethod, locateLine, actualValue, calleeMethodName, argIndex, callCountAfterTargetInLine, stmt.toString());
     }
 }

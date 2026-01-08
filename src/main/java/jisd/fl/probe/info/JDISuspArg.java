@@ -328,7 +328,7 @@ public class JDISuspArg {
             System.err.println("Cannot find target argument of caller method. (may not be argument)\n" + suspVar);
             return Optional.empty();
         }
-        return Optional.of(new SuspiciousArgument(
+        return Optional.of(factory.createArgument(
                 suspVar.getFailedTest(),
                 locateMethod[0],
                 locateLine[0],
