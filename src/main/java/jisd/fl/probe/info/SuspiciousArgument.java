@@ -31,15 +31,14 @@ public class SuspiciousArgument extends SuspiciousExpression {
                               boolean hasMethodCalling,
                               List<String> directNeighborVariableNames,
                               List<String> indirectNeighborVariableNames,
-                              List<String> targetMethodName
+                              List<String> targetMethodName,
+                              int targetCallCount
     ) {
         super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
         this.argIndex = argIndex;
         this.calleeMethodName = calleeMethodName;
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
-
-        Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
-        this.targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
+        this.targetCallCount = targetCallCount;
         this.targetMethodName = targetMethodName;
     }
 
