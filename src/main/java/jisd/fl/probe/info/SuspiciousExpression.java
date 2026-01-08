@@ -13,7 +13,6 @@ public abstract class SuspiciousExpression {
     //フィールドの場合は<ulinit>で良い
     public final MethodElementName locateMethod;
     public final int locateLine;
-    public final Statement stmt;
     protected  Expression expr;
     protected final String actualValue;
     //木構造にしてvisualizationをできるようにする
@@ -29,7 +28,6 @@ public abstract class SuspiciousExpression {
         this.actualValue = actualValue;
 
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
-        this.stmt = stmt;
         this.stmtString = stmt.toString();
     }
 
