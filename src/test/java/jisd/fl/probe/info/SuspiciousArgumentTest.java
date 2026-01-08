@@ -33,6 +33,5 @@ class SuspiciousArgumentTest {
 
         SuspiciousArgument suspArg = SuspiciousArgument.searchSuspiciousArgument(calleeMethodName, suspVar).get();
         System.out.println(suspArg);
-        System.out.println("expr: " + suspArg.expr);
     }
 }
