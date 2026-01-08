@@ -57,20 +57,23 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
     @Override
     public String toString(){
+        return "[ SUSPICIOUS ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
+    }
+
+    @Override
+    public String stmtString() {
         final String BG_GREEN = "\u001B[42m";
         final String RESET    = "\u001B[0m";
-
         LexicalPreservingPrinter.setup(stmt);
         extractExprArg(false, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName).getTokenRange().ifPresent(tokenRange -> {
-            // 子ノードに属するすべてのトークンに色付け
-            tokenRange.forEach(token -> {
-                String original = token.getText();
-                // ANSI エスケープシーケンスで背景黄色
-                token.setText(BG_GREEN + original + RESET);
-            });
-            }
+                    // 子ノードに属するすべてのトークンに色付け
+                    tokenRange.forEach(token -> {
+                        String original = token.getText();
+                        // ANSI エスケープシーケンスで背景黄色
+                        token.setText(BG_GREEN + original + RESET);
+                    });
+                }
         );
-
-        return "[ SUSPICIOUS ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + LexicalPreservingPrinter.print(stmt);
+        return LexicalPreservingPrinter.print(stmt);
     }
 }
