@@ -141,7 +141,7 @@ class SuspiciousExpressionTest {
             MethodElementName locateClass = new MethodElementName("org.sample.shape.Shape");
             int locateLine = 30;
 
-            SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
+            SuspiciousReturnValue suspReturn = factory.createReturnValue(
                     new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,

@@ -9,8 +9,10 @@ import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class JDISuspAssign {
+    static final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
     //TODO: 今はオブジェクトの違いを考慮していない
     static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousAssignment thisSuspAssign) throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
@@ -69,7 +72,7 @@ public class JDISuspAssign {
                             int locateLine = mee.location().lineNumber();
                             String actualValue = TmpJDIUtils.getValueString(mee.returnValue());
                             try {
-                                SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
+                                SuspiciousReturnValue suspReturn = factory.createReturnValue(
                                         thisSuspAssign.failedTest,
                                         invokedMethod,
                                         locateLine,

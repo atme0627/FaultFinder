@@ -12,6 +12,12 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
         this.expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
     }
+
+    public SuspiciousReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString) {
+        super(failedTest, locateMethod, locateLine, actualValue, stmtString);
+        Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
+        this.expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
+    }
     
     @Override
     public List<SuspiciousReturnValue> searchSuspiciousReturns() throws NoSuchElementException {

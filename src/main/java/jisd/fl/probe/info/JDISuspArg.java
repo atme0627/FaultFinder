@@ -7,8 +7,10 @@ import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
@@ -20,6 +22,8 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 public class JDISuspArg {
+    static final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
+
     //引数のindexを指定してその引数の評価の直前でsuspendするのは激ムズなのでやらない
     //引数を区別せず、引数の評価の際に呼ばれたすべてのメソッドについて情報を取得し
     //Expressionを静的解析してexpressionで直接呼ばれてるメソッドのみに絞る
@@ -122,7 +126,7 @@ public class JDISuspArg {
                                     int locateLine = mee.location().lineNumber();
                                     String actualValue = TmpJDIUtils.getValueString(mee.returnValue());
                                     try {
-                                        SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
+                                        SuspiciousReturnValue suspReturn = factory.createReturnValue(
                                                 thisSuspArg.failedTest,
                                                 invokedMethod,
                                                 locateLine,

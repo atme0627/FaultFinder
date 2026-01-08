@@ -14,12 +14,13 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
     @Override
     public SuspiciousAssignment createAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
-        return new SuspiciousAssignment(failedTest, locateMethod, locateLine, assignTarget, stmt.toString() );
+        return new SuspiciousAssignment(failedTest, locateMethod, locateLine, assignTarget, stmt.toString());
     }
 
     @Override
     public SuspiciousReturnValue createReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
-        return null;
+        Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
+        return new SuspiciousReturnValue(failedTest, locateMethod, locateLine, actualValue, stmt.toString());
     }
 
     @Override

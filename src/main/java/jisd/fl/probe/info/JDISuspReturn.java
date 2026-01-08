@@ -11,7 +11,9 @@ import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class JDISuspReturn {
+    static final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
     static List<SuspiciousReturnValue> searchSuspiciousReturns(SuspiciousReturnValue thisSuspReturn) throws NoSuchElementException {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
         if(!TmpJavaParserUtils.hasMethodCalling(thisSuspReturn.expr)) return result;
@@ -81,7 +84,7 @@ public class JDISuspReturn {
                             int locateLine = mee.location().lineNumber();
                             String actualValue = TmpJDIUtils.getValueString(mee.returnValue());
                             try {
-                                SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
+                                SuspiciousReturnValue suspReturn = factory.createReturnValue(
                                         thisSuspReturn.failedTest,
                                         invokedMethod,
                                         locateLine,

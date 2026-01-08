@@ -8,6 +8,8 @@ import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
+import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
 import jisd.fl.probe.info.TmpJDIUtils;
@@ -23,8 +25,11 @@ import java.util.*;
  */
 public class LineMethodCallWatcher {
     private final MethodElementName targetTestCaseName;
+    private final SuspiciousExpressionFactory factory;
+
     public LineMethodCallWatcher(MethodElementName targetTestCaseName) {
         this.targetTestCaseName = targetTestCaseName;
+        this.factory = new JavaParserSuspiciousExpressionFactory();
     }
 
     public List<SuspiciousExpression> searchSuspiciousReturns(int failureLine, MethodElementName locateMethod){
@@ -149,7 +154,7 @@ public class LineMethodCallWatcher {
                                     int locateLine = mee.location().lineNumber();
                                     String actualValue = TmpJDIUtils.getValueString(mee.returnValue());
                                     try {
-                                        SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
+                                        SuspiciousReturnValue suspReturn = factory.createReturnValue(
                                                 this.targetTestCaseName,
                                                 invokedMethod,
                                                 locateLine,

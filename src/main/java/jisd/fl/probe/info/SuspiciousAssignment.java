@@ -11,13 +11,6 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     //左辺で値が代入されている変数の情報
     public final SuspiciousVariable assignTarget;
 
-    public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
-        super(failedTest, locateMethod, locateLine, assignTarget.getActualValue());
-        Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
-        this.expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
-        this.assignTarget = assignTarget;
-    }
-
     public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget, String stmtString) {
         super(failedTest, locateMethod, locateLine, assignTarget.getActualValue(), stmtString);
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
