@@ -9,11 +9,10 @@ import java.util.NoSuchElementException;
 
 public class SuspiciousReturnValue extends SuspiciousExpression {
 
-    public SuspiciousReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString) {
-        super(failedTest, locateMethod, locateLine, actualValue, stmtString);
+    public SuspiciousReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString, boolean hasMethodCalling) {
+        super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling);
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
         this.expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
-        this.hasMethodCalling = !this.expr.findAll(MethodCallExpr.class).isEmpty();
     }
     
     @Override

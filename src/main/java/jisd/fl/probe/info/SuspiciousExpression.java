@@ -18,14 +18,15 @@ public abstract class SuspiciousExpression {
     protected  Expression expr;
     protected final String actualValue;
     private final String stmtString;
-    public boolean hasMethodCalling;
+    public final boolean hasMethodCalling;
 
-    SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString) {
+    SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString, boolean hasMethodCalling) {
         this.failedTest = failedTest;
         this.locateMethod = locateMethod;
         this.locateLine = locateLine;
         this.actualValue = actualValue;
         this.stmtString = stmtString;
+        this.hasMethodCalling = hasMethodCalling;
     }
 
     /**

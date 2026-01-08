@@ -1,5 +1,7 @@
 package jisd.fl.infra.javaparser;
 
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
@@ -7,25 +9,32 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.info.*;
 
+
 public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressionFactory {
 
     @Override
     public SuspiciousAssignment createAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
-        return new SuspiciousAssignment(failedTest, locateMethod, locateLine, assignTarget, stmt.toString());
+        Expression expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
+        boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
+        return new SuspiciousAssignment(failedTest, locateMethod, locateLine, assignTarget, stmt.toString(), hasMethodCalling);
     }
 
     @Override
     public SuspiciousReturnValue createReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
-        return new SuspiciousReturnValue(failedTest, locateMethod, locateLine, actualValue, stmt.toString());
+        Expression expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
+        boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
+        return new SuspiciousReturnValue(failedTest, locateMethod, locateLine, actualValue, stmt.toString(), hasMethodCalling);
     }
 
     @Override
     public SuspiciousArgument createArgument(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, MethodElementName calleeMethodName, int argIndex, int callCountAfterTargetInLine) {
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
         String stmtString = createArgStmtString(stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
-        return new SuspiciousArgument(failedTest, locateMethod, locateLine, actualValue, calleeMethodName, argIndex, callCountAfterTargetInLine, stmtString);
+        Expression expr = JavaParserSuspArg.extractExprArg(true, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
+        boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
+        return new SuspiciousArgument(failedTest, locateMethod, locateLine, actualValue, calleeMethodName, argIndex, callCountAfterTargetInLine, stmtString, hasMethodCalling);
     }
 
     private static String createArgStmtString(Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {

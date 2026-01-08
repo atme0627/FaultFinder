@@ -11,8 +11,8 @@ import com.github.javaparser.ast.stmt.Statement;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-class JavaParserSuspAssign {
-    static Expression extractExprAssign(boolean deleteParentNode, Statement stmt) {
+public class JavaParserSuspAssign {
+    public static Expression extractExprAssign(boolean deleteParentNode, Statement stmt) {
         try {
             Expression result = JavaParserSuspAssign.extractExpressionFromStatement(stmt);
             return JavaParserSuspAssign.finalizeResult(result, deleteParentNode);

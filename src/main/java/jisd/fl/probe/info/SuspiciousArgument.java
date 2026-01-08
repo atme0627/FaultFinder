@@ -29,8 +29,9 @@ public class SuspiciousArgument extends SuspiciousExpression {
                               MethodElementName calleeMethodName,
                               int argIndex,
                               int CallCountAfterTargetInLine,
-                              String stmtString) {
-        super(failedTest, locateMethod, locateLine, actualValue, stmtString);
+                              String stmtString,
+                              boolean hasMethodCalling) {
+        super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling);
         this.argIndex = argIndex;
         this.calleeMethodName = calleeMethodName;
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
@@ -39,7 +40,6 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.expr = JavaParserSuspArg.extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
         this.targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
 
-        this.hasMethodCalling = !this.expr.findAll(MethodCallExpr.class).isEmpty();
         this.targetMethodName = this.expr.findAll(MethodCallExpr.class)
                 .stream()
                 .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())

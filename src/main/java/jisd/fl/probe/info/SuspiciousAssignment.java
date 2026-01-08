@@ -12,12 +12,11 @@ public class SuspiciousAssignment extends SuspiciousExpression {
     //左辺で値が代入されている変数の情報
     public final SuspiciousVariable assignTarget;
 
-    public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget, String stmtString) {
-        super(failedTest, locateMethod, locateLine, assignTarget.getActualValue(), stmtString);
+    public SuspiciousAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget, String stmtString, boolean hasMethodCalling) {
+        super(failedTest, locateMethod, locateLine, assignTarget.getActualValue(), stmtString, hasMethodCalling);
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
         this.expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
         this.assignTarget = assignTarget;
-        this.hasMethodCalling = !this.expr.findAll(MethodCallExpr.class).isEmpty();
     }
 
     @Override
