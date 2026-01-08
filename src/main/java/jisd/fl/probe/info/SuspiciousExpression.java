@@ -18,6 +18,7 @@ public abstract class SuspiciousExpression {
     protected  Expression expr;
     protected final String actualValue;
     private final String stmtString;
+    public boolean hasMethodCalling;
 
     SuspiciousExpression(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, String stmtString) {
         this.failedTest = failedTest;
@@ -65,7 +66,7 @@ public abstract class SuspiciousExpression {
     }
 
     public boolean hasMethodCalling(){
-        return !this.expr.findAll(MethodCallExpr.class).isEmpty();
+        return hasMethodCalling;
     }
 
     /**

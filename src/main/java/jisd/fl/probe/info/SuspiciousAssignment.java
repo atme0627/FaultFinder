@@ -1,5 +1,6 @@
 package jisd.fl.probe.info;
 
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
@@ -16,6 +17,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
         this.expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
         this.assignTarget = assignTarget;
+        this.hasMethodCalling = !this.expr.findAll(MethodCallExpr.class).isEmpty();
     }
 
     @Override

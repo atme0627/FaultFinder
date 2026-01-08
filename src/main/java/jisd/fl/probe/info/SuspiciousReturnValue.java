@@ -1,5 +1,6 @@
 package jisd.fl.probe.info;
 
+import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
 
@@ -12,6 +13,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
         super(failedTest, locateMethod, locateLine, actualValue, stmtString);
         Statement stmt = TmpJavaParserUtils.extractStmt(this.locateMethod, this.locateLine);
         this.expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
+        this.hasMethodCalling = !this.expr.findAll(MethodCallExpr.class).isEmpty();
     }
     
     @Override

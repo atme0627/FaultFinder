@@ -39,6 +39,8 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.expr = extractExprArg(true, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
         this.stmtString = createStmtString(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
         this.targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
+
+        this.hasMethodCalling = !this.expr.findAll(MethodCallExpr.class).isEmpty();
     }
 
     @Override
