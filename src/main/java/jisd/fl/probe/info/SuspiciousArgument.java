@@ -15,6 +15,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
     final int argIndex;
     //その行の中で呼び出し元のメソッドの後に何回他のメソッドが呼ばれるか
     final int CallCountAfterTargetInLine;
+    final String stmtString;
 
     protected SuspiciousArgument(MethodElementName failedTest,
                                  MethodElementName locateMethod,
@@ -28,6 +29,9 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.calleeMethodName = calleeMethodName;
         this.CallCountAfterTargetInLine = CallCountAfterTargetInLine;
         this.expr = extractExprArg();
+
+        this.stmtString = createStmtString(stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName);
+
     }
 
     @Override
@@ -60,12 +64,12 @@ public class SuspiciousArgument extends SuspiciousExpression {
         return "[ SUSPICIOUS ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
     }
 
-    @Override
-    public String stmtString() {
+
+    private static String createStmtString(Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
         final String BG_GREEN = "\u001B[42m";
         final String RESET    = "\u001B[0m";
         LexicalPreservingPrinter.setup(stmt);
-        extractExprArg(false, stmt, this.CallCountAfterTargetInLine, this.argIndex, this.calleeMethodName).getTokenRange().ifPresent(tokenRange -> {
+        extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName).getTokenRange().ifPresent(tokenRange -> {
                     // 子ノードに属するすべてのトークンに色付け
                     tokenRange.forEach(token -> {
                         String original = token.getText();
@@ -76,4 +80,10 @@ public class SuspiciousArgument extends SuspiciousExpression {
         );
         return LexicalPreservingPrinter.print(stmt);
     }
+
+    @Override
+    public String stmtString(){
+        return stmtString;
+    }
+
 }
