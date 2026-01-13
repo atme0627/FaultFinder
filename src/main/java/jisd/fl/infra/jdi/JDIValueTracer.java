@@ -1,6 +1,7 @@
-package jisd.fl.probe.info;
+package jisd.fl.infra.jdi;
 
 import jisd.fl.core.domain.port.ValueTracer;
+import jisd.fl.probe.info.*;
 import jisd.fl.probe.record.TracedValueCollection;
 
 public class JDIValueTracer implements ValueTracer {
