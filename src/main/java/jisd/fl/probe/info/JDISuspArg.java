@@ -24,7 +24,7 @@ public class JDISuspArg {
         }
     }
 
-    static TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousArgument thisSuspArg){
+    static TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousArgument thisSuspArg){
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成

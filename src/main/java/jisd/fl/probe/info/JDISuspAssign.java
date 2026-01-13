@@ -7,9 +7,7 @@ import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
-import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
@@ -22,7 +20,7 @@ import java.util.NoSuchElementException;
 public class JDISuspAssign {
     //TODO: 今はオブジェクトの違いを考慮していない
 
-    static  TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousAssignment thisSuspExpr){
+    static  TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousAssignment thisSuspExpr){
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成

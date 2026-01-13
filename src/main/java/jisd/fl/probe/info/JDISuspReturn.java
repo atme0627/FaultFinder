@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JDISuspReturn {
-    static TracedValueCollection traceAllValuesAtSuspExpr(int sleepTime, SuspiciousExpression thisSuspExpr){
+    static TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression thisSuspExpr){
         System.out.println(" >>> [DEBUG] Return");
         final List<TracedValue> result = new ArrayList<>();
 
