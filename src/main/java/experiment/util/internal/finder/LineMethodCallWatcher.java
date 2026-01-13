@@ -13,7 +13,7 @@ import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.info.SuspiciousReturnValue;
-import jisd.fl.probe.info.TmpJDIUtils;
+import jisd.fl.infra.jdi.TmpJDIUtils;
 import jisd.fl.util.TestUtil;
 import jisd.fl.core.entity.MethodElementName;
 

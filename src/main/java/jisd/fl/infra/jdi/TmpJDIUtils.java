@@ -1,4 +1,4 @@
-package jisd.fl.probe.info;
+package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
 import com.sun.jdi.event.MethodEntryEvent;
@@ -8,7 +8,7 @@ import jisd.fl.probe.record.TracedValue;
 import java.time.LocalDateTime;
 import java.util.*;
 
-public class TmpJDIUtils {
+class TmpJDIUtils {
     //SuspiciousExpressionリファクタリングのための一時的なクラス
     static boolean isPrimitiveWrapper(Type type) {
         //プリミティブ型のラッパークラスの名前

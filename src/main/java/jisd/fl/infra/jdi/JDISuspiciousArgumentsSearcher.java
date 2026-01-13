@@ -12,7 +12,6 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.probe.info.SuspiciousArgument;
-import jisd.fl.probe.info.TmpJDIUtils;
 import jisd.fl.util.TestUtil;
 
 import java.util.List;
