@@ -20,7 +20,7 @@ import java.util.NoSuchElementException;
 public class JDISuspAssign {
     //TODO: 今はオブジェクトの違いを考慮していない
 
-    static  TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousAssignment thisSuspExpr){
+    public static  TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousAssignment thisSuspExpr){
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成

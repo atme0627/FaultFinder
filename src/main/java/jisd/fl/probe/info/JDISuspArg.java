@@ -15,7 +15,7 @@ import java.util.List;
 
 public class JDISuspArg {
 
-    static TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousArgument thisSuspArg){
+    public static TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousArgument thisSuspArg){
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成
