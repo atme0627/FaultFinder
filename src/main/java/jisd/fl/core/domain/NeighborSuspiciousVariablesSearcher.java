@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class NeighborSuspiciousVariablesSearcher {
-    private final ValueTracer tracer;
+    private final ValueAtSuspiciousExpressionTracer tracer;
 
     public NeighborSuspiciousVariablesSearcher(){
-        this.tracer = new ValueTracer();
+        this.tracer = new ValueAtSuspiciousExpressionTracer();
     }
     public List<SuspiciousVariable> neighborSuspiciousVariables(boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
         //SuspExprで観測できる全ての変数
-        TracedValueCollection tracedNeighborValue = tracer.traceAllAtSuspiciousExpression(suspExpr);
+        TracedValueCollection tracedNeighborValue = tracer.traceAll(suspExpr);
         //SuspExpr内で使用されている変数を静的解析により取得
         List<String> neighborVariableNames = new ArrayList<>(suspExpr.directNeighborVariableNames);
         if(includeIndirectUsedVariable) neighborVariableNames.addAll(suspExpr.indirectNeighborVariableNames);
