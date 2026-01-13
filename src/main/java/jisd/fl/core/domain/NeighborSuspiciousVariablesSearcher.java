@@ -16,7 +16,7 @@ public class NeighborSuspiciousVariablesSearcher {
     public NeighborSuspiciousVariablesSearcher(){
         this.tracer = new JDIValueTracer();
     }
-    public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
+    public List<SuspiciousVariable> neighborSuspiciousVariables(boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
         //SuspExprで観測できる全ての変数
         TracedValueCollection tracedNeighborValue = tracer.traceAllAtSuspiciousExpression(suspExpr);
         //SuspExpr内で使用されている変数を静的解析により取得

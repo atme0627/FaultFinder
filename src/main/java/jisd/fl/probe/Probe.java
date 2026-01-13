@@ -54,7 +54,7 @@ public class Probe{
             List<SuspiciousVariable> newTargets = new ArrayList<>();
             for (SuspiciousExpression ce : causeExprs) {
                 //SuspExprで観測できる全ての変数
-                List<SuspiciousVariable> neighbor = neighborSearcher.neighborSuspiciousVariables(sleepTime, false, ce);
+                List<SuspiciousVariable> neighbor = neighborSearcher.neighborSuspiciousVariables(false, ce);
                 neighbor.removeAll(investigatedTargets);
                 newTargets.addAll(neighbor);
             }

@@ -69,7 +69,7 @@ public class SuspiciousVariableFinder {
         List<SuspiciousExpression> returns = methodCallWatcher.searchSuspiciousReturns(failureLine, locateMethod);
         for (SuspiciousExpression r : returns) {
             //SuspExprで観測できる全ての変数
-            List<SuspiciousVariable> neighbor = neighborSearcher.neighborSuspiciousVariables(2000, false, r);
+            List<SuspiciousVariable> neighbor = neighborSearcher.neighborSuspiciousVariables(false, r);
             result.addAll(neighbor);
 
         }
