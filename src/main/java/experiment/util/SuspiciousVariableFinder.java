@@ -5,6 +5,7 @@ import experiment.util.internal.finder.LineMethodCallWatcher;
 import experiment.util.internal.finder.LineVariableNameExtractor;
 import experiment.util.internal.finder.TestLauncherForFinder;
 import experiment.util.internal.finder.LineValueWatcher;
+import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
@@ -65,7 +66,8 @@ public class SuspiciousVariableFinder {
         //TODO: treeNodeをなんとかする
         List<SuspiciousExpression> returns = methodCallWatcher.searchSuspiciousReturns(failureLine, locateMethod);
         for (SuspiciousExpression r : returns) {
-            List<SuspiciousVariable> neighbor = r.neighborSuspiciousVariables(2000, false, r);
+            //SuspExprで観測できる全ての変数
+            List<SuspiciousVariable> neighbor = NeighborSuspiciousVariablesSearcher.neighborSuspiciousVariables(2000, false, r);
             result.addAll(neighbor);
 
         }

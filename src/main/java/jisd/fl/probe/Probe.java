@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
 import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.probe.info.SuspiciousExprTreeNode;
 import jisd.fl.probe.info.SuspiciousExpression;
@@ -50,7 +51,8 @@ public class Probe{
             System.out.println(" >>> search next target");
             List<SuspiciousVariable> newTargets = new ArrayList<>();
             for (SuspiciousExpression ce : causeExprs) {
-                List<SuspiciousVariable> neighbor = ce.neighborSuspiciousVariables(sleepTime, false, ce);
+                //SuspExprで観測できる全ての変数
+                List<SuspiciousVariable> neighbor = NeighborSuspiciousVariablesSearcher.neighborSuspiciousVariables(sleepTime, false, ce);
                 neighbor.removeAll(investigatedTargets);
                 newTargets.addAll(neighbor);
             }

@@ -1,5 +1,6 @@
 package jisd.fl.probe;
 
+import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
 import jisd.fl.probe.info.SuspiciousExprTreeNode;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
@@ -39,7 +40,8 @@ public class SimpleProbe extends Probe {
                 CauseLineFinder finder = new CauseLineFinder(target);
                 SuspiciousExpression suspExpr = finder.find().orElseThrow(() -> new RuntimeException("Cause line is not found."));
 
-                nextTargets = suspExpr.neighborSuspiciousVariables(sleepTime, true, suspExpr);
+                //SuspExprで観測できる全ての変数
+                nextTargets = NeighborSuspiciousVariablesSearcher.neighborSuspiciousVariables(sleepTime, true, suspExpr);
                 nextTargets.removeAll(investigatedTargets);
 
                 addTreeElement(suspExpr, target);

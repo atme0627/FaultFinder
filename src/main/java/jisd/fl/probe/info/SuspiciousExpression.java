@@ -1,6 +1,5 @@
 package jisd.fl.probe.info;
 
-import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
@@ -37,14 +36,6 @@ public abstract class SuspiciousExpression {
         this.directNeighborVariableNames = directNeighborVariableNames;
         this.indirectNeighborVariableNames = indirectNeighborVariableNames;
 
-    }
-
-    /**
-     * 次の探索対象の変数としてこのSuspiciousExpr内で使用されている他の変数をSuspiciousVariableとして取得
-     */
-    static public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
-        //SuspExprで観測できる全ての変数
-        return JDISuspExpr.neighborSuspiciousVariables(sleepTime, includeIndirectUsedVariable, suspExpr);
     }
 
     @Override
