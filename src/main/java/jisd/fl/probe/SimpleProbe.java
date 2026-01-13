@@ -41,7 +41,7 @@ public class SimpleProbe extends Probe {
                 SuspiciousExpression suspExpr = finder.find().orElseThrow(() -> new RuntimeException("Cause line is not found."));
 
                 //SuspExprで観測できる全ての変数
-                nextTargets = NeighborSuspiciousVariablesSearcher.neighborSuspiciousVariables(sleepTime, true, suspExpr);
+                nextTargets = neighborSearcher.neighborSuspiciousVariables(sleepTime, true, suspExpr);
                 nextTargets.removeAll(investigatedTargets);
 
                 addTreeElement(suspExpr, target);

@@ -15,10 +15,12 @@ public class Probe{
     SuspiciousExprTreeNode suspiciousExprTreeRoot = new SuspiciousExprTreeNode(null);
     SuspiciousVariable firstTarget;
     ProbeReporter reporter;
+    protected final NeighborSuspiciousVariablesSearcher neighborSearcher;
 
     public Probe(SuspiciousVariable target) {
         this.firstTarget = target;
         this.reporter = new ProbeReporter();
+        this.neighborSearcher = new NeighborSuspiciousVariablesSearcher();
     }
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
@@ -52,7 +54,7 @@ public class Probe{
             List<SuspiciousVariable> newTargets = new ArrayList<>();
             for (SuspiciousExpression ce : causeExprs) {
                 //SuspExprで観測できる全ての変数
-                List<SuspiciousVariable> neighbor = NeighborSuspiciousVariablesSearcher.neighborSuspiciousVariables(sleepTime, false, ce);
+                List<SuspiciousVariable> neighbor = neighborSearcher.neighborSuspiciousVariables(sleepTime, false, ce);
                 neighbor.removeAll(investigatedTargets);
                 newTargets.addAll(neighbor);
             }

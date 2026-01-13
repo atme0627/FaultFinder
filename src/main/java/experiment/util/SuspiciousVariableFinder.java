@@ -27,6 +27,7 @@ public class SuspiciousVariableFinder {
     private final LineVariableNameExtractor VarNameExtractor;
     private final LineValueWatcher valueWatcher;
     private final LineMethodCallWatcher methodCallWatcher;
+    private final NeighborSuspiciousVariablesSearcher neighborSearcher;
 
     public SuspiciousVariableFinder(MethodElementName targetTestCaseName) throws NoSuchFileException {
         this.targetTestCaseName = targetTestCaseName;
@@ -35,6 +36,7 @@ public class SuspiciousVariableFinder {
         this.VarNameExtractor = new LineVariableNameExtractor();
         this.valueWatcher = new LineValueWatcher(targetTestCaseName);
         this.methodCallWatcher = new LineMethodCallWatcher(targetTestCaseName);
+        this.neighborSearcher = new NeighborSuspiciousVariablesSearcher();
     }
 
 
@@ -67,7 +69,7 @@ public class SuspiciousVariableFinder {
         List<SuspiciousExpression> returns = methodCallWatcher.searchSuspiciousReturns(failureLine, locateMethod);
         for (SuspiciousExpression r : returns) {
             //SuspExprで観測できる全ての変数
-            List<SuspiciousVariable> neighbor = NeighborSuspiciousVariablesSearcher.neighborSuspiciousVariables(2000, false, r);
+            List<SuspiciousVariable> neighbor = neighborSearcher.neighborSuspiciousVariables(2000, false, r);
             result.addAll(neighbor);
 
         }
