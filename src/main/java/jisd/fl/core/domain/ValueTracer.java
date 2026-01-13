@@ -1,10 +1,12 @@
-package jisd.fl.infra.jdi;
+package jisd.fl.core.domain;
 
-import jisd.fl.core.domain.port.ValueTracer;
+import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousArgumentStrategy;
+import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousAssignmentStrategy;
+import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousReturnValueStrategy;
 import jisd.fl.probe.info.*;
 import jisd.fl.probe.record.TracedValueCollection;
 
-public class JDIValueTracer implements ValueTracer {
+public class ValueTracer {
     /**
      * このSuspiciousExprで観測できる全ての変数とその値の情報をJISDを用いて取得
      * 複数回SuspiciousExpressionが実行されているときは、最後に実行された時の値を使用する

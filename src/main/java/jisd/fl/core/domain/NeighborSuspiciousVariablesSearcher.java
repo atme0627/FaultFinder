@@ -1,8 +1,6 @@
 package jisd.fl.core.domain;
 
-import jisd.fl.core.domain.port.ValueTracer;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.infra.jdi.JDIValueTracer;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.record.TracedValueCollection;
 
@@ -14,7 +12,7 @@ public class NeighborSuspiciousVariablesSearcher {
     private final ValueTracer tracer;
 
     public NeighborSuspiciousVariablesSearcher(){
-        this.tracer = new JDIValueTracer();
+        this.tracer = new ValueTracer();
     }
     public List<SuspiciousVariable> neighborSuspiciousVariables(boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
         //SuspExprで観測できる全ての変数
