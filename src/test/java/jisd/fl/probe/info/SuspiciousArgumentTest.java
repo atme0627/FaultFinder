@@ -1,7 +1,9 @@
 package jisd.fl.probe.info;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 class SuspiciousArgumentTest {
+    final SuspiciousArgumentsSearcher searcher = new JDISuspiciousArgumentsSearcher();
     @BeforeEach
     void initProperty() {
         Dotenv dotenv = Dotenv.load();
@@ -31,7 +34,7 @@ class SuspiciousArgumentTest {
                 false
         );
 
-        SuspiciousArgument suspArg = SuspiciousArgument.searchSuspiciousArgument(calleeMethodName, suspVar).get();
+        SuspiciousArgument suspArg = searcher.searchSuspiciousArgument(suspVar, calleeMethodName).get();
         System.out.println(suspArg);
     }
 }

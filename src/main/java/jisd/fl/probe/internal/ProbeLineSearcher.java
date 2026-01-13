@@ -5,8 +5,10 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
+import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.probe.info.SuspiciousArgument;
 import jisd.fl.probe.info.SuspiciousAssignment;
 import jisd.fl.probe.info.SuspiciousExpression;
@@ -26,11 +28,13 @@ public class ProbeLineSearcher {
     List<TracedValue> tracedValues;
     SuspiciousVariable vi;
     SuspiciousExpressionFactory factory;
+    SuspiciousArgumentsSearcher suspiciousArgumentsSearcher;
 
     public ProbeLineSearcher(List<TracedValue> tracedValues, SuspiciousVariable vi) {
         this.tracedValues = tracedValues;
         this.vi = vi;
         this.factory = new JavaParserSuspiciousExpressionFactory();
+        this.suspiciousArgumentsSearcher = new JDISuspiciousArgumentsSearcher();
     }
 
     /**
@@ -215,7 +219,7 @@ public class ProbeLineSearcher {
     private Optional<SuspiciousExpression> resultIfNotAssigned() {
         //実行しているメソッド名を取得
         MethodElementName locateMethodElementName = vi.getLocateMethodElement();
-        Optional<SuspiciousArgument> result = SuspiciousArgument.searchSuspiciousArgument(locateMethodElementName, vi);
+        Optional<SuspiciousArgument> result = suspiciousArgumentsSearcher.searchSuspiciousArgument(vi, locateMethodElementName);
         if(result.isEmpty()){
             return Optional.empty();
         }

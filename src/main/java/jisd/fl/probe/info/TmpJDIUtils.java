@@ -46,7 +46,7 @@ public class TmpJDIUtils {
         return v.toString();
     }
 
-    static int getCallStackDepth(ThreadReference th){
+    public static int getCallStackDepth(ThreadReference th){
         try {
             return th.frameCount();
         } catch (IncompatibleThreadStateException e) {

@@ -1,6 +1,7 @@
 package jisd.fl.probe.info;
 
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
+import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;
@@ -37,19 +38,11 @@ public class SuspiciousArgument extends SuspiciousExpression {
         this.targetMethodNames = targetMethodNames;
     }
 
-    /**
-     * ある変数がその値を取る原因が呼び出し元の引数のあると判明した場合に使用
-     */
-    static public Optional<SuspiciousArgument> searchSuspiciousArgument(MethodElementName calleeMethodName, SuspiciousVariable suspVar) {
-        return JDISuspArg.searchSuspiciousArgument(calleeMethodName, suspVar);
-    }
-
     @Override
     public String toString() {
         return "[ SUSPICIOUS ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
     }
 
-    //引数の静的解析により、return位置を調べたいmethod一覧を取得する
     public List<String> targetMethodNames() {
         return targetMethodNames;
     }
