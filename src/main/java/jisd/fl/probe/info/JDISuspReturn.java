@@ -198,8 +198,4 @@ public class JDISuspReturn {
         eDbg.handleAtBreakPoint(thisSuspExpr.locateMethod.getFullyQualifiedClassName(), thisSuspExpr.locateLine, handler);
         return TracedValuesAtLine.of(result);
     }
-
-    static private boolean validateIsTargetExecution(MethodExitEvent recent, String actualValue){
-        return TmpJDIUtils.getValueString(recent.returnValue()).equals(actualValue);
-    }
 }

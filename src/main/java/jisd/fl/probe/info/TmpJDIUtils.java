@@ -1,6 +1,7 @@
 package jisd.fl.probe.info;
 
 import com.sun.jdi.*;
+import com.sun.jdi.event.MethodExitEvent;
 import jisd.fl.probe.record.TracedValue;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,10 @@ public class TmpJDIUtils {
             return WRAPPER_CLASS_NAMES.contains(type.name());
         }
         return false;
+    }
+
+    static public boolean validateIsTargetExecution(MethodExitEvent recent, String actualValue){
+        return TmpJDIUtils.getValueString(recent.returnValue()).equals(actualValue);
     }
 
     public static String getValueString(Value v){
