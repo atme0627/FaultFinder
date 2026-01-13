@@ -14,15 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JDISuspArg {
-    static public boolean validateIsTargetExecution(MethodEntryEvent mEntry, String actualValue, int argIndex){
-        try {
-            //対象の引数が目的の値を取っている
-            List<Value> args = mEntry.thread().frame(0).getArgumentValues();
-            return args.size() > argIndex && TmpJDIUtils.getValueString(args.get(argIndex)).equals(actualValue);
-        } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException("Target thread must be suspended.");
-        }
-    }
 
     static TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousArgument thisSuspArg){
         final List<TracedValue> result = new ArrayList<>();
@@ -78,7 +69,7 @@ public class JDISuspArg {
 
                         //entryしたメソッドが目的のcalleeメソッドか確認
                         if(isTarget) {
-                            if (validateIsTargetExecution(mEntry, thisSuspArg.actualValue, thisSuspArg.argIndex)) {
+                            if (TmpJDIUtils.validateIsTargetExecutionArg(mEntry, thisSuspArg.actualValue, thisSuspArg.argIndex)) {
                                 done = true;
                                 result.addAll(resultCandidate);
                             }

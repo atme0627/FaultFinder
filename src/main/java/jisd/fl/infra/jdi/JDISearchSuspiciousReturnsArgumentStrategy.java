@@ -90,7 +90,7 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
 
                         //entryしたメソッドが目的のcalleeメソッドか確認
                         if(isTarget) {
-                            if (JDISuspArg.validateIsTargetExecution(mEntry, (suspArg).actualValue, (suspArg).argIndex)) {
+                            if (TmpJDIUtils.validateIsTargetExecutionArg(mEntry, (suspArg).actualValue, (suspArg).argIndex)) {
                                 done = true;
                                 result.addAll(resultCandidate);
                                 //vmをresumeしない

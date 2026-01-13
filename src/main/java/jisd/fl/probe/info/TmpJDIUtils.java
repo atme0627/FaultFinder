@@ -1,6 +1,7 @@
 package jisd.fl.probe.info;
 
 import com.sun.jdi.*;
+import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.event.MethodExitEvent;
 import jisd.fl.probe.record.TracedValue;
 
@@ -31,6 +32,16 @@ public class TmpJDIUtils {
 
     static public boolean validateIsTargetExecution(MethodExitEvent recent, String actualValue){
         return TmpJDIUtils.getValueString(recent.returnValue()).equals(actualValue);
+    }
+
+    static public boolean validateIsTargetExecutionArg(MethodEntryEvent mEntry, String actualValue, int argIndex){
+        try {
+            //対象の引数が目的の値を取っている
+            List<Value> args = mEntry.thread().frame(0).getArgumentValues();
+            return args.size() > argIndex && TmpJDIUtils.getValueString(args.get(argIndex)).equals(actualValue);
+        } catch (IncompatibleThreadStateException e) {
+            throw new RuntimeException("Target thread must be suspended.");
+        }
     }
 
     public static String getValueString(Value v){
