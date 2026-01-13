@@ -1,5 +1,6 @@
 package jisd.fl.probe.internal;
 
+import jisd.fl.infra.jdi.TargetVariableTracer;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;

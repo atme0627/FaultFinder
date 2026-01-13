@@ -4,7 +4,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
-import jisd.fl.probe.internal.TargetVariableTracer;
+import jisd.fl.infra.jdi.TargetVariableTracer;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
