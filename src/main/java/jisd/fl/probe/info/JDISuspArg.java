@@ -5,6 +5,7 @@ import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
@@ -13,13 +14,14 @@ import jisd.fl.util.TestUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JDISuspArg {
+public class JDISuspArg implements TraceValueAtSuspiciousExpressionStrategy {
 
-    public static TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousArgument thisSuspArg){
+    public TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
+        SuspiciousArgument suspArg = (SuspiciousArgument) suspExpr;
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成
-        String main = TestUtil.getJVMMain(thisSuspArg.failedTest);
+        String main = TestUtil.getJVMMain(suspArg.failedTest);
         String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
         //調査対象の行実行に到達した時に行う処理を定義
@@ -39,7 +41,7 @@ public class JDISuspArg {
             List<TracedValue> resultCandidate;
             try {
                 StackFrame frame = thread.frame(0);
-                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, thisSuspArg.locateLine);
+                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, suspArg.locateLine);
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
             }
@@ -62,14 +64,14 @@ public class JDISuspArg {
                         if (method.isConstructor()) {
                             // calleeMethodName には FullyQualifiedClassName を保持している想定
                             isTarget = method.declaringType().name()
-                                    .equals(thisSuspArg.calleeMethodName.getFullyQualifiedClassName());
+                                    .equals(suspArg.calleeMethodName.getFullyQualifiedClassName());
                         } else {
-                            isTarget = method.name().equals(thisSuspArg.calleeMethodName.getShortMethodName());
+                            isTarget = method.name().equals(suspArg.calleeMethodName.getShortMethodName());
                         }
 
                         //entryしたメソッドが目的のcalleeメソッドか確認
                         if(isTarget) {
-                            if (TmpJDIUtils.validateIsTargetExecutionArg(mEntry, thisSuspArg.actualValue, thisSuspArg.argIndex)) {
+                            if (TmpJDIUtils.validateIsTargetExecutionArg(mEntry, suspArg.actualValue, suspArg.argIndex)) {
                                 done = true;
                                 result.addAll(resultCandidate);
                             }
@@ -90,7 +92,7 @@ public class JDISuspArg {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(thisSuspArg.locateMethod.getFullyQualifiedClassName(), thisSuspArg.locateLine, handler);
+        eDbg.handleAtBreakPoint(suspArg.locateMethod.getFullyQualifiedClassName(), suspArg.locateLine, handler);
         return TracedValuesAtLine.of(result);
     }
 }

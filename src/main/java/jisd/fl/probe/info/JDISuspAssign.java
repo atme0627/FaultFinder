@@ -7,6 +7,7 @@ import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
@@ -17,14 +18,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class JDISuspAssign {
+public class JDISuspAssign implements TraceValueAtSuspiciousExpressionStrategy {
     //TODO: 今はオブジェクトの違いを考慮していない
 
-    public static  TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousAssignment thisSuspExpr){
+    public TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
+        SuspiciousAssignment suspAssign = (SuspiciousAssignment) suspExpr;
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成
-        String main = TestUtil.getJVMMain(thisSuspExpr.failedTest);
+        String main = TestUtil.getJVMMain(suspAssign.failedTest);
         String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
 
@@ -45,7 +47,7 @@ public class JDISuspAssign {
             List<TracedValue> resultCandidate;
             try {
                 StackFrame frame = thread.frame(0);
-                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, thisSuspExpr.locateLine);
+                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, suspAssign.locateLine);
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
             }
@@ -62,7 +64,7 @@ public class JDISuspAssign {
                     if (ev instanceof StepEvent) {
                         done = true;
                         StepEvent se = (StepEvent) ev;
-                        if(validateIsTargetExecution(se, thisSuspExpr.assignTarget)) result.addAll(resultCandidate);
+                        if(validateIsTargetExecution(se, suspAssign.assignTarget)) result.addAll(resultCandidate);
                         //vmをresumeしない
                     }
                 }
@@ -72,7 +74,7 @@ public class JDISuspAssign {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(thisSuspExpr.locateMethod.getFullyQualifiedClassName(), thisSuspExpr.locateLine, handler);
+        eDbg.handleAtBreakPoint(suspAssign.locateMethod.getFullyQualifiedClassName(), suspAssign.locateLine, handler);
         return TracedValuesAtLine.of(result);
     }
 

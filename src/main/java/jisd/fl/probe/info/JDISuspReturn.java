@@ -11,6 +11,7 @@ import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
@@ -19,13 +20,14 @@ import jisd.fl.util.TestUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JDISuspReturn {
-    public static TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression thisSuspExpr){
+public class JDISuspReturn implements TraceValueAtSuspiciousExpressionStrategy {
+    public TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
+        SuspiciousReturnValue suspReturn = (SuspiciousReturnValue) suspExpr;
         System.out.println(" >>> [DEBUG] Return");
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成
-        String main = TestUtil.getJVMMain(thisSuspExpr.failedTest);
+        String main = TestUtil.getJVMMain(suspReturn.failedTest);
         String options = TestUtil.getJVMOption();
         EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
 
@@ -51,7 +53,7 @@ public class JDISuspReturn {
             List<TracedValue> resultCandidate;
             try {
                 StackFrame frame = thread.frame(0);
-                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, thisSuspExpr.locateLine);
+                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, suspReturn.locateLine);
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
             }
@@ -78,7 +80,7 @@ public class JDISuspReturn {
                             throw new RuntimeException("Something is wrong.");
                         }
                         System.out.println(" >>> [DEBUG] Return: " + TmpJDIUtils.getValueString(recentMee.returnValue()));
-                        if(TmpJDIUtils.validateIsTargetExecution(recentMee, thisSuspExpr.actualValue)) result.addAll(resultCandidate);
+                        if(TmpJDIUtils.validateIsTargetExecution(recentMee, suspReturn.actualValue)) result.addAll(resultCandidate);
                         //vmをresumeしない
                     }
                 }
@@ -89,7 +91,7 @@ public class JDISuspReturn {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(thisSuspExpr.locateMethod.getFullyQualifiedClassName(), thisSuspExpr.locateLine, handler);
+        eDbg.handleAtBreakPoint(suspReturn.locateMethod.getFullyQualifiedClassName(), suspReturn.locateLine, handler);
         return TracedValuesAtLine.of(result);
     }
 }
