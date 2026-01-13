@@ -1,4 +1,4 @@
-package jisd.fl.probe.info;
+package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
 import com.sun.jdi.event.Event;
@@ -9,6 +9,9 @@ import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.probe.info.SuspiciousAssignment;
+import jisd.fl.probe.info.SuspiciousExpression;
+import jisd.fl.probe.info.TmpJDIUtils;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;

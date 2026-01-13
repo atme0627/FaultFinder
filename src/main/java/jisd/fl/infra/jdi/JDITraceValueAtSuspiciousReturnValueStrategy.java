@@ -1,4 +1,4 @@
-package jisd.fl.probe.info;
+package jisd.fl.infra.jdi;
 
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.StackFrame;
@@ -12,6 +12,9 @@ import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
+import jisd.fl.probe.info.SuspiciousExpression;
+import jisd.fl.probe.info.SuspiciousReturnValue;
+import jisd.fl.probe.info.TmpJDIUtils;
 import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;

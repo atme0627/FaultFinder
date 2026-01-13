@@ -70,7 +70,7 @@ public class TmpJDIUtils {
         }
     }
 
-    static List<TracedValue> watchAllVariablesInLine(StackFrame frame, int locateLine){
+    public static List<TracedValue> watchAllVariablesInLine(StackFrame frame, int locateLine){
         List<TracedValue> result = new ArrayList<>();
 
         // （1）ローカル変数
