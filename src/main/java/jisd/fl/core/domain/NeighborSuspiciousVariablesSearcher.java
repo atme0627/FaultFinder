@@ -1,7 +1,7 @@
 package jisd.fl.core.domain;
 
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.info.JDISuspExpr;
+import jisd.fl.probe.info.JDIValueTracer;
 import jisd.fl.probe.info.SuspiciousExpression;
 import jisd.fl.probe.record.TracedValueCollection;
 
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class NeighborSuspiciousVariablesSearcher {
     static public List<SuspiciousVariable> neighborSuspiciousVariables(int sleepTime, boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
         //SuspExprで観測できる全ての変数
-        TracedValueCollection tracedNeighborValue = JDISuspExpr.traceAllValuesAtSuspExpr(suspExpr);
+        TracedValueCollection tracedNeighborValue = JDIValueTracer.traceAllAtSuspiciousExpression(suspExpr);
         //SuspExpr内で使用されている変数を静的解析により取得
         List<String> neighborVariableNames = new ArrayList<>(suspExpr.directNeighborVariableNames);
         if(includeIndirectUsedVariable) neighborVariableNames.addAll(suspExpr.indirectNeighborVariableNames);
