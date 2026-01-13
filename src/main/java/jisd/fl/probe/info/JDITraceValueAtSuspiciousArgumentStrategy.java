@@ -14,7 +14,7 @@ import jisd.fl.util.TestUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JDISuspArg implements TraceValueAtSuspiciousExpressionStrategy {
+public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSuspiciousExpressionStrategy {
 
     public TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
         SuspiciousArgument suspArg = (SuspiciousArgument) suspExpr;

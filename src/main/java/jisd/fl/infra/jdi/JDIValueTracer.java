@@ -13,10 +13,10 @@ public class JDIValueTracer implements ValueTracer {
     public TracedValueCollection traceAllAtSuspiciousExpression(SuspiciousExpression suspExpr){
         return switch (suspExpr) {
             case SuspiciousAssignment thisSuspAssign ->
-                    JDISuspAssign.traceAllValuesAtSuspExpr(thisSuspAssign);
+                    JDITraceValueAtSuspiciousAssignmentStrategy.traceAllValuesAtSuspExpr(thisSuspAssign);
             case SuspiciousReturnValue thisSuspReturn ->
-                    JDISuspReturn.traceAllValuesAtSuspExpr(thisSuspReturn);
-            case SuspiciousArgument thisSuspArg -> JDISuspArg.traceAllValuesAtSuspExpr(thisSuspArg);
+                    JDITraceValueAtSuspiciousReturnValueStrategy.traceAllValuesAtSuspExpr(thisSuspReturn);
+            case SuspiciousArgument thisSuspArg -> JDITraceValueAtSuspiciousArgumentStrategy.traceAllValuesAtSuspExpr(thisSuspArg);
             default -> throw new IllegalStateException("Unexpected value: " + suspExpr);
         };
     }

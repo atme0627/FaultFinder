@@ -20,7 +20,7 @@ import jisd.fl.util.TestUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JDISuspReturn implements TraceValueAtSuspiciousExpressionStrategy {
+public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueAtSuspiciousExpressionStrategy {
     public TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
         SuspiciousReturnValue suspReturn = (SuspiciousReturnValue) suspExpr;
         System.out.println(" >>> [DEBUG] Return");

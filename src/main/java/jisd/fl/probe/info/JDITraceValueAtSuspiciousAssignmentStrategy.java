@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class JDISuspAssign implements TraceValueAtSuspiciousExpressionStrategy {
+public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAtSuspiciousExpressionStrategy {
     //TODO: 今はオブジェクトの違いを考慮していない
 
     public TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
