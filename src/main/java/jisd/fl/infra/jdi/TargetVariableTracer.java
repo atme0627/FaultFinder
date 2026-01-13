@@ -97,7 +97,7 @@ public class TargetVariableTracer {
                     return Optional.of(new TracedValue(
                             watchedAt,
                             local.name() + "[0]",
-                            TmpJDIUtils.getValueString(ar.getValue(0)),
+                            JDIUtils.getValueString(ar.getValue(0)),
                             locateLine
                     ));
                 }
@@ -106,7 +106,7 @@ public class TargetVariableTracer {
             return Optional.of(new TracedValue(
                     watchedAt,
                     local.name(),
-                    TmpJDIUtils.getValueString(v),
+                    JDIUtils.getValueString(v),
                     locateLine
             ));
         } else {
@@ -119,7 +119,7 @@ public class TargetVariableTracer {
                     return Optional.of(new TracedValue(
                             watchedAt,
                             "this." + f.name(),
-                            TmpJDIUtils.getValueString(thisObj.getValue(f)),
+                            JDIUtils.getValueString(thisObj.getValue(f)),
                             locateLine
                     ));
                 }
@@ -131,7 +131,7 @@ public class TargetVariableTracer {
                 return Optional.of(new TracedValue(
                         watchedAt,
                         "this." + f.name(),
-                        TmpJDIUtils.getValueString(rt.getValue(f)),
+                        JDIUtils.getValueString(rt.getValue(f)),
                         locateLine
                 ));
             }

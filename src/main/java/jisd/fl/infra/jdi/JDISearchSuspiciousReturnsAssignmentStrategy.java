@@ -53,7 +53,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
             // ブレークポイント地点でのコールスタックの深さを取得
             // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
             // 再帰呼び出し含め、その行で直接呼ばれたメソッドのみ取ってこれる
-            int depthBeforeCall = TmpJDIUtils.getCallStackDepth(thread);
+            int depthBeforeCall = JDIUtils.getCallStackDepth(thread);
 
             //一旦 resume して、内部ループで MethodExit／Step を待つ
             vm.resume();
@@ -67,10 +67,10 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
 
                         //収集するのは指定した行で直接呼び出したメソッドのみ
                         //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
-                        if (mee.thread().equals(thread) && TmpJDIUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
+                        if (mee.thread().equals(thread) && JDIUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
                             MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                             int locateLine = mee.location().lineNumber();
-                            String actualValue = TmpJDIUtils.getValueString(mee.returnValue());
+                            String actualValue = JDIUtils.getValueString(mee.returnValue());
                             try {
                                 SuspiciousReturnValue suspReturn = factory.createReturnValue(
                                         (suspAssign).failedTest,
@@ -152,7 +152,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
                         .orElseThrow();
 
                 //評価結果を比較
-                String evaluatedValue = TmpJDIUtils.getValueString(frame.getValue(lvalue));
+                String evaluatedValue = JDIUtils.getValueString(frame.getValue(lvalue));
                 return evaluatedValue.equals(assignTarget.getActualValue());
             }
         } catch (IncompatibleThreadStateException e) {

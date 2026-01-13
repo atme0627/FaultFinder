@@ -53,7 +53,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
                 LocalVariable topVar = topFrame.visibleVariableByName(suspVar.getSimpleVariableName());
                 if(topVar == null) return;
                 Value argValue = topFrame.getValue(topVar);
-                if(!TmpJDIUtils.getValueString(argValue).equals(suspVar.getActualValue())) return;
+                if(!JDIUtils.getValueString(argValue).equals(suspVar.getActualValue())) return;
                 //対象の引数のインデックスを取得
                 List<LocalVariable> args = mEntry.method().arguments();
                 for(int idx = 0; idx < args.size(); idx++){
@@ -120,7 +120,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
         // ブレークポイント地点でのコールスタックの深さを取得
         // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
         // 再帰呼び出し含め、その行で直接呼ばれたメソッドの呼び出し回数をカウントするため
-        int depthBeforeCall = TmpJDIUtils.getCallStackDepth(thisThread);
+        int depthBeforeCall = JDIUtils.getCallStackDepth(thisThread);
 
         //この行の終わりを検知するためstepOverRequestを設置
         StepRequest stepOverReq = EnhancedDebugger.createStepOverRequest(manager, thisThread);
@@ -139,7 +139,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
                     MethodExitEvent mee = (MethodExitEvent) ev;
 
                     //meeのthreadは抜ける直前のもののため+1が必要
-                    if(TmpJDIUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) result++;
+                    if(JDIUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) result++;
                     vm.resume();
                     continue;
                 }

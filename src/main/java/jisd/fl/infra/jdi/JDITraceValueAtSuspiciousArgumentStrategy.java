@@ -43,7 +43,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
             List<TracedValue> resultCandidate;
             try {
                 StackFrame frame = thread.frame(0);
-                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, suspArg.locateLine);
+                resultCandidate = JDIUtils.watchAllVariablesInLine(frame, suspArg.locateLine);
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
             }
@@ -73,7 +73,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
 
                         //entryしたメソッドが目的のcalleeメソッドか確認
                         if(isTarget) {
-                            if (TmpJDIUtils.validateIsTargetExecutionArg(mEntry, suspArg.actualValue, suspArg.argIndex)) {
+                            if (JDIUtils.validateIsTargetExecutionArg(mEntry, suspArg.actualValue, suspArg.argIndex)) {
                                 done = true;
                                 result.addAll(resultCandidate);
                             }

@@ -49,7 +49,7 @@ public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAt
             List<TracedValue> resultCandidate;
             try {
                 StackFrame frame = thread.frame(0);
-                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, suspAssign.locateLine);
+                resultCandidate = JDIUtils.watchAllVariablesInLine(frame, suspAssign.locateLine);
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
             }
@@ -122,7 +122,7 @@ public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAt
                         .orElseThrow();
 
                 //評価結果を比較
-                String evaluatedValue = TmpJDIUtils.getValueString(frame.getValue(lvalue));
+                String evaluatedValue = JDIUtils.getValueString(frame.getValue(lvalue));
                 return evaluatedValue.equals(assignTarget.getActualValue());
             }
         } catch (IncompatibleThreadStateException e) {

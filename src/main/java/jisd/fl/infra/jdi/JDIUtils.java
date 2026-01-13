@@ -8,7 +8,7 @@ import jisd.fl.probe.record.TracedValue;
 import java.time.LocalDateTime;
 import java.util.*;
 
-class TmpJDIUtils {
+class JDIUtils {
     //SuspiciousExpressionリファクタリングのための一時的なクラス
     static boolean isPrimitiveWrapper(Type type) {
         //プリミティブ型のラッパークラスの名前
@@ -31,14 +31,14 @@ class TmpJDIUtils {
     }
 
     static public boolean validateIsTargetExecution(MethodExitEvent recent, String actualValue){
-        return TmpJDIUtils.getValueString(recent.returnValue()).equals(actualValue);
+        return JDIUtils.getValueString(recent.returnValue()).equals(actualValue);
     }
 
     static public boolean validateIsTargetExecutionArg(MethodEntryEvent mEntry, String actualValue, int argIndex){
         try {
             //対象の引数が目的の値を取っている
             List<Value> args = mEntry.thread().frame(0).getArgumentValues();
-            return args.size() > argIndex && TmpJDIUtils.getValueString(args.get(argIndex)).equals(actualValue);
+            return args.size() > argIndex && JDIUtils.getValueString(args.get(argIndex)).equals(actualValue);
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException("Target thread must be suspended.");
         }
@@ -48,7 +48,7 @@ class TmpJDIUtils {
         if(v == null) return "null";
         if(v instanceof ObjectReference obj){
             //プリミティブ型のラッパークラスの名前
-            if(TmpJDIUtils.isPrimitiveWrapper(obj.referenceType())) {
+            if(JDIUtils.isPrimitiveWrapper(obj.referenceType())) {
                 try {
                     Field valueField = obj.referenceType().fieldByName("value");
                     Value primitiveValue = obj.getValue(valueField);
@@ -89,7 +89,7 @@ class TmpJDIUtils {
                 result.add(new TracedValue(
                         LocalDateTime.MIN,
                         lv.name() + "[0]",
-                        TmpJDIUtils.getValueString(ar.getValue(0)),
+                        JDIUtils.getValueString(ar.getValue(0)),
                         locateLine
                 ));
             }
@@ -97,7 +97,7 @@ class TmpJDIUtils {
             result.add(new TracedValue(
                     LocalDateTime.MIN,
                     lv.name(),
-                    TmpJDIUtils.getValueString(v),
+                    JDIUtils.getValueString(v),
                     locateLine
             ));
         });
@@ -111,7 +111,7 @@ class TmpJDIUtils {
                 result.add(new TracedValue(
                         LocalDateTime.MIN,
                         "this." + f.name(),
-                        TmpJDIUtils.getValueString(thisObj.getValue(f)),
+                        JDIUtils.getValueString(thisObj.getValue(f)),
                         locateLine
                 ));
             }
@@ -124,7 +124,7 @@ class TmpJDIUtils {
             result.add(new TracedValue(
                     LocalDateTime.MIN,
                     "this." + f.name(),
-                    TmpJDIUtils.getValueString(rt.getValue(f)),
+                    JDIUtils.getValueString(rt.getValue(f)),
                     locateLine
             ));
         }

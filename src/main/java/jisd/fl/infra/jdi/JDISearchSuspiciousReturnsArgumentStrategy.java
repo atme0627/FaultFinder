@@ -90,7 +90,7 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
 
                         //entryしたメソッドが目的のcalleeメソッドか確認
                         if(isTarget) {
-                            if (TmpJDIUtils.validateIsTargetExecutionArg(mEntry, (suspArg).actualValue, (suspArg).argIndex)) {
+                            if (JDIUtils.validateIsTargetExecutionArg(mEntry, (suspArg).actualValue, (suspArg).argIndex)) {
                                 done = true;
                                 result.addAll(resultCandidate);
                                 //vmをresumeしない
@@ -125,7 +125,7 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
                                 if (targetMethodName.contains(mee.method().name())) {
                                     MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                                     int locateLine = mee.location().lineNumber();
-                                    String actualValue = TmpJDIUtils.getValueString(mee.returnValue());
+                                    String actualValue = JDIUtils.getValueString(mee.returnValue());
                                     try {
                                         SuspiciousReturnValue suspReturn = factory.createReturnValue(
                                                 (suspArg).failedTest,

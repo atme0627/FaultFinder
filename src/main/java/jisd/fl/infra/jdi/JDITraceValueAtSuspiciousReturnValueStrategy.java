@@ -55,7 +55,7 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
             List<TracedValue> resultCandidate;
             try {
                 StackFrame frame = thread.frame(0);
-                resultCandidate = TmpJDIUtils.watchAllVariablesInLine(frame, suspReturn.locateLine);
+                resultCandidate = JDIUtils.watchAllVariablesInLine(frame, suspReturn.locateLine);
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
             }
@@ -81,8 +81,8 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
                             //ここには到達しないはず
                             throw new RuntimeException("Something is wrong.");
                         }
-                        System.out.println(" >>> [DEBUG] Return: " + TmpJDIUtils.getValueString(recentMee.returnValue()));
-                        if(TmpJDIUtils.validateIsTargetExecution(recentMee, suspReturn.actualValue)) result.addAll(resultCandidate);
+                        System.out.println(" >>> [DEBUG] Return: " + JDIUtils.getValueString(recentMee.returnValue()));
+                        if(JDIUtils.validateIsTargetExecution(recentMee, suspReturn.actualValue)) result.addAll(resultCandidate);
                         //vmをresumeしない
                     }
                 }
