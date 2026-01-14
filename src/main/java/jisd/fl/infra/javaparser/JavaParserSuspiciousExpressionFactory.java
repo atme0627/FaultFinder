@@ -39,7 +39,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
     @Override
     public SuspiciousReturnValue createReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
-        Expression expr = JavaParserSuspReturn.extractExprReturnValue(stmt);
+        Expression expr = JavaParserExpressionExtractor.extractExprReturnValue(stmt);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
 
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);

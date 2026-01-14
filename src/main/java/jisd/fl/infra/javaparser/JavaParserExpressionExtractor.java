@@ -27,6 +27,17 @@ class JavaParserExpressionExtractor {
         }
     }
 
+    public static Expression extractExprReturnValue(Statement stmt) {
+        try {
+            if(!stmt.isReturnStmt()) throw new NoSuchElementException();
+            return stmt.asReturnStmt().getExpression().orElseThrow();
+        } catch (NoSuchElementException e){
+            throw new RuntimeException("Cannot extract expression from [" + stmt + "].");
+        }
+    }
+
+
+
     private static Expression extractAssigningExprFromStatement(Statement stmt) {
         //更新式は1つであると仮定
         if (stmt instanceof ForStmt forStmt) {
