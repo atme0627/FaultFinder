@@ -14,8 +14,9 @@ import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.domain.port.SearchSuspiciousReturnsStrategy;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
-import jisd.fl.probe.info.*;
 import jisd.fl.util.TestUtil;
 
 import java.util.ArrayList;

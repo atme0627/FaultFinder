@@ -12,8 +12,8 @@ import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.infra.jdi.JDIUtils;
-import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.probe.info.SuspiciousReturnValue;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.util.TestUtil;
 import jisd.fl.core.entity.MethodElementName;
 

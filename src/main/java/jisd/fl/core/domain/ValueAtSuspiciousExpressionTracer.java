@@ -1,10 +1,13 @@
 package jisd.fl.core.domain;
 
 import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
+import jisd.fl.core.entity.susp.SuspiciousArgument;
+import jisd.fl.core.entity.susp.SuspiciousAssignment;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousArgumentStrategy;
 import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousAssignmentStrategy;
 import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousReturnValueStrategy;
-import jisd.fl.probe.info.*;
 import jisd.fl.probe.record.TracedValueCollection;
 
 public class ValueAtSuspiciousExpressionTracer {

@@ -2,7 +2,7 @@ package jisd.fl.core.domain.port;
 
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.info.SuspiciousArgument;
+import jisd.fl.core.entity.susp.SuspiciousArgument;
 
 import java.util.Optional;
 

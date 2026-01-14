@@ -1,4 +1,4 @@
-package jisd.fl.probe.info;
+package jisd.fl.core.entity.susp;
 
 import jisd.fl.core.entity.MethodElementName;
 

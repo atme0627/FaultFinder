@@ -1,7 +1,5 @@
-package jisd.fl.probe.info;
+package jisd.fl.core.entity.susp;
 
-import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
-import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.util.*;

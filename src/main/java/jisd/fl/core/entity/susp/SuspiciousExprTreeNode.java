@@ -1,4 +1,4 @@
-package jisd.fl.probe.info;
+package jisd.fl.core.entity.susp;
 
 import java.util.ArrayList;
 import java.util.List;

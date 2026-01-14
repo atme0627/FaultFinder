@@ -2,9 +2,9 @@ package jisd.fl.probe;
 
 import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
 import jisd.fl.core.domain.SuspiciousReturnsSearcher;
-import jisd.fl.probe.info.SuspiciousExprTreeNode;
-import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.probe.info.SuspiciousReturnValue;
+import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.internal.CauseLineFinder;
 import jisd.fl.probe.util.ProbeReporter;

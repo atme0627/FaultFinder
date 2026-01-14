@@ -1,6 +1,6 @@
 package jisd.fl.probe.info;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
 
 import java.io.File;
 

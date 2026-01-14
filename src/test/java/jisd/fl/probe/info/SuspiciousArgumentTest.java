@@ -2,6 +2,7 @@ package jisd.fl.probe.info;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
+import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.util.PropertyLoader;

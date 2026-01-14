@@ -4,10 +4,10 @@ import jisd.fl.core.domain.port.SearchSuspiciousReturnsStrategy;
 import jisd.fl.infra.jdi.JDISearchSuspiciousReturnsArgumentStrategy;
 import jisd.fl.infra.jdi.JDISearchSuspiciousReturnsAssignmentStrategy;
 import jisd.fl.infra.jdi.JDISearchSuspiciousReturnsReturnValueStrategy;
-import jisd.fl.probe.info.SuspiciousArgument;
-import jisd.fl.probe.info.SuspiciousAssignment;
-import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.probe.info.SuspiciousReturnValue;
+import jisd.fl.core.entity.susp.SuspiciousArgument;
+import jisd.fl.core.entity.susp.SuspiciousAssignment;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 
 import java.util.List;
 

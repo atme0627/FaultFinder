@@ -3,7 +3,7 @@ package jisd.fl.probe.info;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.*;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;

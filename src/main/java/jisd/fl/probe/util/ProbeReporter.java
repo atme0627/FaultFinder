@@ -1,7 +1,7 @@
 package jisd.fl.probe.util;
 
-import jisd.fl.probe.info.SuspiciousExprTreeNode;
-import jisd.fl.probe.info.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 
 import java.util.ArrayList;

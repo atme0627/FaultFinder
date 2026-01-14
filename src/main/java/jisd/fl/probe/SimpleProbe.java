@@ -1,7 +1,7 @@
 package jisd.fl.probe;
 
-import jisd.fl.probe.info.SuspiciousExprTreeNode;
-import jisd.fl.probe.info.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.internal.CauseLineFinder;
 import jisd.fl.util.analyze.StaticAnalyzer;

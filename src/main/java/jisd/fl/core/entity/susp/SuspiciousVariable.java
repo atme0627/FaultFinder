@@ -1,7 +1,7 @@
 package jisd.fl.core.entity.susp;
 
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.probe.info.SuspiciousExpression;
+
 import java.util.Objects;
 
 public class SuspiciousVariable {

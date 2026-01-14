@@ -7,7 +7,7 @@ import experiment.util.internal.finder.TestLauncherForFinder;
 import experiment.util.internal.finder.LineValueWatcher;
 import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.probe.info.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.analyze.*;
 
