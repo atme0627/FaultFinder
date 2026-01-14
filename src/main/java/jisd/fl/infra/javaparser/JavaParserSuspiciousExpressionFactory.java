@@ -19,7 +19,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
     @Override
     public SuspiciousAssignment createAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
-        Expression expr = JavaParserSuspAssign.extractExprAssign(true, stmt);
+        Expression expr = JavaParserExpressionExtractor.extractExprAssign(true, stmt);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
 
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
