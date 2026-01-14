@@ -25,6 +25,7 @@ class TmpJavaParserUtils {
     //対象の引数の演算の前に何回メソッド呼び出しが行われるかを計算する。
     //まず、stmtでのメソッド呼び出しをJava の実行時評価順でソートしたリストを取得
     //メソッドの呼び出し順に探し、子にtargetExprを持つものがあったら、その時のindexが求めたい値
+    //TODO: このへんは対象のメソッドのみをカウントするようにすればいい気がしてきた。
     public static int getCallCountBeforeTargetArgEval(Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName){
         List<Expression> calls = new ArrayList<>();
         Expression targetExpr = JavaParserExpressionExtractor.extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
