@@ -8,7 +8,7 @@ import jisd.fl.probe.record.TracedValue;
 import java.time.LocalDateTime;
 import java.util.*;
 
-class JDIUtils {
+public class JDIUtils {
     //SuspiciousExpressionリファクタリングのための一時的なクラス
     static boolean isPrimitiveWrapper(Type type) {
         //プリミティブ型のラッパークラスの名前
