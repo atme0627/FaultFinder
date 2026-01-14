@@ -67,7 +67,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
         List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
         List<String> targetMethodName = extractArgTargetMethodNames(expr);
-        int targetCallCount = JavaParserSuspArg.getCallCountBeforeTargetArgEval(stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
+        int targetCallCount = TmpJavaParserUtils.getCallCountBeforeTargetArgEval(stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
         return new SuspiciousArgument(
                 failedTest,
                 locateMethod,
