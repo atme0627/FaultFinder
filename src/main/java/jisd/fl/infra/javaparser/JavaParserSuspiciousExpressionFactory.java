@@ -61,7 +61,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
     public SuspiciousArgument createArgument(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, MethodElementName calleeMethodName, int argIndex, int callCountAfterTargetInLine) {
         Statement stmt = TmpJavaParserUtils.extractStmt(locateMethod, locateLine);
         String stmtString = createArgStmtString(stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
-        Expression expr = JavaParserSuspArg.extractExprArg(true, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
+        Expression expr = JavaParserExpressionExtractor.extractExprArg(true, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
 
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
@@ -89,7 +89,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
         final String BG_GREEN = "\u001B[42m";
         final String RESET = "\u001B[0m";
         LexicalPreservingPrinter.setup(stmt);
-        JavaParserSuspArg.extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName).getTokenRange().ifPresent(tokenRange -> {
+        JavaParserExpressionExtractor.extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName).getTokenRange().ifPresent(tokenRange -> {
                     // 子ノードに属するすべてのトークンに色付け
                     tokenRange.forEach(token -> {
                         String original = token.getText();
