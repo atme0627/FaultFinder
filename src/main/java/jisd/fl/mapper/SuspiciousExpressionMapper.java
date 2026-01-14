@@ -1,4 +1,4 @@
-package jisd.fl.probe.info;
+package jisd.fl.mapper;
 
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 
