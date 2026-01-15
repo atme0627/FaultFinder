@@ -6,9 +6,6 @@ import java.util.*;
 public abstract class TracedValueCollection {
     protected List<TracedValue> record;
 
-    protected TracedValueCollection(){
-    }
-
     protected TracedValueCollection(List<TracedValue> record){
         this.record = record;
     }
