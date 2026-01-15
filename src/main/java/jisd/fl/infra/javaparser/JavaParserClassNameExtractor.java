@@ -1,7 +1,6 @@
 package jisd.fl.infra.javaparser;
 
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.StaticAnalyzer;
 
 import java.io.IOException;
 import java.nio.file.*;

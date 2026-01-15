@@ -1,6 +1,7 @@
 package jisd.fl.infra.javaparser;
 
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
@@ -13,10 +14,7 @@ import jisd.fl.core.entity.MethodElementName;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 public class JavaParserUtils {
     static {
@@ -85,5 +83,16 @@ public class JavaParserUtils {
     public static <T extends Node> List<T> extractNode(MethodElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
         return JavaParserUtils.parseClass(targetClass)
                 .findAll(nodeClass);
+    }
+
+    public static Map<Integer, MethodElementName> getMethodNamesWithLine(MethodElementName targetClass) throws NoSuchFileException {
+        Map<Integer, MethodElementName> result = new HashMap<>();
+        for(CallableDeclaration cd : JavaParserUtils.extractNode(targetClass, CallableDeclaration.class)){
+            Range methodRange = cd.getRange().get();
+            for(int line = methodRange.begin.line; line <= methodRange.end.line; line++){
+                result.put(line, new MethodElementName(targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature()));
+            }
+        }
+        return result;
     }
 }

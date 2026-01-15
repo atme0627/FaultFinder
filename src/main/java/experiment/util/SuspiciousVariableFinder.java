@@ -9,7 +9,7 @@ import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.util.analyze.*;
+import jisd.fl.infra.javaparser.JavaParserUtils;
 
 import java.nio.file.NoSuchFileException;
 import java.util.*;
@@ -48,7 +48,8 @@ public class SuspiciousVariableFinder {
         //失敗行のロケーション情報を取得
         int failureLine = info.line();
         MethodElementName locateClass = info.locateClass();
-        MethodElementName locateMethod = StaticAnalyzer.getMethodNamesWithLine(locateClass).get(failureLine);
+        Map<Integer, MethodElementName> result1 = JavaParserUtils.getMethodNamesWithLine(locateClass);
+        MethodElementName locateMethod = result1.get(failureLine);
 
         //ログ
         System.out.println("****** failure test: " + targetTestCaseName + "   location:  " + locateMethod + " ( line: "+ failureLine +" ) " + "*****************");

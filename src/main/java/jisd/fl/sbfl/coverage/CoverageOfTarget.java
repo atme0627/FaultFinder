@@ -1,11 +1,11 @@
 package jisd.fl.sbfl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.LineElementName;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.util.analyze.StaticAnalyzer;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 import org.jacoco.core.analysis.IMethodCoverage;
@@ -37,7 +37,8 @@ public class CoverageOfTarget {
         methodCoverage = new HashMap<>();
 
         try {
-            methodElementNames = StaticAnalyzer.getMethodNamesWithLine(new MethodElementName(targetClassName));
+            Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(new MethodElementName(targetClassName));
+            methodElementNames = result;
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }

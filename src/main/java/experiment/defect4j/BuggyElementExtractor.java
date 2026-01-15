@@ -2,7 +2,7 @@ package experiment.defect4j;
 
 import jisd.fl.core.entity.LineElementName;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.util.analyze.StaticAnalyzer;
+import jisd.fl.infra.javaparser.JavaParserUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -68,7 +68,8 @@ public class BuggyElementExtractor {
             for (DiffEntry entry : diffs) {
                 Optional<MethodElementName> fqcn = getFQCN(entry);
                 if(fqcn.isEmpty()) continue;
-                Map<Integer, MethodElementName> methodsWithLine = StaticAnalyzer.getMethodNamesWithLine(fqcn.get());
+                Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(fqcn.get());
+                Map<Integer, MethodElementName> methodsWithLine = result;
                 EditList edits = df.toFileHeader(entry).toEditList();
                 for (Edit edit : edits) {
                     if (edit.getType() == Edit.Type.DELETE || edit.getType() == Edit.Type.REPLACE) {

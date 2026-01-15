@@ -7,12 +7,12 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousAssignment;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
+import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.infra.jdi.TargetVariableTracer;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.TracedValue;
-import jisd.fl.util.analyze.StaticAnalyzer;
 
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -119,7 +119,8 @@ public class CauseLineFinder {
     private SuspiciousAssignment resultIfAssigned(int causeLineNumber) {
         try {
             //TODO: 毎回静的解析するのは遅すぎるため、キャッシュする方がいい
-            Map<Integer, MethodElementName> methodElementNames = StaticAnalyzer.getMethodNamesWithLine(target.getLocateMethodElement());
+            Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(target.getLocateMethodElement());
+            Map<Integer, MethodElementName> methodElementNames = result;
             MethodElementName locateMethodElementName = methodElementNames.get(causeLineNumber);
             return factory.createAssignment(target.getFailedTest(), locateMethodElementName, causeLineNumber, target);
         } catch (NoSuchFileException e) {
