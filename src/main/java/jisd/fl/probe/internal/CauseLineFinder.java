@@ -23,11 +23,15 @@ import java.util.Optional;
 
 public class CauseLineFinder {
     SuspiciousVariable target;
-    SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
-    SuspiciousArgumentsSearcher suspiciousArgumentsSearcher = new JDISuspiciousArgumentsSearcher();
+    SuspiciousExpressionFactory factory;
+    SuspiciousArgumentsSearcher suspiciousArgumentsSearcher;
+    TargetVariableTracer tracer;
 
     public CauseLineFinder(SuspiciousVariable target) {
         this.target = target;
+        this.factory = new JavaParserSuspiciousExpressionFactory();
+        this.suspiciousArgumentsSearcher = new JDISuspiciousArgumentsSearcher();
+        this.tracer = new TargetVariableTracer(target);
     }
     /**
      * 与えられたSuspiciousVariableに対して、その直接的な原因となるExpressionをSuspiciousExpressionとして返す
@@ -36,7 +40,6 @@ public class CauseLineFinder {
      */
     public Optional<SuspiciousExpression> find() {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
-        TargetVariableTracer tracer = new TargetVariableTracer(target);
         TracedValueCollection tracedValues = tracer.traceValuesOfTarget();
         tracedValues.printAll();
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
@@ -54,22 +57,10 @@ public class CauseLineFinder {
      *
      * @return
      */
-    public Optional<SuspiciousExpression> searchProbeLine(List<TracedValue> watchedValues) {
-        //対象の変数に値の変化が起きている行の特定
-        List<Integer> valueChangingLines = TmpJavaParserUtils.valueChangingLine(target);
-
-        //対象の変数を定義している行を追加
-        valueChangingLines.addAll(
-                //targetVariableのVariableDeclaratorを特定
-                StaticAnalyzer.findLocalVarDeclaration(target.getLocateMethodElement(), target.getSimpleVariableName())
-                        .stream()
-                        .map(vd -> vd.getRange().get().begin.line)
-                        .toList()
-        );
-
+    private Optional<SuspiciousExpression> searchProbeLine(List<TracedValue> watchedValues) {
         /* 1a. すでに定義されていた変数に代入が行われたパターン */
         //代入の実行後にactualの値に変化している行の特定(ない場合あり)
-        List<TracedValue> changeToActualLines = valueChangedToActualLine(watchedValues, valueChangingLines, target.getActualValue());
+        List<TracedValue> changeToActualLines = valueChangedToActualLine(watchedValues, target.getActualValue());
         //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
         if (!changeToActualLines.isEmpty()) {
             //原因行
@@ -94,7 +85,18 @@ public class CauseLineFinder {
     }
 
 
-    private List<TracedValue> valueChangedToActualLine(List<TracedValue> watchedValues, List<Integer> assignedLine, String actual) {
+    private List<TracedValue> valueChangedToActualLine(List<TracedValue> watchedValues, String actual) {
+        //対象の変数に値の変化が起きている行の特定
+        List<Integer> assignedLine = TmpJavaParserUtils.valueChangingLine(target);
+        //対象の変数を定義している行を追加
+        assignedLine.addAll(
+                //targetVariableのVariableDeclaratorを特定
+                StaticAnalyzer.findLocalVarDeclaration(target.getLocateMethodElement(), target.getSimpleVariableName())
+                        .stream()
+                        .map(vd -> vd.getRange().get().begin.line)
+                        .toList()
+        );
+
         List<TracedValue> changedToActualLines = new ArrayList<>();
         for (int i = 0; i < watchedValues.size() - 1; i++) {
             TracedValue watchingLine = watchedValues.get(i);
