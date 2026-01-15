@@ -40,7 +40,7 @@ public class ValueChangingLineFinder {
         } else {
             BlockStmt bs = null;
             try {
-                bs = JavaParserUtil.searchBodyOfMethod(locateElement);
+                bs = JavaParserUtil.extractBodyOfMethod(locateElement);
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }

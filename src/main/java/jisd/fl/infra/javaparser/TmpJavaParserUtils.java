@@ -3,25 +3,21 @@ package jisd.fl.infra.javaparser;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.UnaryExpr;
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import static jisd.fl.util.analyze.JavaParserUtil.extractNode;
 
 public class TmpJavaParserUtils {
-
     static {
         ParserConfiguration config = new ParserConfiguration()
                 .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21); // または JAVA_16/21 など
@@ -39,7 +35,6 @@ public class TmpJavaParserUtils {
         }
     }
 
-
     static public Statement extractStmt(MethodElementName locateMethod, int locateLine) {
         try {
             return JavaParserUtil.getStatementByLine(locateMethod, locateLine).orElseThrow();
@@ -48,5 +43,15 @@ public class TmpJavaParserUtils {
         } catch (NoSuchElementException e){
             throw new RuntimeException("Cannot extract Statement from [" + locateMethod + ":" + locateLine + "].");
         }
+    }
+
+    public static BlockStmt extractBodyOfMethod(MethodElementName targetMethod) throws NoSuchFileException {
+        CallableDeclaration<?> cd = extractNode(targetMethod, CallableDeclaration.class)
+                .stream()
+                .filter(cd1 -> cd1.getSignature().toString().equals(targetMethod.methodSignature))
+                .findFirst().orElseThrow(RuntimeException::new);
+        return cd.isMethodDeclaration() ?
+                cd.asMethodDeclaration().getBody().orElseThrow() :
+                cd.asConstructorDeclaration().getBody();
     }
 }

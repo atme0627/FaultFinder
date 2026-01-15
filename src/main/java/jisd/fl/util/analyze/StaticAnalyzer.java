@@ -114,7 +114,7 @@ public class StaticAnalyzer {
     //メソッド --> メソッドが呼ばれている行
     //methodNameはクラス、シグニチャを含む
     public static List<Integer> getMethodCallingLine(MethodElementName targetMethod) throws NoSuchFileException {
-        return JavaParserUtil.searchBodyOfMethod(targetMethod)
+        return JavaParserUtil.extractBodyOfMethod(targetMethod)
                         .findAll(MethodCallExpr.class)
                         .stream()
                         .filter(exp -> exp.getBegin().isPresent())
@@ -158,7 +158,7 @@ public class StaticAnalyzer {
         List<Integer> canSet = new ArrayList<>();
         BlockStmt bs = null;
         try {
-            bs = JavaParserUtil.searchBodyOfMethod(targetMethod);
+            bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -187,7 +187,7 @@ public class StaticAnalyzer {
     //あるメソッド内の特定の変数の定義行を取得する。
     public static List<VariableDeclarator> findLocalVarDeclaration(MethodElementName targetMethod, String localVarName){
         try {
-            BlockStmt bs = JavaParserUtil.searchBodyOfMethod(targetMethod);
+            BlockStmt bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
             List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
             return vds.stream()
                     .filter(vd -> vd.getNameAsString().equals(localVarName))

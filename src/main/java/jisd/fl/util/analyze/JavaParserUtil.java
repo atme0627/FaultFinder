@@ -21,14 +21,7 @@ public class JavaParserUtil {
         StaticJavaParser.setConfiguration(config);
     }
 
-    //methodNameはクラス、シグニチャを含む
-    public static CallableDeclaration<?> getCallableDeclarationByName(MethodElementName targetMethod) throws NoSuchFileException {
-        Optional<CallableDeclaration> omd = extractCallableDeclaration(targetMethod)
-                .stream()
-                .filter(cd -> cd.getSignature().toString().equals(targetMethod.methodSignature))
-                .findFirst();
-        return omd.orElseThrow(RuntimeException::new);
-    }
+
 
     public static List<CallableDeclaration> extractCallableDeclaration(MethodElementName targetClass) throws NoSuchFileException {
         return extractNode(targetClass, CallableDeclaration.class);
@@ -38,14 +31,11 @@ public class JavaParserUtil {
         return extractNode(targetClass, VariableDeclarator.class);
     }
 
-    public static BlockStmt searchBodyOfMethod(MethodElementName targetMethod) throws NoSuchFileException {
-        CallableDeclaration<?> cd = getCallableDeclarationByName(targetMethod);
-        return cd.isMethodDeclaration() ?
-                cd.asMethodDeclaration().getBody().orElseThrow() :
-                cd.asConstructorDeclaration().getBody();
+    public static BlockStmt extractBodyOfMethod(MethodElementName targetMethod) throws NoSuchFileException {
+        return TmpJavaParserUtils.extractBodyOfMethod(targetMethod);
     }
 
-    private static <T extends Node> List<T> extractNode(MethodElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
+    public static <T extends Node> List<T> extractNode(MethodElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
         return TmpJavaParserUtils.parseClass(targetClass)
                 .findAll(nodeClass);
     }
