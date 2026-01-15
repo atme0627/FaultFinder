@@ -8,7 +8,9 @@ import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousArgumentStrategy;
 import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousAssignmentStrategy;
 import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousReturnValueStrategy;
-import jisd.fl.probe.record.TracedValueCollection;
+import jisd.fl.probe.record.TracedValue;
+
+import java.util.List;
 
 public class ValueAtSuspiciousExpressionTracer {
     /**
@@ -26,7 +28,7 @@ public class ValueAtSuspiciousExpressionTracer {
         returnValueStrategy = new JDITraceValueAtSuspiciousReturnValueStrategy();
         argumentStrategy = new JDITraceValueAtSuspiciousArgumentStrategy();
     }
-    public TracedValueCollection traceAll(SuspiciousExpression suspExpr){
+    public List<TracedValue> traceAll(SuspiciousExpression suspExpr){
         return switch (suspExpr) {
             case SuspiciousAssignment suspAssign -> assignmentStrategy.traceAllValuesAtSuspExpr(suspAssign);
             case SuspiciousReturnValue suspReturn -> returnValueStrategy.traceAllValuesAtSuspExpr(suspReturn);

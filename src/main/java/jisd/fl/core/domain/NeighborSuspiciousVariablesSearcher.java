@@ -3,6 +3,7 @@ package jisd.fl.core.domain;
 import jisd.fl.core.domain.internal.ValueAtSuspiciousExpressionTracer;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.probe.record.TracedValue;
 import jisd.fl.probe.record.TracedValueCollection;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class NeighborSuspiciousVariablesSearcher {
     }
     public List<SuspiciousVariable> neighborSuspiciousVariables(boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
         //SuspExprで観測できる全ての変数
-        TracedValueCollection tracedNeighborValue = tracer.traceAll(suspExpr);
+        List<TracedValue> tracedNeighborValue = tracer.traceAll(suspExpr);
         //SuspExpr内で使用されている変数を静的解析により取得
         List<String> neighborVariableNames = new ArrayList<>(suspExpr.directNeighborVariableNames);
         if(includeIndirectUsedVariable) neighborVariableNames.addAll(suspExpr.indirectNeighborVariableNames);
@@ -26,7 +27,7 @@ public class NeighborSuspiciousVariablesSearcher {
         //TODO: 今の実装だと、変数がローカルかフィールドか区別できない
         // ex. this.x = x の時, this.xも探索してしまう。
         List<SuspiciousVariable> result =
-                tracedNeighborValue.getAll().stream()
+                tracedNeighborValue.stream()
                         .filter(t -> neighborVariableNames.contains(t.variableName))
                         .filter(t -> !t.isReference)
                         //
