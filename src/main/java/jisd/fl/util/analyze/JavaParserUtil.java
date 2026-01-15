@@ -22,14 +22,7 @@ public class JavaParserUtil {
                 .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21); // または JAVA_16/21 など
         StaticJavaParser.setConfiguration(config);
     }
-    //引数に与えられるclassNameがpackageを含まない可能性あり
-    @Deprecated
-    public static CompilationUnit parseClass(String className) throws NoSuchFileException {
-        MethodElementName targetClass = new MethodElementName(className);
-        return parseClass(targetClass);
-    }
 
-    //TODO: parseTestClassのところはいらないはず
     public static CompilationUnit parseClass(MethodElementName targetClass) throws NoSuchFileException {
         Path p = targetClass.getFilePath();
         try {
