@@ -6,7 +6,7 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;
-import jisd.fl.infra.javaparser.TmpJavaParserUtils;
+import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.util.TestUtil;
 
 import java.time.LocalDateTime;
@@ -27,7 +27,7 @@ public class TargetVariableTracer {
     public List<TracedValue> traceValuesOfTarget() {
         //targetVariableのVariableDeclaratorを特定
         MethodElementName targetMethod = target.getLocateMethodElement();
-        List<Integer> result1 = TmpJavaParserUtils.findLocalVariableDeclarationLine(targetMethod, target.getSimpleVariableName());
+        List<Integer> result1 = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, target.getSimpleVariableName());
         List<Integer> vdLines = result1;
         List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(target);
 

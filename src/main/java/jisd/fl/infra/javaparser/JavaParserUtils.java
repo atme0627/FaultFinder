@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-public class TmpJavaParserUtils {
+public class JavaParserUtils {
     static {
         ParserConfiguration config = new ParserConfiguration()
                 .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21); // または JAVA_16/21 など
@@ -83,7 +83,7 @@ public class TmpJavaParserUtils {
     }
 
     public static <T extends Node> List<T> extractNode(MethodElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
-        return TmpJavaParserUtils.parseClass(targetClass)
+        return JavaParserUtils.parseClass(targetClass)
                 .findAll(nodeClass);
     }
 }

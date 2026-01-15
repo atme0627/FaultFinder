@@ -7,7 +7,7 @@ import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.infra.javaparser.TmpJavaParserUtils;
+import jisd.fl.infra.javaparser.JavaParserUtils;
 
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -25,12 +25,12 @@ public class ValueChangingLineFinder {
 
         //値の宣言行も含める。
         //対象の変数を定義している行を追加
-        List<Integer> result1 = TmpJavaParserUtils.findLocalVariableDeclarationLine(locateElement, vi.getSimpleVariableName());
+        List<Integer> result1 = JavaParserUtils.findLocalVariableDeclarationLine(locateElement, vi.getSimpleVariableName());
         result.addAll(result1);
 
         if (vi.isField()) {
             try {
-                CompilationUnit unit = TmpJavaParserUtils.parseClass(locateElement);
+                CompilationUnit unit = JavaParserUtils.parseClass(locateElement);
                 aes = unit.findAll(AssignExpr.class);
                 ues = unit.findAll(UnaryExpr.class, (n) -> {
                     UnaryExpr.Operator ope = n.getOperator();
@@ -45,7 +45,7 @@ public class ValueChangingLineFinder {
         } else {
             BlockStmt bs = null;
             try {
-                bs = TmpJavaParserUtils.extractBodyOfMethod(locateElement);
+                bs = JavaParserUtils.extractBodyOfMethod(locateElement);
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }

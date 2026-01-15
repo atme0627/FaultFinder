@@ -47,7 +47,7 @@ public class JavaParserTraceTargetLineFinder {
         List<Integer> canSet = new ArrayList<>();
         BlockStmt bs = null;
         try {
-            bs = TmpJavaParserUtils.extractBodyOfMethod(targetMethod);
+            bs = JavaParserUtils.extractBodyOfMethod(targetMethod);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -76,7 +76,7 @@ public class JavaParserTraceTargetLineFinder {
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
     private static Set<String> getMethodNames(MethodElementName targetClass) throws NoSuchFileException {
-        return TmpJavaParserUtils.extractNode(targetClass, CallableDeclaration.class)
+        return JavaParserUtils.extractNode(targetClass, CallableDeclaration.class)
                 .stream()
                 .map(cd -> (targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature()))
                 .collect(Collectors.toSet());
