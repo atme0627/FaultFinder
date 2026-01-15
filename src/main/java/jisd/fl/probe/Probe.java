@@ -7,7 +7,7 @@ import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.domain.CauseLineFinder;
-import jisd.fl.probe.util.ProbeReporter;
+import jisd.fl.presenter.ProbeReporter;
 
 import java.util.*;
 
