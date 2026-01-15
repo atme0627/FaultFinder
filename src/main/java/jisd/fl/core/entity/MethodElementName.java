@@ -3,12 +3,8 @@ package jisd.fl.core.entity;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.body.CallableDeclaration;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.JavaParserUtil;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -76,21 +72,6 @@ public class MethodElementName implements CodeElementIdentifier {
         this.className = className;
         this.methodSignature =  "<NO METHOD DATA>()";
     }
-
-    public MethodElementName(ClassOrInterfaceDeclaration cd){
-        CompilationUnit unit = cd.findAncestor(CompilationUnit.class).orElseThrow();
-        this.packageName = JavaParserUtil.getPackageName(unit);
-        this.className = cd.getNameAsString();
-        this.methodSignature =  "<NO METHOD DATA>()";
-    }
-
-    public MethodElementName(CallableDeclaration cd){
-        CompilationUnit unit = (CompilationUnit) cd.findAncestor(CompilationUnit.class).orElseThrow();
-        this.packageName = JavaParserUtil.getPackageName(unit);
-        this.className = JavaParserUtil.getParentOfMethod(cd).getNameAsString();
-        this.methodSignature = cd.getSignature().toString();
-    }
-
 
     @Override
     public String getFullyQualifiedClassName(){

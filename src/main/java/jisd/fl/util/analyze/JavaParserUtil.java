@@ -12,7 +12,6 @@ import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -44,18 +43,6 @@ public class JavaParserUtil {
         }
     }
 
-    public static CompilationUnit parseTestClass(MethodElementName targetClass) throws NoSuchFileException {
-        Path p = targetClass.getFilePath(true);
-        if (!Files.exists(p)) throw new NoSuchFileException(p.toString());
-        try {
-            return StaticJavaParser.parse(p);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-
     //methodNameはクラス、シグニチャを含む
     public static CallableDeclaration<?> getCallableDeclarationByName(MethodElementName targetMethod) throws NoSuchFileException {
         Optional<CallableDeclaration> omd = extractCallableDeclaration(targetMethod)
@@ -67,10 +54,6 @@ public class JavaParserUtil {
 
     public static List<CallableDeclaration> extractCallableDeclaration(MethodElementName targetClass) throws NoSuchFileException {
         return extractNode(targetClass, CallableDeclaration.class);
-    }
-
-    public static List<Statement> extractStatement(MethodElementName targetClass) throws NoSuchFileException {
-        return extractNode(targetClass, Statement.class);
     }
 
     public static List<AssignExpr> extractAssignExpr(MethodElementName targetClass) throws NoSuchFileException {
