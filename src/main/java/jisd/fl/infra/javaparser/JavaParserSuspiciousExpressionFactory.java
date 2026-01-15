@@ -1,5 +1,6 @@
 package jisd.fl.infra.javaparser;
 
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -12,6 +13,7 @@ import jisd.fl.core.entity.susp.SuspiciousAssignment;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,7 +71,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
         List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
         List<String> targetMethodName = extractArgTargetMethodNames(expr);
-        int targetCallCount = TmpJavaParserUtils.getCallCountBeforeTargetArgEval(stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
+        int targetCallCount = getCallCountBeforeTargetArgEval(stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
         return new SuspiciousArgument(
                 failedTest,
                 locateMethod,
@@ -133,5 +135,23 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 .filter(mce -> mce.findAncestor(MethodCallExpr.class).isEmpty())
                 .map(mce -> mce.getName().toString())
                 .collect(Collectors.toList());
+    }
+
+    //対象の引数の演算の前に何回メソッド呼び出しが行われるかを計算する。
+    //まず、stmtでのメソッド呼び出しをJava の実行時評価順でソートしたリストを取得
+    //メソッドの呼び出し順に探し、子にtargetExprを持つものがあったら、その時のindexが求めたい値
+    //TODO: このへんは対象のメソッドのみをカウントするようにすればいい気がしてきた。
+    private static int getCallCountBeforeTargetArgEval(Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName){
+        List<Expression> calls = new ArrayList<>();
+        Expression targetExpr = JavaParserExpressionExtractor.extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
+        stmt.accept(new StatementEvalOrderVisitor(), calls);
+        for(Expression call : calls){
+            if(!call.findAll(Node.class, anc -> anc == targetExpr).isEmpty()){
+                return calls.indexOf(call) + 1;
+            }
+        }
+
+
+        throw new RuntimeException("Something is wrong. (stmt: " + stmt + ", callCountAfterTargetInLine: " + callCountAfterTargetInLine + ", argIndex: " + argIndex + ", calleeMethodName: " + calleeMethodName + " ) ");
     }
 }
