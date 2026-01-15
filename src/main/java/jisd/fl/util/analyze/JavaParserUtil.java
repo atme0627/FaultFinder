@@ -4,7 +4,6 @@ import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -93,17 +92,6 @@ public class JavaParserUtil {
                 .filter(stmt -> (stmt.getBegin().get().line <= line))
                 .filter(stmt -> (stmt.getEnd().get().line >= line))
                 .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
-    }
-
-    public static ClassOrInterfaceDeclaration getParentOfMethod(CallableDeclaration cd){
-        Node parent = cd.getParentNode().orElse(null);
-        return (ClassOrInterfaceDeclaration) parent;
-    }
-
-    //packageがない場合""を返す
-    public static String getPackageName(CompilationUnit unit){
-        PackageDeclaration parentPackage = unit.getPackageDeclaration().orElse(null);
-        return parentPackage != null ? parentPackage.getNameAsString() : "";
     }
 
 }
