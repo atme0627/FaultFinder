@@ -28,7 +28,7 @@ dependencies {
     implementation 'junit:junit:4.13.2'
 
     //parser
-    implementation 'com.github.javaparser:javaparser-core:3.27.1'
+    implementation 'com.github.javaparser:javaparser-core:3.28.0'
 
     //coverage
     // https://mvnrepository.com/artifact/org.jacoco/org.jacoco.core
