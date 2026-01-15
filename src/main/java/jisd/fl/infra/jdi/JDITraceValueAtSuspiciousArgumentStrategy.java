@@ -4,7 +4,6 @@ import com.sun.jdi.*;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
-import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousExpression;

@@ -3,7 +3,7 @@ package jisd.fl.core.entity;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jisd.debug.EnhancedDebugger;
+import jisd.fl.infra.jdi.EnhancedDebugger;
 import jisd.fl.util.PropertyLoader;
 
 import javax.validation.constraints.NotBlank;

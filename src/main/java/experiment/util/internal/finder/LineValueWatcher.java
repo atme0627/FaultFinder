@@ -1,7 +1,7 @@
 package experiment.util.internal.finder;
 
 import com.sun.jdi.*;
-import jisd.debug.EnhancedDebugger;
+import jisd.fl.infra.jdi.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.TestUtil;
 import jisd.fl.core.entity.MethodElementName;

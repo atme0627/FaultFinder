@@ -6,7 +6,6 @@ import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
-import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.susp.SuspiciousAssignment;

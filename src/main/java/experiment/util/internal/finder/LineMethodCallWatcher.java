@@ -7,7 +7,7 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
-import jisd.debug.EnhancedDebugger;
+import jisd.fl.infra.jdi.EnhancedDebugger;
 import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;

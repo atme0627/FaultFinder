@@ -5,7 +5,6 @@ import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
-import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.MethodElementName;

@@ -1,4 +1,4 @@
-package jisd.debug;
+package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
 import com.sun.jdi.Location;
