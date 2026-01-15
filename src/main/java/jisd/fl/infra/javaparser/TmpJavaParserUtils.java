@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import static jisd.fl.util.analyze.JavaParserUtil.extractNode;
 
