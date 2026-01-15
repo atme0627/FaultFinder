@@ -9,7 +9,6 @@ import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.probe.record.TracedValue;
-import jisd.fl.probe.record.TracedValuesAtLine;
 import jisd.fl.util.TestUtil;
 
 import java.util.ArrayList;
