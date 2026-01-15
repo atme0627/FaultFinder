@@ -4,14 +4,17 @@ import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -63,5 +66,21 @@ public class TmpJavaParserUtils {
                 .filter(stmt -> (stmt.getBegin().get().line <= line))
                 .filter(stmt -> (stmt.getEnd().get().line >= line))
                 .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
+    }
+
+    //あるメソッド内の特定の変数の定義行の番号を取得する。
+    public static List<Integer> findLocalVariableDeclarationLine(MethodElementName targetMethod, String localVarName){
+        List<Integer> result;
+        try {
+            BlockStmt bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
+            List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
+            result = vds.stream()
+                    .filter(vd1 -> vd1.getNameAsString().equals(localVarName))
+                    .map(vd -> vd.getRange().get().begin.line)
+                    .toList();
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 }

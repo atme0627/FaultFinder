@@ -2,11 +2,12 @@ package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
 import jisd.debug.EnhancedDebugger;
+import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;
+import jisd.fl.infra.javaparser.TmpJavaParserUtils;
 import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.StaticAnalyzer;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,8 +26,9 @@ public class TargetVariableTracer {
 
     public List<TracedValue> traceValuesOfTarget() {
         //targetVariableのVariableDeclaratorを特定
-        List<Integer> vdLines = StaticAnalyzer.findLocalVariableDeclarationLine(target.getLocateMethodElement(), target.getSimpleVariableName());
-
+        MethodElementName targetMethod = target.getLocateMethodElement();
+        List<Integer> result1 = TmpJavaParserUtils.findLocalVariableDeclarationLine(targetMethod, target.getSimpleVariableName());
+        List<Integer> vdLines = result1;
         List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(target);
 
         //Debugger生成
