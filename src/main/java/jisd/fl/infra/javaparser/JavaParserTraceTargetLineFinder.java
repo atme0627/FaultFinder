@@ -1,5 +1,6 @@
 package jisd.fl.infra.javaparser;
 
+import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.MethodElementName;
@@ -47,7 +48,7 @@ public class JavaParserTraceTargetLineFinder {
         List<Integer> canSet = new ArrayList<>();
         BlockStmt bs = null;
         try {
-            bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
+            bs = TmpJavaParserUtils.extractBodyOfMethod(targetMethod);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -76,8 +77,7 @@ public class JavaParserTraceTargetLineFinder {
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
     private static Set<String> getMethodNames(MethodElementName targetClass) throws NoSuchFileException {
-        return JavaParserUtil
-                .extractCallableDeclaration(targetClass)
+        return JavaParserUtil.extractNode(targetClass, CallableDeclaration.class)
                 .stream()
                 .map(cd -> (targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature()))
                 .collect(Collectors.toSet());

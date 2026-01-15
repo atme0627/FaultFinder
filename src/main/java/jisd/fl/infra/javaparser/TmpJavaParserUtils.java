@@ -8,7 +8,6 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
@@ -72,7 +71,7 @@ public class TmpJavaParserUtils {
     public static List<Integer> findLocalVariableDeclarationLine(MethodElementName targetMethod, String localVarName){
         List<Integer> result;
         try {
-            BlockStmt bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
+            BlockStmt bs = extractBodyOfMethod(targetMethod);
             List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
             result = vds.stream()
                     .filter(vd1 -> vd1.getNameAsString().equals(localVarName))
