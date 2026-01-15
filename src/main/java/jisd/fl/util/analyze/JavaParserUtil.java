@@ -2,16 +2,14 @@ package jisd.fl.util.analyze;
 
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.infra.javaparser.TmpJavaParserUtils;
 
-import java.io.IOException;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -21,17 +19,6 @@ public class JavaParserUtil {
         ParserConfiguration config = new ParserConfiguration()
                 .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21); // または JAVA_16/21 など
         StaticJavaParser.setConfiguration(config);
-    }
-
-    public static CompilationUnit parseClass(MethodElementName targetClass) throws NoSuchFileException {
-        Path p = targetClass.getFilePath();
-        try {
-            return StaticJavaParser.parse(p);
-        } catch (NoSuchFileException e){
-            throw e;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     //methodNameはクラス、シグニチャを含む
@@ -59,7 +46,7 @@ public class JavaParserUtil {
     }
 
     private static <T extends Node> List<T> extractNode(MethodElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
-        return parseClass(targetClass)
+        return TmpJavaParserUtils.parseClass(targetClass)
                 .findAll(nodeClass);
     }
 

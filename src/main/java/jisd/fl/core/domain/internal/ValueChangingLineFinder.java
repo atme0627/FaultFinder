@@ -7,6 +7,7 @@ import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.infra.javaparser.TmpJavaParserUtils;
 import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.nio.file.NoSuchFileException;
@@ -24,7 +25,7 @@ public class ValueChangingLineFinder {
         List<UnaryExpr> ues;
         if (vi.isField()) {
             try {
-                CompilationUnit unit = JavaParserUtil.parseClass(locateElement);
+                CompilationUnit unit = TmpJavaParserUtils.parseClass(locateElement);
                 aes = unit.findAll(AssignExpr.class);
                 ues = unit.findAll(UnaryExpr.class, (n) -> {
                     UnaryExpr.Operator ope = n.getOperator();
