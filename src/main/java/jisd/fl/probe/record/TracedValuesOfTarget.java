@@ -1,7 +1,5 @@
 package jisd.fl.probe.record;
 
-import jisd.debug.Location;
-import jisd.debug.value.ValueInfo;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 
 import java.util.List;
@@ -19,16 +17,4 @@ public class TracedValuesOfTarget extends TracedValueCollection {
         return new TracedValuesOfTarget(record, target);
     }
 
-    @Override
-    protected List<TracedValue> convertArrayInfo(ValueInfo vi, Location loc){
-        List<ValueInfo> children = vi.expand();
-        int targetIndex = target.getArrayNth();
-        return List.of(
-                    new TracedValue(
-                    children.get(targetIndex).getCreatedAt(),
-                    vi.getName() + "[" + targetIndex + "]",
-                    children.get(targetIndex).getValue(),
-                            loc.getLineNumber()
-                    ));
-    }
 }
