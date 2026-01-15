@@ -5,7 +5,6 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.infra.javaparser.TmpJavaParserUtils;
 
@@ -48,15 +47,4 @@ public class JavaParserUtil {
                 .filter(stmt -> (stmt.getRange().get().begin.line >= line))
                 .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
     }
-
-    //その行を含む最小範囲のStatementを返す
-    public static Optional<Statement> getStatementByLine(MethodElementName targetClass, int line) throws NoSuchFileException {
-        return extractNode(targetClass, Statement.class)
-                .stream()
-                .filter(stmt -> stmt.getRange().isPresent())
-                .filter(stmt -> (stmt.getBegin().get().line <= line))
-                .filter(stmt -> (stmt.getEnd().get().line >= line))
-                .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
-    }
-
 }

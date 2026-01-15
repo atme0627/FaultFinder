@@ -59,7 +59,7 @@ public class StaticAnalyzer {
     }
 
     public static Optional<Range> getRangeOfStatement(MethodElementName targetClass, int line) throws NoSuchFileException {
-        Optional<Statement> expStmt = JavaParserUtil.getStatementByLine(targetClass, line);
+        Optional<Statement> expStmt = TmpJavaParserUtils.getStatementByLine(targetClass, line);
         return (expStmt.isPresent()) ? expStmt.get().getRange() : Optional.empty();
     }
 

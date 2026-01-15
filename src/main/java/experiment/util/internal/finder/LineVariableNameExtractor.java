@@ -2,7 +2,7 @@ package experiment.util.internal.finder;
 
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
-import jisd.fl.util.analyze.JavaParserUtil;
+import jisd.fl.infra.javaparser.TmpJavaParserUtils;
 import jisd.fl.core.entity.MethodElementName;
 
 import java.nio.file.NoSuchFileException;
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class LineVariableNameExtractor {
     public Statement extractStmtInFailureLine(int failureLine, MethodElementName locateMethod){
         try {
-            return JavaParserUtil.getStatementByLine(locateMethod, failureLine).orElseThrow();
+            return TmpJavaParserUtils.getStatementByLine(locateMethod, failureLine).orElseThrow();
         } catch (NoSuchFileException e) {
             throw new RuntimeException("Class [" + locateMethod + "] is not found.");
         } catch (NoSuchElementException e){

@@ -7,12 +7,13 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static jisd.fl.util.analyze.JavaParserUtil.extractNode;
 
@@ -36,7 +37,7 @@ public class TmpJavaParserUtils {
 
     static public Statement extractStmt(MethodElementName locateMethod, int locateLine) {
         try {
-            return JavaParserUtil.getStatementByLine(locateMethod, locateLine).orElseThrow();
+            return getStatementByLine(locateMethod, locateLine).orElseThrow();
         } catch (NoSuchFileException e) {
             throw new RuntimeException("Class [" + locateMethod + "] is not found.");
         } catch (NoSuchElementException e){
@@ -52,5 +53,15 @@ public class TmpJavaParserUtils {
         return cd.isMethodDeclaration() ?
                 cd.asMethodDeclaration().getBody().orElseThrow() :
                 cd.asConstructorDeclaration().getBody();
+    }
+
+    //その行を含む最小範囲のStatementを返す
+    public static Optional<Statement> getStatementByLine(MethodElementName targetClass, int line) throws NoSuchFileException {
+        return extractNode(targetClass, Statement.class)
+                .stream()
+                .filter(stmt -> stmt.getRange().isPresent())
+                .filter(stmt -> (stmt.getBegin().get().line <= line))
+                .filter(stmt -> (stmt.getEnd().get().line >= line))
+                .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
     }
 }
