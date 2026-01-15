@@ -5,7 +5,6 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.*;
-import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
@@ -53,11 +52,6 @@ public class JavaParserUtil {
 
     public static List<CallableDeclaration> extractCallableDeclaration(MethodElementName targetClass) throws NoSuchFileException {
         return extractNode(targetClass, CallableDeclaration.class);
-    }
-
-    public static List<AssignExpr> extractAssignExpr(MethodElementName targetClass) throws NoSuchFileException {
-        return parseClass(targetClass)
-                .findAll(AssignExpr.class);
     }
 
     public static List<VariableDeclarator> extractVariableDeclarator(MethodElementName targetClass) throws NoSuchFileException {

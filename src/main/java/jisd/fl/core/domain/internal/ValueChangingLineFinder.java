@@ -24,8 +24,8 @@ public class ValueChangingLineFinder {
         List<UnaryExpr> ues;
         if (vi.isField()) {
             try {
-                aes = JavaParserUtil.extractAssignExpr(locateElement);
                 CompilationUnit unit = JavaParserUtil.parseClass(locateElement);
+                aes = unit.findAll(AssignExpr.class);
                 ues = unit.findAll(UnaryExpr.class, (n) -> {
                     UnaryExpr.Operator ope = n.getOperator();
                     return ope == UnaryExpr.Operator.POSTFIX_DECREMENT ||

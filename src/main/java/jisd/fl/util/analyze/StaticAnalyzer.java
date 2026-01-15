@@ -3,6 +3,7 @@ package jisd.fl.util.analyze;
 import com.github.javaparser.Range;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -78,7 +79,8 @@ public class StaticAnalyzer {
         List<Integer> assignLines =
                 null;
         try {
-            assignLines = JavaParserUtil.extractAssignExpr(targetClass)
+            assignLines = JavaParserUtil.parseClass(targetClass)
+                    .findAll(AssignExpr.class)
                     .stream()
                     .map(exp -> exp.isArrayAccessExpr() ? exp.asArrayAccessExpr().getName() : exp.getTarget())
                     .filter(exp -> exp.toString().equals(variable))
