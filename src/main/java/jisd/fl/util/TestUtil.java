@@ -68,36 +68,6 @@ public  class TestUtil {
             throw new RuntimeException(e);
         }
     }
-    //現状外部ライブラリに非対応
-    //gradleなどでやる方法を検討
-    public static void compileForDebug() {
-        FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
-        String classpath = "'locallib/junit-dependency/*'";
-        String sourcepath = PropertyLoader.getTargetSrcDir() + ":" + PropertyLoader.getTestSrcDir();
-        String cmd = String.join(" ",
-                "javac",
-                "-g",
-                "-cp", classpath,
-                "-sourcepath ", sourcepath,
-                "-d ", PropertyLoader.getDebugBinDir(),
-                "$(find " +  PropertyLoader.getTargetSrcDir() + " " + PropertyLoader.getTestSrcDir() + " -name *.java)"
-        );
-        try {
-            ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd);
-            Process proc = pb.start();
-            proc.waitFor();
-            System.out.println("Success to compile " + PropertyLoader.getTargetSrcDir() + ".");
-            String line = null;
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
-                while ((line = buf.readLine()) != null) System.err.println(line);
-            }
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
-                while ((line = buf.readLine()) != null) System.out.println(line);
-            }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
 
     //TestLauncherにjacoco agentをつけて起動
