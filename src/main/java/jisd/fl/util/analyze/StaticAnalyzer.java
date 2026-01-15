@@ -23,18 +23,22 @@ public class StaticAnalyzer {
     }
 
 
-    //あるメソッド内の特定の変数の定義行を取得する。
-    public static List<VariableDeclarator> findLocalVarDeclaration(MethodElementName targetMethod, String localVarName){
+    //あるメソッド内の特定の変数の定義行の番号を取得する。
+    public static List<Integer> findLocalVariableDeclarationLine(MethodElementName targetMethod, String localVarName){
+        List<VariableDeclarator> result;
         try {
             BlockStmt bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
             List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
-            return vds.stream()
-                    .filter(vd -> vd.getNameAsString().equals(localVarName))
+            result = vds.stream()
+                    .filter(vd1 -> vd1.getNameAsString().equals(localVarName))
                     .toList();
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
 
+        return result.stream()
+                .map(vd -> vd.getRange().get().begin.line)
+                .toList();
     }
 }
 

@@ -28,10 +28,7 @@ public class ValueChangingLineFinder {
         //対象の変数を定義している行を追加
         result.addAll(
                 //targetVariableのVariableDeclaratorを特定
-                StaticAnalyzer.findLocalVarDeclaration(locateElement, vi.getSimpleVariableName())
-                        .stream()
-                        .map(vd -> vd.getRange().get().begin.line)
-                        .toList()
+                StaticAnalyzer.findLocalVariableDeclarationLine(locateElement, vi.getSimpleVariableName())
         );
 
         if (vi.isField()) {

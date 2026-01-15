@@ -25,10 +25,7 @@ public class TargetVariableTracer {
 
     public List<TracedValue> traceValuesOfTarget() {
         //targetVariableのVariableDeclaratorを特定
-        List<Integer> vdLines = StaticAnalyzer.findLocalVarDeclaration(target.getLocateMethodElement(), target.getSimpleVariableName())
-                .stream()
-                .map(vd -> vd.getRange().get().begin.line)
-                .toList();
+        List<Integer> vdLines = StaticAnalyzer.findLocalVariableDeclarationLine(target.getLocateMethodElement(), target.getSimpleVariableName());
 
         List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(target);
 
