@@ -4,6 +4,7 @@ import com.sun.jdi.*;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.TracedValue;
+import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.StaticAnalyzer;
 
@@ -29,7 +30,7 @@ public class TargetVariableTracer {
                 .map(vd -> vd.getRange().get().begin.line)
                 .toList();
 
-        List<Integer> canSetLines = StaticAnalyzer.getCanSetLine(target);
+        List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(target);
 
         //Debugger生成
         String main = TestUtil.getJVMMain(target.getFailedTest());
