@@ -63,7 +63,7 @@ public class TargetVariableTracer {
         };
 
         eDbg.handleAtBreakPoint(target.getLocateClass(), canSetLines, handler);
-        return TracedValuesOfTarget.of(result, target);
+        return result;
     }
 
     private Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousVariable sv, LocalDateTime watchedAt) {
