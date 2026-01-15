@@ -9,9 +9,7 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.infra.javaparser.TmpJavaParserUtils;
 
 import java.nio.file.NoSuchFileException;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 public class JavaParserUtil {
     static {
@@ -20,14 +18,8 @@ public class JavaParserUtil {
         StaticJavaParser.setConfiguration(config);
     }
 
-
-
     public static List<CallableDeclaration> extractCallableDeclaration(MethodElementName targetClass) throws NoSuchFileException {
         return extractNode(targetClass, CallableDeclaration.class);
-    }
-
-    public static List<VariableDeclarator> extractVariableDeclarator(MethodElementName targetClass) throws NoSuchFileException {
-        return extractNode(targetClass, VariableDeclarator.class);
     }
 
     public static BlockStmt extractBodyOfMethod(MethodElementName targetMethod) throws NoSuchFileException {
@@ -39,12 +31,4 @@ public class JavaParserUtil {
                 .findAll(nodeClass);
     }
 
-    public static Optional<CallableDeclaration> getCallableDeclarationByLine(MethodElementName targetClass, int line) throws NoSuchFileException {
-        return extractNode(targetClass, CallableDeclaration.class)
-                .stream()
-                .filter(stmt -> stmt.getRange().isPresent())
-                .filter(stmt -> (stmt.getRange().get().begin.line <= line))
-                .filter(stmt -> (stmt.getRange().get().begin.line >= line))
-                .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
-    }
 }
