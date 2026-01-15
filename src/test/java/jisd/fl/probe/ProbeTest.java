@@ -6,6 +6,7 @@ import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.mapper.SuspiciousExpressionMapper;
+import jisd.fl.usecase.Probe;
 import jisd.fl.util.JsonIO;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;

@@ -3,7 +3,7 @@ package experiment.setUp;
 import experiment.defect4j.Defects4jUtil;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.mapper.SuspiciousVariableMapper;
-import jisd.fl.probe.Probe;
+import jisd.fl.usecase.Probe;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.JsonIO;

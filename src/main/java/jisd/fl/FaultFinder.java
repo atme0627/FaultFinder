@@ -1,7 +1,7 @@
 package jisd.fl;
 
 import jisd.fl.presenter.FLRankingPresenter;
-import jisd.fl.probe.Probe;
+import jisd.fl.usecase.Probe;
 import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.FLRanking;
 import jisd.fl.core.entity.FLRankingElement;

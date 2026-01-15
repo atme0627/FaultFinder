@@ -6,6 +6,7 @@ import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.connect.VMStartException;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.usecase.SimpleProbe;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.TestUtil;
 import jisd.fl.core.entity.MethodElementName;

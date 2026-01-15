@@ -1,4 +1,4 @@
-package jisd.fl.probe;
+package jisd.fl.usecase;
 
 import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
