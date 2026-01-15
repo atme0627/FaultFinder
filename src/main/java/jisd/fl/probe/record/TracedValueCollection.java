@@ -6,7 +6,6 @@ import de.vandermeer.skb.interfaces.transformers.textformat.TextAlignment;
 import jisd.debug.Location;
 import jisd.debug.value.ValueInfo;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,14 +25,6 @@ public abstract class TracedValueCollection {
                 .filter(tv -> tv.variableName.equals(varName))
                 .sorted(TracedValue::compareTo)
                 .collect(Collectors.toList());
-    }
-
-    //TODO: 返り値をなんとかする
-    public Map<String, String> filterByCreateAt(LocalDateTime createAt){
-        List<TracedValue> result =  record.stream()
-                .filter(tv -> tv.createAt.equals(createAt))
-                .collect(Collectors.toList());
-        return result.stream().collect(Collectors.toMap(tv -> tv.variableName,tv ->  tv.createAt.toString()));
     }
 
     public boolean isEmpty(){
