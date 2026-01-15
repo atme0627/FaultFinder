@@ -9,18 +9,12 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.util.analyze.JavaParserUtil;
-import jisd.fl.util.analyze.StaticAnalyzer;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static jisd.fl.util.analyze.StaticAnalyzer.getClassNames;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MethodElementName implements CodeElementIdentifier {
@@ -136,23 +130,6 @@ public class MethodElementName implements CodeElementIdentifier {
     public String compressedShortMethodName() {
         String signature = getFullyQualifiedMethodName().substring(getFullyQualifiedMethodName().indexOf("(")).length() == 2 ? "()" : "(...)";
         return getShortMethodName() + signature;
-    }
-
-    public static Optional<MethodElementName> generateFromSimpleClassName(String className){
-        return generateFromSimpleClassName(className, Paths.get(PropertyLoader.getProperty("targetSrcPath")));
-    }
-
-    public static Optional<MethodElementName> generateFromSimpleClassName(String className, Path targetSrcPath) {
-        List<MethodElementName> candidates = StaticAnalyzer.getClassNames(targetSrcPath)
-                .stream()
-                .filter(cn -> cn.substring(cn.lastIndexOf(".") + 1).equals(className))
-                .map(MethodElementName::new)
-                .collect(Collectors.toList());
-
-        //候補がない場合、複数候補がある場合はfail
-        if(candidates.isEmpty())  return Optional.empty();
-        if(candidates.size() > 1) return Optional.empty();
-        return Optional.of(candidates.get(0));
     }
 
     public LineElementName toLineElementName(int line){
