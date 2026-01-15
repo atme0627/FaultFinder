@@ -16,6 +16,7 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
+import jisd.fl.infra.junit.JUnitDebugger;
 import jisd.fl.util.TestUtil;
 
 import java.util.ArrayList;
@@ -30,9 +31,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         if(!(suspReturn).hasMethodCalling()) return result;
 
         //Debugger生成
-        String main = TestUtil.getJVMMain((suspReturn).failedTest);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(suspReturn.failedTest);
         //ブレークポイントにヒットした時に行う処理を定義
         //ここではその行で呼ばれてるメソッド情報を抽出
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
@@ -117,7 +116,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint((suspReturn).locateMethod.getFullyQualifiedClassName(), (suspReturn).locateLine, handler);
+        debugger.handleAtBreakPoint((suspReturn).locateMethod.getFullyQualifiedClassName(), (suspReturn).locateLine, handler);
         if(result.isEmpty()){
             System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
                     + "(return value) == " + (suspReturn).actualValue

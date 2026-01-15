@@ -1,10 +1,5 @@
 package jisd.fl.probe;
 
-import com.sun.jdi.*;
-import com.sun.jdi.connect.Connector;
-import com.sun.jdi.connect.IllegalConnectorArgumentsException;
-import com.sun.jdi.connect.LaunchingConnector;
-import com.sun.jdi.connect.VMStartException;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.usecase.SimpleProbe;
 import jisd.fl.util.PropertyLoader;
@@ -13,11 +8,6 @@ import jisd.fl.core.entity.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Map;
 
 class SimpleProbeTest {
     @Nested
@@ -60,42 +50,6 @@ class SimpleProbeTest {
             //ProbeExResult pr = prbEx.run(3000);
             //pr.print();
         }
-
-        @Test
-        void VMLaunchDemo() throws IOException {
-            //vm生成
-            String main = TestUtil.getJVMMain(new MethodElementName(testMethodName));
-            String options = TestUtil.getJVMOption();
-            VirtualMachine vm;
-
-            try {
-                VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
-                LaunchingConnector connector = vmm.defaultConnector();
-                Map<String, Connector.Argument> cArgs = connector.defaultArguments();
-                cArgs.get("options").setValue(options);
-                cArgs.get("main").setValue(main);
-                //起動後すぐにsuspendされるはず
-                vm = connector.launch(cArgs);
-            } catch (IllegalConnectorArgumentsException e) {
-                throw new RuntimeException(e);
-            } catch (VMStartException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            Process proc = vm.process();
-            vm.resume();
-            String line = null;
-            System.out.println("STDOUT---------------");
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
-                while ((line = buf.readLine()) != null) System.out.println(line);
-            }
-            System.out.println("STDERR---------------");
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
-                while ((line = buf.readLine()) != null) System.err.println(line);
-            }
-        }
     }
 
     @Nested
@@ -135,42 +89,6 @@ class SimpleProbeTest {
             SimpleProbe prbEx = new SimpleProbe(probeVariable);
             //ProbeExResult pr = prbEx.run(2000);
             //pr.print();
-        }
-
-        @Test
-        void VMLaunchDemo() throws IOException {
-            //vm生成
-            String main = TestUtil.getJVMMain(new MethodElementName(testMethodName));
-            String options = TestUtil.getJVMOption();
-            VirtualMachine vm;
-
-            try {
-                VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
-                LaunchingConnector connector = vmm.defaultConnector();
-                Map<String, Connector.Argument> cArgs = connector.defaultArguments();
-                cArgs.get("options").setValue(options);
-                cArgs.get("main").setValue(main);
-                //起動後すぐにsuspendされるはず
-                vm = connector.launch(cArgs);
-            } catch (IllegalConnectorArgumentsException e) {
-                throw new RuntimeException(e);
-            } catch (VMStartException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-            Process proc = vm.process();
-            vm.resume();
-            String line = null;
-            System.out.println("STDOUT---------------");
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
-                while ((line = buf.readLine()) != null) System.out.println(line);
-            }
-            System.out.println("STDERR---------------");
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
-                while ((line = buf.readLine()) != null) System.err.println(line);
-            }
         }
     }
 

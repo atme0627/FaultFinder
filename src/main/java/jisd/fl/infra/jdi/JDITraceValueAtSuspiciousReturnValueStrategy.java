@@ -14,6 +14,7 @@ import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.core.entity.TracedValue;
+import jisd.fl.infra.junit.JUnitDebugger;
 import jisd.fl.util.TestUtil;
 
 import java.util.ArrayList;
@@ -26,9 +27,7 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成
-        String main = TestUtil.getJVMMain(suspReturn.failedTest);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(suspReturn.failedTest);
 
         //対象の引数が属する行にたどり着いた時に行う処理を定義
         //ここではその行で呼ばれてるメソッド情報を抽出
@@ -90,7 +89,7 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(suspReturn.locateMethod.getFullyQualifiedClassName(), suspReturn.locateLine, handler);
+        debugger.handleAtBreakPoint(suspReturn.locateMethod.getFullyQualifiedClassName(), suspReturn.locateLine, handler);
         return result;
     }
 }

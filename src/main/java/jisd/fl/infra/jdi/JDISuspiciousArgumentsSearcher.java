@@ -11,6 +11,7 @@ import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
+import jisd.fl.infra.junit.JUnitDebugger;
 import jisd.fl.util.TestUtil;
 
 import java.util.List;
@@ -24,9 +25,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
      */
     public Optional<SuspiciousArgument> searchSuspiciousArgument(SuspiciousVariable suspVar, MethodElementName calleeMethodName){
         //Debugger生成
-        String main = TestUtil.getJVMMain(suspVar.getFailedTest());
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(suspVar.getFailedTest());
 
         //探索によって求める値
         MethodElementName[] locateMethod = new MethodElementName[1];
@@ -82,7 +81,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
             }
         };
 
-        eDbg.handleAtMethodEntry(calleeMethodName.getFullyQualifiedMethodName(), handler);
+        debugger.handleAtMethodEntry(calleeMethodName.getFullyQualifiedMethodName(), handler);
 
         //nullチェック
         if(locateMethod[0] == null || locateLine[0] == 0 || argIndex[0] == -1){

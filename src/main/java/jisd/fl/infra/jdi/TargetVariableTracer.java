@@ -6,6 +6,7 @@ import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;
 import jisd.fl.infra.javaparser.JavaParserUtils;
+import jisd.fl.infra.junit.JUnitDebugger;
 import jisd.fl.util.TestUtil;
 
 import java.time.LocalDateTime;
@@ -31,9 +32,7 @@ public class TargetVariableTracer {
         List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(target);
 
         //Debugger生成
-        String main = TestUtil.getJVMMain(target.getFailedTest());
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(target.getFailedTest());
         List<TracedValue> result = new ArrayList<>();
 
         EnhancedDebugger.BreakpointHandler handler = (vm, event) -> {
@@ -60,7 +59,7 @@ public class TargetVariableTracer {
             }
         };
 
-        eDbg.handleAtBreakPoint(target.getLocateClass(), canSetLines, handler);
+        debugger.handleAtBreakPoint(target.getLocateClass(), canSetLines, handler);
         return result;
     }
 

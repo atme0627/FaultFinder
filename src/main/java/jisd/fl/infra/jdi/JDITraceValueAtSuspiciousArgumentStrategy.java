@@ -8,6 +8,7 @@ import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.TracedValue;
+import jisd.fl.infra.junit.JUnitDebugger;
 import jisd.fl.util.TestUtil;
 
 import java.util.ArrayList;
@@ -20,9 +21,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成
-        String main = TestUtil.getJVMMain(suspArg.failedTest);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(suspArg.failedTest);
         //調査対象の行実行に到達した時に行う処理を定義
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
             //既に情報が取得できている場合は終了
@@ -91,7 +90,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(suspArg.locateMethod.getFullyQualifiedClassName(), suspArg.locateLine, handler);
+        debugger.handleAtBreakPoint(suspArg.locateMethod.getFullyQualifiedClassName(), suspArg.locateLine, handler);
         return result;
     }
 }

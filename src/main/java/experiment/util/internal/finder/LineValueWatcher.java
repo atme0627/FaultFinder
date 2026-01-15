@@ -3,6 +3,7 @@ package experiment.util.internal.finder;
 import com.sun.jdi.*;
 import jisd.fl.infra.jdi.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.infra.junit.JUnitDebugger;
 import jisd.fl.util.TestUtil;
 import jisd.fl.core.entity.MethodElementName;
 
@@ -18,9 +19,7 @@ public class LineValueWatcher {
     public List<SuspiciousVariable> watchAllValuesInAssertLine(int failureLine, MethodElementName locateMethod){
         final List<SuspiciousVariable> result = new ArrayList<>();
         //Debugger生成
-        String main = TestUtil.getJVMMain(this.targetTestCaseName);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(this.targetTestCaseName);
 
         //失敗行にブレークポイントを置きsuspend
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
@@ -38,7 +37,7 @@ public class LineValueWatcher {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
+        debugger.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
         return result;
     }
 

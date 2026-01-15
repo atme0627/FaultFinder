@@ -16,6 +16,7 @@ import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
+import jisd.fl.infra.junit.JUnitDebugger;
 import jisd.fl.util.TestUtil;
 
 import java.util.ArrayList;
@@ -31,9 +32,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
         if(!(suspAssign).hasMethodCalling()) return result;
 
         //Debugger生成
-        String main = TestUtil.getJVMMain((suspAssign).failedTest);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(suspAssign.failedTest);
 
         //対象の引数が属する行にたどり着いた時に行う処理を定義
         //ここではその行で呼ばれてるメソッド情報を抽出
@@ -102,7 +101,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint((suspAssign).locateMethod.getFullyQualifiedClassName(), (suspAssign).locateLine, handler);
+        debugger.handleAtBreakPoint((suspAssign).locateMethod.getFullyQualifiedClassName(), (suspAssign).locateLine, handler);
         if(result.isEmpty()){
             System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
                     + "(return value) == " + (suspAssign).actualValue

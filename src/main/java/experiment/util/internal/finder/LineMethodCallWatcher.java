@@ -14,6 +14,7 @@ import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.infra.jdi.JDIUtils;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
+import jisd.fl.infra.junit.JUnitDebugger;
 import jisd.fl.util.TestUtil;
 import jisd.fl.core.entity.MethodElementName;
 
@@ -64,9 +65,7 @@ public class LineMethodCallWatcher {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
 
         //Debugger生成
-        String main = TestUtil.getJVMMain(this.targetTestCaseName);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(this.targetTestCaseName);
         //対象の引数が属する行にたどり着いた時に行う処理を定義
         //ここではその行で呼ばれてるメソッド情報を抽出
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
@@ -194,7 +193,7 @@ public class LineMethodCallWatcher {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
+        debugger.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
         return result;
     }
 }

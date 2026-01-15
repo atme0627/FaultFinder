@@ -22,25 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public  class TestUtil {
-    public static String getJVMMain(MethodElementName testMethod){
-        return "jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
-    }
-
-//    @Deprecated
-//    public static String getJVMOption(){
-//        return "-cp " + "./build/classes/java/main"
-//                + ":" + PropertyLoader.getDebugBinDir()
-//                + ":" + PropertyLoader.getJunitClassPaths();
-//    }
-
-    public static String getJVMOption(){
-        return "-cp " + "./build/classes/java/main"
-                + ":" + PropertyLoader.getTargetBinDir()
-                + ":" + PropertyLoader.getTestBinDir()
-                + ":" + PropertyLoader.getJunitClassPaths();
-    }
-
-
     //-gつきでコンパイル
     @Deprecated
     public static void compileForDebug(MethodElementName targetTestClass) {
