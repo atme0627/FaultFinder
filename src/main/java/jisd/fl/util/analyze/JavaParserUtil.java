@@ -71,16 +71,17 @@ public class JavaParserUtil {
     }
 
     public static Optional<CallableDeclaration> getCallableDeclarationByLine(MethodElementName targetClass, int line) throws NoSuchFileException {
-        return getNodeByLine(targetClass, line, CallableDeclaration.class);
+        return extractNode(targetClass, CallableDeclaration.class)
+                .stream()
+                .filter(stmt -> stmt.getRange().isPresent())
+                .filter(stmt -> (stmt.getRange().get().begin.line <= line))
+                .filter(stmt -> (stmt.getRange().get().begin.line >= line))
+                .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
     }
 
     //その行を含む最小範囲のStatementを返す
     public static Optional<Statement> getStatementByLine(MethodElementName targetClass, int line) throws NoSuchFileException {
-        return getNodeByLine(targetClass, line, Statement.class);
-    }
-
-    private static <T extends Node> Optional<T> getNodeByLine(MethodElementName targetClass, int line, Class<T> nodeClass) throws NoSuchFileException {
-        return extractNode(targetClass, nodeClass)
+        return extractNode(targetClass, Statement.class)
                 .stream()
                 .filter(stmt -> stmt.getRange().isPresent())
                 .filter(stmt -> (stmt.getBegin().get().line <= line))
