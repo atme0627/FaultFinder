@@ -4,7 +4,6 @@ import com.sun.jdi.*;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
-import jisd.fl.probe.record.TracedValuesOfTarget;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.StaticAnalyzer;
 
