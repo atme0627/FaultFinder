@@ -57,7 +57,8 @@ public class JavaParserUtil {
     }
 
     public static List<AssignExpr> extractAssignExpr(MethodElementName targetClass) throws NoSuchFileException {
-        return extractNode(targetClass, AssignExpr.class);
+        return parseClass(targetClass)
+                .findAll(AssignExpr.class);
     }
 
     public static List<VariableDeclarator> extractVariableDeclarator(MethodElementName targetClass) throws NoSuchFileException {
