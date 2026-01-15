@@ -1,5 +1,6 @@
 package jisd.fl.core.domain;
 
+import jisd.fl.core.domain.internal.ValueChangingLineFinder;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.MethodElementName;
@@ -88,7 +89,7 @@ public class CauseLineFinder {
 
     private List<TracedValue> valueChangedToActualLine(List<TracedValue> tracedValues, String actual) {
         //対象の変数に値の変化が起きている行の特定
-        List<Integer> assignedLine = TmpJavaParserUtils.valueChangingLine(target);
+        List<Integer> assignedLine = ValueChangingLineFinder.find(target);
         //対象の変数を定義している行を追加
         assignedLine.addAll(
                 //targetVariableのVariableDeclaratorを特定
