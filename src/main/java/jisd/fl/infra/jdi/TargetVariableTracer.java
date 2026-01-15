@@ -4,7 +4,6 @@ import com.sun.jdi.*;
 import jisd.debug.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
-import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesOfTarget;
 import jisd.fl.util.TestUtil;
 import jisd.fl.util.analyze.StaticAnalyzer;
@@ -24,7 +23,7 @@ public class TargetVariableTracer {
         this.target = target;
     }
 
-    public TracedValueCollection traceValuesOfTarget() {
+    public List<TracedValue> traceValuesOfTarget() {
         //targetVariableのVariableDeclaratorを特定
         List<Integer> vdLines = StaticAnalyzer.findLocalVarDeclaration(target.getLocateMethodElement(), target.getSimpleVariableName())
                 .stream()

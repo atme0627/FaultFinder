@@ -40,11 +40,13 @@ public class CauseLineFinder {
      */
     public Optional<SuspiciousExpression> find() {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
-        TracedValueCollection tracedValues = tracer.traceValuesOfTarget();
-        tracedValues.printAll();
+        List<TracedValue> tracedValues = tracer.traceValuesOfTarget();
+        tracedValues.sort(TracedValue::compareTo);
+        for(TracedValue tv : tracedValues){
+            System.out.println("     " + tv);
+        }
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
-        List<TracedValue> watchedValues = tracedValues.getAll();
-        Optional<SuspiciousExpression> result = searchProbeLine(watchedValues);
+        Optional<SuspiciousExpression> result = searchProbeLine(tracedValues);
         return result;
     }
 

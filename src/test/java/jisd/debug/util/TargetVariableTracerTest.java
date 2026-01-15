@@ -37,9 +37,8 @@ class TargetVariableTracerTest {
         MethodElementName locateMethod = new MethodElementName("jisd.debug.util.TargetVariableTracerTarget#run(int)");
         SuspiciousVariable target = new SuspiciousVariable(failedTest, locateMethod.getFullyQualifiedMethodName(), "x", "13", true, false);
         TargetVariableTracer targetVariableTracer = new TargetVariableTracer(target);
-        TracedValueCollection tracedValues = targetVariableTracer.traceValuesOfTarget();
 
-        List<TracedValue> actual = tracedValues.getAll();
+        List<TracedValue> actual = targetVariableTracer.traceValuesOfTarget();
         record Expected(int line, String name, String value) {}
         List<Expected> expected = List.of(
                 new Expected(9,  "x", "null"),

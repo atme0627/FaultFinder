@@ -17,13 +17,6 @@ public abstract class TracedValueCollection {
         return record.isEmpty();
     }
 
-    public void printAll(){
-        record.sort(TracedValue::compareTo);
-        for(TracedValue tv : record){
-            System.out.println("     " + tv);
-        }
-    }
-
     public List<TracedValue> getAll(){
         return record;
     }
