@@ -89,15 +89,6 @@ public class CauseLineFinder {
     private List<TracedValue> valueChangedToActualLine(List<TracedValue> tracedValues, String actual) {
         //対象の変数に値の変化が起きている行の特定
         List<Integer> assignedLine = ValueChangingLineFinder.find(target);
-        //対象の変数を定義している行を追加
-        assignedLine.addAll(
-                //targetVariableのVariableDeclaratorを特定
-                StaticAnalyzer.findLocalVarDeclaration(target.getLocateMethodElement(), target.getSimpleVariableName())
-                        .stream()
-                        .map(vd -> vd.getRange().get().begin.line)
-                        .toList()
-        );
-
         List<TracedValue> changedToActualLines = new ArrayList<>();
         for (int i = 0; i < tracedValues.size() - 1; i++) {
             TracedValue watchingLine = tracedValues.get(i);

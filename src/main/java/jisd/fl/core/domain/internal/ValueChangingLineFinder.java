@@ -8,6 +8,7 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.TmpJavaParserUtils;
+import jisd.fl.util.analyze.StaticAnalyzer;
 
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -22,6 +23,17 @@ public class ValueChangingLineFinder {
         List<Integer> result = new ArrayList<>();
         List<AssignExpr> aes;
         List<UnaryExpr> ues;
+
+        //値の宣言行も含める。
+        //対象の変数を定義している行を追加
+        result.addAll(
+                //targetVariableのVariableDeclaratorを特定
+                StaticAnalyzer.findLocalVarDeclaration(locateElement, vi.getSimpleVariableName())
+                        .stream()
+                        .map(vd -> vd.getRange().get().begin.line)
+                        .toList()
+        );
+
         if (vi.isField()) {
             try {
                 CompilationUnit unit = TmpJavaParserUtils.parseClass(locateElement);
