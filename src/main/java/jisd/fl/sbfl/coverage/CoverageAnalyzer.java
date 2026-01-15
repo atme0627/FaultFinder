@@ -1,8 +1,8 @@
 package jisd.fl.sbfl.coverage;
 
+import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 import jisd.fl.util.*;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.util.analyze.StaticAnalyzer;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
@@ -26,7 +26,7 @@ public class CoverageAnalyzer {
 
     public CoverageAnalyzer(Set<MethodElementName> failedTests) {
         this.failedTests = failedTests;
-        targetClassNames = StaticAnalyzer.getClassNames();
+        targetClassNames = JavaParserClassNameExtractor.getClassNames();
         visitor = new MyCoverageVisitor(targetClassNames);
     }
 

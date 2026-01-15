@@ -1,8 +1,8 @@
 package experiment.util.internal.finder;
 
+import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.util.analyze.StaticAnalyzer;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
@@ -31,8 +31,8 @@ public class TestLauncherForFinder {
     private final Set<String> targetClassNames;
     public TestLauncherForFinder(MethodElementName targetTestMethod) {
         this.testMethodName = targetTestMethod;
-        this.targetClassNames = StaticAnalyzer.getClassNames();
-        targetClassNames.addAll(StaticAnalyzer.getClassNames(Path.of(PropertyLoader.getTestSrcDir())));
+        this.targetClassNames = JavaParserClassNameExtractor.getClassNames();
+        targetClassNames.addAll(JavaParserClassNameExtractor.getClassNames(Path.of(PropertyLoader.getTestSrcDir())));
     }
 
     /**

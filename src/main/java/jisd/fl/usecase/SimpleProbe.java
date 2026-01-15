@@ -4,7 +4,7 @@ import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.domain.CauseLineFinder;
-import jisd.fl.util.analyze.StaticAnalyzer;
+import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 
 import java.util.*;
 
@@ -16,7 +16,7 @@ import java.util.*;
  */
 public class SimpleProbe extends Probe {
     Set<SuspiciousVariable> probedValue = new HashSet<>();
-    Set<String> targetClasses = StaticAnalyzer.getClassNames();
+    Set<String> targetClasses = JavaParserClassNameExtractor.getClassNames();
     SuspiciousExprTreeNode suspiciousExprTreeRoot = null;
     SuspiciousVariable firstTarget;
 
