@@ -1,20 +1,15 @@
 package jisd.fl.probe.internal;
 
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.UnaryExpr;
-import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
+import jisd.fl.infra.javaparser.TmpJavaParserUtils;
 import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousAssignment;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.probe.record.TracedValue;
-import jisd.fl.util.analyze.JavaParserUtil;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.util.analyze.StaticAnalyzer;
 
@@ -23,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 
 public class ProbeLineSearcher {
     List<TracedValue> tracedValues;
@@ -48,7 +44,7 @@ public class ProbeLineSearcher {
      */
     public Optional<SuspiciousExpression> searchProbeLine() {
         //対象の変数に値の変化が起きている行の特定
-        List<Integer> valueChangingLines = valueChangingLine();
+        List<Integer> valueChangingLines = TmpJavaParserUtils.valueChangingLine(vi);
 
         //対象の変数を定義している行を追加
         valueChangingLines.addAll(
@@ -83,79 +79,6 @@ public class ProbeLineSearcher {
         /* 3. throw内などブレークポイントが置けない行で、代入が行われているパターン */
 //            System.err.println("There is no value which same to actual.");
 //            return Optional.empty();
-    }
-
-    //TODO: refactor
-    private List<Integer> valueChangingLine() {
-        //代入行の特定
-        //unaryExpr(ex a++)も含める
-        MethodElementName locateElement = vi.getLocateMethodElement();
-        List<Integer> result = new ArrayList<>();
-        List<AssignExpr> aes;
-        List<UnaryExpr> ues;
-        if (vi.isField()) {
-            try {
-                aes = JavaParserUtil.extractAssignExpr(locateElement);
-                CompilationUnit unit = JavaParserUtil.parseClass(locateElement);
-                ues = unit.findAll(UnaryExpr.class, (n) -> {
-                    UnaryExpr.Operator ope = n.getOperator();
-                    return ope == UnaryExpr.Operator.POSTFIX_DECREMENT ||
-                            ope == UnaryExpr.Operator.POSTFIX_INCREMENT ||
-                            ope == UnaryExpr.Operator.PREFIX_DECREMENT ||
-                            ope == UnaryExpr.Operator.PREFIX_INCREMENT;
-                });
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            BlockStmt bs = null;
-            try {
-                bs = JavaParserUtil.searchBodyOfMethod(locateElement);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-            aes = bs.findAll(AssignExpr.class);
-            ues = bs.findAll(UnaryExpr.class, (n) -> {
-                UnaryExpr.Operator ope = n.getOperator();
-                return ope == UnaryExpr.Operator.POSTFIX_DECREMENT ||
-                        ope == UnaryExpr.Operator.POSTFIX_INCREMENT ||
-                        ope == UnaryExpr.Operator.PREFIX_DECREMENT ||
-                        ope == UnaryExpr.Operator.PREFIX_INCREMENT;
-            });
-        }
-
-        for (AssignExpr ae : aes) {
-            //対象の変数に代入されているか確認
-            Expression target = ae.getTarget();
-            String targetName;
-            if (target.isArrayAccessExpr()) {
-                targetName = target.asArrayAccessExpr().getName().toString();
-            } else if (target.isFieldAccessExpr()) {
-                targetName = target.asFieldAccessExpr().getName().toString();
-            } else {
-                targetName = target.toString();
-            }
-
-            if (targetName.equals(vi.getSimpleVariableName())) {
-                if (vi.isField() == target.isFieldAccessExpr())
-                    for (int i = ae.getBegin().get().line; i <= ae.getEnd().get().line; i++) {
-                        result.add(i);
-                    }
-            }
-        }
-        for (UnaryExpr ue : ues) {
-            //対象の変数に代入されているか確認
-            Expression target = ue.getExpression();
-            String targetName = target.toString();
-
-            if (targetName.equals(vi.getSimpleVariableName())) {
-                if (vi.isField() == target.isFieldAccessExpr())
-                    for (int i = ue.getBegin().get().line; i <= ue.getEnd().get().line; i++) {
-                        result.add(i);
-                    }
-            }
-        }
-        return result;
     }
 
     private List<TracedValue> valueChangedToActualLine(List<Integer> assignedLine, String actual) {
