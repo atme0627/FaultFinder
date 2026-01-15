@@ -101,6 +101,7 @@ public class TargetVariableTracer {
                             locateLine
                     ));
                 }
+
             }
 
             return Optional.of(new TracedValue(
