@@ -25,20 +25,18 @@ public class StaticAnalyzer {
 
     //あるメソッド内の特定の変数の定義行の番号を取得する。
     public static List<Integer> findLocalVariableDeclarationLine(MethodElementName targetMethod, String localVarName){
-        List<VariableDeclarator> result;
+        List<Integer> result;
         try {
             BlockStmt bs = JavaParserUtil.extractBodyOfMethod(targetMethod);
             List<VariableDeclarator> vds = bs.findAll(VariableDeclarator.class);
             result = vds.stream()
                     .filter(vd1 -> vd1.getNameAsString().equals(localVarName))
+                    .map(vd -> vd.getRange().get().begin.line)
                     .toList();
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
-
-        return result.stream()
-                .map(vd -> vd.getRange().get().begin.line)
-                .toList();
+        return result;
     }
 }
 
