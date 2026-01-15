@@ -3,7 +3,7 @@ package jisd.fl.infra.jdi;
 import com.sun.jdi.*;
 import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.event.MethodExitEvent;
-import jisd.fl.probe.record.TracedValue;
+import jisd.fl.core.entity.TracedValue;
 
 import java.time.LocalDateTime;
 import java.util.*;

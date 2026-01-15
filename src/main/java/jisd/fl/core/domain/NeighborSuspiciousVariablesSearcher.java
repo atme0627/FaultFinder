@@ -3,7 +3,7 @@ package jisd.fl.core.domain;
 import jisd.fl.core.domain.internal.ValueAtSuspiciousExpressionTracer;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.probe.record.TracedValue;
+import jisd.fl.core.entity.TracedValue;
 
 import java.util.ArrayList;
 import java.util.List;

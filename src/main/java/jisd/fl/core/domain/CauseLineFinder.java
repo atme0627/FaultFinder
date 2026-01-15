@@ -11,7 +11,7 @@ import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.infra.jdi.TargetVariableTracer;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.record.TracedValue;
+import jisd.fl.core.entity.TracedValue;
 import jisd.fl.util.analyze.StaticAnalyzer;
 
 import java.nio.file.NoSuchFileException;

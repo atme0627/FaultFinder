@@ -8,7 +8,7 @@ import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousArgumentStrategy;
 import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousAssignmentStrategy;
 import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousReturnValueStrategy;
-import jisd.fl.probe.record.TracedValue;
+import jisd.fl.core.entity.TracedValue;
 
 import java.util.List;
 

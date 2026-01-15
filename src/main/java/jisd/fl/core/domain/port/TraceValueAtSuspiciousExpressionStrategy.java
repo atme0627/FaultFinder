@@ -1,7 +1,7 @@
 package jisd.fl.core.domain.port;
 
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.probe.record.TracedValue;
+import jisd.fl.core.entity.TracedValue;
 
 import java.util.List;
 
