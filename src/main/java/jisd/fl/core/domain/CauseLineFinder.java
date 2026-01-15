@@ -1,4 +1,4 @@
-package jisd.fl.probe.internal;
+package jisd.fl.core.domain;
 
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;

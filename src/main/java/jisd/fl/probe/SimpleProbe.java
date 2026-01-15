@@ -3,7 +3,7 @@ package jisd.fl.probe;
 import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.probe.internal.CauseLineFinder;
+import jisd.fl.core.domain.CauseLineFinder;
 import jisd.fl.util.analyze.StaticAnalyzer;
 
 import java.util.*;

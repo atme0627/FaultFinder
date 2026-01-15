@@ -1,4 +1,4 @@
-package jisd.fl.core.domain;
+package jisd.fl.core.domain.internal;
 
 import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
