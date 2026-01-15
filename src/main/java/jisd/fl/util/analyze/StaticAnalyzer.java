@@ -44,12 +44,6 @@ public class StaticAnalyzer {
         return (expStmt.isPresent()) ? expStmt.get().getRange() : Optional.empty();
     }
 
-    @Deprecated
-    public static String getMethodNameFormLine(String targetClassName, int line) throws NoSuchFileException {
-        MethodElementName targetClass = new MethodElementName(targetClassName);
-        return getMethodNameFormLine(targetClass, line);
-    }
-
     public static String getMethodNameFormLine(MethodElementName targetClass, int line) throws NoSuchFileException {
         CallableDeclaration<?> cd = JavaParserUtil.getCallableDeclarationByLine(targetClass, line).orElseThrow();
         return targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature();
