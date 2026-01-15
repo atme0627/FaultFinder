@@ -3,6 +3,7 @@ package jisd.fl.infra.javaparser;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -16,8 +17,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-
-import static jisd.fl.util.analyze.JavaParserUtil.extractNode;
 
 public class TmpJavaParserUtils {
     static {
@@ -81,5 +80,10 @@ public class TmpJavaParserUtils {
             throw new RuntimeException(e);
         }
         return result;
+    }
+
+    public static <T extends Node> List<T> extractNode(MethodElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
+        return TmpJavaParserUtils.parseClass(targetClass)
+                .findAll(nodeClass);
     }
 }

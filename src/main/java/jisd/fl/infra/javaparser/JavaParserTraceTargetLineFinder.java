@@ -5,7 +5,6 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -77,7 +76,7 @@ public class JavaParserTraceTargetLineFinder {
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
     private static Set<String> getMethodNames(MethodElementName targetClass) throws NoSuchFileException {
-        return JavaParserUtil.extractNode(targetClass, CallableDeclaration.class)
+        return TmpJavaParserUtils.extractNode(targetClass, CallableDeclaration.class)
                 .stream()
                 .map(cd -> (targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature()))
                 .collect(Collectors.toSet());
