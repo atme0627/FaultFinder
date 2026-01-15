@@ -12,7 +12,7 @@ import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.ranking.report.ScoreUpdateReport;
+import jisd.fl.presenter.ScoreUpdateReport;
 import jisd.fl.core.entity.CodeElementIdentifier;
 import jisd.fl.core.entity.MethodElementName;
 

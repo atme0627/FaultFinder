@@ -1,4 +1,4 @@
-package jisd.fl.ranking.report;
+package jisd.fl.presenter;
 
 import jisd.fl.core.entity.FLRankingElement;
 
