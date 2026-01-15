@@ -1,7 +1,4 @@
 package jisd.fl.probe.record;
-
-import jisd.debug.Location;
-
 import java.time.LocalDateTime;
 
 //TODO: これを継承した配列バージョンのクラスを作る
