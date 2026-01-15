@@ -8,7 +8,6 @@ import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.TmpJavaParserUtils;
-import jisd.fl.util.analyze.JavaParserUtil;
 
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class ValueChangingLineFinder {
         } else {
             BlockStmt bs = null;
             try {
-                bs = JavaParserUtil.extractBodyOfMethod(locateElement);
+                bs = TmpJavaParserUtils.extractBodyOfMethod(locateElement);
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }
