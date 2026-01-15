@@ -12,7 +12,6 @@ import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.susp.SuspiciousAssignment;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.probe.record.TracedValue;
-import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
 import jisd.fl.util.TestUtil;
 
@@ -23,7 +22,7 @@ import java.util.NoSuchElementException;
 public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAtSuspiciousExpressionStrategy {
     //TODO: 今はオブジェクトの違いを考慮していない
 
-    public TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
+    public List<TracedValue> traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
         SuspiciousAssignment suspAssign = (SuspiciousAssignment) suspExpr;
         final List<TracedValue> result = new ArrayList<>();
 
@@ -77,7 +76,7 @@ public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAt
 
         //VMを実行し情報を収集
         eDbg.handleAtBreakPoint(suspAssign.locateMethod.getFullyQualifiedClassName(), suspAssign.locateLine, handler);
-        return TracedValuesAtLine.of(result);
+        return result;
     }
 
     //この行の評価結果( = assignTargetへ代入された値)がactualValueと一致するか確認

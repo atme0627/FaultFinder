@@ -1,8 +1,10 @@
 package jisd.fl.core.domain.port;
 
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.probe.record.TracedValueCollection;
+import jisd.fl.probe.record.TracedValue;
+
+import java.util.List;
 
 public interface TraceValueAtSuspiciousExpressionStrategy {
-    TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression thisSuspExpr);
+    List<TracedValue> traceAllValuesAtSuspExpr(SuspiciousExpression thisSuspExpr);
 }

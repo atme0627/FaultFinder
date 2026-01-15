@@ -15,7 +15,6 @@ import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.probe.record.TracedValue;
-import jisd.fl.probe.record.TracedValueCollection;
 import jisd.fl.probe.record.TracedValuesAtLine;
 import jisd.fl.util.TestUtil;
 
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueAtSuspiciousExpressionStrategy {
-    public TracedValueCollection traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
+    public List<TracedValue> traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
         SuspiciousReturnValue suspReturn = (SuspiciousReturnValue) suspExpr;
         System.out.println(" >>> [DEBUG] Return");
         final List<TracedValue> result = new ArrayList<>();
@@ -94,6 +93,6 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
 
         //VMを実行し情報を収集
         eDbg.handleAtBreakPoint(suspReturn.locateMethod.getFullyQualifiedClassName(), suspReturn.locateLine, handler);
-        return TracedValuesAtLine.of(result);
+        return result;
     }
 }
