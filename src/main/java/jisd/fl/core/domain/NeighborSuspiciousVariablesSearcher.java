@@ -4,7 +4,6 @@ import jisd.fl.core.domain.internal.ValueAtSuspiciousExpressionTracer;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.probe.record.TracedValue;
-import jisd.fl.probe.record.TracedValueCollection;
 
 import java.util.ArrayList;
 import java.util.List;
