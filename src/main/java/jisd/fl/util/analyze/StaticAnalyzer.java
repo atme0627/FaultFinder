@@ -3,19 +3,14 @@ package jisd.fl.util.analyze;
 import com.github.javaparser.Range;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.expr.AssignExpr;
-import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.infra.javaparser.TmpJavaParserUtils;
 
 import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class StaticAnalyzer {
     //targetClassNameはdemo.SortTestのように記述
@@ -37,66 +32,6 @@ public class StaticAnalyzer {
             }
         }
         return result;
-    }
-
-    public static Optional<Range> getRangeOfStatement(MethodElementName targetClass, int line) throws NoSuchFileException {
-        Optional<Statement> expStmt = TmpJavaParserUtils.getStatementByLine(targetClass, line);
-        return (expStmt.isPresent()) ? expStmt.get().getRange() : Optional.empty();
-    }
-
-    public static String getMethodNameFormLine(MethodElementName targetClass, int line) throws NoSuchFileException {
-        CallableDeclaration<?> cd = JavaParserUtil.getCallableDeclarationByLine(targetClass, line).orElseThrow();
-        return targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature();
-    }
-
-    //(クラス, 対象の変数) --> 変数が代入されている行（初期化も含む）
-    public static List<Integer> getAssignLine(MethodElementName targetClass, String variable) {
-        //CodeElement targetClass = new CodeElement(className);
-        List<Integer> assignLines =
-                null;
-        try {
-            assignLines = TmpJavaParserUtils.parseClass(targetClass)
-                    .findAll(AssignExpr.class)
-                    .stream()
-                    .map(exp -> exp.isArrayAccessExpr() ? exp.asArrayAccessExpr().getName() : exp.getTarget())
-                    .filter(exp -> exp.toString().equals(variable))
-                    .filter(exp -> exp.getEnd().isPresent())
-                    .map(exp -> exp.getEnd().get().line)
-                    .collect(Collectors.toList());
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
-        List<Integer> declarationLines =
-                null;
-        try {
-            declarationLines = JavaParserUtil.extractVariableDeclarator(targetClass)
-                    .stream()
-                    .filter(exp -> exp.getName().toString().equals(variable))
-                    .filter(exp -> exp.getEnd().isPresent())
-                    .map(exp -> exp.getEnd().get().line)
-                    .collect(Collectors.toList());
-        } catch (NoSuchFileException e) {
-            throw new RuntimeException(e);
-        }
-
-        return Stream.of(assignLines, declarationLines)
-                        .flatMap(Collection::stream)
-                        .sorted(Comparator.naturalOrder())
-                        .collect(Collectors.toList());
-    }
-
-    //メソッド --> メソッドが呼ばれている行
-    //methodNameはクラス、シグニチャを含む
-    public static List<Integer> getMethodCallingLine(MethodElementName targetMethod) throws NoSuchFileException {
-        return JavaParserUtil.extractBodyOfMethod(targetMethod)
-                        .findAll(MethodCallExpr.class)
-                        .stream()
-                        .filter(exp -> exp.getBegin().isPresent())
-                        .map(exp -> exp.getBegin().get().line)
-                        .distinct()
-                        .sorted(Comparator.naturalOrder())
-                        .collect(Collectors.toList());
     }
 
     public static List<Integer> getCanSetLine(SuspiciousVariable suspiciousVariable) {
