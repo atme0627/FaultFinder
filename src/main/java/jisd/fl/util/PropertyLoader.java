@@ -1,9 +1,6 @@
 package jisd.fl.util;
 
 public class PropertyLoader {
-    public static String getJunitClassPaths() {
-        return "locallib/junit-dependency/*";
-    }
 
     public static String getTargetSrcDir() {
         return NewPropertyLoader.getTargetSrcDir().toString();

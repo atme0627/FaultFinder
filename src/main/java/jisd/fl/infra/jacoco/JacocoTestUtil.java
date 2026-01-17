@@ -33,7 +33,7 @@ public  class JacocoTestUtil {
         final String jacocoExecFilePath = "./.jacoco_exec_data";
         final String targetBinDir = PropertyLoader.getTargetBinDir();
         final String testBinDir = PropertyLoader.getTestBinDir();
-        final String junitClassPath = PropertyLoader.getJunitClassPaths();
+        final String junitClassPath = "locallib/junit-dependency/*";
         String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
 
         //Junit Console Launcherの終了ステータスは、

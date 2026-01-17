@@ -17,6 +17,6 @@ public class JUnitDebugger extends EnhancedDebugger {
         return "-cp " + "./build/classes/java/main"
                 + ":" + PropertyLoader.getTargetBinDir()
                 + ":" + PropertyLoader.getTestBinDir()
-                + ":" + PropertyLoader.getJunitClassPaths();
+                + ":" + "locallib/junit-dependency/*";
     }
 }
