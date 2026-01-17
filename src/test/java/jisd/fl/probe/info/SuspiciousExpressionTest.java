@@ -5,7 +5,7 @@ import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
-import jisd.fl.util.NewPropertyLoader;
+import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -50,14 +50,14 @@ class SuspiciousExpressionTest {
         void initProperty() {
             Dotenv dotenv = Dotenv.load();
             Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
-            NewPropertyLoader.ProjectConfig config = new NewPropertyLoader.ProjectConfig(
+            PropertyLoader.ProjectConfig config = new PropertyLoader.ProjectConfig(
                     testProjectDir,
                     Path.of("src/main/java"),
                     Path.of("src/test/java"),
                     Path.of("build/classes/java/main"),
                     Path.of("build/classes/java/test")
             );
-            NewPropertyLoader.setProjectConfig(config);
+            PropertyLoader.setProjectConfig(config);
         }
 
         @Test

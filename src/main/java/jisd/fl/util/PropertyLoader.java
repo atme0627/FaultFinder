@@ -20,7 +20,7 @@ import java.util.*;
  *
  * ※ *Path は「root相対（推奨）または絶対」のどちらでも許容。
  */
-public final class NewPropertyLoader {
+public final class PropertyLoader {
 
     private static final Path USER_DIR =
             Path.of(System.getProperty("user.home"), ".faultfinder");
@@ -34,7 +34,7 @@ public final class NewPropertyLoader {
         loadFromFile(PROJECT_FILE, PROJECT);
     }
 
-    private NewPropertyLoader() {}
+    private PropertyLoader() {}
 
     // ====== Public API ======
 

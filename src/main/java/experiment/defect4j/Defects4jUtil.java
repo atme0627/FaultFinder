@@ -2,7 +2,7 @@ package experiment.defect4j;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.FileUtil;
-import jisd.fl.util.NewPropertyLoader;
+import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.LineElementName;
 import jisd.fl.core.entity.MethodElementName;
 import org.eclipse.jgit.api.Git;
@@ -52,10 +52,10 @@ public class Defects4jUtil {
         String cmd = "defects4j compile -w " + getProjectDir(project, bugId, true);
         execCmd(cmd);
         //TODO: 使わないようにする!
-        cmd = "cp -r " + NewPropertyLoader.getTargetBinDir().toString() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
+        cmd = "cp -r " + PropertyLoader.getTargetBinDir().toString() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
         execCmd(cmd);
         //TODO: 使わないようにする!
-        cmd = "cp -r " + NewPropertyLoader.getTestBinDir().toString() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
+        cmd = "cp -r " + PropertyLoader.getTestBinDir().toString() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
         execCmd(cmd);
     }
 
@@ -65,14 +65,14 @@ public class Defects4jUtil {
 
     public static void changeTargetVersion(String project, int bugId){
         Properties p = getD4jProperties(project, bugId);
-        NewPropertyLoader.ProjectConfig config = new NewPropertyLoader.ProjectConfig(
+        PropertyLoader.ProjectConfig config = new PropertyLoader.ProjectConfig(
                 Path.of(getProjectDir(project, bugId, true)),
                 Path.of(p.getProperty("d4j.dir.src.classes")),
                 Path.of(p.getProperty("d4j.dir.src.tests")),
                 Path.of(exportProperty(project, bugId, "dir.bin.classes")),
                 Path.of(exportProperty(project, bugId, "dir.bin.tests"))
         );
-        NewPropertyLoader.setProjectConfig(config);
+        PropertyLoader.setProjectConfig(config);
     }
 
     private static String exportProperty(String project, int bugId, String key){

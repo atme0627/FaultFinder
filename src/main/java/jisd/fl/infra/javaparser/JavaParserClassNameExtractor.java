@@ -1,6 +1,6 @@
 package jisd.fl.infra.javaparser;
 
-import jisd.fl.util.NewPropertyLoader;
+import jisd.fl.util.PropertyLoader;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -11,7 +11,7 @@ import java.util.Set;
 public class JavaParserClassNameExtractor {
     //プロジェクト全体
     public static Set<String> getClassNames() {
-        return getClassNames(Paths.get(NewPropertyLoader.getTargetSrcDir().toString()));
+        return getClassNames(Paths.get(PropertyLoader.getTargetSrcDir().toString()));
     }
 
     //ディレクトリ指定

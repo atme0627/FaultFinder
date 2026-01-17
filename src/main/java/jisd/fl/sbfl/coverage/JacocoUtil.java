@@ -1,6 +1,6 @@
 package jisd.fl.sbfl.coverage;
 
-import jisd.fl.util.NewPropertyLoader;
+import jisd.fl.util.PropertyLoader;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.ICoverageVisitor;
 import org.jacoco.core.data.ExecutionDataStore;
@@ -20,7 +20,7 @@ public class JacocoUtil {
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
 
     public static void analyzeWithJacoco(ExecutionDataStore executionData, ICoverageVisitor cv) throws IOException {
-        final String targetBinDir = NewPropertyLoader.getTargetBinDir().toString();
+        final String targetBinDir = PropertyLoader.getTargetBinDir().toString();
         //jacocoによるテスト対象の解析
         final Analyzer analyzer = new Analyzer(executionData, cv);
         File classFilePath = new File(targetBinDir);

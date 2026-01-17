@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jisd.fl.infra.jdi.EnhancedDebugger;
-import jisd.fl.util.NewPropertyLoader;
+import jisd.fl.util.PropertyLoader;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -104,7 +104,7 @@ public class MethodElementName implements CodeElementIdentifier {
     @Override
     public Path getFilePath(boolean isTest){
         String dir;
-        dir = isTest ? NewPropertyLoader.getTestSrcDir().toString() : NewPropertyLoader.getTargetSrcDir().toString();
+        dir = isTest ? PropertyLoader.getTestSrcDir().toString() : PropertyLoader.getTargetSrcDir().toString();
         return Paths.get(dir + "/" + packageName.replace('.', '/'), className + ".java");
     }
 
