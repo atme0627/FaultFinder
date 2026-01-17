@@ -97,8 +97,9 @@ public class PropertyLoader {
         return getProperty("testBinDir");
     }
 
+    //TODO: 使わないようにする
     public static String getDebugBinDir() {
-        return getProperty("debugBinDir");
+        throw new RuntimeException("Not implemented yet.");
     }
 
     public static String getClassesForDebugDir(){
