@@ -77,24 +77,20 @@ public class PropertyLoader {
         setProperty("testBinDir", testBinDir);
     }
 
-    public static void setDebugBinDir(String debugBinDir) {
-        setProperty("debugBinDir", debugBinDir);
-    }
-
     public static String getTargetSrcDir() {
-        return getProperty("targetSrcDir");
+        return NewPropertyLoader.getTargetSrcDir().toString();
     }
 
     public static String getTargetBinDir() {
-        return getProperty("targetBinDir");
+        return NewPropertyLoader.getTargetBinDir().toString();
     }
 
     public static String getTestSrcDir() {
-        return getProperty("testSrcDir");
+        return NewPropertyLoader.getTestSrcDir().toString();
     }
 
     public static String getTestBinDir() {
-        return getProperty("testBinDir");
+        return NewPropertyLoader.getTestBinDir().toString();
     }
 
     //TODO: 使わないようにする
@@ -104,5 +100,9 @@ public class PropertyLoader {
 
     public static String getClassesForDebugDir(){
         return "classesForDebug";
+    }
+
+    public static void setProjectConfig(NewPropertyLoader.ProjectConfig cfg) {
+        NewPropertyLoader.setProjectConfig(cfg);
     }
 }

@@ -1,10 +1,13 @@
 package demo;
 import jisd.fl.FaultFinder;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.util.NewPropertyLoader;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Path;
 
 public class FaultFinderDemo {
     MethodElementName failedTestMethodName = new MethodElementName("demo.SampleTest#sampleTest()");
@@ -12,11 +15,14 @@ public class FaultFinderDemo {
 
     @BeforeEach
     void init(){
-        PropertyLoader.setTargetSrcDir("/Users/ezaki/IdeaProjects/MyFaultFinder/src/main/java");
-        PropertyLoader.setTargetBinDir("/Users/ezaki/IdeaProjects/MyFaultFinder/build/classes/java/main");
-        PropertyLoader.setTestSrcDir("/Users/ezaki/IdeaProjects/MyFaultFinder/src/test/java");
-        PropertyLoader.setTestBinDir("/Users/ezaki/IdeaProjects/MyFaultFinder/build/classes/java/test");
-        PropertyLoader.store();
+        NewPropertyLoader.ProjectConfig config = new NewPropertyLoader.ProjectConfig(
+                Path.of("/Users/ezaki/IdeaProjects/MyFaultFinder"),
+                Path.of("src/main/java"),
+                Path.of("src/test/java"),
+                Path.of("build/classes/java/main"),
+                Path.of("build/classes/java/test")
+        );
+        PropertyLoader.setProjectConfig(config);
     }
     @BeforeEach
     void initFaultFinder(){
