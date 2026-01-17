@@ -8,31 +8,6 @@ import java.util.Properties;
 import java.io.InputStream;
 
 public class PropertyLoader {
-    private static final String[] CONF_FILES = new String[]{
-            "fl_properties/fl_config.properties",
-            "fl_properties/fl_jacoco.properties",
-            "fl_properties/fl_junit.properties"
-    };
-    private static final Properties properties;
-
-    static {
-        properties = new Properties();
-        for (String CONF_FILE : CONF_FILES) {
-            try (InputStream input = PropertyLoader.class.getClassLoader().getResourceAsStream(CONF_FILE)) {
-                properties.load(input);
-            } catch (IOException e) {
-                // ファイル読み込みに失敗
-                System.out.printf("Failed to load fi_config file. :%s%n", CONF_FILE);
-            } catch (NullPointerException e) {
-                try {
-                    properties.load(Files.newBufferedReader(Paths.get(CONF_FILE), StandardCharsets.UTF_8));
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-        }
-    }
-
     public static String getJunitClassPaths() {
         return "locallib/junit-dependency/*";
     }
