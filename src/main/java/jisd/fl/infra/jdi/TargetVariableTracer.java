@@ -7,7 +7,6 @@ import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.infra.junit.JUnitDebugger;
-import jisd.fl.util.TestUtil;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

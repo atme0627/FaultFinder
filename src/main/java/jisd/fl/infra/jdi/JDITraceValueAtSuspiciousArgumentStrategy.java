@@ -9,7 +9,6 @@ import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.junit.JUnitDebugger;
-import jisd.fl.util.TestUtil;
 
 import java.util.ArrayList;
 import java.util.List;

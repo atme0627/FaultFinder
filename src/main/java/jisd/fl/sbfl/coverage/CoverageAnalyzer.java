@@ -1,5 +1,6 @@
 package jisd.fl.sbfl.coverage;
 
+import jisd.fl.infra.jacoco.JacocoTestUtil;
 import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 import jisd.fl.util.*;
 import jisd.fl.core.entity.MethodElementName;
@@ -42,7 +43,7 @@ public class CoverageAnalyzer {
 
     public void analyze(MethodElementName testClassName){
         FileUtil.createDirectory(jacocoExecFilePath);
-        Set<MethodElementName> testMethodNames = TestUtil.getTestMethods(testClassName);
+        Set<MethodElementName> testMethodNames = JacocoTestUtil.getTestMethods(testClassName);
         if(testMethodNames.isEmpty()) throw new RuntimeException("test method is not found. [CLASS] " + testMethodNames);
 
         //固定長スレッドプール
@@ -51,7 +52,7 @@ public class CoverageAnalyzer {
             List<Future<TestResult>> futures = testMethodNames.stream()
                     .map(testMethodName -> executor.submit(() -> {
                         String jacocoExecName = testMethodName + ".jacocoexec";
-                        boolean isTestPassed = TestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
+                        boolean isTestPassed = JacocoTestUtil.execTestCaseWithJacocoAgent(testMethodName, jacocoExecName);
                         return new TestResult(testMethodName, jacocoExecName, isTestPassed);
                     }))
                     .toList();

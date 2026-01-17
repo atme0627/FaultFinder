@@ -1,6 +1,7 @@
-package jisd.fl.util;
+package jisd.fl.infra.jacoco;
 
 import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.util.PropertyLoader;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -21,7 +22,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public  class TestUtil {
+public  class JacocoTestUtil {
     //TestLauncherにjacoco agentをつけて起動
     //methodNameは次のように指定: org.example.order.OrderTests#test1(int a)
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
@@ -101,7 +102,7 @@ public  class TestUtil {
             return testPlan.getRoots().stream()
                     .flatMap(root -> testPlan.getDescendants(root).stream())
                     .filter(TestIdentifier::isTest)
-                    .map(TestUtil::getFQMNName)
+                    .map(JacocoTestUtil::getFQMNName)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toSet());
