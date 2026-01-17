@@ -2,6 +2,7 @@ package experiment.defect4j;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.FileUtil;
+import jisd.fl.util.NewPropertyLoader;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.LineElementName;
 import jisd.fl.core.entity.MethodElementName;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -61,17 +63,14 @@ public class Defects4jUtil {
 
     public static void changeTargetVersion(String project, int bugId){
         Properties p = getD4jProperties(project, bugId);
-
-        String targetSrcDir = getProjectDir(project, bugId, true) + "/" + p.getProperty("d4j.dir.src.classes");
-        String testSrcDir = getProjectDir(project, bugId, true) + "/" + p.getProperty("d4j.dir.src.tests");
-        String targetBinDir = getProjectDir(project, bugId, true) + "/" + exportProperty(project, bugId, "dir.bin.classes");
-        String testBinDir = getProjectDir(project, bugId, true) + "/" + exportProperty(project, bugId, "dir.bin.tests");
-
-        PropertyLoader.setProperty("targetSrcDir", targetSrcDir);
-        PropertyLoader.setProperty("testSrcDir", testSrcDir);
-        PropertyLoader.setProperty("testBinDir", testBinDir);
-        PropertyLoader.setProperty("targetBinDir", targetBinDir);
-        PropertyLoader.store();
+        NewPropertyLoader.ProjectConfig config = new NewPropertyLoader.ProjectConfig(
+                Path.of(getProjectDir(project, bugId, true)),
+                Path.of(p.getProperty("d4j.dir.src.classes")),
+                Path.of(p.getProperty("d4j.dir.src.tests")),
+                Path.of(exportProperty(project, bugId, "dir.bin.classes")),
+                Path.of(exportProperty(project, bugId, "dir.bin.tests"))
+        );
+        PropertyLoader.setProjectConfig(config);
     }
 
     private static String exportProperty(String project, int bugId, String key){
