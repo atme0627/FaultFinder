@@ -26,10 +26,10 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMetho
  * ある失敗テストを実行し、失敗したAssert行、またはクラッシュ時に最後に実行された行を返す。
  * SuspiciousVariableFinderでその行に含まれる変数の情報を抽出する。
  */
-public class JunitTestLauncherForFinder {
+public class JUnitTestLauncherForFinder {
     private final MethodElementName testMethodName;
     private final Set<String> targetClassNames;
-    public JunitTestLauncherForFinder(MethodElementName targetTestMethod) {
+    public JUnitTestLauncherForFinder(MethodElementName targetTestMethod) {
         this.testMethodName = targetTestMethod;
         this.targetClassNames = JavaParserClassNameExtractor.getClassNames();
         targetClassNames.addAll(JavaParserClassNameExtractor.getClassNames(Path.of(PropertyLoader.getTestSrcDir())));

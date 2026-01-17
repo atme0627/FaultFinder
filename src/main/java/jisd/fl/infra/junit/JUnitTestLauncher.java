@@ -10,13 +10,13 @@ import java.io.PrintWriter;
 
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
 
-public class JunitTestLauncher {
+public class JUnitTestLauncher {
     String testClassName;
     String testMethodName;
 
     //testMethodNameはカッコつけたら動かない
     //testMethodNameはclassを含む書き方
-    public JunitTestLauncher(String testMethodName){
+    public JUnitTestLauncher(String testMethodName){
         this.testClassName = testMethodName.split("#")[0];
         this.testMethodName = testMethodName;
     }
@@ -24,7 +24,7 @@ public class JunitTestLauncher {
     //args[0]: method名
     public static void main(String[] args) {
         String testMethodName = args[0];
-        JunitTestLauncher tl = new JunitTestLauncher(testMethodName);
+        JUnitTestLauncher tl = new JUnitTestLauncher(testMethodName);
         boolean isTestPassed = tl.runTest();
         System.exit(isTestPassed ? 0 : 1);
     }
