@@ -1,4 +1,4 @@
-package experiment.util.internal.finder;
+package jisd.fl.infra.junit;
 
 import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 import jisd.fl.util.PropertyLoader;
