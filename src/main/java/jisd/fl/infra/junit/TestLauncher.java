@@ -1,4 +1,4 @@
-package jisd.fl.util;
+package jisd.fl.infra.junit;
 
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;

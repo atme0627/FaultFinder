@@ -10,7 +10,7 @@ public class JUnitDebugger extends EnhancedDebugger {
     }
 
     private static String JVMMain(MethodElementName testMethod){
-        return "jisd.fl.util.TestLauncher " + testMethod.getFullyQualifiedMethodName();
+        return "jisd.fl.infra.junit.TestLauncher " + testMethod.getFullyQualifiedMethodName();
     }
 
     public static String getJVMOption(){

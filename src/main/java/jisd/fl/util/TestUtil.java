@@ -47,7 +47,7 @@ public  class TestUtil {
                         + ":" + targetBinDir
                         + ":" + testBinDir
                         + ":'" + junitClassPath + "'"
-                + " jisd.fl.util.TestLauncher '" + testMethod.getFullyQualifiedMethodName() + "'";
+                + " jisd.fl.infra.junit.TestLauncher '" + testMethod.getFullyQualifiedMethodName() + "'";
 
         ProcessBuilder pb = new ProcessBuilder("zsh", "-ic", cmd);
         Process proc = pb.start();
