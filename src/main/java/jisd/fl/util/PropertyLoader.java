@@ -1,6 +1,5 @@
 package jisd.fl.util;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -14,7 +13,6 @@ public class PropertyLoader {
             "fl_properties/fl_jacoco.properties",
             "fl_properties/fl_junit.properties"
     };
-    private static final String FL_CONF = "fl_properties/fl_config.properties";
     private static final Properties properties;
 
     static {
@@ -39,40 +37,6 @@ public class PropertyLoader {
         return "locallib/junit-dependency/*";
     }
 
-    public static void setProperty(String key, String value) {
-        properties.setProperty(key, value);
-    }
-
-    public static void store() {
-        Properties p = new Properties();
-        p.setProperty("targetSrcDir", properties.getProperty("targetSrcDir"));
-        p.setProperty("testSrcDir", properties.getProperty("testSrcDir"));
-        p.setProperty("targetBinDir", properties.getProperty("targetBinDir"));
-        p.setProperty("testBinDir", properties.getProperty("testBinDir"));
-
-        try (FileWriter fw = new FileWriter(FL_CONF)) {
-            p.store(fw, null);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void setTargetSrcDir(String targetSrcDir) {
-        setProperty("targetSrcDir", targetSrcDir);
-    }
-
-    public static void setTargetBinDir(String targetBinDir) {
-        setProperty("targetBinDir", targetBinDir);
-    }
-
-    public static void setTestSrcDir(String testSrcDir) {
-        setProperty("testSrcDir", testSrcDir);
-    }
-
-    public static void setTestBinDir(String testBinDir) {
-        setProperty("testBinDir", testBinDir);
-    }
-
     public static String getTargetSrcDir() {
         return NewPropertyLoader.getTargetSrcDir().toString();
     }
@@ -89,13 +53,8 @@ public class PropertyLoader {
         return NewPropertyLoader.getTestBinDir().toString();
     }
 
-    //TODO: 使わないようにする
     public static String getDebugBinDir() {
-        throw new RuntimeException("Not implemented yet.");
-    }
-
-    public static String getClassesForDebugDir(){
-        return "classesForDebug";
+        return "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
     }
 
     public static void setProjectConfig(NewPropertyLoader.ProjectConfig cfg) {
