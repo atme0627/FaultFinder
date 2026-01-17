@@ -2,7 +2,7 @@ package experiment.defect4j;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.FileUtil;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.core.entity.LineElementName;
 import jisd.fl.core.entity.MethodElementName;
 import org.eclipse.jgit.api.Git;

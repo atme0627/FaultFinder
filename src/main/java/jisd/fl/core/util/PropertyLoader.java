@@ -1,4 +1,4 @@
-package jisd.fl.util;
+package jisd.fl.core.util;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

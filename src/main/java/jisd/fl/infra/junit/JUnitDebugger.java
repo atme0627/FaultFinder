@@ -2,7 +2,7 @@ package jisd.fl.infra.junit;
 
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.infra.jdi.EnhancedDebugger;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.core.util.PropertyLoader;
 
 public class JUnitDebugger extends EnhancedDebugger {
     public JUnitDebugger(MethodElementName testMethod) {

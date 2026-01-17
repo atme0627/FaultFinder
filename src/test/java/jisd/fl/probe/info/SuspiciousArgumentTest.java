@@ -5,7 +5,7 @@ import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

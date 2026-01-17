@@ -5,7 +5,7 @@ import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.JsonIO;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.core.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

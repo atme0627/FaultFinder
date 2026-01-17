@@ -5,7 +5,7 @@ import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
