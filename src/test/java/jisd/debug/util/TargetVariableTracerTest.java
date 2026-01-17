@@ -4,6 +4,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.jdi.TargetVariableTracer;
+import jisd.fl.util.NewPropertyLoader;
 import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,10 +25,14 @@ class TargetVariableTracerTest {
     void setUp(){
         Dotenv dotenv = Dotenv.load();
         Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
-        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
-        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
-        PropertyLoader.setTargetBinDir(testProjectDir.resolve("build/classes/java/main").toString());
-        PropertyLoader.setTestBinDir(testProjectDir.resolve("build/classes/java/test").toString());
+        var cfg = new NewPropertyLoader.ProjectConfig(
+                testProjectDir,
+                Path.of("src/main/java"),
+                Path.of("src/test/java"),
+                Path.of("build/classes/java/main"),
+                Path.of("build/classes/java/test")
+        );
+        PropertyLoader.setProjectConfig(cfg);
     }
 
     @Test

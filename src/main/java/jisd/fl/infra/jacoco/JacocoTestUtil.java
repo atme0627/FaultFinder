@@ -78,7 +78,7 @@ public  class JacocoTestUtil {
         //テストクラスはコンパイル済みと仮定
         URL[] url;
         try {
-            url = new URL[]{Paths.get(PropertyLoader.getDebugBinDir()).toUri().toURL()};
+            url = new URL[]{Paths.get(PropertyLoader.getTestBinDir()).toUri().toURL()};
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
