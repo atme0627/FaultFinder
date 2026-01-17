@@ -17,13 +17,11 @@ import java.util.*;
 
 public class EnhancedDebugger {
     public VirtualMachine vm;
-
     public EnhancedDebugger(String main, String options) {
-        init(main, options);
-    }
-
-    void init(String main, String options) {
         this.vm = createVM(main, options);
+    }
+    public EnhancedDebugger(VirtualMachine vm) {
+        this.vm = vm;
     }
 
     public void run() {
@@ -39,7 +37,7 @@ public class EnhancedDebugger {
         stderrThread.start();
     }
 
-    VirtualMachine createVM(String main, String options) {
+    protected VirtualMachine createVM(String main, String options) {
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         LaunchingConnector connector = vmm.defaultConnector();
         Map<String, Connector.Argument> cArgs = connector.defaultArguments();
