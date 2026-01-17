@@ -1,7 +1,7 @@
 package jisd.fl.infra.jacoco;
 
 import jisd.fl.core.entity.MethodElementName;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.NewPropertyLoader;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -31,8 +31,8 @@ public  class JacocoTestUtil {
         //TODO: エージェント使わない方式に切り替え
         final String jacocoAgentPath = "./locallib/jacocoagent.jar";
         final String jacocoExecFilePath = "./.jacoco_exec_data";
-        final String targetBinDir = PropertyLoader.getTargetBinDir();
-        final String testBinDir = PropertyLoader.getTestBinDir();
+        final String targetBinDir = NewPropertyLoader.getTargetBinDir().toString();
+        final String testBinDir = NewPropertyLoader.getTestBinDir().toString();
         final String junitClassPath = "locallib/junit-dependency/*";
         String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
 
@@ -79,7 +79,7 @@ public  class JacocoTestUtil {
         //テストクラスはコンパイル済みと仮定
         URL[] url;
         try {
-            url = new URL[]{Paths.get(PropertyLoader.getTestBinDir()).toUri().toURL()};
+            url = new URL[]{Paths.get(NewPropertyLoader.getTestBinDir().toString()).toUri().toURL()};
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

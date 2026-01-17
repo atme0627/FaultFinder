@@ -1,7 +1,7 @@
 package jisd.fl.infra.junit;
 
 import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.NewPropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -32,7 +32,7 @@ public class JUnitTestLauncherForFinder {
     public JUnitTestLauncherForFinder(MethodElementName targetTestMethod) {
         this.testMethodName = targetTestMethod;
         this.targetClassNames = JavaParserClassNameExtractor.getClassNames();
-        targetClassNames.addAll(JavaParserClassNameExtractor.getClassNames(Path.of(PropertyLoader.getTestSrcDir())));
+        targetClassNames.addAll(JavaParserClassNameExtractor.getClassNames(Path.of(NewPropertyLoader.getTestSrcDir().toString())));
     }
 
     /**

@@ -3,7 +3,6 @@ package experiment.defect4j;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.FileUtil;
 import jisd.fl.util.NewPropertyLoader;
-import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.LineElementName;
 import jisd.fl.core.entity.MethodElementName;
 import org.eclipse.jgit.api.Git;
@@ -53,10 +52,10 @@ public class Defects4jUtil {
         String cmd = "defects4j compile -w " + getProjectDir(project, bugId, true);
         execCmd(cmd);
         //TODO: 使わないようにする!
-        cmd = "cp -r " + PropertyLoader.getTargetBinDir() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
+        cmd = "cp -r " + NewPropertyLoader.getTargetBinDir().toString() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
         execCmd(cmd);
         //TODO: 使わないようにする!
-        cmd = "cp -r " + PropertyLoader.getTestBinDir() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
+        cmd = "cp -r " + NewPropertyLoader.getTestBinDir().toString() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
         execCmd(cmd);
     }
 

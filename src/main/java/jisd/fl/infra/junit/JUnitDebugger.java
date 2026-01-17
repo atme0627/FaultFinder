@@ -2,7 +2,7 @@ package jisd.fl.infra.junit;
 
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.infra.jdi.EnhancedDebugger;
-import jisd.fl.util.PropertyLoader;
+import jisd.fl.util.NewPropertyLoader;
 
 public class JUnitDebugger extends EnhancedDebugger {
     public JUnitDebugger(MethodElementName testMethod) {
@@ -15,8 +15,8 @@ public class JUnitDebugger extends EnhancedDebugger {
 
     public static String getJVMOption(){
         return "-cp " + "./build/classes/java/main"
-                + ":" + PropertyLoader.getTargetBinDir()
-                + ":" + PropertyLoader.getTestBinDir()
+                + ":" + NewPropertyLoader.getTargetBinDir().toString()
+                + ":" + NewPropertyLoader.getTestBinDir().toString()
                 + ":" + "locallib/junit-dependency/*";
     }
 }
