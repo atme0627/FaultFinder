@@ -6,7 +6,6 @@ import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.util.NewPropertyLoader;
-import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,7 @@ class LineMethodCallWatcherTest {
                 Path.of("build/classes/java/main"),
                 Path.of("build/classes/java/test")
         );
-        PropertyLoader.setProjectConfig(config);
+        NewPropertyLoader.setProjectConfig(config);
 
         targetTestClassName = new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTest");
     }

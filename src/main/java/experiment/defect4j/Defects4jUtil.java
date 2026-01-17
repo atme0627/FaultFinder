@@ -70,7 +70,7 @@ public class Defects4jUtil {
                 Path.of(exportProperty(project, bugId, "dir.bin.classes")),
                 Path.of(exportProperty(project, bugId, "dir.bin.tests"))
         );
-        PropertyLoader.setProjectConfig(config);
+        NewPropertyLoader.setProjectConfig(config);
     }
 
     private static String exportProperty(String project, int bugId, String key){

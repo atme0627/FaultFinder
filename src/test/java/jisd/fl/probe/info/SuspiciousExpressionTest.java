@@ -6,7 +6,6 @@ import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.util.NewPropertyLoader;
-import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -58,7 +57,7 @@ class SuspiciousExpressionTest {
                     Path.of("build/classes/java/main"),
                     Path.of("build/classes/java/test")
             );
-            PropertyLoader.setProjectConfig(config);
+            NewPropertyLoader.setProjectConfig(config);
         }
 
         @Test

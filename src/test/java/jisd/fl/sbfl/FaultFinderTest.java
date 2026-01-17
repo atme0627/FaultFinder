@@ -6,7 +6,6 @@ import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.NewPropertyLoader;
-import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +28,7 @@ public class FaultFinderTest {
                 Path.of("build/classes/java/main"),
                 Path.of("build/classes/java/test")
         );
-        PropertyLoader.setProjectConfig(config);
+        NewPropertyLoader.setProjectConfig(config);
 
         String testClassName = "org.sample.CalcTest";
         // カバレッジを分析

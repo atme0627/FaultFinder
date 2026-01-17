@@ -9,7 +9,6 @@ import jisd.fl.mapper.SuspiciousExpressionMapper;
 import jisd.fl.usecase.Probe;
 import jisd.fl.util.JsonIO;
 import jisd.fl.util.NewPropertyLoader;
-import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +38,7 @@ class ProbeTest {
                 Path.of("build/classes/java/main"),
                 Path.of("build/classes/java/test")
         );
-        PropertyLoader.setProjectConfig(cfg);
+        NewPropertyLoader.setProjectConfig(cfg);
 
         Path currentDirectoryPath = FileSystems.getDefault().getPath("");
         jsonOutPutDir = currentDirectoryPath.resolve("src/test/resources/json/SuspiciousExpression");

@@ -6,7 +6,6 @@ import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.util.NewPropertyLoader;
-import jisd.fl.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ class SuspiciousArgumentTest {
                 Path.of("build/classes/java/main"),
                 Path.of("build/classes/java/test")
         );
-        PropertyLoader.setProjectConfig(config);
+        NewPropertyLoader.setProjectConfig(config);
     }
 
     @Test

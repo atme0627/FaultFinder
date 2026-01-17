@@ -6,7 +6,6 @@ import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.util.JsonIO;
 import jisd.fl.util.NewPropertyLoader;
-import jisd.fl.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ class CoverageAnalyzerTest {
                 Path.of("build/classes/java/main"),
                 Path.of("build/classes/java/test")
         );
-        PropertyLoader.setProjectConfig(config);
+        NewPropertyLoader.setProjectConfig(config);
     }
 
     @Nested
