@@ -48,12 +48,15 @@ public class Defects4jUtil {
     }
 
     public static void compileBuggySrc(String project, int bugId){
-        FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
+        //TODO: 使わないようにする!
+        FileUtil.initDirectory("/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/");
         String cmd = "defects4j compile -w " + getProjectDir(project, bugId, true);
         execCmd(cmd);
-        cmd = "cp -r " + PropertyLoader.getTargetBinDir() + "/. " + PropertyLoader.getDebugBinDir();
+        //TODO: 使わないようにする!
+        cmd = "cp -r " + PropertyLoader.getTargetBinDir() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
         execCmd(cmd);
-        cmd = "cp -r " + PropertyLoader.getTestBinDir() + "/. " + PropertyLoader.getDebugBinDir();
+        //TODO: 使わないようにする!
+        cmd = "cp -r " + PropertyLoader.getTestBinDir() + "/. " + "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
         execCmd(cmd);
     }
 

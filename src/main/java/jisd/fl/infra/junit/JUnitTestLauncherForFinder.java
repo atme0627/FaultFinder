@@ -44,7 +44,8 @@ public class JUnitTestLauncherForFinder {
         //テストクラスはコンパイル済みと仮定
         URL[] url;
         try {
-            url = new URL[]{Paths.get(PropertyLoader.getDebugBinDir()).toUri().toURL(), Paths.get(PropertyLoader.getJunitClassPaths()).toUri().toURL()};
+            //TODO: 使わないようにする!
+            url = new URL[]{Paths.get("/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/").toUri().toURL(), Paths.get(PropertyLoader.getJunitClassPaths()).toUri().toURL()};
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

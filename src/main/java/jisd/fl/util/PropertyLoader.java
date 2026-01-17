@@ -20,9 +20,4 @@ public class PropertyLoader {
     public static String getTestBinDir() {
         return NewPropertyLoader.getTestBinDir().toString();
     }
-
-    public static String getDebugBinDir() {
-        return "/Users/ezaki/IdeaProjects/MyFaultFinder/classesForDebug/";
-    }
-
 }
