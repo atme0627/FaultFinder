@@ -2,12 +2,13 @@ package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
 import com.sun.jdi.Location;
-import com.sun.jdi.connect.Connector;
-import com.sun.jdi.connect.IllegalConnectorArgumentsException;
-import com.sun.jdi.connect.LaunchingConnector;
-import com.sun.jdi.connect.VMStartException;
+import com.sun.jdi.connect.*;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
+import jisd.fl.infra.jvm.JUnitLaunchSpecFactory;
+import jisd.fl.infra.jvm.JVMLauncher;
+import jisd.fl.infra.jvm.JVMProcess;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,42 +16,31 @@ import java.io.InputStreamReader;
 import java.util.*;
 
 
-public class EnhancedDebugger {
+public abstract class EnhancedDebugger {
     public VirtualMachine vm;
-    public EnhancedDebugger(String main, String options) {
-        this.vm = createVM(main, options);
-    }
-    public EnhancedDebugger(VirtualMachine vm) {
-        this.vm = vm;
+    public JVMProcess p;
+
+    public EnhancedDebugger(JVMProcess p, String hostName, String port) {
+        this.vm = createVM(hostName, port);
+        this.p = p;
     }
 
     public void run() {
         vm.resume();
     }
-
-    public void enableOutput(){
-        Process process = vm.process();
-        Thread stdoutThread = new Thread(new StreamGobbler(process.getInputStream(), "[stdout]"));
-        Thread stderrThread = new Thread(new StreamGobbler(process.getErrorStream(), "[stderr]"));
-
-        stdoutThread.start();
-        stderrThread.start();
-    }
-
-    protected VirtualMachine createVM(String main, String options) {
-        VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
-        LaunchingConnector connector = vmm.defaultConnector();
-        Map<String, Connector.Argument> cArgs = connector.defaultArguments();
-        cArgs.get("options").setValue(options);
-        cArgs.get("main").setValue(main);
-        //起動後すぐにsuspendされるはず
+    protected VirtualMachine createVM(String hostName, String port) {
         try {
-            return connector.launch(cArgs);
-        } catch (IOException | IllegalConnectorArgumentsException e ) {
-            throw new RuntimeException(e);
+            VirtualMachineManager vmManager = Bootstrap.virtualMachineManager();
+            AttachingConnector socket = vmManager.attachingConnectors().stream()
+                    .filter(c -> c.name().equals("com.sun.jdi.SocketAttach"))
+                    .findFirst().orElseThrow(() -> new IllegalStateException("SocketAttach connector not found"));
+            Map<String, Connector.Argument> args = socket.defaultArguments();
+            args.get("hostname").setValue(hostName);
+            args.get("port").setValue(port);
+            return socket.attach(args);
         }
-        catch (VMStartException e){
-            return createVM(main, options);
+        catch (IOException | IllegalConnectorArgumentsException e){
+            throw new RuntimeException(e);
         }
     }
 
