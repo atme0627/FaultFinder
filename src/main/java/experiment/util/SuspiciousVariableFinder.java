@@ -3,7 +3,7 @@ package experiment.util;
 import com.github.javaparser.ast.stmt.Statement;
 import experiment.util.internal.finder.LineMethodCallWatcher;
 import experiment.util.internal.finder.LineVariableNameExtractor;
-import jisd.fl.infra.junit.TestLauncherForFinder;
+import jisd.fl.infra.junit.JunitTestLauncherForFinder;
 import experiment.util.internal.finder.LineValueWatcher;
 import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
 import jisd.fl.core.entity.MethodElementName;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class SuspiciousVariableFinder {
     private final MethodElementName targetTestCaseName;
 
-    private final TestLauncherForFinder testLauncher;
+    private final JunitTestLauncherForFinder testLauncher;
     private final LineVariableNameExtractor VarNameExtractor;
     private final LineValueWatcher valueWatcher;
     private final LineMethodCallWatcher methodCallWatcher;
@@ -32,7 +32,7 @@ public class SuspiciousVariableFinder {
     public SuspiciousVariableFinder(MethodElementName targetTestCaseName) throws NoSuchFileException {
         this.targetTestCaseName = targetTestCaseName;
 
-        this.testLauncher = new TestLauncherForFinder(targetTestCaseName);
+        this.testLauncher = new JunitTestLauncherForFinder(targetTestCaseName);
         this.VarNameExtractor = new LineVariableNameExtractor();
         this.valueWatcher = new LineValueWatcher(targetTestCaseName);
         this.methodCallWatcher = new LineMethodCallWatcher(targetTestCaseName);
@@ -42,7 +42,7 @@ public class SuspiciousVariableFinder {
 
     public List<SuspiciousVariable> findSuspiciousVariableInAssertLine() throws NoSuchFileException {
         //失敗テストを実行し、失敗したAssert行、またはクラッシュ時に最後に実行された行（失敗行）を取得
-        TestLauncherForFinder.TestFailureInfo info = testLauncher.runTestAndGetFailureLine().orElse(null);
+        JunitTestLauncherForFinder.TestFailureInfo info = testLauncher.runTestAndGetFailureLine().orElse(null);
         if(info == null) return Collections.emptyList();
 
         //失敗行のロケーション情報を取得
