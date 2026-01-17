@@ -22,35 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public  class TestUtil {
-    //-gつきでコンパイル
-    @Deprecated
-    public static void compileForDebug(MethodElementName targetTestClass) {
-        FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
-        String classpath = "locallib/junit-dependency/*";
-        String sourcepath = PropertyLoader.getTargetSrcDir() + ":" + PropertyLoader.getTestSrcDir();
-        String[] cmdArray = {
-                "javac",
-                "-g",
-                "-cp", classpath,
-                "-sourcepath", sourcepath,
-                "-d", PropertyLoader.getDebugBinDir(),
-                targetTestClass.getFilePath(true).toString()
-        };
-        try {
-            ProcessBuilder pb = new ProcessBuilder(cmdArray);
-            Process proc = pb.start();
-            proc.waitFor();
-            System.out.println("Success to compile " + targetTestClass.getFullyQualifiedClassName() + ".");
-            String line = null;
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
-                while ((line = buf.readLine()) != null) System.err.println(line);
-            }
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
     //TestLauncherにjacoco agentをつけて起動
     //methodNameは次のように指定: org.example.order.OrderTests#test1(int a)
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
