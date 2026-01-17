@@ -30,7 +30,6 @@ public class TestLauncher {
     }
 
     public boolean runTest() {
-        //TestUtil.compileTestClass(testClassName);
         LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                 .selectors(
                         selectMethod(testMethodName)
