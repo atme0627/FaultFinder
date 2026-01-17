@@ -28,8 +28,9 @@ public  class JacocoTestUtil {
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
     public static boolean execTestCaseWithJacocoAgent(MethodElementName testMethod, String execFileName) throws IOException, InterruptedException {
-        final String jacocoAgentPath = PropertyLoader.getProperty("jacocoAgentPath");
-        final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
+        //TODO: エージェント使わない方式に切り替え
+        final String jacocoAgentPath = "./locallib/jacocoagent.jar";
+        final String jacocoExecFilePath = "./.jacoco_exec_data";
         final String targetBinDir = PropertyLoader.getTargetBinDir();
         final String testBinDir = PropertyLoader.getTestBinDir();
         final String junitClassPath = PropertyLoader.getJunitClassPaths();

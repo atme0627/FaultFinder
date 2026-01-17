@@ -22,14 +22,6 @@ class Defects4jUtilTest {
         root.setLevel(Level.OFF);
     }
 
-
-    @Test
-    void changeTargetVersionTest() {
-        Defects4jUtil.changeTargetVersion("Math", 15);
-        System.out.println(PropertyLoader.getProperty("targetSrcDir"));
-        System.out.println(PropertyLoader.getProperty("junitConsoleLauncherPath"));
-    }
-
     @Nested
     class extractBuggyLines {
         @BeforeEach

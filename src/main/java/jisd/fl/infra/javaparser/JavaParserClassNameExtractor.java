@@ -11,7 +11,7 @@ import java.util.Set;
 public class JavaParserClassNameExtractor {
     //プロジェクト全体
     public static Set<String> getClassNames() {
-        return getClassNames(Paths.get(PropertyLoader.getProperty("targetSrcDir")));
+        return getClassNames(Paths.get(PropertyLoader.getTargetSrcDir()));
     }
 
     //ディレクトリ指定

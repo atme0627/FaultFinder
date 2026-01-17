@@ -35,12 +35,8 @@ public class PropertyLoader {
         }
     }
 
-    public static String getProperty(final String key) {
-        return properties.getProperty(key);
-    }
-
     public static String getJunitClassPaths() {
-        return getProperty("junitDependencyJars");
+        return "locallib/junit-dependency/*";
     }
 
     public static void setProperty(String key, String value) {

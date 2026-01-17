@@ -16,7 +16,7 @@ import java.util.concurrent.Future;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
-    String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
+    String jacocoExecFilePath = "./.jacoco_exec_data";
     Set<String> targetClassNames;
     Set<MethodElementName> failedTests;
     MyCoverageVisitor visitor;

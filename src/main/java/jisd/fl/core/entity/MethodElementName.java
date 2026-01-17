@@ -103,7 +103,7 @@ public class MethodElementName implements CodeElementIdentifier {
 
     @Override
     public Path getFilePath(boolean isTest){
-        String dir = isTest ? PropertyLoader.getProperty("testSrcDir") : PropertyLoader.getProperty("targetSrcDir");
+        String dir = isTest ? PropertyLoader.getTestSrcDir() : PropertyLoader.getTargetSrcDir();
         return Paths.get(dir + "/" + packageName.replace('.', '/'), className + ".java");
     }
 

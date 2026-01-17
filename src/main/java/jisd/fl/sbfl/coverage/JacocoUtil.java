@@ -28,7 +28,7 @@ public class JacocoUtil {
     }
 
     public static ExecutionDataStore execFileLoader(String testMethodName) throws IOException {
-        final String jacocoExecFilePath = PropertyLoader.getProperty("jacocoExecFilePath");
+        final String jacocoExecFilePath = "./.jacoco_exec_data";
         File testDatafile = new File(jacocoExecFilePath + "/" + testMethodName);
         ExecFileLoader testFileLoader = new ExecFileLoader();
         testFileLoader.load(testDatafile);
