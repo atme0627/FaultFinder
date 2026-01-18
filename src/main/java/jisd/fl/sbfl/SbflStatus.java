@@ -2,6 +2,7 @@ package jisd.fl.sbfl;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jisd.fl.core.entity.coverage.SbflCounts;
+import jisd.fl.core.entity.sbfl.Formula;
 
 public class SbflStatus {
     public int ep = 0;

@@ -1,4 +1,6 @@
-package jisd.fl.sbfl;
+package jisd.fl.core.entity.sbfl;
+
+import jisd.fl.sbfl.SbflStatus;
 
 public enum Formula {
     TARANTULA {
