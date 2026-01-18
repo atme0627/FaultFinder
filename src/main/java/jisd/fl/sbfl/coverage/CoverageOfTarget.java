@@ -1,12 +1,10 @@
 package jisd.fl.sbfl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.core.entity.element.*;
+import jisd.fl.infra.javaparser.JavaParserLineElementNameResolverFactory;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.sbfl.SbflStatus;
-import jisd.fl.core.entity.element.CodeElementIdentifier;
-import jisd.fl.core.entity.element.LineElementName;
-import jisd.fl.core.entity.element.MethodElementName;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 import org.jacoco.core.analysis.IMethodCoverage;
@@ -22,9 +20,7 @@ public class CoverageOfTarget {
     public Map<CodeElementIdentifier<?>, SbflStatus> lineCoverage;
     public Map<CodeElementIdentifier<?>, SbflStatus> methodCoverage;
     public Map<CodeElementIdentifier<?>, SbflStatus> classCoverage;
-
-    //行 --> MethodElementName
-    private Map<Integer, MethodElementName> methodElementNames;
+    public LineElementNameResolver resolver;
 
     @JsonCreator
     public CoverageOfTarget(){
@@ -36,10 +32,8 @@ public class CoverageOfTarget {
         lineCoverage = new HashMap<>();
         classCoverage = new HashMap<>();
         methodCoverage = new HashMap<>();
-
         try {
-            Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(new ClassElementName(targetClassName));
-            methodElementNames = result;
+            resolver = JavaParserLineElementNameResolverFactory.create(new ClassElementName(targetClassName));
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -180,7 +174,7 @@ public class CoverageOfTarget {
     }
 
     private LineElementName getLineElementNameFromLine(int line){
-        MethodElementName methodElementName = methodElementNames.get(line);
+        MethodElementName methodElementName = resolver.lineElementAt(line).methodElementName;
         if(methodElementName == null) {
             return new LineElementName(targetClassName + "#<clinit>()", line);
         }
@@ -188,7 +182,7 @@ public class CoverageOfTarget {
     }
 
     private MethodElementName getMethodElementNameFromLine(int line){
-        MethodElementName result = methodElementNames.get(line);
+        MethodElementName result = resolver.lineElementAt(line).methodElementName;
         if(result == null) {
             return new MethodElementName(targetClassName + "#<clinit>()");
         }
