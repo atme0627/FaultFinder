@@ -42,7 +42,7 @@ public class ProjectSbflCoverage {
         return byClass.values().stream().filter(ClassSbflCoverage::hasAnyCoverage);
     }
 
-    public Stream<ClassCoverageEntry> classCoverageEntries(boolean hideZeroElements){
+    public Stream<ClassCoverageEntry> classCoverageEntries(){
         return coveredClasses().map(cov -> new ClassCoverageEntry(cov.targetClass, cov.classCounts()));
     }
 
