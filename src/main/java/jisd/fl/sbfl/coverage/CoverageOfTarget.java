@@ -18,9 +18,9 @@ import java.util.*;
 public class CoverageOfTarget {
     public String targetClassName;
     //各行のカバレッジ情報
-    public Map<CodeElementIdentifier, SbflStatus> lineCoverage;
-    public Map<CodeElementIdentifier, SbflStatus> methodCoverage;
-    public Map<CodeElementIdentifier, SbflStatus> classCoverage;
+    public Map<CodeElementIdentifier<?>, SbflStatus> lineCoverage;
+    public Map<CodeElementIdentifier<?>, SbflStatus> methodCoverage;
+    public Map<CodeElementIdentifier<?>, SbflStatus> classCoverage;
 
     //行 --> MethodElementName
     private Map<Integer, MethodElementName> methodElementNames;
