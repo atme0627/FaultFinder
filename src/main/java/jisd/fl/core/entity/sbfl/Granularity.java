@@ -1,4 +1,4 @@
-package jisd.fl.core.entity.coverage;
+package jisd.fl.core.entity.sbfl;
 
 public enum Granularity {
     LINE,

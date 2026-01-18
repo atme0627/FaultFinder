@@ -11,7 +11,7 @@ import jisd.fl.core.entity.FLRankingElement;
 import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
-import jisd.fl.core.entity.coverage.Granularity;
+import jisd.fl.core.entity.sbfl.Granularity;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.presenter.ScoreUpdateReport;
 import jisd.fl.core.entity.element.CodeElementIdentifier;
