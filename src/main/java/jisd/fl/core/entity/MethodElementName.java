@@ -1,44 +1,14 @@
 package jisd.fl.core.entity;
+import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jisd.fl.infra.jdi.EnhancedDebugger;
-import jisd.fl.core.util.PropertyLoader;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class MethodElementName implements CodeElementIdentifier {
-    @NotNull
-    final public String packageName;
-    @NotBlank
-    final public String className;
+    final public ClassElementName classElementName;
     final public String methodSignature;
 
-    @JsonCreator
-    public MethodElementName(
-            @JsonProperty("packageName") String packageName,
-            @JsonProperty("className") String className,
-            @JsonProperty("methodSignature") String methodSignature
-    ) {
-        this.packageName = packageName;
-        this.className = className;
-        this.methodSignature = normalizeMethodSignature(methodSignature);
-    }
-
-    //メソッド名は一応あってもなくても良い
-    //ex1.) sample.demo
-    //ex2.) sample.demo#sample
-    //ex3.) sample.demo#sample(int)
+    //ex1.) sample.demo#sample
+    //ex2.) sample.demo#sample(int)
     public MethodElementName(String fullyQualifiedName){
         String fqClassName;
-        final String packageName;
-        final String className;
         final String methodSignature;
 
         //with method name
@@ -47,107 +17,90 @@ public class MethodElementName implements CodeElementIdentifier {
             methodSignature = normalizeMethodSignature(fullyQualifiedName.split("#")[1]);
         }
         else {
-            fqClassName = fullyQualifiedName;
-            methodSignature = "<NO METHOD DATA>()";
+            throw new IllegalArgumentException("fullyQualifiedName must contain method name: " + fullyQualifiedName);
         }
 
-        //with package
-        if(fullyQualifiedName.contains(".")) {
-            packageName = fqClassName.substring(0, fqClassName.lastIndexOf('.'));
-            className = fqClassName.substring(fqClassName.lastIndexOf('.') + 1);
-        }
-        else {
-            packageName = "";
-            className = fqClassName;
-        }
-
-
-        this.packageName = packageName;
-        this.className = className.contains("$") ? className.split("\\$")[0] : className;
+        this.classElementName = new ClassElementName(fqClassName);
         this.methodSignature = methodSignature;
     }
 
-    public MethodElementName(String packageName, String className){
-        this.packageName = packageName;
-        this.className = className;
-        this.methodSignature =  "<NO METHOD DATA>()";
+    @Override
+    public String fullyQualifiedClassName(){
+        return classElementName.fullyQualifiedName();
     }
 
     @Override
-    public String getFullyQualifiedClassName(){
-        return packageName.isEmpty() ? className : packageName + "." + className;
+    public String fullyQualifiedName(){
+        return classElementName.fullyQualifiedName() + "#" + methodSignature;
     }
 
     @Override
-    public String getFullyQualifiedMethodName(){
-        return packageName.isEmpty() ? className + "#" + methodSignature : packageName + "." + className + "#" + methodSignature;
+    public String compressedName(){
+        return classElementName.compressedName() + "#" + compressedMethodName();
     }
 
-    @Override
-    public String getShortClassName(){
-        return this.className;
+    public String compressedMethodName() {
+        String signature = methodSignature.substring(methodSignature.indexOf("(")).length() == 2 ? "()" : "(...)";
+        return shortMethodName() + signature;
     }
 
-    @Override
     //signature含まない
-    public String getShortMethodName(){
-       return this.methodSignature.split("\\(")[0];
+    public String shortMethodName(){
+        return this.methodSignature.split("\\(")[0];
     }
 
-    @Override
-    public Path getFilePath(){
-        Path p = getFilePath(false);
-        if(Files.exists(p)) return p;
-        return getFilePath(true);
-    }
-
-    @Override
-    public Path getFilePath(boolean isTest){
-        String dir;
-        dir = isTest ? PropertyLoader.getTestSrcDir().toString() : PropertyLoader.getTargetSrcDir().toString();
-        return Paths.get(dir + "/" + packageName.replace('.', '/'), className + ".java");
-    }
-
-    @Override
-    public String compressedShortMethodName() {
-        String signature = getFullyQualifiedMethodName().substring(getFullyQualifiedMethodName().indexOf("(")).length() == 2 ? "()" : "(...)";
-        return getShortMethodName() + signature;
-    }
 
     public LineElementName toLineElementName(int line){
         return new LineElementName(this, line);
     }
 
-    @Override
     public boolean isNeighbor(CodeElementIdentifier target){
         if(!(target instanceof MethodElementName methodElementTarget)) return false;
-        return this.getFullyQualifiedClassName().equals(methodElementTarget.getFullyQualifiedClassName());
+        return this.fullyQualifiedClassName().equals(methodElementTarget.fullyQualifiedClassName());
     }
 
-    @Override
-    public int compareTo(CodeElementIdentifier o) {
-        return this.getFullyQualifiedMethodName().compareTo(o.getFullyQualifiedMethodName());
+    public int compareTo(MethodElementName e) {
+        return (!classElementName.equals(e.classElementName)) ? classElementName.compareTo(e.classElementName) : methodSignature.compareTo(e.methodSignature);
     }
 
     @Override
     public boolean equals(Object obj){
         if(obj == null) return false;
-        if(!(obj instanceof MethodElementName)) return false;
-        return this.getFullyQualifiedMethodName()
-                .equals(((MethodElementName) obj).getFullyQualifiedMethodName());
+        if(!(obj instanceof MethodElementName e)) return false;
+        return this.classElementName.equals(e.classElementName) && this.methodSignature.equals(e.methodSignature);
     }
 
     @Override
     public int hashCode(){
-        return this.getFullyQualifiedMethodName().hashCode();
+        return Objects.hash(classElementName, methodSignature);
     }
 
     @Override
     public String toString(){
-        return this.getFullyQualifiedMethodName();
+        return this.fullyQualifiedName();
     }
 
-    private String normalizeMethodSignature(String methodSignature){
-        return EnhancedDebugger.normalizeMethodSignature(methodSignature);
+    private static String normalizeMethodSignature(String methodSignature){
+        String shortMethodName = methodSignature.split("\\(")[0];
+        String[] args = methodSignature.substring(methodSignature.indexOf("(") + 1, methodSignature.indexOf(")")).split(",");
+        if(args.length == 1 && args[0].isEmpty()) return methodSignature;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(shortMethodName);
+        sb.append("(");
+        for(String arg : args){
+            arg = arg.trim();
+            if(!arg.contains(".")) {
+                sb.append(arg);
+            }
+            else {
+                sb.append(arg.substring(arg.lastIndexOf(".") + 1));
+            }
+            sb.append(", ");
+        }
+
+        sb.delete(sb.length() -2, sb.length());
+        sb.append(")");
+        return sb.toString();
     }
 }
