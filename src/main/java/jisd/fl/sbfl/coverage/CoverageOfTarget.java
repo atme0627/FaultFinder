@@ -137,7 +137,7 @@ public class CoverageOfTarget {
         out.println(header);
         out.println(partition);
         new TreeMap<>(methodCoverage).forEach((name, s) -> {
-                    out.println("|  " + name.getShortMethodName() +
+                    out.println("|  " + name.compressedName() +
                                       " | " + String.valueOf(s.ep) +
                                       " | " + String.valueOf(s.ef) +
                                       " | " + String.valueOf(s.np) +
@@ -172,7 +172,7 @@ public class CoverageOfTarget {
     private int maxLengthOfName(Map<CodeElementIdentifier, SbflStatus> cov, boolean isMethod){
         int maxLength = 0;
         for(CodeElementIdentifier name : cov.keySet()){
-            int l = (isMethod) ? name.getShortMethodName().length() : name.toString().length();
+            int l = (isMethod) ? name.compressedName().length() : name.toString().length();
             maxLength = Math.max(maxLength, l);
         }
         return maxLength;
