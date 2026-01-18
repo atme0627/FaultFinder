@@ -2,7 +2,7 @@ package jisd.fl.core.entity;
 
 import java.util.Objects;
 
-public class ClassElementName implements CodeElementIdentifier {
+public class ClassElementName implements CodeElementIdentifier<ClassElementName> {
     final public String packageName;
     final public String className;
 
@@ -36,8 +36,14 @@ public class ClassElementName implements CodeElementIdentifier {
         return shortClassName.toString();
     }
 
+    @Override
     public int compareTo(ClassElementName o) {
         return (!packageName.equals(o.packageName)) ? packageName.compareTo(o.packageName) : className.compareTo(o.className);
+    }
+
+    @Override
+    public boolean isNeighbor(ClassElementName other){
+        return packageName.equals(other.packageName);
     }
 
     @Override

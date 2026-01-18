@@ -5,8 +5,7 @@ import com.sun.jdi.Location;
 import com.sun.jdi.connect.*;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
-import jisd.fl.infra.jvm.JUnitLaunchSpecFactory;
-import jisd.fl.infra.jvm.JVMLauncher;
+import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.infra.jvm.JVMProcess;
 
 import java.io.BufferedReader;
@@ -251,35 +250,9 @@ public abstract class EnhancedDebugger {
             String constructorName = n.substring(n.toString().split("\\(")[0].lastIndexOf(".") + 1, n.indexOf("#"));
             n.replace(n.indexOf("#") + 1, n.indexOf("("), constructorName);
         }
-
-        return n.toString().split("\\(")[0] + normalizeMethodSignature("(" + n.toString().split("\\(")[1]);
+        return new MethodElementName(n.toString()).fullyQualifiedName() ;
     }
-
-    public static String normalizeMethodSignature(String methodSignature){
-        String shortMethodName = methodSignature.split("\\(")[0];
-        String[] args = methodSignature.substring(methodSignature.indexOf("(") + 1, methodSignature.indexOf(")")).split(",");
-        if(args.length == 1 && args[0].isEmpty()) return methodSignature;
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(shortMethodName);
-        sb.append("(");
-        for(String arg : args){
-            arg = arg.trim();
-            if(!arg.contains(".")) {
-                sb.append(arg);
-            }
-            else {
-                sb.append(arg.substring(arg.lastIndexOf(".") + 1));
-            }
-            sb.append(", ");
-        }
-
-        sb.delete(sb.length() -2, sb.length());
-        sb.append(")");
-        return sb.toString();
-    }
-
-
+    
     /**
      * サブプロセスの標準（エラー）出力を
      * 別スレッドで逐次読み込み、任意の処理を行うためのヘルパークラス

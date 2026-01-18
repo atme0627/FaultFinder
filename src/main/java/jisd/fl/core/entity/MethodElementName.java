@@ -1,7 +1,7 @@
 package jisd.fl.core.entity;
 import java.util.Objects;
 
-public class MethodElementName implements CodeElementIdentifier {
+public class MethodElementName implements CodeElementIdentifier<MethodElementName> {
     final public ClassElementName classElementName;
     final public String methodSignature;
 
@@ -54,13 +54,15 @@ public class MethodElementName implements CodeElementIdentifier {
         return new LineElementName(this, line);
     }
 
-    public boolean isNeighbor(CodeElementIdentifier target){
-        if(!(target instanceof MethodElementName methodElementTarget)) return false;
-        return this.fullyQualifiedClassName().equals(methodElementTarget.fullyQualifiedClassName());
-    }
 
+    @Override
     public int compareTo(MethodElementName e) {
         return (!classElementName.equals(e.classElementName)) ? classElementName.compareTo(e.classElementName) : methodSignature.compareTo(e.methodSignature);
+    }
+
+    @Override
+    public boolean isNeighbor(MethodElementName other){
+        return this.classElementName.equals(other.classElementName);
     }
 
     @Override

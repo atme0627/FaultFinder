@@ -1,8 +1,9 @@
 package jisd.fl.core.entity;
 
-public interface CodeElementIdentifier  {
+public interface CodeElementIdentifier<T extends CodeElementIdentifier<T>>  {
     String fullyQualifiedClassName();
     String fullyQualifiedName();
     String compressedName();
-    //boolean isNeighbor(CodeElementIdentifier target);
+    int compareTo(T other);
+    boolean isNeighbor(T other);
 }

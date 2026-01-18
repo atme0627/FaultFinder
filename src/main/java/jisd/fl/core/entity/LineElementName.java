@@ -2,7 +2,7 @@ package jisd.fl.core.entity;
 
 import java.util.Objects;
 
-public class LineElementName implements CodeElementIdentifier {
+public class LineElementName implements CodeElementIdentifier<LineElementName> {
     private final MethodElementName methodElementName;
     private final int line;
 
@@ -32,9 +32,14 @@ public class LineElementName implements CodeElementIdentifier {
         return methodElementName.compressedMethodName() + " line: " + line;
     }
 
-
+    @Override
     public int compareTo(LineElementName o) {
         return (!methodElementName.equals(o.methodElementName)) ? methodElementName.compareTo(o.methodElementName) : line - o.line;
+    }
+
+    @Override
+    public boolean isNeighbor(LineElementName other){
+        return this.methodElementName.equals(other.methodElementName);
     }
 
     @Override
