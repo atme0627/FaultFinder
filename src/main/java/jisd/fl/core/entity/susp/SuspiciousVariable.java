@@ -52,7 +52,7 @@ public class SuspiciousVariable {
     }
 
     public String getLocateClass() {
-        return locateMethod.getFullyQualifiedClassName();
+        return locateMethod.fullyQualifiedClassName();
     }
 
     public String getSimpleVariableName() {
@@ -89,7 +89,7 @@ public class SuspiciousVariable {
 
     public String getLocateMethod(boolean withClass) {
         if (withClass) {
-            return locateMethod.getFullyQualifiedMethodName();
+            return locateMethod.fullyQualifiedName();
         } else {
             return locateMethod.methodSignature;
         }

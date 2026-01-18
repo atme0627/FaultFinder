@@ -74,11 +74,11 @@ public class BuggyElementExtractor {
                 for (Edit edit : edits) {
                     if (edit.getType() == Edit.Type.DELETE || edit.getType() == Edit.Type.REPLACE) {
                         for (int i = edit.getBeginA(); i < edit.getEndA(); i++) {
-                            buggyLines.add(methodsWithLine.getOrDefault(i + 1, new MethodElementName(fqcn.get().getFullyQualifiedClassName() + "#<ulinit>()")).toLineElementName(i + 1));
+                            buggyLines.add(methodsWithLine.getOrDefault(i + 1, new MethodElementName(fqcn.get().fullyQualifiedClassName() + "#<ulinit>()")).toLineElementName(i + 1));
                         }
                     } else if (edit.getType() == Edit.Type.INSERT) {
                         int afterInsertedLine = edit.getBeginA();
-                        buggyLines.add(methodsWithLine.getOrDefault(afterInsertedLine + 1, new MethodElementName(fqcn.get().getFullyQualifiedClassName() + "#<ulinit>()")).toLineElementName(afterInsertedLine + 1));
+                        buggyLines.add(methodsWithLine.getOrDefault(afterInsertedLine + 1, new MethodElementName(fqcn.get().fullyQualifiedClassName() + "#<ulinit>()")).toLineElementName(afterInsertedLine + 1));
                     }
                 }
             }

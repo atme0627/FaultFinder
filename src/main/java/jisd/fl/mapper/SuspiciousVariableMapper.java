@@ -41,7 +41,7 @@ public class SuspiciousVariableMapper {
                 variableName = variableName.substring(0, variableName.indexOf("["));
                 return new SuspiciousVariable(
                         failedTest,
-                        locateMethod.getFullyQualifiedMethodName(),
+                        locateMethod.fullyQualifiedName(),
                         variableName,
                         actualValue,
                         isPrimitive,
@@ -52,7 +52,7 @@ public class SuspiciousVariableMapper {
 
             return new SuspiciousVariable(
                     failedTest,
-                    locateMethod.getFullyQualifiedMethodName(),
+                    locateMethod.fullyQualifiedName(),
                     variableName,
                     actualValue,
                     isPrimitive,

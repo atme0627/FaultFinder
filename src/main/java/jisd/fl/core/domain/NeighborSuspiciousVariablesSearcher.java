@@ -32,7 +32,7 @@ public class NeighborSuspiciousVariablesSearcher {
                         //
                         .map(t -> new SuspiciousVariable(
                                 suspExpr.failedTest,
-                                suspExpr.locateMethod.getFullyQualifiedMethodName(),
+                                suspExpr.locateMethod.fullyQualifiedName(),
                                 t.variableName,
                                 t.value,
                                 true,

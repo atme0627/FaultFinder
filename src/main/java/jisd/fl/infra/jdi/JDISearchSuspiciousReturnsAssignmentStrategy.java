@@ -100,7 +100,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
         };
 
         //VMを実行し情報を収集
-        debugger.handleAtBreakPoint((suspAssign).locateMethod.getFullyQualifiedClassName(), (suspAssign).locateLine, handler);
+        debugger.handleAtBreakPoint((suspAssign).locateMethod.fullyQualifiedClassName(), (suspAssign).locateLine, handler);
         if(result.isEmpty()){
             System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
                     + "(return value) == " + (suspAssign).actualValue

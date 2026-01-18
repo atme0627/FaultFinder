@@ -96,7 +96,7 @@ public class CoverageAnalyzer {
     private long failedTestsCountInClass(MethodElementName testClassName){
         return failedTests
                 .stream()
-                .filter((ft) -> ft.getFullyQualifiedClassName().equals(testClassName.getFullyQualifiedClassName()))
+                .filter((ft) -> ft.fullyQualifiedClassName().equals(testClassName.fullyQualifiedClassName()))
                 .count();
     }
 

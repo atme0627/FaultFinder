@@ -115,7 +115,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         };
 
         //VMを実行し情報を収集
-        debugger.handleAtBreakPoint((suspReturn).locateMethod.getFullyQualifiedClassName(), (suspReturn).locateLine, handler);
+        debugger.handleAtBreakPoint((suspReturn).locateMethod.fullyQualifiedClassName(), (suspReturn).locateLine, handler);
         if(result.isEmpty()){
             System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
                     + "(return value) == " + (suspReturn).actualValue

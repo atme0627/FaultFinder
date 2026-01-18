@@ -20,7 +20,7 @@ class LineMethodCallWatcherTest {
     MethodElementName targetTestClassName;
     final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
     MethodElementName getTargetTestMethod(String shortMethodName){
-        return new MethodElementName(targetTestClassName.getFullyQualifiedClassName() + "#" + shortMethodName + "()");
+        return new MethodElementName(targetTestClassName.fullyQualifiedClassName() + "#" + shortMethodName + "()");
     }
 
     @BeforeEach

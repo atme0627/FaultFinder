@@ -50,7 +50,7 @@ public class Coverage {
             CoverageAnalyzer ca = new CoverageAnalyzer(new HashSet<>(testMethods));
             Set<String> executed = new HashSet<>();
             for(MethodElementName testMethodName : testMethods) {
-                String testClassName = testMethodName.getFullyQualifiedClassName();
+                String testClassName = testMethodName.fullyQualifiedClassName();
 
                 if(executed.contains(testClassName)) continue;
                 executed.add(testClassName);

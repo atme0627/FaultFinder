@@ -36,7 +36,7 @@ public class LineValueWatcher {
         };
 
         //VMを実行し情報を収集
-        debugger.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
+        debugger.handleAtBreakPoint(locateMethod.fullyQualifiedClassName(), failureLine, handler);
         return result;
     }
 
@@ -60,7 +60,7 @@ public class LineValueWatcher {
                 if(!(ar.getValue(0) instanceof PrimitiveValue)) return;
                 result.add(new SuspiciousVariable(
                         this.targetTestCaseName,
-                        locateMethod.getFullyQualifiedMethodName(),
+                        locateMethod.fullyQualifiedName(),
                         lv.name(),
                         ar.getValue(0).toString(),
                         true,
@@ -71,7 +71,7 @@ public class LineValueWatcher {
             if(v instanceof PrimitiveValue || (v != null && v.type().name().equals("java.lang.String"))) {
                 result.add(new SuspiciousVariable(
                         this.targetTestCaseName,
-                        locateMethod.getFullyQualifiedMethodName(),
+                        locateMethod.fullyQualifiedName(),
                         lv.name(),
                         v.toString(),
                         true,
@@ -90,7 +90,7 @@ public class LineValueWatcher {
 
                 result.add(new SuspiciousVariable(
                         this.targetTestCaseName,
-                        locateMethod.getFullyQualifiedClassName(),
+                        locateMethod.fullyQualifiedClassName(),
                         f.name(),
                         thisObj.getValue(f).toString(),
                         true,

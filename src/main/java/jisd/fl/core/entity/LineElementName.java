@@ -1,5 +1,4 @@
 package jisd.fl.core.entity;
-
 import java.nio.file.Path;
 
 public class LineElementName implements CodeElementIdentifier {
@@ -16,24 +15,17 @@ public class LineElementName implements CodeElementIdentifier {
         this.line = line;
     }
 
-    @Override
     public String getFullyQualifiedClassName() {
-        return methodElementName.getFullyQualifiedClassName();
+        return methodElementName.fullyQualifiedClassName();
     }
 
     @Override
     public String getFullyQualifiedMethodName() {
-        return methodElementName.getFullyQualifiedMethodName();
+        return methodElementName.fullyQualifiedName();
     }
 
-    @Override
-    public String getShortClassName() {
-        return methodElementName.getShortClassName();
-    }
-
-    @Override
     public String getShortMethodName() {
-        return methodElementName.getShortMethodName();
+        return methodElementName.shortMethodName();
     }
 
     @Override
@@ -90,4 +82,14 @@ public class LineElementName implements CodeElementIdentifier {
         return line;
     }
 
+    public String compressedClassName(){
+        StringBuilder shortClassName = new StringBuilder();
+        String[] packages = getFullyQualifiedClassName().split("\\.");
+        for(int j = 0; j < packages.length; j++){
+            String packageName = j < packages.length - 2 ? String.valueOf(packages[j].charAt(0)) : packages[j];
+            shortClassName.append(packageName);
+            if(j < packages.length - 1) shortClassName.append(".");
+        }
+        return shortClassName.toString();
+    }
 }

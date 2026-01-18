@@ -55,11 +55,11 @@ public class JUnitTestLauncherForFinder {
             //ClassLoaderを切り替え
             Thread.currentThread().setContextClassLoader(testClassLoader);
             //対象のテストクラスをロード
-            Class<?> targetTestClass = testClassLoader.loadClass(testMethodName.getFullyQualifiedClassName());
+            Class<?> targetTestClass = testClassLoader.loadClass(testMethodName.fullyQualifiedClassName());
 
 
             LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
-                    .selectors(selectMethod(targetTestClass, testMethodName.getShortMethodName()))
+                    .selectors(selectMethod(targetTestClass, testMethodName.shortMethodName()))
                     .build();
 
             Launcher launcher = LauncherFactory.create();

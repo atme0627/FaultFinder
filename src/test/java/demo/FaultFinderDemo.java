@@ -37,7 +37,7 @@ public class FaultFinderDemo {
     void probe(){
         SuspiciousVariable targetValue = new SuspiciousVariable(
                 failedTestMethodName,
-                failedTestMethodName.getFullyQualifiedMethodName(),
+                failedTestMethodName.fullyQualifiedName(),
                 "actual",
                 "4",
                 true,
@@ -55,7 +55,7 @@ public class FaultFinderDemo {
         //間違った値を取る変数"actual"をヒントとしてランキングに与えることで、疑惑値に差が生まれ調べるべき行が絞られる。
         SuspiciousVariable targetValue = new SuspiciousVariable(
                 failedTestMethodName,
-                failedTestMethodName.getFullyQualifiedMethodName(),
+                failedTestMethodName.fullyQualifiedName(),
                 "actual",
                 "4",
                 true,

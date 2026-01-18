@@ -91,7 +91,7 @@ public class JavaParserUtils {
         for(CallableDeclaration cd : JavaParserUtils.extractNode(targetClass, CallableDeclaration.class)){
             Range methodRange = cd.getRange().get();
             for(int line = methodRange.begin.line; line <= methodRange.end.line; line++){
-                result.put(line, new MethodElementName(targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature()));
+                result.put(line, new MethodElementName(targetClass.fullyQualifiedClassName() + "#" + cd.getSignature()));
             }
         }
         return result;

@@ -71,7 +71,7 @@ public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAt
         };
 
         //VMを実行し情報を収集
-        debugger.handleAtBreakPoint(suspAssign.locateMethod.getFullyQualifiedClassName(), suspAssign.locateLine, handler);
+        debugger.handleAtBreakPoint(suspAssign.locateMethod.fullyQualifiedClassName(), suspAssign.locateLine, handler);
         return result;
     }
 

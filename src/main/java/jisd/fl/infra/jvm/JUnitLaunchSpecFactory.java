@@ -31,7 +31,7 @@ public class JUnitLaunchSpecFactory {
 
         return new JVMLaunchSpec(
                 JUNIT_LAUNCHER,
-                List.of(targetTestName.getFullyQualifiedMethodName()),
+                List.of(targetTestName.fullyQualifiedName()),
                 classPath,
                 JVMArgs,
                 Map.of(),

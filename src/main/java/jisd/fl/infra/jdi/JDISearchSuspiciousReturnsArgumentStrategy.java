@@ -82,9 +82,9 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
                         if (method.isConstructor()) {
                             // calleeMethodName には FullyQualifiedClassName を保持している想定
                             isTarget = method.declaringType().name()
-                                    .equals((suspArg).calleeMethodName.getFullyQualifiedClassName());
+                                    .equals((suspArg).calleeMethodName.fullyQualifiedClassName());
                         } else {
-                            isTarget = method.name().equals((suspArg).calleeMethodName.getShortMethodName());
+                            isTarget = method.name().equals((suspArg).calleeMethodName.shortMethodName());
                         }
 
                         //entryしたメソッドが目的のcalleeメソッドか確認
@@ -160,7 +160,7 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         };
 
         //VMを実行し情報を収集
-        debugger.handleAtBreakPoint((suspArg).locateMethod.getFullyQualifiedClassName(), (suspArg).locateLine, handler);
+        debugger.handleAtBreakPoint((suspArg).locateMethod.fullyQualifiedClassName(), (suspArg).locateLine, handler);
         if(result.isEmpty()){
             System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
                     + "(return value) == " + (suspArg).actualValue

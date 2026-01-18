@@ -88,7 +88,7 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
         };
 
         //VMを実行し情報を収集
-        debugger.handleAtBreakPoint(suspReturn.locateMethod.getFullyQualifiedClassName(), suspReturn.locateLine, handler);
+        debugger.handleAtBreakPoint(suspReturn.locateMethod.fullyQualifiedClassName(), suspReturn.locateLine, handler);
         return result;
     }
 }

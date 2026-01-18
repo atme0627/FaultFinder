@@ -53,11 +53,11 @@ class JavaParserExpressionExtractor {
         List<Expression> calls = new ArrayList<>();
         stmt.accept(new EvalOrderVisitor(), calls);
         if(calls.get(nthCallInLine - 1) instanceof MethodCallExpr mce) {
-            if(!mce.getNameAsString().equals(calleeMethodName.getShortMethodName())) throw new RuntimeException("something is wrong");
+            if(!mce.getNameAsString().equals(calleeMethodName.shortMethodName())) throw new RuntimeException("something is wrong");
             result = mce.getArgument(argIndex);
         }
         else if (calls.get(nthCallInLine - 1) instanceof ObjectCreationExpr oce){
-            if(!oce.getType().asString().equals(calleeMethodName.getShortMethodName())) throw new RuntimeException("something is wrong");
+            if(!oce.getType().asString().equals(calleeMethodName.shortMethodName())) throw new RuntimeException("something is wrong");
             result = oce.getArgument(argIndex);
         }
         else {

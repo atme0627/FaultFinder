@@ -78,7 +78,7 @@ public class JavaParserTraceTargetLineFinder {
     private static Set<String> getMethodNames(MethodElementName targetClass) throws NoSuchFileException {
         return JavaParserUtils.extractNode(targetClass, CallableDeclaration.class)
                 .stream()
-                .map(cd -> (targetClass.getFullyQualifiedClassName() + "#" + cd.getSignature()))
+                .map(cd -> (targetClass.fullyQualifiedClassName() + "#" + cd.getSignature()))
                 .collect(Collectors.toSet());
     }
 }

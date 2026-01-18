@@ -192,7 +192,7 @@ public class LineMethodCallWatcher {
         };
 
         //VMを実行し情報を収集
-        debugger.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
+        debugger.handleAtBreakPoint(locateMethod.fullyQualifiedClassName(), failureLine, handler);
         return result;
     }
 }

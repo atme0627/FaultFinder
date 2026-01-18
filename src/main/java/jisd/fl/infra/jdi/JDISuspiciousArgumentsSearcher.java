@@ -80,7 +80,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
             }
         };
 
-        debugger.handleAtMethodEntry(calleeMethodName.getFullyQualifiedMethodName(), handler);
+        debugger.handleAtMethodEntry(calleeMethodName.fullyQualifiedName(), handler);
 
         //nullチェック
         if(locateMethod[0] == null || locateLine[0] == 0 || argIndex[0] == -1){

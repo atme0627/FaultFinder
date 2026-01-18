@@ -49,7 +49,7 @@ public  class JacocoTestUtil {
                         + ":" + targetBinDir
                         + ":" + testBinDir
                         + ":'" + junitClassPath + "'"
-                + " jisd.fl.infra.junit.JUnitTestLauncher '" + testMethod.getFullyQualifiedMethodName() + "'";
+                + " jisd.fl.infra.junit.JUnitTestLauncher '" + testMethod.fullyQualifiedName() + "'";
 
         ProcessBuilder pb = new ProcessBuilder("zsh", "-ic", cmd);
         Process proc = pb.start();
@@ -89,7 +89,7 @@ public  class JacocoTestUtil {
             //ClassLoaderを切り替え
             Thread.currentThread().setContextClassLoader(testClassLoader);
             //対象のテストクラスをロード
-            Class<?> targetTestClass = testClassLoader.loadClass(testMethodName.getFullyQualifiedClassName());
+            Class<?> targetTestClass = testClassLoader.loadClass(testMethodName.fullyQualifiedClassName());
 
             // JUnit Launcher API を使用してテストを検出
             DiscoverySelector selector = DiscoverySelectors.selectClass(targetTestClass);
