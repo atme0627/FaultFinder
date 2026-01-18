@@ -11,7 +11,6 @@ import jisd.fl.core.entity.FLRankingElement;
 import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
-import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.core.entity.coverage.Granularity;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.presenter.ScoreUpdateReport;
@@ -50,11 +49,6 @@ public class FaultFinder {
         flRanking = new FLRanking();
         presenter = new FLRankingPresenter(flRanking);
         calcSuspiciousness(sbflCoverage, granularity, f);
-    }
-    public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
-        this.granularity = granularity;
-        flRanking = new FLRanking();
-        //calcSuspiciousness(covForTestSuite, granularity, f);
     }
 
     private void calcSuspiciousness(ProjectSbflCoverage sbflCoverage, Granularity granularity, Formula f){
