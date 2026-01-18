@@ -4,7 +4,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.presenter.SbflCoveragePrinter;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
-import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.core.entity.coverage.Granularity;
 import jisd.fl.util.JsonIO;
 import jisd.fl.core.util.PropertyLoader;
@@ -63,14 +62,6 @@ class CoverageAnalyzerTest {
             Path projRoot = Paths.get("").toAbsolutePath();
             File f = new File(projRoot + "/src/test/resources/json/coverage/ConditionalTest.json");
             JsonIO.export(cov, f);
-        }
-
-        @Test
-        void jsonImportTest(){
-            Path projRoot = Paths.get("").toAbsolutePath();
-            File f = new File(projRoot + "/src/test/resources/json/coverage/ConditionalTest.json");
-            CoverageCollection cc = CoverageCollection.loadFromJson(f);
-            cc.printCoverages(Granularity.LINE);
         }
     }
 
