@@ -43,8 +43,17 @@ public class ClassSbflCoverage {
         this.targetClass = targetClass;
         this.lineElementNameResolver = JavaParserLineElementNameResolverFactory.create(targetClass);
     }
-    public int totalPass() {return totalPass;}
-    public int totalFail() {return totalFail;}
+
+    public SbflCoverageView<LineElementName> lineCoverageView(){
+        return new SbflCoverageView<>(lineIds, lineCounts, totalPass, totalFail);
+    }
+    public SbflCoverageView<MethodElementName> methodCoverageView(){
+        return new SbflCoverageView<>(methodIds, methodCounts, totalPass, totalFail);
+    }
+    public int classEp(){return classEp;}
+    public int classEf(){return classEf;}
+    public int totalPass(){return totalPass;}
+    public int totalFail(){return totalFail;}
 
     public void accept(IClassCoverage cc, boolean testPassed) {
         initializeIfNeeded(cc);
