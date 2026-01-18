@@ -1,10 +1,13 @@
-package jisd.fl.core.entity.coverage;
+package jisd.fl.infra.jacoco;
 
+import jisd.fl.core.entity.coverage.ElementIDRegistry;
+import jisd.fl.core.entity.coverage.SbflCounts;
+import jisd.fl.core.entity.coverage.SbflCountsTable;
+import jisd.fl.core.entity.coverage.SbflCoverageView;
 import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.LineElementName;
 import jisd.fl.core.entity.element.LineElementNameResolver;
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.infra.javaparser.JavaParserLineElementNameResolverFactory;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 import org.jacoco.core.analysis.IMethodCoverage;
