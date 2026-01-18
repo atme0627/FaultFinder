@@ -1,7 +1,6 @@
 package jisd.fl.core.entity.sbfl;
 
 import jisd.fl.core.entity.coverage.SbflCounts;
-import jisd.fl.sbfl.SbflStatus;
 
 public enum Formula {
     TARAnTULA {
