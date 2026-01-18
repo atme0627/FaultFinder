@@ -3,7 +3,6 @@ package jisd.fl;
 import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.presenter.FLRankingPresenter;
-import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.usecase.Probe;
 import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.FLRanking;
