@@ -3,7 +3,7 @@ package jisd.fl.sbfl.coverage;
 import jisd.fl.infra.jacoco.JacocoTestUtil;
 import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 import jisd.fl.util.*;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;

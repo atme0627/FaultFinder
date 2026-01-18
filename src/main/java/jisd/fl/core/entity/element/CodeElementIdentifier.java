@@ -1,4 +1,4 @@
-package jisd.fl.core.entity;
+package jisd.fl.core.entity.element;
 
 public interface CodeElementIdentifier<T extends CodeElementIdentifier<T>> extends Comparable<T> {
     String fullyQualifiedClassName();

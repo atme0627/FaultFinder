@@ -1,7 +1,7 @@
 package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;

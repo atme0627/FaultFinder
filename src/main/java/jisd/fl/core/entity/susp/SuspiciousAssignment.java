@@ -1,6 +1,6 @@
 package jisd.fl.core.entity.susp;
 
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.List;
 

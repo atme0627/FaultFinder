@@ -13,8 +13,8 @@ import jisd.fl.sbfl.coverage.CoverageOfTarget;
 import jisd.fl.sbfl.coverage.Granularity;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.presenter.ScoreUpdateReport;
-import jisd.fl.core.entity.CodeElementIdentifier;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.CodeElementIdentifier;
+import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.Map;
 import java.util.Optional;

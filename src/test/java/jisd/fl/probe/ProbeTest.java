@@ -9,7 +9,7 @@ import jisd.fl.mapper.SuspiciousExpressionMapper;
 import jisd.fl.usecase.Probe;
 import jisd.fl.util.JsonIO;
 import jisd.fl.core.util.PropertyLoader;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;

@@ -1,5 +1,7 @@
 package jisd.fl.core.entity;
 
+import jisd.fl.core.entity.element.CodeElementIdentifier;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

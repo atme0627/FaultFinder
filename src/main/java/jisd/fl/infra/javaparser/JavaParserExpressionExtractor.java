@@ -5,7 +5,7 @@ import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.stmt.ForStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.ArrayList;
 import java.util.List;

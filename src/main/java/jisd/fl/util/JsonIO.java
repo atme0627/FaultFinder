@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import jisd.fl.sbfl.coverage.CoverageCollection;
-import jisd.fl.core.entity.CodeElementIdentifier;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.CodeElementIdentifier;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.json.JSONObject;
 
 import java.io.File;

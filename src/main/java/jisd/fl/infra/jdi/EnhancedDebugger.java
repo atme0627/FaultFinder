@@ -5,7 +5,7 @@ import com.sun.jdi.Location;
 import com.sun.jdi.connect.*;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.*;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.infra.jvm.JVMProcess;
 
 import java.io.BufferedReader;
@@ -252,7 +252,7 @@ public abstract class EnhancedDebugger {
         }
         return new MethodElementName(n.toString()).fullyQualifiedName() ;
     }
-    
+
     /**
      * サブプロセスの標準（エラー）出力を
      * 別スレッドで逐次読み込み、任意の処理を行うためのヘルパークラス

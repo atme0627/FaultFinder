@@ -1,12 +1,12 @@
 package jisd.fl.sbfl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import jisd.fl.core.entity.ClassElementName;
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.sbfl.SbflStatus;
-import jisd.fl.core.entity.CodeElementIdentifier;
-import jisd.fl.core.entity.LineElementName;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.CodeElementIdentifier;
+import jisd.fl.core.entity.element.LineElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;
 import org.jacoco.core.analysis.IMethodCoverage;

@@ -1,6 +1,6 @@
 package jisd.fl.core.util;
 
-import jisd.fl.core.entity.CodeElementIdentifier;
+import jisd.fl.core.entity.element.CodeElementIdentifier;
 
 import java.net.URISyntaxException;
 import java.nio.file.Files;

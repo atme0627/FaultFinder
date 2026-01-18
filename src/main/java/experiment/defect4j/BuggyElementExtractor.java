@@ -1,7 +1,7 @@
 package experiment.defect4j;
 
-import jisd.fl.core.entity.LineElementName;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.LineElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;

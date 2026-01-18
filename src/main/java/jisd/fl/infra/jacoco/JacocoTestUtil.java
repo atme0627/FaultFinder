@@ -1,6 +1,6 @@
 package jisd.fl.infra.jacoco;
 
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.util.PropertyLoader;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.discovery.DiscoverySelectors;

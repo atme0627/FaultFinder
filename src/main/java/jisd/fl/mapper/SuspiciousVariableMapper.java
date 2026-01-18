@@ -1,6 +1,6 @@
 package jisd.fl.mapper;
 
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import org.json.JSONArray;
 import org.json.JSONObject;

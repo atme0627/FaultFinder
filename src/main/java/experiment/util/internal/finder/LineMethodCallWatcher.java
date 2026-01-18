@@ -15,7 +15,7 @@ import jisd.fl.infra.jdi.JDIUtils;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.infra.junit.JUnitDebugger;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.*;
 

@@ -1,5 +1,7 @@
 package jisd.fl.core.entity;
 
+import jisd.fl.core.entity.element.CodeElementIdentifier;
+
 public class FLRankingElement implements Comparable<FLRankingElement> {
     final CodeElementIdentifier element;
     public double suspScore;

@@ -1,9 +1,9 @@
 package jisd.fl.infra.junit;
 
-import jisd.fl.core.entity.ClassElementName;
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 import jisd.fl.core.util.PropertyLoader;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;

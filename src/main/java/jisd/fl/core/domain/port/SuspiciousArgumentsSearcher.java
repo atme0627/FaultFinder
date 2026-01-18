@@ -1,6 +1,6 @@
 package jisd.fl.core.domain.port;
 
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 

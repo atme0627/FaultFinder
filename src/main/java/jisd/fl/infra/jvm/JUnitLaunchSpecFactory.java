@@ -1,6 +1,6 @@
 package jisd.fl.infra.jvm;
 
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.core.util.ToolPaths;
 

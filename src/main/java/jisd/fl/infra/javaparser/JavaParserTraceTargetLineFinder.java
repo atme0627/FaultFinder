@@ -3,8 +3,8 @@ package jisd.fl.infra.javaparser;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
-import jisd.fl.core.entity.ClassElementName;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 
 import java.nio.file.NoSuchFileException;

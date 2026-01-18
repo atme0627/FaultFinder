@@ -1,6 +1,6 @@
 package jisd.fl.infra.junit;
 
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.infra.jdi.EnhancedDebugger;
 import jisd.fl.infra.jvm.JUnitLaunchSpecFactory;
 import jisd.fl.infra.jvm.JVMLauncher;

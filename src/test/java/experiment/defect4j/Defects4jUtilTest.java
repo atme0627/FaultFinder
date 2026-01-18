@@ -2,7 +2,7 @@ package experiment.defect4j;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import jisd.fl.core.entity.LineElementName;
+import jisd.fl.core.entity.element.LineElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

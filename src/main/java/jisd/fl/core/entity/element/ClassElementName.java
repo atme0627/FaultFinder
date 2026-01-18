@@ -1,4 +1,4 @@
-package jisd.fl.core.entity;
+package jisd.fl.core.entity.element;
 
 import java.util.Objects;
 

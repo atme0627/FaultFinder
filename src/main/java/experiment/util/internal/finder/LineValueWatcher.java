@@ -4,7 +4,7 @@ import com.sun.jdi.*;
 import jisd.fl.infra.jdi.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.junit.JUnitDebugger;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.ArrayList;
 import java.util.List;

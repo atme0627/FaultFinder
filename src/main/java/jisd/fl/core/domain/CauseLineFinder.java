@@ -3,7 +3,7 @@ package jisd.fl.core.domain;
 import jisd.fl.core.domain.internal.ValueChangingLineFinder;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
-import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousAssignment;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
