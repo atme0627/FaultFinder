@@ -50,10 +50,18 @@ public class ClassSbflCoverage {
     public SbflCoverageView<MethodElementName> methodCoverageView(){
         return new SbflCoverageView<>(methodIds, methodCounts, totalPass, totalFail);
     }
-    public int classEp(){return classEp;}
-    public int classEf(){return classEf;}
-    public int totalPass(){return totalPass;}
-    public int totalFail(){return totalFail;}
+
+    public boolean hasAnyCoverage(){
+        return (classEf + classEp) > 0;
+    }
+
+    public SbflCounts classCounts(){
+        int ep = classEp;
+        int ef = classEf;
+        int np = totalPass - ep;
+        int nf = totalFail - ef;
+        return new SbflCounts(ep, ef, np, nf);
+    }
 
     public void accept(IClassCoverage cc, boolean testPassed) {
         initializeIfNeeded(cc);
