@@ -53,27 +53,18 @@ public class FaultFinder {
 
     private void calcSuspiciousness(ProjectSbflCoverage sbflCoverage, Granularity granularity, Formula f){
         switch (granularity){
-            case CLASS -> {
-                sbflCoverage.classCoverageEntries().forEach(entry -> {
-                    SbflStatus s = SbflStatus.fromSbflCounts(entry.counts());
-                    double suspScore = s.getSuspiciousness(f);
-                    flRanking.add(entry.e(), suspScore);
-                });
-            }
-            case METHOD -> {
-                sbflCoverage.methodCoverageEntries(true).forEach(entry -> {
-                    SbflStatus s = SbflStatus.fromSbflCounts(entry.counts());
-                    double suspScore = s.getSuspiciousness(f);
-                    flRanking.add(entry.e(), suspScore);
-                });
-            }
-            case LINE -> {
-                sbflCoverage.lineCoverageEntries(true).forEach(entry -> {
-                    SbflStatus s = SbflStatus.fromSbflCounts(entry.counts());
-                    double suspScore = s.getSuspiciousness(f);
-                    flRanking.add(entry.e(), suspScore);
-                });
-            }
+            case CLASS -> sbflCoverage.classCoverageEntries().forEach(entry -> {
+                double suspScore = entry.counts().getSuspiciousness(f);
+                flRanking.add(entry.e(), suspScore);
+            });
+            case METHOD -> sbflCoverage.methodCoverageEntries(true).forEach(entry -> {
+                double suspScore = entry.counts().getSuspiciousness(f);
+                flRanking.add(entry.e(), suspScore);
+            });
+            case LINE -> sbflCoverage.lineCoverageEntries(true).forEach(entry -> {
+                double suspScore = entry.counts().getSuspiciousness(f);
+                flRanking.add(entry.e(), suspScore);
+            });
         }
         flRanking.sort();
     }
