@@ -1,6 +1,9 @@
 package jisd.fl;
 
+import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.presenter.FLRankingPresenter;
+import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.usecase.Probe;
 import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.FLRanking;
@@ -40,12 +43,12 @@ public class FaultFinder {
     private final int rankingSize = 20;
     final Granularity granularity;
 
-    public FaultFinder(MethodElementName targetTestClassName){
+    public FaultFinder(ClassElementName targetTestClassName){
         this.granularity = Granularity.LINE;
         Formula f = Formula.OCHIAI;
         CoverageAnalyzer coverageAnalyzer = new CoverageAnalyzer();
         coverageAnalyzer.analyze(targetTestClassName);
-        CoverageCollection sbflCoverage = coverageAnalyzer.result();
+        ProjectSbflCoverage sbflCoverage = coverageAnalyzer.result();
         flRanking = new FLRanking();
         presenter = new FLRankingPresenter(flRanking);
         calcSuspiciousness(sbflCoverage, granularity, f);
@@ -53,15 +56,32 @@ public class FaultFinder {
     public FaultFinder(CoverageCollection covForTestSuite, Granularity granularity, Formula f) {
         this.granularity = granularity;
         flRanking = new FLRanking();
-        calcSuspiciousness(covForTestSuite, granularity, f);
+        //calcSuspiciousness(covForTestSuite, granularity, f);
     }
 
-    private void calcSuspiciousness(CoverageCollection covForTestSuite, Granularity granularity, Formula f){
-        for(CoverageOfTarget coverageOfTarget : covForTestSuite.getCoverages()) {
-            coverageOfTarget.getCoverage(granularity).forEach((element, status) -> {
-                double suspScore = status.getSuspiciousness(f);
-                flRanking.add(element, suspScore);
-            });
+    private void calcSuspiciousness(ProjectSbflCoverage sbflCoverage, Granularity granularity, Formula f){
+        switch (granularity){
+            case CLASS -> {
+                sbflCoverage.classCoverageEntries().forEach(entry -> {
+                    SbflStatus s = SbflStatus.fromSbflCounts(entry.counts());
+                    double suspScore = s.getSuspiciousness(f);
+                    flRanking.add(entry.e(), suspScore);
+                });
+            }
+            case METHOD -> {
+                sbflCoverage.methodCoverageEntries(true).forEach(entry -> {
+                    SbflStatus s = SbflStatus.fromSbflCounts(entry.counts());
+                    double suspScore = s.getSuspiciousness(f);
+                    flRanking.add(entry.e(), suspScore);
+                });
+            }
+            case LINE -> {
+                sbflCoverage.lineCoverageEntries(true).forEach(entry -> {
+                    SbflStatus s = SbflStatus.fromSbflCounts(entry.counts());
+                    double suspScore = s.getSuspiciousness(f);
+                    flRanking.add(entry.e(), suspScore);
+                });
+            }
         }
         flRanking.sort();
     }
