@@ -20,17 +20,6 @@ public class CoverageCollection {
     //クラスごとのカバレッジ
     final private Set<CoverageOfTarget> coverages = new HashSet<>();
 
-    public CoverageOfTarget getCoverageOfTarget(String targetClassName){
-        CoverageOfTarget coverageOfTarget;
-        Optional<CoverageOfTarget> tmp = coverages.stream()
-                .filter(e -> e.getTargetClassName().equals(targetClassName))
-                .findFirst();
-
-        coverageOfTarget = tmp.orElseGet(() -> new CoverageOfTarget(targetClassName));
-        coverages.add(coverageOfTarget);
-        return coverageOfTarget;
-    }
-
     @JsonCreator
     public CoverageCollection(
             @JsonProperty("targetClassName")        Set<String> targetClassNames) {
@@ -38,25 +27,14 @@ public class CoverageCollection {
     }
 
 
-
     public void printCoverages(Granularity granularity){
         printCoverages(System.out, granularity);
-    }
-
-    public void printCoverages(Granularity granularity, boolean onlyCovered){
-        for(CoverageOfTarget cov : getCoverages()){
-            cov.printCoverage(System.out, granularity);
-        }
     }
 
     public void printCoverages(PrintStream out, Granularity granularity){
         for(CoverageOfTarget cov : getCoverages()){
             cov.printCoverage(out, granularity);
         }
-    }
-
-    public boolean isContainsTargetClass(String targetClassName){
-        return targetClassNames.contains(targetClassName);
     }
 
     public Set<CoverageOfTarget> getCoverages(){
