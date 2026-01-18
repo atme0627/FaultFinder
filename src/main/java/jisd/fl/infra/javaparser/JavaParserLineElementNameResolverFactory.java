@@ -21,7 +21,7 @@ public class JavaParserLineElementNameResolverFactory {
         MethodElementName clinit = new MethodElementName(targetClass.fullyQualifiedClassName() + "#<clinit>()");
         LineElementNameResolver resolver = new LineElementNameResolver(lines, clinit);
         for(CallableDeclaration<?> cd : JavaParserUtils.extractNode(targetClass, CallableDeclaration.class)){
-            if(cd.getRange().isPresent()) continue;
+            if(cd.getRange().isEmpty()) continue;
             Range methodRange = cd.getRange().get();
             MethodElementName method = new MethodElementName(targetClass.fullyQualifiedClassName() + "#" + cd.getSignature());
             resolver.putMethodRange(methodRange.begin.line, methodRange.end.line, method);
