@@ -1,5 +1,6 @@
 package jisd.fl.infra.jacoco;
 
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.util.PropertyLoader;
 import org.junit.platform.engine.DiscoverySelector;
@@ -74,7 +75,7 @@ public  class JacocoTestUtil {
         return proc.exitValue() == 0;
     }
 
-    public static Set<MethodElementName> getTestMethods(MethodElementName testMethodName){
+    public static Set<MethodElementName> getTestMethods(ClassElementName testMethodName){
         //テスト対象クラスの.classを含むディレクトリを動的にロード
         //テストクラスはコンパイル済みと仮定
         URL[] url;
