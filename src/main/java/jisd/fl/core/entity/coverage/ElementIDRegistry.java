@@ -41,4 +41,6 @@ public class ElementIDRegistry<E extends CodeElementIdentifier<E>> {
     public E elementOf(int id){
         return idToElement.get(id);
     }
+
+    public int size(){return idToElement.size();}
 }
