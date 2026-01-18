@@ -10,6 +10,7 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import jisd.fl.core.entity.MethodElementName;
+import jisd.fl.core.util.ToolPaths;
 
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
@@ -24,7 +25,7 @@ public class JavaParserUtils {
     }
 
     public static CompilationUnit parseClass(MethodElementName targetClass) throws NoSuchFileException {
-        Path p = targetClass.getFilePath();
+        Path p = ToolPaths.findSourceFilePath(targetClass).get();
         try {
             return StaticJavaParser.parse(p);
         } catch (NoSuchFileException e){
