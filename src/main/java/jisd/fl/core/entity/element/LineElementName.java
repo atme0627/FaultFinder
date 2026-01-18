@@ -3,8 +3,8 @@ package jisd.fl.core.entity.element;
 import java.util.Objects;
 
 public class LineElementName implements CodeElementIdentifier<LineElementName> {
-    private final MethodElementName methodElementName;
-    private final int line;
+    public final MethodElementName methodElementName;
+    public final int line;
 
     public LineElementName(String fullyQualifiedName, int line){
         this.methodElementName = new MethodElementName(fullyQualifiedName);

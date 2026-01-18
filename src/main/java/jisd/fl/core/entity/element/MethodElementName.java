@@ -2,8 +2,8 @@ package jisd.fl.core.entity.element;
 import java.util.Objects;
 
 public class MethodElementName implements CodeElementIdentifier<MethodElementName> {
-    final public ClassElementName classElementName;
-    final public String methodSignature;
+    public final ClassElementName classElementName;
+    public final String methodSignature;
 
     //ex1.) sample.demo#sample
     //ex2.) sample.demo#sample(int)

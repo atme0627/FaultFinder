@@ -3,8 +3,8 @@ package jisd.fl.core.entity.element;
 import java.util.Objects;
 
 public class ClassElementName implements CodeElementIdentifier<ClassElementName> {
-    final public String packageName;
-    final public String className;
+    public final String packageName;
+    public final String className;
 
     //TODO: 内部クラスに対応(InnerClassElementNameを作る?)
     //      とりあえずここでは$以下は切り捨て
