@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 public class ClassSbflCoverage {
 
-    private final ClassElementName targetClass;
+    public final ClassElementName targetClass;
     private final LineElementNameResolver lineElementNameResolver;
 
     private int totalPass = 0;
