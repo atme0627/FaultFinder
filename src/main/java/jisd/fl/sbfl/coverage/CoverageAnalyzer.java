@@ -1,6 +1,8 @@
 package jisd.fl.sbfl.coverage;
 
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.infra.jacoco.JacocoTestUtil;
+import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 import jisd.fl.util.*;
 import jisd.fl.core.entity.element.MethodElementName;
@@ -19,7 +21,7 @@ public class CoverageAnalyzer {
     String jacocoExecFilePath = "./.jacoco_exec_data";
     Set<String> targetClassNames;
     Set<MethodElementName> failedTests;
-    MyCoverageVisitor visitor;
+    NewMyCoverageVisitor visitor;
 
     public CoverageAnalyzer(){
         this(new HashSet<>());
@@ -28,7 +30,7 @@ public class CoverageAnalyzer {
     public CoverageAnalyzer(Set<MethodElementName> failedTests) {
         this.failedTests = failedTests;
         targetClassNames = JavaParserClassNameExtractor.getClassNames();
-        visitor = new MyCoverageVisitor(targetClassNames);
+        visitor = new NewMyCoverageVisitor();
     }
 
     // 1) 結果を格納するレコードクラス
@@ -38,10 +40,10 @@ public class CoverageAnalyzer {
 
     @Deprecated
     public void analyze(String tmp){
-        analyze(new MethodElementName(tmp));
+        analyze(new ClassElementName(tmp));
     }
 
-    public void analyze(MethodElementName testClassName){
+    public void analyze(ClassElementName testClassName){
         FileUtil.createDirectory(jacocoExecFilePath);
         Set<MethodElementName> testMethodNames = JacocoTestUtil.getTestMethods(testClassName);
         if(testMethodNames.isEmpty()) throw new RuntimeException("test method is not found. [CLASS] " + testMethodNames);
@@ -89,11 +91,11 @@ public class CoverageAnalyzer {
     }
 
     //TODO: 複数テストクラスを計測した際の挙動をテスト
-    public CoverageCollection result(){
+    public ProjectSbflCoverage result(){
         return visitor.getCoverages();
     }
 
-    private long failedTestsCountInClass(MethodElementName testClassName){
+    private long failedTestsCountInClass(ClassElementName testClassName){
         return failedTests
                 .stream()
                 .filter((ft) -> ft.fullyQualifiedClassName().equals(testClassName.fullyQualifiedClassName()))
@@ -108,7 +110,7 @@ public class CoverageAnalyzer {
         }
     }
 
-    private void validateFailedTestCount(MethodElementName testClassName, int failedCount){
+    private void validateFailedTestCount(ClassElementName testClassName, int failedCount){
         if(failedTests.isEmpty()) return;
         if (failedTestsCountInClass(testClassName) != failedCount) {
             throw new RuntimeException("failed test count is not correct.");
