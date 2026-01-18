@@ -32,7 +32,7 @@ public class ToolPaths {
         }
     }
 
-    public static Optional<Path> findSourceFilePath(CodeElementIdentifier e){
+    public static Optional<Path> findSourceFilePath(CodeElementIdentifier<?> e){
         Path p;
         //まずプロダクションコード内を探す
         p = PropertyLoader.getTargetSrcDir().resolve(e.fullyQualifiedClassName().replace('.', '/') + ".java");
