@@ -2,26 +2,13 @@ package jisd.fl.core.entity;
 
 import java.nio.file.Path;
 
-public interface CodeElementIdentifier extends Comparable<CodeElementIdentifier> {
-    String getFullyQualifiedClassName();
-    String getFullyQualifiedMethodName();
-    String getShortClassName();
-    //signature含まない
-    String getShortMethodName();
-    Path getFilePath();
-    Path getFilePath(boolean isTest);
+public interface CodeElementIdentifier  {
 
-    String compressedShortMethodName();
-    default String compressedClassName(){
-        StringBuilder shortClassName = new StringBuilder();
-        String[] packages = getFullyQualifiedClassName().split("\\.");
-        for(int j = 0; j < packages.length; j++){
-            String packageName = j < packages.length - 2 ? String.valueOf(packages[j].charAt(0)) : packages[j];
-            shortClassName.append(packageName);
-            if(j < packages.length - 1) shortClassName.append(".");
-        }
-        return shortClassName.toString();
-    }
 
-    boolean isNeighbor(CodeElementIdentifier target);
+    //Path getFilePath();
+    //Path getFilePath(boolean isTest);
+
+    String fullyQualifiedName();
+    String compressedName();
+    //boolean isNeighbor(CodeElementIdentifier target);
 }

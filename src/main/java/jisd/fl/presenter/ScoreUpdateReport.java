@@ -27,8 +27,8 @@ public class ScoreUpdateReport {
         List<String> shortClassNames = new ArrayList<>();
         List<String> shortElementNames = new ArrayList<>();
         for (ChangeEntry entry : changes) {
-            shortClassNames.add(entry.updatedElement.getCodeElementName().compressedClassName());
-            shortElementNames.add(entry.updatedElement.getCodeElementName().compressedShortMethodName());
+            shortClassNames.add(entry.updatedElement.getCodeElementName().compressedName());
+            shortElementNames.add(entry.updatedElement.getCodeElementName().compressedName());
         }
 
         // 表示幅の計算

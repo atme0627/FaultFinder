@@ -157,7 +157,7 @@ public class CoverageOfTarget {
         out.println(partition);
 
         new TreeMap<>(lineCoverage).forEach((line, s) -> {
-            out.println( String.format("| %s |", line.compressedShortMethodName())+
+            out.println( String.format("| %s |", line.compressedName())+
                     "| " + String.valueOf(s.ep) +
                     " | " + String.valueOf(s.ef) +
                     " | " + String.valueOf(s.np) +

@@ -30,8 +30,8 @@ public class FLRankingPresenter {
         List<String> shortClassNames = new ArrayList<>();
         List<String> shortMethodNames = new ArrayList<>();
         for(int i = 0; i < min(top, ranking.getSize()); i++){
-            shortClassNames.add(ranking.at(i).getCodeElementName().compressedClassName());
-            shortMethodNames.add(ranking.at(i).getCodeElementName().compressedShortMethodName());
+            shortClassNames.add(ranking.at(i).getCodeElementName().compressedName());
+            shortMethodNames.add(ranking.at(i).getCodeElementName().compressedName());
         }
 
         int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).get();
