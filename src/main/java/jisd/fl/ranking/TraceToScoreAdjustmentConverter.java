@@ -29,9 +29,9 @@ public class TraceToScoreAdjustmentConverter {
         this.g = granularity;
     }
 
-    public Map<CodeElementIdentifier, Double> toAdjustments(SuspiciousExprTreeNode root) {
+    public Map<CodeElementIdentifier<?>, Double> toAdjustments(SuspiciousExprTreeNode root) {
         // ノードごとの最小深さを保持するマップ
-        Map<CodeElementIdentifier, Integer> minDepth   = new HashMap<>();
+        Map<CodeElementIdentifier<?>, Integer> minDepth   = new HashMap<>();
         Queue<SuspiciousExprTreeNode>   queue      = new LinkedList<>();
         Queue<Integer>                depths     = new LinkedList<>();
 
@@ -43,7 +43,7 @@ public class TraceToScoreAdjustmentConverter {
             SuspiciousExpression suspExpr = suspExprNode.suspExpr;
             int depth = depths.poll();
 
-            CodeElementIdentifier elem = convertToCodeElementName(new MethodElementName(suspExpr.locateMethod.toString()), suspExpr.locateLine, g);
+            CodeElementIdentifier<?> elem = convertToCodeElementName(new MethodElementName(suspExpr.locateMethod.toString()), suspExpr.locateLine, g);
 
             // 最小深さをマージ
             minDepth.merge(elem, depth, Math::min);
@@ -55,7 +55,7 @@ public class TraceToScoreAdjustmentConverter {
         }
 
         // ScoreAdjustment のリスト化
-        Map<CodeElementIdentifier, Double> adjustments = new HashMap<>();
+        Map<CodeElementIdentifier<?>, Double> adjustments = new HashMap<>();
         for (var entry : minDepth.entrySet()) {
             double multiplier = 1 + Math.pow(baseFactor, entry.getValue());
             adjustments.put(entry.getKey(), multiplier);
@@ -63,7 +63,7 @@ public class TraceToScoreAdjustmentConverter {
         return adjustments;
     }
 
-    public static CodeElementIdentifier convertToCodeElementName(MethodElementName locateMethod, int locateLine, Granularity granularity){
+    public static CodeElementIdentifier<?> convertToCodeElementName(MethodElementName locateMethod, int locateLine, Granularity granularity){
         return switch (granularity){
             case LINE -> locateMethod.toLineElementName(locateLine);
             case METHOD, CLASS -> locateMethod;

@@ -125,16 +125,17 @@ public class FaultFinder {
 
     public void probe(SuspiciousExprTreeNode causeTree){
         TraceToScoreAdjustmentConverter converter = new TraceToScoreAdjustmentConverter(this.probeLambda, granularity);
-        Map<CodeElementIdentifier, Double> adjustments = converter.toAdjustments(causeTree);
+        Map<CodeElementIdentifier<?>, Double> adjustments = converter.toAdjustments(causeTree);
         adjustAll(adjustments);
         printRanking(10);
     }
 
     //リファクタリングのための一時メソッド
     @Deprecated
-    public Set<CodeElementIdentifier> getNeighborElements(FLRankingElement target){
+    public Set<CodeElementIdentifier<?>> getNeighborElements(FLRankingElement target){
         return flRanking.getAllElements().stream()
                 .filter(e -> e.isNeighbor(target.getCodeElementName()) && !e.equals(target.getCodeElementName()))
+                .map(e -> (CodeElementIdentifier<?>) e)
                 .collect(Collectors.toSet());
     }
 
@@ -142,8 +143,8 @@ public class FaultFinder {
      * ランキングの要素を再計算
      * @param adjustments
      */
-    public void adjustAll(Map<CodeElementIdentifier, Double> adjustments) {
-        for ( Map.Entry<CodeElementIdentifier, Double> adj : adjustments.entrySet()) {
+    public void adjustAll(Map<CodeElementIdentifier<?>, Double> adjustments) {
+        for ( Map.Entry<CodeElementIdentifier<?>, Double> adj : adjustments.entrySet()) {
             Optional<FLRankingElement> target = flRanking.searchElement(adj.getKey());
             if (target.isEmpty()) continue;
             target.get().suspScore *= adj.getValue();
@@ -151,7 +152,7 @@ public class FaultFinder {
         flRanking.sort();
     }
 
-    public void updateSuspiciousnessScore(CodeElementIdentifier target, DoubleFunction<Double> f){
+    public void updateSuspiciousnessScore(CodeElementIdentifier<?> target, DoubleFunction<Double> f){
         FLRankingElement e = flRanking.searchElement(target).get();
         double newScore = f.apply(e.suspScore);
         flRanking.updateSuspiciousnessScore(target, newScore);
