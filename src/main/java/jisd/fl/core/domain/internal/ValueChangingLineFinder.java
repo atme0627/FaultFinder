@@ -30,7 +30,7 @@ public class ValueChangingLineFinder {
 
         if (vi.isField()) {
             try {
-                CompilationUnit unit = JavaParserUtils.parseClass(locateElement);
+                CompilationUnit unit = JavaParserUtils.parseClass(locateElement.classElementName);
                 aes = unit.findAll(AssignExpr.class);
                 ues = unit.findAll(UnaryExpr.class, (n) -> {
                     UnaryExpr.Operator ope = n.getOperator();

@@ -119,7 +119,7 @@ public class CauseLineFinder {
     private SuspiciousAssignment resultIfAssigned(int causeLineNumber) {
         try {
             //TODO: 毎回静的解析するのは遅すぎるため、キャッシュする方がいい
-            Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(target.getLocateMethodElement());
+            Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(target.getLocateMethodElement().classElementName);
             Map<Integer, MethodElementName> methodElementNames = result;
             MethodElementName locateMethodElementName = methodElementNames.get(causeLineNumber);
             return factory.createAssignment(target.getFailedTest(), locateMethodElementName, causeLineNumber, target);

@@ -1,6 +1,7 @@
 package jisd.fl.sbfl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jisd.fl.core.entity.ClassElementName;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.sbfl.SbflStatus;
 import jisd.fl.core.entity.CodeElementIdentifier;
@@ -37,7 +38,7 @@ public class CoverageOfTarget {
         methodCoverage = new HashMap<>();
 
         try {
-            Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(new MethodElementName(targetClassName));
+            Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(new ClassElementName(targetClassName));
             methodElementNames = result;
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
@@ -63,11 +64,11 @@ public class CoverageOfTarget {
         }
 
         //class coverage
-        MethodElementName ce = new MethodElementName(targetClassName);
+        ClassElementName ce = new ClassElementName(targetClassName);
         putCoverageStatus(classCoverage, ce, getClassSbflStatus(cc, isTestPassed));
     }
 
-    protected void putCoverageStatus(Map<CodeElementIdentifier, SbflStatus> coverage, CodeElementIdentifier element, SbflStatus status) {
+    protected void putCoverageStatus(Map<CodeElementIdentifier<?>, SbflStatus> coverage, CodeElementIdentifier<?> element, SbflStatus status) {
         if(!coverage.containsKey(element)){
             coverage.put(element, status);
             return;
@@ -169,9 +170,9 @@ public class CoverageOfTarget {
     }
 
 
-    private int maxLengthOfName(Map<CodeElementIdentifier, SbflStatus> cov, boolean isMethod){
+    private int maxLengthOfName(Map<CodeElementIdentifier<?>, SbflStatus> cov, boolean isMethod){
         int maxLength = 0;
-        for(CodeElementIdentifier name : cov.keySet()){
+        for(CodeElementIdentifier<?> name : cov.keySet()){
             int l = (isMethod) ? name.compressedName().length() : name.toString().length();
             maxLength = Math.max(maxLength, l);
         }

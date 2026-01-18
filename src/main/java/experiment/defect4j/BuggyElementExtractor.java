@@ -68,7 +68,7 @@ public class BuggyElementExtractor {
             for (DiffEntry entry : diffs) {
                 Optional<MethodElementName> fqcn = getFQCN(entry);
                 if(fqcn.isEmpty()) continue;
-                Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(fqcn.get());
+                Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(fqcn.get().classElementName);
                 Map<Integer, MethodElementName> methodsWithLine = result;
                 EditList edits = df.toFileHeader(entry).toEditList();
                 for (Edit edit : edits) {

@@ -3,6 +3,7 @@ package experiment.util;
 import com.github.javaparser.ast.stmt.Statement;
 import experiment.util.internal.finder.LineMethodCallWatcher;
 import experiment.util.internal.finder.LineVariableNameExtractor;
+import jisd.fl.core.entity.ClassElementName;
 import jisd.fl.infra.junit.JUnitTestLauncherForFinder;
 import experiment.util.internal.finder.LineValueWatcher;
 import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
@@ -29,7 +30,7 @@ public class SuspiciousVariableFinder {
     private final LineMethodCallWatcher methodCallWatcher;
     private final NeighborSuspiciousVariablesSearcher neighborSearcher;
 
-    public SuspiciousVariableFinder(MethodElementName targetTestCaseName) throws NoSuchFileException {
+    public SuspiciousVariableFinder(MethodElementName targetTestCaseName)  {
         this.targetTestCaseName = targetTestCaseName;
 
         this.testLauncher = new JUnitTestLauncherForFinder(targetTestCaseName);
@@ -47,7 +48,7 @@ public class SuspiciousVariableFinder {
 
         //失敗行のロケーション情報を取得
         int failureLine = info.line();
-        MethodElementName locateClass = info.locateClass();
+        ClassElementName locateClass = info.locateClass();
         Map<Integer, MethodElementName> result1 = JavaParserUtils.getMethodNamesWithLine(locateClass);
         MethodElementName locateMethod = result1.get(failureLine);
 
@@ -56,8 +57,8 @@ public class SuspiciousVariableFinder {
 
         //失敗行に含まれる変数名をStringとして静的解析にて取得する。
         //assert文の場合、まずAssert文で使われてる変数全て取ってくる(actualかどうか考えない)
-        Statement stmtInFailureLine = VarNameExtractor.extractStmtInFailureLine(failureLine, locateMethod);
-        List<String> neighborVariableNames = VarNameExtractor.extractVariableNamesInLine(failureLine, locateMethod);
+        Statement stmtInFailureLine = VarNameExtractor.extractStmtInFailureLine(failureLine, locateMethod.classElementName);
+        List<String> neighborVariableNames = VarNameExtractor.extractVariableNamesInLine(failureLine, locateMethod.classElementName);
 
         //失敗行に含まれる各変数の、テスト実行時の値を動的解析で取得する。
         List<SuspiciousVariable> result = new ArrayList<>();

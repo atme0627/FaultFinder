@@ -3,6 +3,7 @@ package jisd.fl.infra.javaparser;
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import jisd.fl.core.entity.ClassElementName;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 
@@ -15,14 +16,14 @@ import java.util.stream.Collectors;
 public class JavaParserTraceTargetLineFinder {
     public static List<Integer> traceTargetLineNumbers(SuspiciousVariable suspiciousVariable) {
         if(suspiciousVariable.isField()) {
-            return traceLinesOfClass(suspiciousVariable.getLocateMethodElement(), suspiciousVariable.getSimpleVariableName());
+            return traceLinesOfClass(suspiciousVariable.getLocateMethodElement().classElementName, suspiciousVariable.getSimpleVariableName());
         }
         else {
             return traceLineOfMethod(suspiciousVariable.getLocateMethodElement(), suspiciousVariable.getSimpleVariableName());
         }
     }
 
-    private static List<Integer> traceLinesOfClass(MethodElementName targetClass, String variable){
+    private static List<Integer> traceLinesOfClass(ClassElementName targetClass, String variable){
         Set<String> methods;
         List<Integer> canSet = new ArrayList<>();
 
@@ -75,7 +76,7 @@ public class JavaParserTraceTargetLineFinder {
 
     //targetClassNameはdemo.SortTestのように記述
     //返り値は demo.SortTest#test1(int a)の形式
-    private static Set<String> getMethodNames(MethodElementName targetClass) throws NoSuchFileException {
+    private static Set<String> getMethodNames(ClassElementName targetClass) throws NoSuchFileException {
         return JavaParserUtils.extractNode(targetClass, CallableDeclaration.class)
                 .stream()
                 .map(cd -> (targetClass.fullyQualifiedClassName() + "#" + cd.getSignature()))

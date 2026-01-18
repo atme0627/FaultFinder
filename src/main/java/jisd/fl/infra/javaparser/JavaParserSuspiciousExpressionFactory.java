@@ -22,7 +22,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
 
     @Override
     public SuspiciousAssignment createAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
-        Statement stmt = JavaParserUtils.extractStmt(locateMethod, locateLine);
+        Statement stmt = JavaParserUtils.extractStmt(locateMethod.classElementName, locateLine);
         Expression expr = JavaParserExpressionExtractor.extractExprAssign(true, stmt);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
 
@@ -42,7 +42,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
 
     @Override
     public SuspiciousReturnValue createReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
-        Statement stmt = JavaParserUtils.extractStmt(locateMethod, locateLine);
+        Statement stmt = JavaParserUtils.extractStmt(locateMethod.classElementName, locateLine);
         Expression expr = JavaParserExpressionExtractor.extractExprReturnValue(stmt);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
 
@@ -63,7 +63,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
     @Override
     //callCountAfterTargetInLineその行の中で呼び出し元のメソッドの後に何回他のメソッドが呼ばれるか
     public SuspiciousArgument createArgument(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, MethodElementName calleeMethodName, int argIndex, int callCountAfterTargetInLine) {
-        Statement stmt = JavaParserUtils.extractStmt(locateMethod, locateLine);
+        Statement stmt = JavaParserUtils.extractStmt(locateMethod.classElementName, locateLine);
         String stmtString = createArgStmtString(stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
         Expression expr = JavaParserExpressionExtractor.extractExprArg(true, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();

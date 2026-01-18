@@ -1,5 +1,6 @@
 package jisd.fl.infra.junit;
 
+import jisd.fl.core.entity.ClassElementName;
 import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.core.entity.MethodElementName;
@@ -81,7 +82,7 @@ public class JUnitTestLauncherForFinder {
                 for (StackTraceElement ste : ex.getStackTrace()) {
                     if (targetClassNames.contains(ste.getClassName())){
                         // テストクラスのフレームがあればその行番号を返す
-                        return Optional.of(new TestFailureInfo(ste.getLineNumber(), new MethodElementName(ste.getClassName())));
+                        return Optional.of(new TestFailureInfo(ste.getLineNumber(), new ClassElementName(ste.getClassName())));
                     }
                 }
                 System.err.println("Failed to findSuspiciousVariableInAssertLine the line number of the failure. " + Arrays.stream(ex.getStackTrace()).limit(10).map(StackTraceElement::toString).collect(Collectors.joining("\n")));
@@ -99,6 +100,6 @@ public class JUnitTestLauncherForFinder {
         }
     }
 
-    public record TestFailureInfo(int line, MethodElementName locateClass){
+    public record TestFailureInfo(int line, ClassElementName locateClass){
     }
 }

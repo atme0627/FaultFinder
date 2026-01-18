@@ -9,6 +9,7 @@ import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
+import jisd.fl.core.entity.ClassElementName;
 import jisd.fl.core.entity.MethodElementName;
 import jisd.fl.core.util.ToolPaths;
 
@@ -24,7 +25,7 @@ public class JavaParserUtils {
         StaticJavaParser.setConfiguration(config);
     }
 
-    public static CompilationUnit parseClass(MethodElementName targetClass) throws NoSuchFileException {
+    public static CompilationUnit parseClass(ClassElementName targetClass) throws NoSuchFileException {
         Path p = ToolPaths.findSourceFilePath(targetClass).get();
         try {
             return StaticJavaParser.parse(p);
@@ -35,18 +36,18 @@ public class JavaParserUtils {
         }
     }
 
-    static public Statement extractStmt(MethodElementName locateMethod, int locateLine) {
+    static public Statement extractStmt(ClassElementName locateClass, int locateLine) {
         try {
-            return getStatementByLine(locateMethod, locateLine).orElseThrow();
+            return getStatementByLine(locateClass, locateLine).orElseThrow();
         } catch (NoSuchFileException e) {
-            throw new RuntimeException("Class [" + locateMethod + "] is not found.");
+            throw new RuntimeException("Class [" + locateClass + "] is not found.");
         } catch (NoSuchElementException e){
-            throw new RuntimeException("Cannot extract Statement from [" + locateMethod + ":" + locateLine + "].");
+            throw new RuntimeException("Cannot extract Statement from [" + locateClass + ":" + locateLine + "].");
         }
     }
 
     public static BlockStmt extractBodyOfMethod(MethodElementName targetMethod) throws NoSuchFileException {
-        CallableDeclaration<?> cd = extractNode(targetMethod, CallableDeclaration.class)
+        CallableDeclaration<?> cd = extractNode(targetMethod.classElementName, CallableDeclaration.class)
                 .stream()
                 .filter(cd1 -> cd1.getSignature().toString().equals(targetMethod.methodSignature))
                 .findFirst().orElseThrow(RuntimeException::new);
@@ -56,7 +57,7 @@ public class JavaParserUtils {
     }
 
     //その行を含む最小範囲のStatementを返す
-    public static Optional<Statement> getStatementByLine(MethodElementName targetClass, int line) throws NoSuchFileException {
+    public static Optional<Statement> getStatementByLine(ClassElementName targetClass, int line) throws NoSuchFileException {
         return extractNode(targetClass, Statement.class)
                 .stream()
                 .filter(stmt -> stmt.getRange().isPresent())
@@ -81,12 +82,12 @@ public class JavaParserUtils {
         return result;
     }
 
-    public static <T extends Node> List<T> extractNode(MethodElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
+    public static <T extends Node> List<T> extractNode(ClassElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
         return JavaParserUtils.parseClass(targetClass)
                 .findAll(nodeClass);
     }
 
-    public static Map<Integer, MethodElementName> getMethodNamesWithLine(MethodElementName targetClass) throws NoSuchFileException {
+    public static Map<Integer, MethodElementName> getMethodNamesWithLine(ClassElementName targetClass) throws NoSuchFileException {
         Map<Integer, MethodElementName> result = new HashMap<>();
         for(CallableDeclaration cd : JavaParserUtils.extractNode(targetClass, CallableDeclaration.class)){
             Range methodRange = cd.getRange().get();
