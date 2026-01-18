@@ -1,7 +1,6 @@
 package jisd.fl.core.entity.coverage;
 
 import jisd.fl.core.entity.element.CodeElementIdentifier;
-import jisd.fl.sbfl.SbflStatus;
 
 import java.util.AbstractMap;
 import java.util.Map;
