@@ -1,48 +1,49 @@
 package jisd.fl.core.entity.sbfl;
 
+import jisd.fl.core.entity.coverage.SbflCounts;
 import jisd.fl.sbfl.SbflStatus;
 
 public enum Formula {
-    TARANTULA {
+    TARAnTULA {
         @Override
-        double calc(SbflStatus status){
-            double ep = status.getEp();
-            double ef = status.getEf();
-            double np = status.getNp();
-            double nf = status.getNf();
+        public double calc(SbflCounts counts){
+            double ep = counts.ep();
+            double ef = counts.ef();
+            double np = counts.np();
+            double nf = counts.nf();
 
             return (ef / (ef + nf)) / ((ef / (ef + nf)) + (ep / (ep + np)));
         }
     },
-    AMPLE {
-        double calc(SbflStatus status){
-            double ep = status.getEp();
-            double ef = status.getEf();
-            double np = status.getNp();
-            double nf = status.getNf();
+    AMPLe {
+        public double calc(SbflCounts counts){
+            double ep = counts.ep();
+            double ef = counts.ef();
+            double np = counts.np();
+            double nf = counts.nf();
 
             return Math.abs((ef / (nf + ef)) - (ep / (np + ep)));
         }
     },
     OCHIAI {
-        double calc(SbflStatus status){
-            double ep = status.getEp();
-            double ef = status.getEf();
-            double nf = status.getNf();
+        public double calc(SbflCounts counts){
+            double ep = counts.ep();
+            double ef = counts.ef();
+            double nf = counts.nf();
 
             double result = ef / Math.sqrt((ef + nf) * (ef + ep));
             return Double.isNaN(result) ? 0 : result;
         }
     },
     JACCARD {
-        double calc(SbflStatus status){
-            double ep = status.getEp();
-            double ef = status.getEf();
-            double nf = status.getNf();
+        public double calc(SbflCounts counts){
+            double ep = counts.ep();
+            double ef = counts.ef();
+            double nf = counts.nf();
 
             return ef / (ef + nf + ep);
         }
     };
 
-    abstract double calc(SbflStatus status);
+    public abstract double calc(SbflCounts counts);
 }
