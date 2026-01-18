@@ -3,9 +3,11 @@ package jisd.fl.core.domain;
 import jisd.fl.core.domain.internal.ValueChangingLineFinder;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
+import jisd.fl.core.entity.element.LineElementNameResolver;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousAssignment;
+import jisd.fl.infra.javaparser.JavaParserLineElementNameResolverFactory;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
@@ -118,10 +120,8 @@ public class CauseLineFinder {
      */
     private SuspiciousAssignment resultIfAssigned(int causeLineNumber) {
         try {
-            //TODO: 毎回静的解析するのは遅すぎるため、キャッシュする方がいい
-            Map<Integer, MethodElementName> result = JavaParserUtils.getMethodNamesWithLine(target.getLocateMethodElement().classElementName);
-            Map<Integer, MethodElementName> methodElementNames = result;
-            MethodElementName locateMethodElementName = methodElementNames.get(causeLineNumber);
+            LineElementNameResolver resolver = JavaParserLineElementNameResolverFactory.create(target.getLocateMethodElement().classElementName);
+            MethodElementName locateMethodElementName = resolver.lineElementAt(causeLineNumber).methodElementName;
             return factory.createAssignment(target.getFailedTest(), locateMethodElementName, causeLineNumber, target);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);

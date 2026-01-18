@@ -4,6 +4,8 @@ import com.github.javaparser.ast.stmt.Statement;
 import experiment.util.internal.finder.LineMethodCallWatcher;
 import experiment.util.internal.finder.LineVariableNameExtractor;
 import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.core.entity.element.LineElementNameResolver;
+import jisd.fl.infra.javaparser.JavaParserLineElementNameResolverFactory;
 import jisd.fl.infra.junit.JUnitTestLauncherForFinder;
 import experiment.util.internal.finder.LineValueWatcher;
 import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
@@ -49,8 +51,8 @@ public class SuspiciousVariableFinder {
         //失敗行のロケーション情報を取得
         int failureLine = info.line();
         ClassElementName locateClass = info.locateClass();
-        Map<Integer, MethodElementName> result1 = JavaParserUtils.getMethodNamesWithLine(locateClass);
-        MethodElementName locateMethod = result1.get(failureLine);
+        LineElementNameResolver resolver = JavaParserLineElementNameResolverFactory.create(locateClass);
+        MethodElementName locateMethod = resolver.lineElementAt(failureLine).methodElementName;
 
         //ログ
         System.out.println("****** failure test: " + targetTestCaseName + "   location:  " + locateMethod + " ( line: "+ failureLine +" ) " + "*****************");
