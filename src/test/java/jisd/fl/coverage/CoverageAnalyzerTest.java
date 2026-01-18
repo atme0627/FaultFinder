@@ -1,6 +1,8 @@
 package jisd.fl.coverage;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.infra.jacoco.ProjectSbflCoverage;
+import jisd.fl.presenter.SbflCoveragePrinter;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
 import jisd.fl.sbfl.coverage.Granularity;
@@ -15,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 class CoverageAnalyzerTest {
+    SbflCoveragePrinter printer = new SbflCoveragePrinter();
     @BeforeEach
     void initProperty() {
         Dotenv dotenv = Dotenv.load();
@@ -32,7 +35,7 @@ class CoverageAnalyzerTest {
     @Nested
     class conditionalTest {
         String testClassName = "org.sample.coverage.ConditionalTest";
-        CoverageCollection cov;
+        ProjectSbflCoverage cov;
 
         @BeforeEach
         void init(){
@@ -42,17 +45,17 @@ class CoverageAnalyzerTest {
         }
         @Test
         void lineCoverage() {
-            cov.printCoverages(Granularity.LINE);
+            printer.print(cov, Granularity.LINE);
         }
 
         @Test
         void methodCoverage() {
-            cov.printCoverages(Granularity.METHOD);
+            printer.print(cov, Granularity.METHOD);
         }
 
         @Test
         void classCoverage() {
-            cov.printCoverages(Granularity.CLASS);
+            printer.print(cov, Granularity.CLASS);
         }
 
         @Test
@@ -74,7 +77,7 @@ class CoverageAnalyzerTest {
     @Nested
     class LoopTest {
         String testClassName = "org.sample.coverage.LoopTest";
-        CoverageCollection cov;
+        ProjectSbflCoverage cov;
 
         @BeforeEach
         void init(){
@@ -85,24 +88,24 @@ class CoverageAnalyzerTest {
 
         @Test
         void lineCoverage() {
-            cov.printCoverages(Granularity.LINE);
+            printer.print(cov, Granularity.LINE);
         }
 
         @Test
         void methodCoverage() {
-            cov.printCoverages(Granularity.METHOD);
+            printer.print(cov, Granularity.METHOD);
         }
 
         @Test
         void classCoverage() {
-            cov.printCoverages(Granularity.CLASS);
+            printer.print(cov, Granularity.CLASS);
         }
     }
 
     @Nested
     class InnerClassTest {
         String testClassName = "org.sample.coverage.InnerClassTest";
-        CoverageCollection cov;
+        ProjectSbflCoverage cov;
 
         @BeforeEach
         void init(){
@@ -113,17 +116,17 @@ class CoverageAnalyzerTest {
 
         @Test
         void lineCoverage() {
-            cov.printCoverages(Granularity.LINE);
+            printer.print(cov, Granularity.LINE);
         }
 
         @Test
         void methodCoverage() {
-            cov.printCoverages(Granularity.METHOD);
+            printer.print(cov, Granularity.METHOD);
         }
 
         @Test
         void classCoverage() {
-            cov.printCoverages(Granularity.CLASS);
+            printer.print(cov, Granularity.CLASS);
         }
     }
 }
