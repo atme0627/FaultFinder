@@ -6,7 +6,7 @@ import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.CodeElementIdentifier;
 import jisd.fl.infra.jacoco.ClassSbflCoverage;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
-import jisd.fl.sbfl.coverage.Granularity;
+import jisd.fl.core.entity.coverage.Granularity;
 
 import java.util.Map;
 import java.util.SortedMap;

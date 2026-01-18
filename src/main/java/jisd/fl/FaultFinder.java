@@ -12,12 +12,10 @@ import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
 import jisd.fl.sbfl.Formula;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
-import jisd.fl.sbfl.coverage.CoverageOfTarget;
-import jisd.fl.sbfl.coverage.Granularity;
+import jisd.fl.core.entity.coverage.Granularity;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.presenter.ScoreUpdateReport;
 import jisd.fl.core.entity.element.CodeElementIdentifier;
-import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.Map;
 import java.util.Optional;

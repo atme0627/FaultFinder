@@ -5,7 +5,7 @@ import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.presenter.SbflCoveragePrinter;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 import jisd.fl.sbfl.coverage.CoverageCollection;
-import jisd.fl.sbfl.coverage.Granularity;
+import jisd.fl.core.entity.coverage.Granularity;
 import jisd.fl.util.JsonIO;
 import jisd.fl.core.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;

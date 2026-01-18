@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.*;
 
+import jisd.fl.core.entity.coverage.Granularity;
 import jisd.fl.util.JsonIO;
 
 /**

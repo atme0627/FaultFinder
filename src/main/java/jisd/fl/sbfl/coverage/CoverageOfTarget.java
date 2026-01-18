@@ -1,9 +1,9 @@
 package jisd.fl.sbfl.coverage;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import jisd.fl.core.entity.coverage.Granularity;
 import jisd.fl.core.entity.element.*;
 import jisd.fl.infra.javaparser.JavaParserLineElementNameResolverFactory;
-import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.sbfl.SbflStatus;
 import org.jacoco.core.analysis.IClassCoverage;
 import org.jacoco.core.analysis.ICounter;

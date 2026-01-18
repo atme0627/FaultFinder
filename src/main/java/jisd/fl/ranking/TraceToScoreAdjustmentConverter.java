@@ -3,7 +3,7 @@ package jisd.fl.ranking;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.sbfl.coverage.Granularity;
+import jisd.fl.core.entity.coverage.Granularity;
 import jisd.fl.core.entity.element.CodeElementIdentifier;
 
 import java.util.*;
