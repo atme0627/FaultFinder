@@ -39,9 +39,9 @@ public class ClassSbflCoverage {
     //--------------------
 
 
-    public ClassSbflCoverage(ClassElementName targetClass) throws NoSuchFileException {
+    public ClassSbflCoverage(ClassElementName targetClass, LineElementNameResolver resolver) throws NoSuchFileException {
         this.targetClass = targetClass;
-        this.lineElementNameResolver = JavaParserLineElementNameResolverFactory.create(targetClass);
+        this.lineElementNameResolver = resolver;
     }
 
     public SbflCoverageView<LineElementName> lineCoverageView(){
