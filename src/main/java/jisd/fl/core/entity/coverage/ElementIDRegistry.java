@@ -5,6 +5,7 @@ import jisd.fl.core.entity.element.CodeElementIdentifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
   CodeElementIdentifierとcoverage用IDの対応づけを行うクラス。
@@ -40,6 +41,18 @@ public class ElementIDRegistry<E extends CodeElementIdentifier<E>> {
      */
     public E elementOf(int id){
         return idToElement.get(id);
+    }
+
+    /**
+     * 指定された要素に対応づけられたIDを返すメソッド。
+     * 要素が未登録の場合は空のOptionalを返す。
+     *
+     * @param e 対象の要素
+     * @return 要素に対応づけられたIDが存在する場合はそのIDを含むOptional、
+     *         存在しない場合は空のOptionalを返す
+     */
+    public Optional<Integer> getIdIfPresent(E e){
+        return Optional.ofNullable(elementToId.get(e));
     }
 
     public int size(){return idToElement.size();}
