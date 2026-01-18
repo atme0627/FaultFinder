@@ -47,6 +47,13 @@ public class ClassSbflCoverage {
         this.lineElementNameResolver = resolver;
     }
 
+    public int totalPass() {
+        return totalPass;
+    }
+    public int totalFail() {
+        return totalFail;
+    }
+
     public SbflCoverageView<LineElementName> lineCoverageView(){
         return new SbflCoverageView<>(lineIds, lineCounts, totalPass, totalFail);
     }
