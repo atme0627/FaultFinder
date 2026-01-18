@@ -57,8 +57,8 @@ public class Coverage {
 
                 ca.analyze(testClassName);
             }
-            JsonIO.export(ca.result(), outputFile);
-            ca.result().free();
+//            JsonIO.export(ca.result(), outputFile);
+//            ca.result().free();
         }
 
         Thread.sleep(100);
