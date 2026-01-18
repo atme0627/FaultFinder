@@ -1,6 +1,7 @@
 package jisd.fl.sbfl;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jisd.fl.core.entity.coverage.SbflCounts;
 
 public class SbflStatus {
     public int ep = 0;
@@ -10,6 +11,11 @@ public class SbflStatus {
 
     public SbflStatus(boolean isExecuted, boolean isPassed){
         updateStatus(isExecuted, isPassed);
+    }
+
+    @Deprecated
+    public static SbflStatus fromSbflCounts(SbflCounts c){
+        return new SbflStatus(c.ep(), c.ef(), c.np(), c.nf());
     }
 
     public SbflStatus(boolean isPassed, int e, int n){
@@ -24,6 +30,14 @@ public class SbflStatus {
     }
 
     private SbflStatus(){
+    }
+
+    @Deprecated
+    private SbflStatus(int ep, int ef, int np, int nf){
+        this.ep = ep;
+        this.ef = ef;
+        this.np = np;
+        this.nf = nf;
     }
 
     public void updateStatus(boolean isExecuted, boolean isPassed){
