@@ -23,7 +23,7 @@ public class JUnitLaunchSpecFactory {
 
     private static JVMLaunchSpec build(MethodElementName targetTestName, List<String> JVMArgs){
         List<Path> classPath = new ArrayList<>(List.of(
-                ToolPaths.projectRoot(),
+                ToolPaths.projectMain(),
                 PropertyLoader.getTargetBinDir(),
                 PropertyLoader.getTestBinDir())
         );
