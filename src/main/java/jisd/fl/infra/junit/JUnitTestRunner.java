@@ -18,9 +18,10 @@ public class JUnitTestRunner {
     static public TestRunResult runSingleTest(MethodElementName testMethodName, Appendable log) {
         try {
             System.out.println("RUN TEST: " + testMethodName);
+            String junitTestMethodName = testMethodName.fullyQualifiedName().contains("(") ? testMethodName.fullyQualifiedName().split("\\(")[0] : testMethodName.fullyQualifiedName();
             LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
                     .selectors(
-                            selectMethod(testMethodName.fullyQualifiedName())
+                            selectMethod(junitTestMethodName)
                     ).build();
 
             Launcher launcher = LauncherFactory.create();
