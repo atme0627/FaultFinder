@@ -17,7 +17,7 @@ public class JacocoTestExecServerLaunchSpecFactory {
     public static JVMLaunchSpec defaultSpec(int port) {
         // classpath: tool本体 + 対象bin + テストbin + junit依存 (+ jacoco agent/runtime を入れると安全)
         List<Path> classPath = new ArrayList<>(List.of(
-                ToolPaths.projectRoot(),
+                ToolPaths.projectMain(),
                 PropertyLoader.getTargetBinDir(),
                 PropertyLoader.getTestBinDir()
         ));
