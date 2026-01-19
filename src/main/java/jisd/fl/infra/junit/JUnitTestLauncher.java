@@ -1,14 +1,6 @@
 package jisd.fl.infra.junit;
 
-import org.junit.platform.launcher.Launcher;
-import org.junit.platform.launcher.LauncherDiscoveryRequest;
-import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
-import org.junit.platform.launcher.core.LauncherFactory;
-import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
-
-import java.io.PrintWriter;
-
-import static org.junit.platform.engine.discovery.DiscoverySelectors.selectMethod;
+import jisd.fl.core.entity.element.MethodElementName;
 
 public class JUnitTestLauncher {
     String testClassName;
@@ -23,29 +15,9 @@ public class JUnitTestLauncher {
 
     //args[0]: method名
     public static void main(String[] args) {
-        String testMethodName = args[0];
-        JUnitTestLauncher tl = new JUnitTestLauncher(testMethodName);
-        boolean isTestPassed = tl.runTest();
-        System.exit(isTestPassed ? 0 : 1);
-    }
-
-    public boolean runTest() {
-        LauncherDiscoveryRequest request = LauncherDiscoveryRequestBuilder.request()
-                .selectors(
-                        selectMethod(testMethodName)
-                ).build();
-
-        Launcher launcher = LauncherFactory.create();
-        SummaryGeneratingListener listener = new SummaryGeneratingListener();
-        launcher.registerTestExecutionListeners(listener);
-
-        System.out.println("EXEC: " + testMethodName);
-        launcher.execute(request);
-        listener.getSummary().printFailuresTo(new PrintWriter(System.out));
-        listener.getSummary().printTo(new PrintWriter(System.out));
-        boolean isTestPassed = listener.getSummary().getTotalFailureCount() == 0;
-
-        System.out.println("TestResult: " + (isTestPassed ? "o" : "x"));
-        return isTestPassed;
+        MethodElementName testMethodName = new MethodElementName(args[0]);
+        JUnitTestRunner.TestRunResult result = JUnitTestRunner.runSingleTest(testMethodName, System.out);
+        System.out.println(result.summaryText());
+        System.exit(result.passed() ? 0 : 1);
     }
 }
