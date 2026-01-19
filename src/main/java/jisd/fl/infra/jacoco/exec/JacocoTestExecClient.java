@@ -59,7 +59,7 @@ public class JacocoTestExecClient implements Closeable {
         }
 
         if (header.startsWith("ERROR")) {
-            throw new IOException("server error: " + header);
+            throw new IOException("server error(target: " + testMethod + "): " + header);
         }
 
         if (header.equals("BYE")) {
