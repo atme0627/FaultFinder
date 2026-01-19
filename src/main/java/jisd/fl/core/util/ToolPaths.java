@@ -38,11 +38,12 @@ public class ToolPaths {
 
     public static Optional<Path> findSourceFilePath(CodeElementIdentifier<?> e){
         Path p;
+        String topLevelClassName = e.fullyQualifiedClassName().contains("$") ? e.fullyQualifiedClassName().split("\\$")[0] : e.fullyQualifiedClassName();
         //まずプロダクションコード内を探す
-        p = PropertyLoader.getTargetSrcDir().resolve(e.fullyQualifiedClassName().replace('.', '/') + ".java");
+        p = PropertyLoader.getTargetSrcDir().resolve(topLevelClassName.replace('.', '/') + ".java");
         if(Files.exists(p)) return Optional.of(p);
         //なかったらテストコード内を探す
-        p = PropertyLoader.getTestSrcDir().resolve(e.fullyQualifiedClassName().replace('.', '/') + ".java");
+        p = PropertyLoader.getTestSrcDir().resolve(topLevelClassName.replace('.', '/') + ".java");
         if(Files.exists(p)) return Optional.of(p);
         return Optional.empty();
     }
