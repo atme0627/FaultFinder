@@ -6,12 +6,10 @@ public class ClassElementName implements CodeElementIdentifier<ClassElementName>
     public final String packageName;
     public final String className;
 
-    //TODO: 内部クラスに対応(InnerClassElementNameを作る?)
-    //      とりあえずここでは$以下は切り捨て
     public ClassElementName(String fqClassName){
         this.packageName = (fqClassName.contains(".")) ? fqClassName.substring(0, fqClassName.lastIndexOf('.')) : "";
         String className = fqClassName.substring(fqClassName.lastIndexOf('.') + 1);
-        this.className = className.contains("$") ? className.split("\\$")[0] : className;
+        this.className = className;
     }
 
     @Override
