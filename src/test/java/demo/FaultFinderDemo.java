@@ -1,8 +1,10 @@
 package demo;
 import jisd.fl.FaultFinder;
+import jisd.fl.core.entity.sbfl.Granularity;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.presenter.SbflCoveragePrinter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -40,6 +42,9 @@ public class FaultFinderDemo {
                 true,
                 false
         );
+
+        SbflCoveragePrinter printer = new SbflCoveragePrinter();
+        printer.print(faultFinder.coverage, Granularity.LINE);
         faultFinder.probe(targetValue);
     }
 

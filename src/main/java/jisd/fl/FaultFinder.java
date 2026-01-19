@@ -38,16 +38,17 @@ public class FaultFinder {
 
     private final int rankingSize = 20;
     final Granularity granularity;
+    public ProjectSbflCoverage coverage;
 
     public FaultFinder(ClassElementName targetTestClassName){
         this.granularity = Granularity.LINE;
         Formula f = Formula.OCHIAI;
         CoverageAnalyzer coverageAnalyzer = new CoverageAnalyzer();
         coverageAnalyzer.analyze(targetTestClassName);
-        ProjectSbflCoverage sbflCoverage = coverageAnalyzer.result();
+        this.coverage = coverageAnalyzer.result();
         flRanking = new FLRanking();
         presenter = new FLRankingPresenter(flRanking);
-        calcSuspiciousness(sbflCoverage, granularity, f);
+        calcSuspiciousness(coverage, granularity, f);
     }
 
     private void calcSuspiciousness(ProjectSbflCoverage sbflCoverage, Granularity granularity, Formula f){
