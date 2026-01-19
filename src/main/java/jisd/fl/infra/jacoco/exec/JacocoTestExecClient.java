@@ -12,7 +12,7 @@ public class JacocoTestExecClient implements Closeable {
     private final int port;
 
     private Socket sock;
-    private BufferedReader in;
+    private InputStream in;
     private OutputStream out;
 
     public JacocoTestExecClient(String host, int port) {
@@ -26,7 +26,7 @@ public class JacocoTestExecClient implements Closeable {
         sock = new Socket(InetAddress.getByName(host), port);
         sock.setTcpNoDelay(true);
 
-        in = new BufferedReader(new InputStreamReader(sock.getInputStream(), StandardCharsets.UTF_8));
+        in = new BufferedInputStream(sock.getInputStream());
         out = new BufferedOutputStream(sock.getOutputStream());
     }
 
@@ -36,7 +36,7 @@ public class JacocoTestExecClient implements Closeable {
         writeLine("RUN " + testMethod.fullyQualifiedName());
         out.flush();
 
-        String header = in.readLine();
+        String header = readLine(in);
         if (header == null) throw new EOFException("server closed connection");
 
         header = header.trim();
@@ -54,11 +54,11 @@ public class JacocoTestExecClient implements Closeable {
                 throw new IOException("malformed length: " + header, e);
             }
 
-            byte[] exec = readExactly(len);
+            byte[] exec = readExactly(in, len);
             return new TestExecReply(passed, exec);
         }
 
-        if (header.startsWith("ERR")) {
+        if (header.startsWith("ERROR")) {
             throw new IOException("server error: " + header);
         }
 
@@ -74,22 +74,32 @@ public class JacocoTestExecClient implements Closeable {
         writeLine("QUIT");
         out.flush();
         // server replies BYE (optional)
-        String line = in.readLine();
+        String line = readLine(in);
         // ignore if null
         close();
     }
 
-    private byte[] readExactly(int len) throws IOException {
+    private byte[] readExactly(InputStream in, int len) throws IOException {
         byte[] buf = new byte[len];
         int off = 0;
 
-        InputStream rawIn = sock.getInputStream();
         while (off < len) {
-            int r = rawIn.read(buf, off, len - off);
+            int r = in.read(buf, off, len - off);
             if (r < 0) throw new EOFException("expected " + len + " bytes, got " + off);
             off += r;
         }
         return buf;
+    }
+
+    private static String readLine(InputStream in) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(128);
+        while (true) {
+            int b = in.read();
+            if (b < 0) return bos.size() == 0 ? null : bos.toString(StandardCharsets.UTF_8);
+            if (b == '\n') break;
+            if (b != '\r') bos.write(b);
+        }
+        return bos.toString(StandardCharsets.UTF_8);
     }
 
     private void writeLine(String s) throws IOException {
