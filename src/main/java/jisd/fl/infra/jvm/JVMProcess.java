@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 
 public class JVMProcess implements AutoCloseable{
-    private final Process process;
+    public final Process process;
     private final ExecutorService ioPool;
     private final Future<String> stdoutFuture;
     private final Future<String> stderrFuture;
