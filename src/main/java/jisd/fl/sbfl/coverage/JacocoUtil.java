@@ -6,8 +6,10 @@ import org.jacoco.core.analysis.ICoverageVisitor;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.tools.ExecFileLoader;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +35,14 @@ public class JacocoUtil {
         ExecFileLoader testFileLoader = new ExecFileLoader();
         testFileLoader.load(testDatafile);
         return testFileLoader.getExecutionDataStore();
+    }
+
+    public static ExecutionDataStore execDataFromBytes(byte[] execBytes) throws IOException {
+        ExecFileLoader loader = new ExecFileLoader();
+        try (InputStream in = new ByteArrayInputStream(execBytes)) {
+            loader.load(in);
+        }
+        return loader.getExecutionDataStore();
     }
 
     public static class MemoryClassLoader extends ClassLoader {
