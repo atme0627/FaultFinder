@@ -99,15 +99,32 @@ public class JacocoTestExecServerHandle implements Closeable {
         Process p = serverProcess.process;
         if (!p.isAlive()) return;
 
-        p.destroy();
+        // まずは「自然終了」を待つ（QUIT が効いてればここで終わる）
         try {
-            if (!p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS)) {
-                p.destroyForcibly();
-                p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+            if (p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS)) {
+                return;
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            p.destroyForcibly();
+            // interrupt でも一応フォールバックは続ける
+        }
+
+        // まだ生きてるなら、ここで初めて SIGTERM
+        p.destroy();
+        try {
+            if (p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS)) {
+                return;
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // 最後の手段
+        p.destroyForcibly();
+        try {
+            p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }
