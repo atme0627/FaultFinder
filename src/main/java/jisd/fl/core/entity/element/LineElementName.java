@@ -29,12 +29,12 @@ public class LineElementName implements CodeElementIdentifier<LineElementName> {
 
     @Override
     public String compressedName() {
-        return methodElementName.compressedMethodName() + " line: " + line;
+        return methodElementName.compressedName() + " line: " + line;
     }
 
     @Override
     public int compareTo(LineElementName o) {
-        return (!methodElementName.equals(o.methodElementName)) ? methodElementName.compareTo(o.methodElementName) : line - o.line;
+        return (line != o.line) ? line - o.line : methodElementName.compareTo(o.methodElementName);
     }
 
     @Override
