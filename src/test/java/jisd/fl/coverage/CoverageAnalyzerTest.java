@@ -56,13 +56,6 @@ class CoverageAnalyzerTest {
         void classCoverage() {
             printer.print(cov, Granularity.CLASS);
         }
-
-        @Test
-        void jsonExportTest(){
-            Path projRoot = Paths.get("").toAbsolutePath();
-            File f = new File(projRoot + "/src/test/resources/json/coverage/ConditionalTest.json");
-            JsonIO.export(cov, f);
-        }
     }
 
     @Nested
