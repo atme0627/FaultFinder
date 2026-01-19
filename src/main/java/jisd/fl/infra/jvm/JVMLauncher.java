@@ -1,5 +1,7 @@
 package jisd.fl.infra.jvm;
 
+import jisd.fl.core.util.ToolPaths;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -40,6 +42,13 @@ public class JVMLauncher {
         if (!spec.env().isEmpty()) {
             pb.environment().putAll(spec.env());
         }
+
+//        //デバッグ用。起動したプロセス内を見る。
+//        File outFile = ToolPaths.projectRoot().resolve("jacoco-server.out").toFile();
+//        File errFile = ToolPaths.projectRoot().resolve("jacoco-server.err").toFile();
+//
+//        pb.redirectError(ProcessBuilder.Redirect.appendTo(errFile));
+//        pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outFile));
 
         Process p = pb.start();
         return JVMProcess.fromProcess(p);
