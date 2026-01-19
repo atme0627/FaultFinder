@@ -51,4 +51,8 @@ public class ToolPaths {
             throw new RuntimeException(e);
         }
     }
+
+    public static Path jacocoAgentJarPath() {
+        return projectRoot().resolve("locallib/jacocoagent.jar");
+    }
 }
