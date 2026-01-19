@@ -24,10 +24,12 @@ public class JavaParserUtils {
         StaticJavaParser.setConfiguration(config);
     }
 
+    //TODO: 内部クラスでもトップレベル全体が帰るようになってる!!!
     public static CompilationUnit parseClass(ClassElementName targetClass) throws NoSuchFileException {
         Path p = ToolPaths.findSourceFilePath(targetClass).get();
         try {
-            return StaticJavaParser.parse(p);
+            CompilationUnit parsed = StaticJavaParser.parse(p);
+                return parsed;
         } catch (NoSuchFileException e){
             throw e;
         } catch (IOException e) {
