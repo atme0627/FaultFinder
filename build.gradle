@@ -32,6 +32,8 @@ dependencies {
     //coverage
     // https://mvnrepository.com/artifact/org.jacoco/org.jacoco.core
     implementation 'org.jacoco:org.jacoco.core:0.8.12'
+    implementation 'org.jacoco:org.jacoco.agent:0.8.12:runtime'
+
 
     //jackson
     implementation("com.fasterxml.jackson.core:jackson-core:2.18.2")
