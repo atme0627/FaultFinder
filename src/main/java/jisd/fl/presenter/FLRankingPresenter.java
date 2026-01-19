@@ -30,7 +30,7 @@ public class FLRankingPresenter {
         List<String> shortClassNames = new ArrayList<>();
         List<String> shortMethodNames = new ArrayList<>();
         for(int i = 0; i < min(top, ranking.getSize()); i++){
-            shortClassNames.add(ranking.at(i).getCodeElementName().compressedName());
+            shortClassNames.add("---");
             shortMethodNames.add(ranking.at(i).getCodeElementName().compressedName());
         }
 
