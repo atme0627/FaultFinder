@@ -22,9 +22,6 @@ public class FaultFinderDemo {
                 Path.of("build/classes/java/test")
         );
         PropertyLoader.setProjectConfig(config);
-    }
-    @BeforeEach
-    void initFaultFinder(){
         faultFinder = new FaultFinder(failedTestMethodName.classElementName);
     }
 
