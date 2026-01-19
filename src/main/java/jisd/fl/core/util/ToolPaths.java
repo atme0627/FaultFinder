@@ -21,6 +21,10 @@ public class ToolPaths {
         return loc;
     }
 
+    public static Path projectMain(){
+        return projectRoot().resolve("build/classes/java/main");
+    }
+
     public static List<Path> junitDependencyJarPaths(){
         Path junitDir =  projectRoot().resolve("locallib/junit-dependency");
         try (var s = Files.list(junitDir)){
