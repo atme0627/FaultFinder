@@ -75,7 +75,7 @@ public class JacocoTestExecClient implements Closeable {
     public List<MethodElementName> listTestMethods(ClassElementName targetTestClass) throws IOException {
         ensureConnected();
 
-        writeLine("LIST " + targetTestClass);
+        writeLine("LIST " + targetTestClass.fullyQualifiedName());
         out.flush();
 
         String header = readLine(in);
