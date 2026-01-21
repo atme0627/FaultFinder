@@ -1,6 +1,8 @@
 package experiment.setUp;
 
 import experiment.defect4j.Defects4jUtil;
+import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
 
 import java.io.File;
@@ -47,15 +49,18 @@ public class Coverage {
             Defects4jUtil.changeTargetVersion(project, bugId);
             Defects4jUtil.compileBuggySrc(project, bugId);
             List<MethodElementName> testMethods = Defects4jUtil.getFailedTestMethods(project, bugId);
-            CoverageAnalyzer ca = new CoverageAnalyzer(new HashSet<>(testMethods));
-            Set<String> executed = new HashSet<>();
+            Set<MethodElementName> failedTests = new HashSet<>(testMethods);
+            CoverageAnalyzer ca = new CoverageAnalyzer(failedTests);
+            Set<ClassElementName> executed = new HashSet<>();
             for(MethodElementName testMethodName : testMethods) {
-                String testClassName = testMethodName.fullyQualifiedClassName();
+                ClassElementName testClassName = testMethodName.classElementName;
 
                 if(executed.contains(testClassName)) continue;
                 executed.add(testClassName);
 
-                ca.analyze(testMethodName.classElementName);
+                ca.analyze(testClassName);
+                //TODO: テストの実行結果が正しいかをチェックするバリデーションを行う。
+
             }
 //            JsonIO.export(ca.result(), outputFile);
 //            ca.result().free();
