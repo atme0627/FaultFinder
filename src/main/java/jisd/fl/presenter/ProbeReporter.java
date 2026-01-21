@@ -12,18 +12,18 @@ import java.util.Map;
 public class ProbeReporter {
     static private final int HEADER_LENGTH = 100;
 
-    public void reportProbeTarget(SuspiciousVariable target) {
+    public void reportSuspiciousVariable(SuspiciousVariable target) {
         Map<String, String> infoMap = new HashMap<String, String>();
         infoMap.put("LOCATION", target.getLocateMethod(true));
-        infoMap.put("TARGET VARIABLE", target.getSimpleVariableName() + " == " + target.getActualValue());
-        printRoundedBox("PROBE", formattedMapString(infoMap, 0));
+        infoMap.put("TARGET", target.getSimpleVariableName() + " == " + target.getActualValue());
+        printRoundedBox("", formattedMapString(infoMap, 0));
     }
 
-    public void reportCauseExpression(SuspiciousExpression cause){
+    public void reportTargetSuspiciousExpression(SuspiciousExpression cause){
         Map<String, String> infoMap = new HashMap<String, String>();
         infoMap.put("LOCATION", cause.locateMethod + ": line " + cause.locateLine);
         infoMap.put("LINE", cause.stmtString().replace("\n", " "));
-        printWithHeader("CAUSE LINE", formattedMapString(infoMap, 1));
+        printDoubleBox("CAUSE LINE", formattedMapString(infoMap, 1));
 
     }
 
@@ -41,7 +41,6 @@ public class ProbeReporter {
         for (String line : formatted) {
             System.out.println(line);
         }
-        printHeader("", HEADER_LENGTH);
         for(SuspiciousExprTreeNode child : target.childSuspExprs) {
             reportInvokedReturnExpression(child, indentLevel + 1);
         }
@@ -71,7 +70,7 @@ public class ProbeReporter {
         }
     }
 
-    private void printHeader(String title, int length){
+    public void printHeader(String title, int length){
         String header;
         if(title.isEmpty()) {
             header = "─".repeat(length);
@@ -85,11 +84,6 @@ public class ProbeReporter {
     static private String padLeft(String s, int length) {
         if (s == null) s = "";
         return String.format("%" + length + "s", s);
-    }
-
-    static private String padRight(String s, int length) {
-        if (s == null) s = "";
-        return String.format("%-" + length + "s", s);
     }
 
     static private List<String> formattedMapString(Map<String, String> map, int indentLevel) {
@@ -106,5 +100,54 @@ public class ProbeReporter {
             ret.add(formatted);
         }
         return ret;
+    }
+
+    private void printDoubleBox(String title, List<String> body){
+        int maxLen = body.stream().mapToInt(String::length).max().orElse(0);
+        int innerWidth = Math.max(maxLen, title.length() + 2);
+
+        // 上辺：╔═ title ═══╗ みたいにする
+        String top = "╔═ " + title + " " + "═".repeat(Math.max(0, innerWidth - title.length() - 1)) + "╗";
+        String bottom = "╚" + "═".repeat(innerWidth + 2) + "╝";
+
+        System.out.println(top);
+        for (String line : body) {
+            System.out.println("║ " + padRight(line, innerWidth) + " ║");
+        }
+        System.out.println(bottom);
+    }
+
+    static private String padRight(String s, int width) {
+        if (s == null) s = "";
+        int pad = Math.max(0, width - displayWidth(s));
+        return s + " ".repeat(pad);
+    }
+
+    static private int displayWidth(String s) {
+        // ANSI除去（色など）
+        String t = s.replaceAll("\u001B\\[[;\\d]*[ -/]*[@-~]", "");
+        int w = 0;
+        for (int i = 0; i < t.length();) {
+            int cp = t.codePointAt(i);
+            i += Character.charCount(cp);
+
+            int type = Character.getType(cp);
+            if (type == Character.NON_SPACING_MARK
+                    || type == Character.ENCLOSING_MARK
+                    || type == Character.COMBINING_SPACING_MARK) continue;
+            if (Character.isISOControl(cp)) continue;
+
+            w += isWide(cp) ? 2 : 1;
+        }
+        return w;
+    }
+
+    static private boolean isWide(int cp) {
+        var b = Character.UnicodeBlock.of(cp);
+        return b == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
+                || b == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS
+                || b == Character.UnicodeBlock.HIRAGANA
+                || b == Character.UnicodeBlock.KATAKANA
+                || b == Character.UnicodeBlock.HANGUL_SYLLABLES;
     }
 }
