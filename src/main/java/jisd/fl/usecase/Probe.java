@@ -52,7 +52,6 @@ public class Probe{
             List<SuspiciousVariable> neighborVariable = neighborSearcher.neighborSuspiciousVariables(false, targetExpr);
             for(SuspiciousVariable suspVar : neighborVariable){
                 if(investigatedVariables.contains(suspVar)) continue;
-                reporter.reportSuspiciousVariable(suspVar);
                 investigatedVariables.add(suspVar);
                 Optional<SuspiciousExpression> suspExprOpt = causeLineFinder.find(suspVar);
                 if(suspExprOpt.isEmpty()){

@@ -39,9 +39,6 @@ public class CauseLineFinder {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         List<TracedValue> tracedValues = tracer.traceValuesOfTarget(target);
         tracedValues.sort(TracedValue::compareTo);
-        for(TracedValue tv : tracedValues){
-            System.out.println("     " + tv);
-        }
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
         Optional<SuspiciousExpression> result = searchProbeLine(target, tracedValues);
         return result;
