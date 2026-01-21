@@ -15,9 +15,7 @@ import java.util.Set;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
-    String jacocoExecFilePath = "./.jacoco_exec_data";
     Set<String> targetClassNames;
-    Set<MethodElementName> failedTests;
     NewMyCoverageVisitor visitor;
 
     public CoverageAnalyzer(){
@@ -26,7 +24,6 @@ public class CoverageAnalyzer {
     }
 
     public void analyze(ClassElementName testClassName){
-        FileUtil.createDirectory(jacocoExecFilePath);
         Set<MethodElementName> testMethodNames = JacocoTestUtil.getTestMethods(testClassName);
         if(testMethodNames.isEmpty()) throw new RuntimeException("test method is not found. [CLASS] " + testMethodNames);
 
