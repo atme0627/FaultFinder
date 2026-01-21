@@ -76,7 +76,6 @@ public class Probe{
     // int result = calc(a, b);
     //  -> return add(a, b); <= ここだけ返す。
     //    -> return a + b;       <= ここは[return add(a, b)]の探索で探す。
-    // TODO: searcher.searchがList<SuspiciousExpression>を返すようにする。
     private List<SuspiciousExpression> collectInvokedReturnExpressions(SuspiciousExpression target){
         SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
             List<SuspiciousExpression> result = searcher.search(target);
