@@ -11,14 +11,16 @@ import jisd.fl.presenter.ProbeReporter;
 import java.util.*;
 
 public class Probe{
-    SuspiciousExprTreeNode suspiciousExprTreeRoot = new SuspiciousExprTreeNode(null);
-    SuspiciousVariable firstTarget;
-    ProbeReporter reporter;
+    private SuspiciousExprTreeNode suspiciousExprTreeRoot = new SuspiciousExprTreeNode(null);
+    private final SuspiciousVariable firstTarget;
+    private final ProbeReporter reporter;
+    private final CauseLineFinder causeLineFinder;
     protected final NeighborSuspiciousVariablesSearcher neighborSearcher;
 
     public Probe(SuspiciousVariable target) {
         this.firstTarget = target;
         this.reporter = new ProbeReporter();
+        this.causeLineFinder = new CauseLineFinder();
         this.neighborSearcher = new NeighborSuspiciousVariablesSearcher();
     }
 
@@ -33,10 +35,9 @@ public class Probe{
         // 0. ユーザ由来のsuspVarから最初のSuspExprを特定する。
         investigatedVariables.add(firstTarget);
         reporter.reportProbeTarget(firstTarget);
-        CauseLineFinder finder = new CauseLineFinder();
-        SuspiciousExpression suspExpr = finder.find(firstTarget).orElseThrow(() -> new RuntimeException("[Probe For STATEMENT] Cause line not found."));
+        SuspiciousExpression suspExpr = causeLineFinder.find(firstTarget).orElseThrow(() -> new RuntimeException("[Probe For STATEMENT] Cause line not found."));
         exploringTargets.add(suspExpr);
-        suspiciousExprTreeRoot = new SuspiciousExprTreeNode(suspExpr);
+        this.suspiciousExprTreeRoot = new SuspiciousExprTreeNode(suspExpr);
         reporter.reportCauseExpression(suspExpr);
 
         //expr --> list<expr> の特定ループ
@@ -50,8 +51,7 @@ public class Probe{
             for(SuspiciousVariable suspVar : neighborVariable){
                 if(investigatedVariables.contains(suspVar)) continue;
                 investigatedVariables.add(suspVar);
-                finder = new CauseLineFinder();
-                Optional<SuspiciousExpression> suspExprOpt = finder.find(suspVar);
+                Optional<SuspiciousExpression> suspExprOpt = causeLineFinder.find(suspVar);
                 if(suspExprOpt.isEmpty()){
                     System.err.println("[Probe For STATEMENT] Cause line is not found.");
                     System.err.println("[Probe For STATEMENT] Skip probing");
