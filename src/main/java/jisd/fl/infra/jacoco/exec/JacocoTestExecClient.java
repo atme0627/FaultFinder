@@ -1,5 +1,6 @@
 package jisd.fl.infra.jacoco.exec;
 
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
 
 import java.io.*;
@@ -71,10 +72,10 @@ public class JacocoTestExecClient implements Closeable {
         throw new IOException("unknown response: " + header);
     }
 
-    public List<MethodElementName> listTestMethods(String testClassFqcn) throws IOException {
+    public List<MethodElementName> listTestMethods(ClassElementName targetTestClass) throws IOException {
         ensureConnected();
 
-        writeLine("LIST " + testClassFqcn);
+        writeLine("LIST " + targetTestClass);
         out.flush();
 
         String header = readLine(in);
