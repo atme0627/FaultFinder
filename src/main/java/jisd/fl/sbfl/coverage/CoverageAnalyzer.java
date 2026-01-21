@@ -35,18 +35,10 @@ public class CoverageAnalyzer {
             for(MethodElementName testMethodName : testMethodNames) {
                 JacocoTestExecClient.TestExecReply reply = client.runTest(testMethodName);
                 byte[] coverageData = reply.execBytes();
-
-                int failedCount = 0;
-                //テストの成否が想定と一致しているか確認
-                validateTestResult(testMethodName, reply.passed());
-                //失敗テスト数カウント
-                if (!reply.passed()) failedCount++;
                 visitor.setTestsPassed(reply.passed());
 
                 ExecutionDataStore execData = JacocoUtil.execDataFromBytes(coverageData);
                 JacocoUtil.analyzeWithJacoco(execData, visitor);
-                //失敗テストの実行回数が想定と一致しているか確認
-                validateFailedTestCount(testClassName, failedCount);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -56,28 +48,6 @@ public class CoverageAnalyzer {
     //TODO: 複数テストクラスを計測した際の挙動をテスト
     public ProjectSbflCoverage result(){
         return visitor.getCoverages();
-    }
-
-    private long failedTestsCountInClass(ClassElementName testClassName){
-        return failedTests
-                .stream()
-                .filter((ft) -> ft.fullyQualifiedClassName().equals(testClassName.fullyQualifiedClassName()))
-                .count();
-    }
-
-    private void validateTestResult(MethodElementName testMethodName, boolean isTestPassed){
-        if(failedTests.isEmpty()) return;
-        if((isTestPassed && failedTests.contains(testMethodName))
-                || (!isTestPassed && !failedTests.contains(testMethodName))){
-            throw new RuntimeException("Execution result is wrong. [testcase] " + testMethodName);
-        }
-    }
-
-    private void validateFailedTestCount(ClassElementName testClassName, int failedCount){
-        if(failedTests.isEmpty()) return;
-        if (failedTestsCountInClass(testClassName) != failedCount) {
-            throw new RuntimeException("failed test count is not correct.");
-        }
     }
 }
 
