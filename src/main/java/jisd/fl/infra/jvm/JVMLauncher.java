@@ -44,11 +44,11 @@ public class JVMLauncher {
         }
 
 //        //デバッグ用。起動したプロセス内を見る。
-//        File outFile = ToolPaths.projectRoot().resolve("jacoco-server.out").toFile();
-//        File errFile = ToolPaths.projectRoot().resolve("jacoco-server.err").toFile();
-//
-//        pb.redirectError(ProcessBuilder.Redirect.appendTo(errFile));
-//        pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outFile));
+        File outFile = ToolPaths.projectRoot().resolve("jacoco-server.out").toFile();
+        File errFile = ToolPaths.projectRoot().resolve("jacoco-server.err").toFile();
+
+        pb.redirectError(ProcessBuilder.Redirect.appendTo(errFile));
+        pb.redirectOutput(ProcessBuilder.Redirect.appendTo(outFile));
 
         Process p = pb.start();
         return JVMProcess.fromProcess(p);
