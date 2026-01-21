@@ -145,7 +145,7 @@ public class JacocoTestExecServerMain {
                     out.flush();
                     continue;
                 } catch (IllegalArgumentException e){
-                    writeLine(out, "ERR " + sanitize(e.getMessage()));
+                    writeLine(out, "ERROR " + sanitize(e.getMessage()));
                     out.flush();
                 }
             }
