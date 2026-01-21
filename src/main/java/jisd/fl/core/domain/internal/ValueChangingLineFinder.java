@@ -81,7 +81,6 @@ public class ValueChangingLineFinder {
             unaries = body.findAll(UnaryExpr.class, ValueChangingLineFinder::isIncDec);
         }
 
-
         // 2) 代入
         for (AssignExpr ae : assigns) {
             if (!matchesTarget(v, ae.getTarget())) continue;
@@ -109,22 +108,14 @@ public class ValueChangingLineFinder {
      * 対象変数への書き込みかどうかを判定
      * - a[0] = ... は name 部分(a)で一致
      * - this.f = ... は field名で一致
-     * - フィールド/ローカルの判定は「FieldAccessExprかどうか」で現状仕様を踏襲
      */
     private static boolean matchesTarget(SuspiciousVariable v, Expression target) {
-        String name;
-        if (target.isArrayAccessExpr()) {
-            name = target.asArrayAccessExpr().getName().toString();
-        } else if (target.isFieldAccessExpr()) {
-            name = target.asFieldAccessExpr().getName().toString();
-        } else {
-            name = target.toString();
-        }
+        String name = target.isNameExpr() ? target.asNameExpr().getNameAsString()
+                : target.isFieldAccessExpr() ? target.asFieldAccessExpr().getNameAsString()
+                : target.isArrayAccessExpr() ? target.asArrayAccessExpr().getName().toString()
+                : target.toString(); // fallback（最後の手段）
 
-        if (!name.equals(v.getSimpleVariableName())) return false;
-
-        // vがフィールドなら this.f のようなFieldAccessExprのみを採用（現状踏襲）
-        return v.isField() == target.isFieldAccessExpr();
+        return name.equals(v.getSimpleVariableName());
     }
 
     private record LineRange(int begin, int end) {}

@@ -92,7 +92,7 @@ public class ValueChangingLineFinderTest {
         List<Integer> lines = ValueChangingLineFinder.find(sv);
 
         for (int ln : IntStream.rangeClosed(begin, end).toArray()) {
-            assertTrue(lines.contains(ln), "missing line: " + ln);
+            assertTrue(lines.contains(ln), "missing line: " + ln + " in " + lines);
         }
     }
 
