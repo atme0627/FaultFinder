@@ -27,7 +27,7 @@ public class JacocoTestExecServerLaunchSpecFactory {
         classPath.add(jacocoAgentJar);
 
         // -javaagent オプション（出力ファイルは不要なので output=none 推奨）
-        String agentOpt = "-javaagent:" + jacocoAgentJar + "=output=none,dumponexit=false";
+        String agentOpt = "-javaagent:" + jacocoAgentJar + "=output=none,dumponexit=false,excludes=jisd/fl/*";
 
         //親が停止した際に子も停止させるための、親JVMのppid
         long ppid = ProcessHandle.current().pid();
