@@ -22,7 +22,6 @@ import java.util.List;
 public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueAtSuspiciousExpressionStrategy {
     public List<TracedValue> traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
         SuspiciousReturnValue suspReturn = (SuspiciousReturnValue) suspExpr;
-        System.out.println(" >>> [DEBUG] Return");
         final List<TracedValue> result = new ArrayList<>();
 
         //Debugger生成
@@ -76,7 +75,6 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
                             //ここには到達しないはず
                             throw new RuntimeException("Something is wrong.");
                         }
-                        System.out.println(" >>> [DEBUG] Return: " + JDIUtils.getValueString(recentMee.returnValue()));
                         if(JDIUtils.validateIsTargetExecution(recentMee, suspReturn.actualValue)) result.addAll(resultCandidate);
                         //vmをresumeしない
                     }
