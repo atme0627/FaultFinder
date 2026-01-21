@@ -34,15 +34,17 @@ public class Probe{
 
         // 0. ユーザ由来のsuspVarから最初のSuspExprを特定する。
         investigatedVariables.add(firstTarget);
-        reporter.reportProbeTarget(firstTarget);
+        reporter.reportSuspiciousVariable(firstTarget);
         SuspiciousExpression suspExpr = causeLineFinder.find(firstTarget).orElseThrow(() -> new RuntimeException("[Probe For STATEMENT] Cause line not found."));
         exploringTargets.add(suspExpr);
         this.suspiciousExprTreeRoot = new SuspiciousExprTreeNode(suspExpr);
-        reporter.reportCauseExpression(suspExpr);
+        reporter.reportTargetSuspiciousExpression(suspExpr);
 
         //expr --> list<expr> の特定ループ
         while(!exploringTargets.isEmpty()){
+            reporter.printHeader("", 150);
             SuspiciousExpression targetExpr = exploringTargets.removeFirst();
+            reporter.reportTargetSuspiciousExpression(targetExpr);
             List<SuspiciousExpression> children = new ArrayList<>();
 
             // 1. suspExpr -- [suspVar] --> suspExpr(, suspArg) 探索済みのsuspVarは除外
@@ -50,6 +52,7 @@ public class Probe{
             List<SuspiciousVariable> neighborVariable = neighborSearcher.neighborSuspiciousVariables(false, targetExpr);
             for(SuspiciousVariable suspVar : neighborVariable){
                 if(investigatedVariables.contains(suspVar)) continue;
+                reporter.reportSuspiciousVariable(suspVar);
                 investigatedVariables.add(suspVar);
                 Optional<SuspiciousExpression> suspExprOpt = causeLineFinder.find(suspVar);
                 if(suspExprOpt.isEmpty()){
@@ -79,7 +82,6 @@ public class Probe{
     private List<SuspiciousExpression> collectInvokedReturnExpressions(SuspiciousExpression target){
         SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
             List<SuspiciousExpression> result = searcher.search(target);
-        reporter.reportInvokedReturnExpression(suspiciousExprTreeRoot.find(target));
         return result;
     }
 
@@ -95,11 +97,9 @@ public class Probe{
         SuspiciousExprTreeNode parentNode = suspiciousExprTreeRoot.find(parent);
         if(parentNode == null) {
             suspiciousExprTreeRoot.print();
-            System.out.println("===================================================================================");
-            System.out.println(parent);
-            System.out.println("===================================================================================");
             throw new RuntimeException("Parent node is not found.");
         }
         parentNode.addChild(children);
+        if(!children.isEmpty()) parentNode.printChildren();
     }
 }
