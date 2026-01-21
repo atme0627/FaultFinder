@@ -1,13 +1,15 @@
 package jisd.fl.probe;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import experiment.defect4j.Defects4jUtil;
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.mapper.SuspiciousVariableMapper;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.mapper.SuspiciousExpressionMapper;
+import jisd.fl.usecase.Probe;
 import jisd.fl.util.JsonIO;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -29,11 +31,38 @@ class ProbeTest {
     void initProperty() {
         Dotenv dotenv = Dotenv.load();
         Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
-        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
-        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
+        var cfg = new PropertyLoader.ProjectConfig(
+                testProjectDir,
+                Path.of("src/main/java"),
+                Path.of("src/test/java"),
+                Path.of("build/classes/java/main"),
+                Path.of("build/classes/java/test")
+        );
+        PropertyLoader.setProjectConfig(cfg);
 
         Path currentDirectoryPath = FileSystems.getDefault().getPath("");
         jsonOutPutDir = currentDirectoryPath.resolve("src/test/resources/json/SuspiciousExpression");
+    }
+
+    @Nested
+    class MinimumTest {
+        /*
+        最小限、Junitのテストの実行と変数の観測ができてることを確認する。
+         */
+        @Test
+        void CheckRunTestAndWatchVariable() {
+            SuspiciousVariable target = new SuspiciousVariable(
+                    new MethodElementName("org.sample.MinimumTest#CheckRunTestAndWatchVariable()"),
+                    "org.sample.MinimumTest#CheckRunTestAndWatchVariable()",
+                    "x",
+                    "6",
+                    true,
+                    false
+            );
+
+            Probe pfs = new Probe(target);
+            SuspiciousExpression treeRoot = pfs.run(2000).suspExpr;
+        }
     }
 
     @Nested
@@ -50,7 +79,7 @@ class ProbeTest {
             );
 
             Probe pfs = new Probe(target);
-            SuspiciousExpression treeRoot = pfs.run(2000);
+            SuspiciousExpression treeRoot = pfs.run(2000).suspExpr;
 
             //File output = jsonOutPutDir.resolve("CalcTest.json").toFile();
             //JsonIO.export(treeRoot, output);
@@ -71,7 +100,7 @@ class ProbeTest {
             );
 
             Probe pfs = new Probe(target);
-            SuspiciousExpression treeRoot = pfs.run(2000);
+            SuspiciousExpression treeRoot = pfs.run(2000).suspExpr;
 
             File output = jsonOutPutDir.resolve("ConditionalTest.json").toFile();
             JsonIO.export(treeRoot, output);
@@ -80,7 +109,7 @@ class ProbeTest {
         @Test
         void loadFromJson() throws IOException {
             File input = jsonOutPutDir.resolve("ConditionalTest.json").toFile();
-            SuspiciousExpression loadedFromJson = SuspiciousExpression.loadFromJson(input);
+            SuspiciousExpression loadedFromJson = SuspiciousExpressionMapper.loadFromJson(input);
             File output = jsonOutPutDir.resolve("ConditionalTest2.json").toFile();
             JsonIO.export(loadedFromJson, output);
             assertTrue(FileUtils.contentEquals(input, output), "File contents should match");
@@ -101,7 +130,7 @@ class ProbeTest {
             );
 
             Probe pfs = new Probe(target);
-            SuspiciousExpression treeRoot = pfs.run(2000);
+            SuspiciousExpression treeRoot = pfs.run(2000).suspExpr;
 
             File output = jsonOutPutDir.resolve("LoopTest1.json").toFile();
             JsonIO.export(treeRoot, output);
@@ -120,7 +149,8 @@ class ProbeTest {
         Defects4jUtil.changeTargetVersion(project, bugId);
         Defects4jUtil.compileBuggySrc(project, bugId);
 
-        List<?> probeTargets = JsonIO.importFromJson(inputFile, new TypeReference<List<SuspiciousVariable>>() {});
+        String jsonString = Files.readString(inputFile.toPath());
+        List<SuspiciousVariable> probeTargets = SuspiciousVariableMapper.fromJsonArray(jsonString);
 
         System.out.println("Finding target: [PROJECT] " + project + "  [BUG ID] " + bugId);
 
@@ -135,7 +165,7 @@ class ProbeTest {
             Files.createFile(path);
 
             Probe prb = new Probe(target);
-            SuspiciousExpression result = prb.run(2000);
+            SuspiciousExpression result = prb.run(2000).suspExpr;
             JsonIO.export(result, outputFile);
         }
     }

@@ -2,8 +2,7 @@ package experiment.defect4j;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.LineElementName;
+import jisd.fl.core.entity.element.LineElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,14 +19,6 @@ class Defects4jUtilTest {
     void stopLog(){
         Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         root.setLevel(Level.OFF);
-    }
-
-
-    @Test
-    void changeTargetVersionTest() {
-        Defects4jUtil.changeTargetVersion("Math", 15);
-        System.out.println(PropertyLoader.getProperty("targetSrcDir"));
-        System.out.println(PropertyLoader.getProperty("junitConsoleLauncherPath"));
     }
 
     @Nested

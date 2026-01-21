@@ -1,8 +1,10 @@
 package experiment.defect4j;
 
-import jisd.fl.util.analyze.LineElementName;
-import jisd.fl.util.analyze.MethodElementName;
-import jisd.fl.util.analyze.StaticAnalyzer;
+import jisd.fl.core.entity.element.LineElementName;
+import jisd.fl.core.entity.element.LineElementNameResolver;
+import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.infra.javaparser.JavaParserLineElementNameResolverFactory;
+import jisd.fl.infra.javaparser.JavaParserUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -68,16 +70,16 @@ public class BuggyElementExtractor {
             for (DiffEntry entry : diffs) {
                 Optional<MethodElementName> fqcn = getFQCN(entry);
                 if(fqcn.isEmpty()) continue;
-                Map<Integer, MethodElementName> methodsWithLine = StaticAnalyzer.getMethodNamesWithLine(fqcn.get());
+                LineElementNameResolver resolver = JavaParserLineElementNameResolverFactory.create(fqcn.get().classElementName);
                 EditList edits = df.toFileHeader(entry).toEditList();
                 for (Edit edit : edits) {
                     if (edit.getType() == Edit.Type.DELETE || edit.getType() == Edit.Type.REPLACE) {
                         for (int i = edit.getBeginA(); i < edit.getEndA(); i++) {
-                            buggyLines.add(methodsWithLine.getOrDefault(i + 1, new MethodElementName(fqcn.get().getFullyQualifiedClassName() + "#<ulinit>()")).toLineElementName(i + 1));
+                            buggyLines.add(resolver.lineElementAt(i+1));
                         }
                     } else if (edit.getType() == Edit.Type.INSERT) {
                         int afterInsertedLine = edit.getBeginA();
-                        buggyLines.add(methodsWithLine.getOrDefault(afterInsertedLine + 1, new MethodElementName(fqcn.get().getFullyQualifiedClassName() + "#<ulinit>()")).toLineElementName(afterInsertedLine + 1));
+                        buggyLines.add(resolver.lineElementAt(afterInsertedLine + 1));
                     }
                 }
             }

@@ -2,9 +2,9 @@ package experiment.defect4j;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.util.FileUtil;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.LineElementName;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.core.entity.element.LineElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -46,12 +47,15 @@ public class Defects4jUtil {
     }
 
     public static void compileBuggySrc(String project, int bugId){
-        FileUtil.initDirectory(PropertyLoader.getDebugBinDir());
+        //TODO: 使わないようにする!
+        FileUtil.initDirectory("/Users/ezaki/IdeaProjects/FaultFinder/classesForDebug/");
         String cmd = "defects4j compile -w " + getProjectDir(project, bugId, true);
         execCmd(cmd);
-        cmd = "cp -r " + PropertyLoader.getTargetBinDir() + "/. " + PropertyLoader.getDebugBinDir();
+        //TODO: 使わないようにする!
+        cmd = "cp -r " + PropertyLoader.getTargetBinDir().toString() + "/. " + "/Users/ezaki/IdeaProjects/FaultFinder/classesForDebug/";
         execCmd(cmd);
-        cmd = "cp -r " + PropertyLoader.getTestBinDir() + "/. " + PropertyLoader.getDebugBinDir();
+        //TODO: 使わないようにする!
+        cmd = "cp -r " + PropertyLoader.getTestBinDir().toString() + "/. " + "/Users/ezaki/IdeaProjects/FaultFinder/classesForDebug/";
         execCmd(cmd);
     }
 
@@ -61,17 +65,14 @@ public class Defects4jUtil {
 
     public static void changeTargetVersion(String project, int bugId){
         Properties p = getD4jProperties(project, bugId);
-
-        String targetSrcDir = getProjectDir(project, bugId, true) + "/" + p.getProperty("d4j.dir.src.classes");
-        String testSrcDir = getProjectDir(project, bugId, true) + "/" + p.getProperty("d4j.dir.src.tests");
-        String targetBinDir = getProjectDir(project, bugId, true) + "/" + exportProperty(project, bugId, "dir.bin.classes");
-        String testBinDir = getProjectDir(project, bugId, true) + "/" + exportProperty(project, bugId, "dir.bin.tests");
-
-        PropertyLoader.setProperty("targetSrcDir", targetSrcDir);
-        PropertyLoader.setProperty("testSrcDir", testSrcDir);
-        PropertyLoader.setProperty("testBinDir", testBinDir);
-        PropertyLoader.setProperty("targetBinDir", targetBinDir);
-        PropertyLoader.store();
+        PropertyLoader.ProjectConfig config = new PropertyLoader.ProjectConfig(
+                Path.of(getProjectDir(project, bugId, true)),
+                Path.of(p.getProperty("d4j.dir.src.classes")),
+                Path.of(p.getProperty("d4j.dir.src.tests")),
+                Path.of(exportProperty(project, bugId, "dir.bin.classes")),
+                Path.of(exportProperty(project, bugId, "dir.bin.tests"))
+        );
+        PropertyLoader.setProjectConfig(config);
     }
 
     private static String exportProperty(String project, int bugId, String key){
@@ -104,17 +105,29 @@ public class Defects4jUtil {
 
     private static String execCmd(String cmd){
         try {
-            Process proc = Runtime.getRuntime().exec(cmd, null, defects4jDir);
+            String prefix = "export JAVA_HOME=$(/usr/libexec/java_home -v 11); export PATH=\"$JAVA_HOME/bin:$PATH\"; ";
+            ProcessBuilder pb = new ProcessBuilder("/bin/zsh", "-lc", prefix + cmd);
+            pb.directory(defects4jDir);
+
+            //環境変数の設定
+            String home = System.getProperty("user.home");
+            var env = pb.environment();
+            env.put("PATH", home + "/perl5/bin:/opt/homebrew/opt/perl/bin:" + System.getenv("PATH"));
+            env.put("PERL5LIB", home + "/perl5/lib/perl5");
+
+            Process proc = pb.start();
+//            System.out.println("execCmd: " + cmd);
             String line = null;
-//            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
-//                while ((line = buf.readLine()) != null) System.err.println(line);
-//            }
+
             StringBuilder output = new StringBuilder();
             try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
                 while ((line = buf.readLine()) != null) output.append(line).append("\n");
             }
             int exitCode = proc.waitFor();
             if (exitCode != 0) {
+                try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
+                    while ((line = buf.readLine()) != null) System.err.println(line);
+                }
                 throw new IOException("Process exited with code " + exitCode);
             }
             return output.toString().replace("\n", "");

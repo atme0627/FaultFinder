@@ -1,29 +1,63 @@
 package demo;
 import jisd.fl.FaultFinder;
-import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.sbfl.Granularity;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.presenter.SbflCoveragePrinter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
+
 public class FaultFinderDemo {
     MethodElementName failedTestMethodName = new MethodElementName("demo.SampleTest#sampleTest()");
+    FaultFinder faultFinder;
+
     @BeforeEach
     void init(){
-        TestUtil.compileForDebug(failedTestMethodName);
+        PropertyLoader.ProjectConfig config = new PropertyLoader.ProjectConfig(
+                Path.of("/Users/ezaki/IdeaProjects/FaultFinder"),
+                Path.of("src/main/java"),
+                Path.of("src/test/java"),
+                Path.of("build/classes/java/main"),
+                Path.of("build/classes/java/test")
+        );
+        PropertyLoader.setProjectConfig(config);
+        faultFinder = new FaultFinder(failedTestMethodName.classElementName);
     }
 
     @Test
-    void example(){
+    void displaySBFLRanking(){
+        faultFinder.printRanking();
+    }
+
+    @Test
+    void probe(){
+        SuspiciousVariable targetValue = new SuspiciousVariable(
+                failedTestMethodName,
+                failedTestMethodName.fullyQualifiedName(),
+                "actual",
+                "4",
+                true,
+                false
+        );
+
+        SbflCoveragePrinter printer = new SbflCoveragePrinter();
+        printer.print(faultFinder.coverage, Granularity.LINE);
+        faultFinder.probe(targetValue);
+    }
+
+    @Test
+    void useCase(){
         //既存のバグ局所化手法、SBFLに基づいた「怪しい行」ランキング
         //テストケースが乏しいため、初めは全て同率になってしまう
-        FaultFinder faultFinder = new FaultFinder(failedTestMethodName);
         faultFinder.printRanking();
 
         //間違った値を取る変数"actual"をヒントとしてランキングに与えることで、疑惑値に差が生まれ調べるべき行が絞られる。
         SuspiciousVariable targetValue = new SuspiciousVariable(
                 failedTestMethodName,
-                failedTestMethodName.getFullyQualifiedMethodName(),
+                failedTestMethodName.fullyQualifiedName(),
                 "actual",
                 "4",
                 true,

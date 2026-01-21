@@ -1,0 +1,40 @@
+package jisd.fl.core.domain.internal;
+
+import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
+import jisd.fl.core.entity.susp.SuspiciousArgument;
+import jisd.fl.core.entity.susp.SuspiciousAssignment;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousReturnValue;
+import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousArgumentStrategy;
+import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousAssignmentStrategy;
+import jisd.fl.infra.jdi.JDITraceValueAtSuspiciousReturnValueStrategy;
+import jisd.fl.core.entity.TracedValue;
+
+import java.util.List;
+
+public class ValueAtSuspiciousExpressionTracer {
+    /**
+     * このSuspiciousExprで観測できる全ての変数とその値の情報をJISDを用いて取得
+     * 複数回SuspiciousExpressionが実行されているときは、最後に実行された時の値を使用する
+     * @return
+     */
+
+    private final TraceValueAtSuspiciousExpressionStrategy assignmentStrategy;
+    private final TraceValueAtSuspiciousExpressionStrategy returnValueStrategy;
+    private final TraceValueAtSuspiciousExpressionStrategy argumentStrategy;
+
+    public ValueAtSuspiciousExpressionTracer(){
+        assignmentStrategy = new JDITraceValueAtSuspiciousAssignmentStrategy();
+        returnValueStrategy = new JDITraceValueAtSuspiciousReturnValueStrategy();
+        argumentStrategy = new JDITraceValueAtSuspiciousArgumentStrategy();
+    }
+    public List<TracedValue> traceAll(SuspiciousExpression suspExpr){
+        return switch (suspExpr) {
+            case SuspiciousAssignment suspAssign -> assignmentStrategy.traceAllValuesAtSuspExpr(suspAssign);
+            case SuspiciousReturnValue suspReturn -> returnValueStrategy.traceAllValuesAtSuspExpr(suspReturn);
+            case SuspiciousArgument suspArg -> argumentStrategy.traceAllValuesAtSuspExpr(suspArg);
+            default -> throw new IllegalStateException("Unexpected value: " + suspExpr);
+        };
+    }
+
+}

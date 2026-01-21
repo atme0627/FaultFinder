@@ -1,8 +1,10 @@
 package jisd.fl.ranking;
 
-import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.sbfl.coverage.Granularity;
-import jisd.fl.util.analyze.CodeElementName;
+import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.sbfl.Granularity;
+import jisd.fl.core.entity.element.CodeElementIdentifier;
 
 import java.util.*;
 
@@ -27,41 +29,44 @@ public class TraceToScoreAdjustmentConverter {
         this.g = granularity;
     }
 
-    /**
-     * root を起点に木を探索し、
-     * 「CodeElementName → 最小深さ」を集計してから
-     * ScoreAdjustment を返す
-     */
-    public List<ScoreAdjustment> toAdjustments(SuspiciousExpression root) {
+    public Map<CodeElementIdentifier<?>, Double> toAdjustments(SuspiciousExprTreeNode root) {
         // ノードごとの最小深さを保持するマップ
-        Map<CodeElementName, Integer> minDepth   = new HashMap<>();
-        Queue<SuspiciousExpression>   queue      = new LinkedList<>();
+        Map<CodeElementIdentifier<?>, Integer> minDepth   = new HashMap<>();
+        Queue<SuspiciousExprTreeNode>   queue      = new LinkedList<>();
         Queue<Integer>                depths     = new LinkedList<>();
 
         queue.add(root);
         depths.add(1);
 
         while (!queue.isEmpty()) {
-            SuspiciousExpression suspExpr = queue.poll();
+            SuspiciousExprTreeNode suspExprNode = queue.poll();
+            SuspiciousExpression suspExpr = suspExprNode.suspExpr;
             int depth = depths.poll();
 
-            CodeElementName elem = suspExpr.convertToCodeElementName(g);
+            CodeElementIdentifier<?> elem = convertToCodeElementName(new MethodElementName(suspExpr.locateMethod.toString()), suspExpr.locateLine, g);
 
             // 最小深さをマージ
             minDepth.merge(elem, depth, Math::min);
 
-            for (SuspiciousExpression child : suspExpr.getChildren()) {
+            for (SuspiciousExprTreeNode child : suspExprNode.childSuspExprs) {
                 queue.add(child);
                 depths.add(depth + 1);
             }
         }
 
         // ScoreAdjustment のリスト化
-        List<ScoreAdjustment> adjustments = new ArrayList<>();
+        Map<CodeElementIdentifier<?>, Double> adjustments = new HashMap<>();
         for (var entry : minDepth.entrySet()) {
             double multiplier = 1 + Math.pow(baseFactor, entry.getValue());
-            adjustments.add(new ScoreAdjustment(entry.getKey(), multiplier));
+            adjustments.put(entry.getKey(), multiplier);
         }
         return adjustments;
+    }
+
+    public static CodeElementIdentifier<?> convertToCodeElementName(MethodElementName locateMethod, int locateLine, Granularity granularity){
+        return switch (granularity){
+            case LINE -> locateMethod.toLineElementName(locateLine);
+            case METHOD, CLASS -> locateMethod;
+        };
     }
 }
