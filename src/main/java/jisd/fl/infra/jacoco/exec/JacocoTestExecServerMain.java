@@ -143,7 +143,7 @@ public class JacocoTestExecServerMain {
 
                 ClassElementName testClass = new ClassElementName(testClassFqcn);
                 try {
-                    System.out.println("[Jacoco-exec-server] test class: " + testClass);
+                    System.out.println("[Jacoco-exec-server] test class: " + testClass.fullyQualifiedName());
                     List<MethodElementName> methods = JUnitTestFinder.getTestMethods(testClass);
                     writeLine(rawOut, "OK " + methods.size());
                     for (MethodElementName m : methods) {
