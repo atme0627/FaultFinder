@@ -2,8 +2,7 @@ package experiment.setUp;
 
 import experiment.defect4j.Defects4jUtil;
 import jisd.fl.core.entity.element.ClassElementName;
-import jisd.fl.infra.jacoco.ProjectSbflCoverage;
-import jisd.fl.sbfl.coverage.CoverageAnalyzer;
+import jisd.fl.usecase.CoverageAnalyzer;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.util.JsonIO;
 import jisd.fl.core.entity.element.MethodElementName;
 
 public class Coverage {

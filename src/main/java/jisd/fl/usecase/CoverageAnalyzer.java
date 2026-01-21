@@ -1,4 +1,4 @@
-package jisd.fl.sbfl.coverage;
+package jisd.fl.usecase;
 
 import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.util.PropertyLoader;

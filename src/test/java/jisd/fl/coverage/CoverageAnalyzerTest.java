@@ -2,18 +2,15 @@ package jisd.fl.coverage;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.core.entity.element.ClassElementName;
-import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.presenter.SbflCoveragePrinter;
-import jisd.fl.sbfl.coverage.CoverageAnalyzer;
+import jisd.fl.usecase.CoverageAnalyzer;
 import jisd.fl.core.entity.sbfl.Granularity;
-import jisd.fl.util.JsonIO;
 import jisd.fl.core.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
