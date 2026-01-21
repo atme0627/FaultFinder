@@ -1,6 +1,8 @@
 package jisd.fl.sbfl.coverage;
 
 import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.infra.jacoco.ClassFileCache;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.infra.jacoco.exec.JacocoTestExecClient;
 import jisd.fl.infra.jacoco.exec.JacocoTestExecServerHandle;
@@ -19,6 +21,14 @@ public class CoverageAnalyzer {
     }
 
     public void analyze(ClassElementName testClassName){
+        //カバレッジ取得対象のクラスファイルをロード
+        ClassFileCache cache;
+        try {
+            cache = ClassFileCache.loadFromClassesDir(PropertyLoader.getTargetBinDir());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load class files from target directory: " + e.getMessage(), e);
+        }
+
         try (var handle = JacocoTestExecServerHandle.startDefault(20000)) {
             JacocoTestExecClient client = handle.client();
             List<MethodElementName> testMethodNames = client.listTestMethods(testClassName);
@@ -30,7 +40,7 @@ public class CoverageAnalyzer {
                 visitor.setTestsPassed(reply.passed());
 
                 ExecutionDataStore execData = JacocoUtil.execDataFromBytes(coverageData);
-                JacocoUtil.analyzeWithJacoco(execData, visitor);
+                JacocoUtil.analyzeExecData(execData, visitor, cache);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
