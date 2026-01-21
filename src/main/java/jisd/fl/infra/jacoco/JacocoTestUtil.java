@@ -13,9 +13,7 @@ import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -24,57 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public  class JacocoTestUtil {
-    //TestLauncherにjacoco agentをつけて起動
-    //methodNameは次のように指定: org.example.order.OrderTests#test1(int a)
-    //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
-    //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
-    public static boolean execTestCaseWithJacocoAgent(MethodElementName testMethod, String execFileName) throws IOException, InterruptedException {
-        //TODO: エージェント使わない方式に切り替え
-        final String jacocoAgentPath = "./locallib/jacocoagent.jar";
-        final String jacocoExecFilePath = "./.jacoco_exec_data";
-        final String targetBinDir = PropertyLoader.getTargetBinDir().toString();
-        final String testBinDir = PropertyLoader.getTestBinDir().toString();
-        final String junitClassPath = "locallib/junit-dependency/*";
-        String generatedFilePath = jacocoExecFilePath + "/" + execFileName;
-
-        //Junit Console Launcherの終了ステータスは、
-        // 1: コンテナやテストが失敗
-        // 2: テストが見つからないかつ--fail-if-no-testsが指定されている
-        // 0: それ以外
-        String cmd =
-                "java " +
-                "--add-opens java.base/java.lang=ALL-UNNAMED " +
-                "--add-opens java.base/java.lang.reflect=ALL-UNNAMED " +
-                "-javaagent:" + jacocoAgentPath + "=destfile='" + generatedFilePath + "'" +
-                " -cp " + "./build/classes/java/main"
-                        + ":" + targetBinDir
-                        + ":" + testBinDir
-                        + ":'" + junitClassPath + "'"
-                + " jisd.fl.infra.junit.JUnitTestLauncher '" + testMethod.fullyQualifiedName() + "'";
-
-        ProcessBuilder pb = new ProcessBuilder("zsh", "-ic", cmd);
-        Process proc = pb.start();
-        proc.waitFor();
-
-        boolean DEBUG=true;
-        if(DEBUG) {
-            String line = null;
-            System.out.println("STDOUT---------------");
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getInputStream()))) {
-                while ((line = buf.readLine()) != null) System.out.println(line);
-            }
-            System.out.println("STDERR---------------");
-            try (var buf = new BufferedReader(new InputStreamReader(proc.getErrorStream()))) {
-                while ((line = buf.readLine()) != null) System.err.println(line);
-            }
-        }
-
-        //ファイルの生成が行われたことを出力
-        System.out.println("Success to generate " + generatedFilePath + ".");
-        System.out.println("testResult " + (proc.exitValue() == 0 ? "o" : "x"));
-        return proc.exitValue() == 0;
-    }
-
     public static Set<MethodElementName> getTestMethods(ClassElementName testMethodName){
         //テスト対象クラスの.classを含むディレクトリを動的にロード
         //テストクラスはコンパイル済みと仮定
