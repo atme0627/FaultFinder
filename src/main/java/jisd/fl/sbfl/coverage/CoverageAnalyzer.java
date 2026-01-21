@@ -31,11 +31,6 @@ public class CoverageAnalyzer {
         visitor = new NewMyCoverageVisitor();
     }
 
-    // 1) 結果を格納するレコードクラス
-    record TestResult(MethodElementName methodName,
-                      String execFileName,
-                      boolean passed) {}
-
     @Deprecated
     public void analyze(String tmp){
         analyze(new ClassElementName(tmp));
