@@ -6,6 +6,8 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JacocoTestExecClient implements Closeable {
     private final String host;
@@ -67,6 +69,36 @@ public class JacocoTestExecClient implements Closeable {
         }
 
         throw new IOException("unknown response: " + header);
+    }
+
+    public List<MethodElementName> listTestMethods(String testClassFqcn) throws IOException {
+        ensureConnected();
+
+        writeLine("LIST " + testClassFqcn);
+        out.flush();
+
+        String header = readLine(in);
+        if (header == null) throw new EOFException("server closed connection");
+
+        header = header.trim();
+        if (!header.startsWith("OK ")) {
+            if (header.startsWith("ERR")) throw new IOException("server error: " + header);
+            throw new IOException("unknown response: " + header);
+        }
+
+        int count = Integer.parseInt(header.substring(4).trim());
+        List<MethodElementName> methods = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            String line = readLine(in);
+            if (line == null) throw new EOFException("unexpected EOF while reading methods");
+            try {
+                MethodElementName testMethod = new MethodElementName(line.trim());
+                methods.add(testMethod);
+            } catch (IllegalArgumentException e){
+                throw new IOException("invalid method name: " + line, e);
+            }
+        }
+        return methods;
     }
 
     public void quit() throws IOException {
