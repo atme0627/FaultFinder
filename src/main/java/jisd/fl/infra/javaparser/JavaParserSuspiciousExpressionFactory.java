@@ -5,6 +5,9 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
 import com.github.javaparser.ast.stmt.Statement;
+import com.github.javaparser.printer.configuration.DefaultConfigurationOption;
+import com.github.javaparser.printer.configuration.DefaultPrinterConfiguration;
+import com.github.javaparser.printer.configuration.PrinterConfiguration;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.element.MethodElementName;
@@ -16,6 +19,8 @@ import jisd.fl.core.entity.susp.SuspiciousVariable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.github.javaparser.printer.configuration.DefaultPrinterConfiguration.ConfigOption.PRINT_COMMENTS;
 
 
 public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressionFactory {
@@ -33,7 +38,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 locateMethod,
                 locateLine,
                 assignTarget,
-                stmt.toString(),
+                stmtToStringNoComments(stmt),
                 hasMethodCalling,
                 directNeighborVariableNames,
                 indirectNeighborVariableNames
@@ -53,7 +58,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 locateMethod,
                 locateLine,
                 actualValue,
-                stmt.toString(),
+                stmtToStringNoComments(stmt),
                 hasMethodCalling,
                 directNeighborVariableNames,
                 indirectNeighborVariableNames
@@ -153,5 +158,11 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
 
 
         throw new RuntimeException("Something is wrong. (stmt: " + stmt + ", callCountAfterTargetInLine: " + callCountAfterTargetInLine + ", argIndex: " + argIndex + ", calleeMethodName: " + calleeMethodName + " ) ");
+    }
+
+    private static String stmtToStringNoComments(Statement stmt) {
+        PrinterConfiguration conf = new DefaultPrinterConfiguration()
+                .removeOption(new DefaultConfigurationOption(PRINT_COMMENTS));
+        return stmt.toString(conf);
     }
 }

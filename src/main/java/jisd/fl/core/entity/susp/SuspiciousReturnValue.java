@@ -22,7 +22,7 @@ public class SuspiciousReturnValue extends SuspiciousExpression {
 
     @Override
     public String toString(){
-        return "[ SUSPICIOUS RETURN VALUE ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
+        return "[  RETURN  ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
     }
 
 }

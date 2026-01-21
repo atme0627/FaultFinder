@@ -38,7 +38,7 @@ public class SuspiciousArgument extends SuspiciousExpression {
 
     @Override
     public String toString() {
-        return "[ SUSPICIOUS ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
+        return "[ ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
     }
 
     public List<String> targetMethodNames() {
