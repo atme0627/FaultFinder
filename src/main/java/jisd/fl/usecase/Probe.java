@@ -34,6 +34,7 @@ public class Probe{
         while(!probingTargets.isEmpty()) {
             SuspiciousVariable target = probingTargets.removeLast();
             reporter.reportProbeTarget(target);
+            List<SuspiciousExpression> causeExprs = new ArrayList<>();
 
             //search cause line
             CauseLineFinder finder = new CauseLineFinder(target);
@@ -44,10 +45,12 @@ public class Probe{
                 continue;
             }
             SuspiciousExpression suspExpr = suspExprOpt.get();
+            causeExprs.add(suspExpr);
             addTreeElement(suspExpr, target);
 ;           reporter.reportCauseExpression(suspExpr);
             //include return line of callee method to cause lines
-            List<SuspiciousExpression> causeExprs = collectInvokedReturnExpressions(suspExpr);
+
+            causeExprs.addAll(collectInvokedReturnExpressions(suspExpr));
 
             //search next target
             System.out.println(" >>> search next target");
@@ -71,23 +74,22 @@ public class Probe{
     private List<SuspiciousExpression> collectInvokedReturnExpressions(SuspiciousExpression targetCauseExpr){
         List<SuspiciousExpression> result = new ArrayList<>();
         Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>();
-        suspExprQueue.add(targetCauseExpr);
-
-        SuspiciousExprTreeNode targetNode = suspiciousExprTreeRoot.find(targetCauseExpr);
-        if(targetNode == null) throw new RuntimeException("Target node is not found.");
-
         SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
+
+        suspExprQueue.add(targetCauseExpr);
         while(!suspExprQueue.isEmpty()){
             SuspiciousExpression target = suspExprQueue.removeFirst();
+            SuspiciousExprTreeNode targetNode = suspiciousExprTreeRoot.find(target);
+            if(targetNode == null) throw new RuntimeException("Target node is not found.");
 
             List<SuspiciousReturnValue> returnsOfTarget = searcher.search(target);
             if(!returnsOfTarget.isEmpty()) {
                 targetNode.addChild(returnsOfTarget);
                 suspExprQueue.addAll(returnsOfTarget);
             }
-            result.add(target);
+            result.addAll(returnsOfTarget);
         }
-        reporter.reportInvokedReturnExpression(targetNode);
+        reporter.reportInvokedReturnExpression(suspiciousExprTreeRoot.find(targetCauseExpr));
         return result;
     }
 
