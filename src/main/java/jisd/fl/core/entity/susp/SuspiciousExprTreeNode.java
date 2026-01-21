@@ -41,9 +41,20 @@ public class SuspiciousExprTreeNode {
             childSuspExprs.get(i).printTree(sb, prefix + (isTail ? INDENT : "│   "), false);
         }
         if (!childSuspExprs.isEmpty()) {
-            childSuspExprs.get(childSuspExprs.size() - 1)
-                    .printTree(sb, prefix + (isTail ? INDENT : "│   "), true);
+            childSuspExprs.getLast().printTree(sb, prefix + (isTail ? INDENT : "│   "), true);
         }
+    }
+
+    public void printChildren() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("└── ").append(suspExpr.toString().trim()).append("\n");
+        for (int i = 0; i < childSuspExprs.size() - 1; i++) {
+            sb.append(INDENT).append("├── ").append(childSuspExprs.get(i).suspExpr.toString().trim()).append("\n");
+        }
+        if (!childSuspExprs.isEmpty()) {
+            sb.append(INDENT).append("└── ").append(childSuspExprs.getLast().suspExpr.toString().trim()).append("\n");
+        }
+        System.out.print(sb);
     }
 
     @Override
