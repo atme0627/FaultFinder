@@ -87,7 +87,7 @@ public class JacocoTestExecClient implements Closeable {
             throw new IOException("unknown response: " + header);
         }
 
-        int count = Integer.parseInt(header.substring(4).trim());
+        int count = Integer.parseInt(header.substring(3).trim());
         List<MethodElementName> methods = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             String line = readLine(in);
