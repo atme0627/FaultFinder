@@ -137,20 +137,23 @@ public class JacocoTestExecServerMain {
             }
 
             if (line.startsWith("LIST ")) {
+                System.out.println("[Jacoco-exec-server] LIST command received: " + line);
                 String testClassFqcn = line.substring(5).trim();
-                if (testClassFqcn.isEmpty()) { writeLine(out, "ERR empty class"); out.flush(); continue; }
+                if (testClassFqcn.isEmpty()) { writeLine(rawOut, "ERR empty class"); rawOut.flush(); continue; }
 
                 ClassElementName testClass = new ClassElementName(testClassFqcn);
                 try {
+                    System.out.println("[Jacoco-exec-server] test class: " + testClass);
                     List<MethodElementName> methods = JUnitTestFinder.getTestMethods(testClass);
-                    writeLine(out, "OK " + methods.size());
+                    writeLine(rawOut, "OK " + methods.size());
                     for (MethodElementName m : methods) {
-                        writeLine(out, m.fullyQualifiedName());
+                        System.out.println("[Jacoco-exec-server] method: " + m);
+                        writeLine(rawOut, m.fullyQualifiedName());
                     }
-                    out.flush();
+                    rawOut.flush();
                 } catch (IllegalArgumentException e){
-                    writeLine(out, "ERROR " + sanitize(e.getMessage()));
-                    out.flush();
+                    writeLine(rawOut, "ERROR " + sanitize(e.getMessage()));
+                    rawOut.flush();
                 }
                 continue;
             }
