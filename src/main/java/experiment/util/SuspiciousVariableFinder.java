@@ -74,7 +74,6 @@ public class SuspiciousVariableFinder {
         for (SuspiciousExpression r : returns) {
             //SuspExprで観測できる全ての変数
             List<SuspiciousVariable> neighbor = neighborSearcher.neighborSuspiciousVariables(false, r);
-            neighbor.forEach(sv -> sv.setParent(r));
             result.addAll(neighbor);
         }
 
