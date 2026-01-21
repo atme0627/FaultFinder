@@ -1,13 +1,13 @@
 package jisd.fl.sbfl.coverage;
 
-import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.infra.jacoco.ClassFileCache;
 import org.jacoco.core.analysis.Analyzer;
 import org.jacoco.core.analysis.ICoverageVisitor;
+import org.jacoco.core.data.ExecutionData;
 import org.jacoco.core.data.ExecutionDataStore;
 import org.jacoco.core.tools.ExecFileLoader;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -19,12 +19,15 @@ public class JacocoUtil {
     //先にTestClassCompilerでテストクラスをjunitConsoleLauncherとともにコンパイルする必要がある
     //TODO: execファイルの生成に時間がかかりすぎるため、並列化の必要あり
 
-    public static void analyzeWithJacoco(ExecutionDataStore executionData, ICoverageVisitor cv) throws IOException {
-        final String targetBinDir = PropertyLoader.getTargetBinDir().toString();
+    public static void analyzeExecData(ExecutionDataStore executionData, ICoverageVisitor cv, ClassFileCache cache) throws IOException {
         //jacocoによるテスト対象の解析
         final Analyzer analyzer = new Analyzer(executionData, cv);
-        File classFilePath = new File(targetBinDir);
-        analyzer.analyzeAll(classFilePath);
+        for(ExecutionData execData : executionData.getContents()) {
+            byte[] classBytes = cache.get(execData.getName());
+            if(classBytes != null) {
+                analyzer.analyzeClass(classBytes, execData.getName());
+            }
+        }
     }
 
     public static ExecutionDataStore execDataFromBytes(byte[] execBytes) throws IOException {
