@@ -22,7 +22,7 @@ public final class SuspiciousReturnsSearcher {
         argumentStrategy = new JDISearchSuspiciousReturnsArgumentStrategy();
     }
 
-    public List<SuspiciousReturnValue> search(SuspiciousExpression suspExpr) {
+    public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
         return switch (suspExpr) {
             case SuspiciousAssignment suspAssign -> assignmentStrategy.search(suspAssign);
             case SuspiciousReturnValue suspReturn -> returnValueStrategy.search(suspReturn);

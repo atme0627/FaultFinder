@@ -42,13 +42,13 @@ public class LineMethodCallWatcher {
         while(!suspExprQueue.isEmpty()){
             SuspiciousExpression target = suspExprQueue.removeFirst();
 
-            List<SuspiciousReturnValue> returnsOfTarget = searcher.search(target);
+            List<SuspiciousExpression> returnsOfTarget = searcher.search(target);
             if(!returnsOfTarget.isEmpty()) {
                 System.out.println(" >>> search return line");
                 System.out.println(" >>> target: " + target);
                 System.out.println(" >>> ");
                 System.out.println(" >>> return lines");
-                for (SuspiciousReturnValue r : returnsOfTarget) {
+                for (SuspiciousExpression r : returnsOfTarget) {
                     System.out.println(" >>> " + r);
                 }
 

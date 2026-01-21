@@ -25,9 +25,9 @@ import java.util.NoSuchElementException;
 public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspiciousReturnsStrategy {
     final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
     @Override
-    public List<SuspiciousReturnValue> search(SuspiciousExpression suspExpr) {
+    public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
         SuspiciousAssignment suspAssign = (SuspiciousAssignment) suspExpr;
-        final List<SuspiciousReturnValue> result = new ArrayList<>();
+        final List<SuspiciousExpression> result = new ArrayList<>();
         if(!(suspAssign).hasMethodCalling()) return result;
 
         //Debugger生成

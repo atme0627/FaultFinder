@@ -24,9 +24,9 @@ import java.util.List;
 public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSuspiciousReturnsStrategy {
     static final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
     @Override
-    public List<SuspiciousReturnValue> search(SuspiciousExpression suspExpr) {
+    public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
         SuspiciousReturnValue suspReturn = (SuspiciousReturnValue) suspExpr;
-        final List<SuspiciousReturnValue> result = new ArrayList<>();
+        final List<SuspiciousExpression> result = new ArrayList<>();
         if(!(suspReturn).hasMethodCalling()) return result;
 
         //Debugger生成

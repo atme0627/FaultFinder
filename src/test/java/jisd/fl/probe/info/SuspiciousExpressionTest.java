@@ -81,7 +81,7 @@ class SuspiciousExpressionTest {
                     suspVariable
             );
 
-            List<SuspiciousReturnValue> actualResult = searcher.search(suspAssignment);
+            List<SuspiciousExpression> actualResult = searcher.search(suspAssignment);
             //actualResult.forEach(System.out::println);
             assertThat(actualResult, hasSize(3));
             assertThat(actualResult, hasItems(
@@ -139,7 +139,7 @@ class SuspiciousExpressionTest {
                     suspVariable
             );
 
-            List<SuspiciousReturnValue> result = searcher.search(suspAssignment);
+            List<SuspiciousExpression> result = searcher.search(suspAssignment);
             result.forEach(System.out::println);
         }
 
@@ -156,7 +156,7 @@ class SuspiciousExpressionTest {
                     "8"
             );
 
-            List<SuspiciousReturnValue> result = searcher.search(suspReturn);
+            List<SuspiciousExpression> result = searcher.search(suspReturn);
             result.forEach(System.out::println);
         }
 
@@ -176,7 +176,7 @@ class SuspiciousExpressionTest {
                     1,-1
             );
 
-            List<SuspiciousReturnValue> result = searcher.search(suspArg);
+            List<SuspiciousExpression> result = searcher.search(suspArg);
             result.forEach(System.out::println);
         }
 

@@ -28,10 +28,10 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
     //Expressionを静的解析してexpressionで直接呼ばれてるメソッドのみに絞る
     //ex.) expressionがx.f(y.g())の時、fのみとる。y.g()はfの探索の後行われるはず
     @Override
-    public List<SuspiciousReturnValue> search(SuspiciousExpression suspExpr) {
+    public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
         SuspiciousArgument suspArg = (SuspiciousArgument) suspExpr;
         SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
-        final List<SuspiciousReturnValue> result = new ArrayList<>();
+        final List<SuspiciousExpression> result = new ArrayList<>();
         if(!(suspArg).hasMethodCalling()) return result;
 
         //探索対象のmethod名リストを取得

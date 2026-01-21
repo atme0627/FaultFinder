@@ -79,7 +79,7 @@ public class Probe{
     // TODO: searcher.searchがList<SuspiciousExpression>を返すようにする。
     private List<SuspiciousExpression> collectInvokedReturnExpressions(SuspiciousExpression target){
         SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
-            List<SuspiciousExpression> result = new ArrayList<>(searcher.search(target));
+            List<SuspiciousExpression> result = searcher.search(target);
         reporter.reportInvokedReturnExpression(suspiciousExprTreeRoot.find(target));
         return result;
     }
