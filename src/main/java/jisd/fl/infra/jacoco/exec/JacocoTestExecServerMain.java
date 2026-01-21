@@ -1,6 +1,8 @@
 package jisd.fl.infra.jacoco.exec;
 
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.infra.junit.JUnitTestFinder;
 import jisd.fl.infra.junit.JUnitTestRunner;
 import org.jacoco.agent.rt.IAgent;
 import org.jacoco.agent.rt.RT;
@@ -10,6 +12,9 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import static java.lang.System.out;
 
 /**
  * JacocoTestExecServerMain は、JaCoCo エージェントを用いてコードカバレッジの収集を行うためのサーバープログラムを提供する。
@@ -29,9 +34,13 @@ import java.nio.charset.StandardCharsets;
  *     - len: 続くバイトデータの長さ
  *     - bytes: JaCoCoのカバレッジデータ
  *   - エラー時: "ERROR: <message>"
+ * - LIST <test_class_name> : 指定されたテストクラスに含まれるテストメソッドの一覧を取得
+ *   - レスポンス: "OK <count>\n<method_name>..." 
+ *     - count: テストメソッド数
+ *     - method_name: 各テストメソッドの完全修飾名（1行に1メソッド）
+ *   - エラー時: "ERR <message>"
  * - QUIT : セッションを終了
  *   - レスポンス: "BYE"
- *
  */
 public class JacocoTestExecServerMain {
     public static void main(String[] args) throws IOException {
@@ -49,12 +58,12 @@ public class JacocoTestExecServerMain {
 
         InetAddress bindAddr = InetAddress.getLoopbackAddress();
         try(ServerSocket server = new ServerSocket(port, 1, bindAddr)){
-            System.out.println("[Jacoco-exec-server] Listening on " + bindAddr.getHostAddress() + ":" + port);
+            out.println("[Jacoco-exec-server] Listening on " + bindAddr.getHostAddress() + ":" + port);
             while(true){
                 try(Socket sock = server.accept()){
-                    System.out.println("[Jacoco-exec-server] Client connected: " + sock.getRemoteSocketAddress());
+                    out.println("[Jacoco-exec-server] Client connected: " + sock.getRemoteSocketAddress());
                     handleClient(sock, agent);
-                    System.out.println("[Jacoco-exec-server] Client disconnected");
+                    out.println("[Jacoco-exec-server] Client disconnected");
                 }
                 catch (IOException e){
                     System.err.println("[Jacoco-exec-server] accept/handle error: " + e.getMessage());
@@ -107,7 +116,7 @@ public class JacocoTestExecServerMain {
 
                 try {
                     agent.reset();
-                    JUnitTestRunner.TestRunResult result = JUnitTestRunner.runSingleTest(testMethod, System.out);
+                    JUnitTestRunner.TestRunResult result = JUnitTestRunner.runSingleTest(testMethod, out);
                     byte[] exec = agent.getExecutionData(true);
                     // protocol: OK <passed> <len>\n <bytes>
                     writeLine(rawOut, "OK " + (result.passed() ? "1" : "0") + " " + exec.length);
@@ -120,6 +129,25 @@ public class JacocoTestExecServerMain {
                     rawOut.flush();
                 }
                 continue;
+            }
+
+            if (line.startsWith("LIST ")) {
+                String testClassFqcn = line.substring(5).trim();
+                if (testClassFqcn.isEmpty()) { writeLine(out, "ERR empty class"); out.flush(); continue; }
+
+                ClassElementName testClass = new ClassElementName(testClassFqcn);
+                try {
+                    List<MethodElementName> methods = JUnitTestFinder.getTestMethods(testClass);
+                    writeLine(out, "OK " + methods.size());
+                    for (MethodElementName m : methods) {
+                        writeLine(out, m.fullyQualifiedName());
+                    }
+                    out.flush();
+                    continue;
+                } catch (IllegalArgumentException e){
+                    writeLine(out, "ERR " + sanitize(e.getMessage()));
+                    out.flush();
+                }
             }
 
             writeLine(rawOut, "ERROR: unknown command: " + line);
