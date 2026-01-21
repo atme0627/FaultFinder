@@ -17,7 +17,7 @@ public class FaultFinderDemo {
     @BeforeEach
     void init(){
         PropertyLoader.ProjectConfig config = new PropertyLoader.ProjectConfig(
-                Path.of("/Users/ezaki/IdeaProjects/MyFaultFinder"),
+                Path.of("/Users/ezaki/IdeaProjects/FaultFinder"),
                 Path.of("src/main/java"),
                 Path.of("src/test/java"),
                 Path.of("build/classes/java/main"),
