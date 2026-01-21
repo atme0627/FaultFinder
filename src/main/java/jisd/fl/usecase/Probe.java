@@ -65,7 +65,6 @@ public class Probe{
 
             //木構造に追加
             addTreeElement(targetExpr, children);
-
             //次の探索対象に追加
             exploringTargets.addAll(children);
         }
