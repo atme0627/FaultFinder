@@ -1,7 +1,8 @@
 package experiment.setUp;
 
 import experiment.defect4j.Defects4jUtil;
-import jisd.fl.sbfl.coverage.CoverageAnalyzer;
+import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.usecase.CoverageAnalyzer;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,8 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.util.JsonIO;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 
 public class Coverage {
     static Dotenv dotenv = Dotenv.load();
@@ -47,18 +47,20 @@ public class Coverage {
             Defects4jUtil.changeTargetVersion(project, bugId);
             Defects4jUtil.compileBuggySrc(project, bugId);
             List<MethodElementName> testMethods = Defects4jUtil.getFailedTestMethods(project, bugId);
-            CoverageAnalyzer ca = new CoverageAnalyzer(new HashSet<>(testMethods));
-            Set<String> executed = new HashSet<>();
+            CoverageAnalyzer ca = new CoverageAnalyzer();
+            Set<ClassElementName> executed = new HashSet<>();
             for(MethodElementName testMethodName : testMethods) {
-                String testClassName = testMethodName.getFullyQualifiedClassName();
+                ClassElementName testClassName = testMethodName.classElementName;
 
                 if(executed.contains(testClassName)) continue;
                 executed.add(testClassName);
 
                 ca.analyze(testClassName);
+                //TODO: テストの実行結果が正しいかをチェックするバリデーションを行う。
+
             }
-            JsonIO.export(ca.result(), outputFile);
-            ca.result().free();
+//            JsonIO.export(ca.result(), outputFile);
+//            ca.result().free();
         }
 
         Thread.sleep(100);

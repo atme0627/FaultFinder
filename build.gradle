@@ -5,7 +5,6 @@ plugins {
 
 apply plugin: 'application'
 
-mainClassName = 'jisd.fl.util.TestLauncher'
 
 group = 'org.example'
 version = '1.0-SNAPSHOT'
@@ -28,16 +27,21 @@ dependencies {
     implementation 'junit:junit:4.13.2'
 
     //parser
-    implementation 'com.github.javaparser:javaparser-core:3.27.1'
+    implementation 'com.github.javaparser:javaparser-core:3.28.0'
 
     //coverage
     // https://mvnrepository.com/artifact/org.jacoco/org.jacoco.core
     implementation 'org.jacoco:org.jacoco.core:0.8.12'
+    implementation 'org.jacoco:org.jacoco.agent:0.8.12:runtime'
+
 
     //jackson
     implementation("com.fasterxml.jackson.core:jackson-core:2.18.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
     implementation('com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.2')
+
+    // gson
+    implementation("com.google.code.gson:gson:2.13.2")
 
     //for test
     testImplementation platform('org.junit:junit-bom:5.10.0')

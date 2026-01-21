@@ -7,11 +7,15 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
-import jisd.debug.EnhancedDebugger;
-import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.probe.info.SuspiciousReturnValue;
-import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.infra.jdi.EnhancedDebugger;
+import jisd.fl.core.domain.SuspiciousReturnsSearcher;
+import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
+import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
+import jisd.fl.infra.jdi.JDIUtils;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousReturnValue;
+import jisd.fl.infra.junit.JUnitDebugger;
+import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.*;
 
@@ -22,8 +26,11 @@ import java.util.*;
  */
 public class LineMethodCallWatcher {
     private final MethodElementName targetTestCaseName;
+    private final SuspiciousExpressionFactory factory;
+
     public LineMethodCallWatcher(MethodElementName targetTestCaseName) {
         this.targetTestCaseName = targetTestCaseName;
+        this.factory = new JavaParserSuspiciousExpressionFactory();
     }
 
     public List<SuspiciousExpression> searchSuspiciousReturns(int failureLine, MethodElementName locateMethod){
@@ -31,10 +38,11 @@ public class LineMethodCallWatcher {
         Deque<SuspiciousExpression> suspExprQueue = new ArrayDeque<>(returnsInAssert(failureLine, locateMethod));
 
         System.out.println("------------------------------------------------------------------------------------------------------------");
+        SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
         while(!suspExprQueue.isEmpty()){
             SuspiciousExpression target = suspExprQueue.removeFirst();
 
-            List<SuspiciousReturnValue> returnsOfTarget = target.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> returnsOfTarget = searcher.search(target);
             if(!returnsOfTarget.isEmpty()) {
                 System.out.println(" >>> search return line");
                 System.out.println(" >>> target: " + target);
@@ -43,7 +51,7 @@ public class LineMethodCallWatcher {
                 for (SuspiciousReturnValue r : returnsOfTarget) {
                     System.out.println(" >>> " + r);
                 }
-                target.addChild(returnsOfTarget);
+
                 suspExprQueue.addAll(returnsOfTarget);
             }
             result.add(target);
@@ -56,9 +64,7 @@ public class LineMethodCallWatcher {
         final List<SuspiciousReturnValue> result = new ArrayList<>();
 
         //Debugger生成
-        String main = TestUtil.getJVMMain(this.targetTestCaseName);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(this.targetTestCaseName);
         //対象の引数が属する行にたどり着いた時に行う処理を定義
         //ここではその行で呼ばれてるメソッド情報を抽出
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
@@ -146,9 +152,9 @@ public class LineMethodCallWatcher {
                                     //ブレークポイント行で直接呼び出されているMethodの名前、return行、実際の返り値を取得
                                     MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
                                     int locateLine = mee.location().lineNumber();
-                                    String actualValue = SuspiciousExpression.getValueString(mee.returnValue());
+                                    String actualValue = JDIUtils.getValueString(mee.returnValue());
                                     try {
-                                        SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
+                                        SuspiciousReturnValue suspReturn = factory.createReturnValue(
                                                 this.targetTestCaseName,
                                                 invokedMethod,
                                                 locateLine,
@@ -186,7 +192,7 @@ public class LineMethodCallWatcher {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
+        debugger.handleAtBreakPoint(locateMethod.fullyQualifiedClassName(), failureLine, handler);
         return result;
     }
 }

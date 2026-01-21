@@ -3,9 +3,10 @@ package experiment.setUp;
 import experiment.defect4j.Defects4jUtil;
 import experiment.util.SuspiciousVariableFinder;
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.mapper.SuspiciousVariableMapper;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -26,7 +27,7 @@ public class FindProbeTarget {
         int numberOfBugs = 61;
         //43はheap space不足でできない
         List<Integer> duplicatedBugs = List.of(2, 18, 25, 43, 48);
-        int targetBugId = 9;
+        int targetBugId = 21;
 
         for(int bugId = targetBugId; bugId <= targetBugId; bugId++) {
             File outputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probeTargets_new.json").toFile();
@@ -60,7 +61,7 @@ public class FindProbeTarget {
     private static JSONObject convertToJsonAndBundle(List<SuspiciousVariable> result){
         JSONArray array = new JSONArray();
         for(SuspiciousVariable vi : result) {
-            array.put(vi.toJson());
+            array.put(SuspiciousVariableMapper.toJson(vi));
         }
         JSONObject bundle = new JSONObject();
         bundle.put("suspiciousVariables", array);

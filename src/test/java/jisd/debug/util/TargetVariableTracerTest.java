@@ -1,12 +1,11 @@
 package jisd.debug.util;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.probe.record.TracedValue;
-import jisd.fl.probe.record.TracedValueCollection;
-import jisd.fl.probe.internal.TargetVariableTracer;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.TracedValue;
+import jisd.fl.infra.jdi.TargetVariableTracer;
+import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,21 +24,24 @@ class TargetVariableTracerTest {
     void setUp(){
         Dotenv dotenv = Dotenv.load();
         Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
-        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
-        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
-        PropertyLoader.setTargetBinDir(testProjectDir.resolve("build/classes/java/main").toString());
-        PropertyLoader.setTestBinDir(testProjectDir.resolve("build/classes/java/test").toString());
+        var cfg = new PropertyLoader.ProjectConfig(
+                testProjectDir,
+                Path.of("src/main/java"),
+                Path.of("src/test/java"),
+                Path.of("build/classes/java/main"),
+                Path.of("build/classes/java/test")
+        );
+        PropertyLoader.setProjectConfig(cfg);
     }
 
     @Test
     public void simple() {
         MethodElementName failedTest = new MethodElementName("jisd.debug.util.TargetVariableTracerTest#test1()");
         MethodElementName locateMethod = new MethodElementName("jisd.debug.util.TargetVariableTracerTarget#run(int)");
-        SuspiciousVariable target = new SuspiciousVariable(failedTest, locateMethod.getFullyQualifiedMethodName(), "x", "13", true, false);
+        SuspiciousVariable target = new SuspiciousVariable(failedTest, locateMethod.fullyQualifiedName(), "x", "13", true, false);
         TargetVariableTracer targetVariableTracer = new TargetVariableTracer(target);
-        TracedValueCollection tracedValues = targetVariableTracer.traceValuesOfTarget();
 
-        List<TracedValue> actual = tracedValues.getAll();
+        List<TracedValue> actual = targetVariableTracer.traceValuesOfTarget();
         record Expected(int line, String name, String value) {}
         List<Expected> expected = List.of(
                 new Expected(9,  "x", "null"),

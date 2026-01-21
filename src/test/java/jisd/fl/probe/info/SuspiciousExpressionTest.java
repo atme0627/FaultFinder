@@ -1,8 +1,12 @@
 package jisd.fl.probe.info;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.domain.SuspiciousReturnsSearcher;
+import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
+import jisd.fl.core.entity.susp.*;
+import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
+import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +21,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 class SuspiciousExpressionTest {
+    SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
+    SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
     /**
      * SuspiciousExpression.toString()がexpectedと同じである要素がリスト内にあるかを確かめるMatcher
      */
@@ -44,12 +50,18 @@ class SuspiciousExpressionTest {
         void initProperty() {
             Dotenv dotenv = Dotenv.load();
             Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
-            PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
-            PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
+            PropertyLoader.ProjectConfig config = new PropertyLoader.ProjectConfig(
+                    testProjectDir,
+                    Path.of("src/main/java"),
+                    Path.of("src/test/java"),
+                    Path.of("build/classes/java/main"),
+                    Path.of("build/classes/java/test")
+            );
+            PropertyLoader.setProjectConfig(config);
         }
 
         @Test
-        void polymorphism(){
+        void polymorphism() {
             String testMethodName = "polymorphism";
             MethodElementName locateClass = new MethodElementName(testFqcn);
             int locateLine = 19;
@@ -62,14 +74,14 @@ class SuspiciousExpressionTest {
                     false
             );
 
-            SuspiciousAssignment suspAssignment = new SuspiciousAssignment(
+            SuspiciousAssignment suspAssignment = factory.createAssignment(
                     new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
                     suspVariable
             );
 
-            List<SuspiciousReturnValue> actualResult = suspAssignment.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> actualResult = searcher.search(suspAssignment);
             //actualResult.forEach(System.out::println);
             assertThat(actualResult, hasSize(3));
             assertThat(actualResult, hasItems(
@@ -120,14 +132,14 @@ class SuspiciousExpressionTest {
                     false
             );
 
-            SuspiciousAssignment suspAssignment = new SuspiciousAssignment(
+            SuspiciousAssignment suspAssignment = factory.createAssignment(
                     new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
                     suspVariable
             );
 
-            List<SuspiciousReturnValue> result = suspAssignment.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> result = searcher.search(suspAssignment);
             result.forEach(System.out::println);
         }
 
@@ -137,14 +149,14 @@ class SuspiciousExpressionTest {
             MethodElementName locateClass = new MethodElementName("org.sample.shape.Shape");
             int locateLine = 30;
 
-            SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
+            SuspiciousReturnValue suspReturn = factory.createReturnValue(
                     new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
                     "8"
             );
 
-            List<SuspiciousReturnValue> result = suspReturn.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> result = searcher.search(suspReturn);
             result.forEach(System.out::println);
         }
 
@@ -155,7 +167,7 @@ class SuspiciousExpressionTest {
             MethodElementName locateClass = new MethodElementName("org.sample.MethodCallingTest");
             int locateLine = 70;
 
-            SuspiciousArgument suspArg = new SuspiciousArgument(
+            SuspiciousArgument suspArg = factory.createArgument(
                     new MethodElementName(getFqmn(testMethodName)),
                     locateClass,
                     locateLine,
@@ -164,7 +176,7 @@ class SuspiciousExpressionTest {
                     1,-1
             );
 
-            List<SuspiciousReturnValue> result = suspArg.searchSuspiciousReturns();
+            List<SuspiciousReturnValue> result = searcher.search(suspArg);
             result.forEach(System.out::println);
         }
 

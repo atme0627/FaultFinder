@@ -1,10 +1,12 @@
 package experiment.util.internal.finder;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.probe.info.SuspiciousReturnValue;
-import jisd.fl.util.PropertyLoader;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
+import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousReturnValue;
+import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.core.entity.element.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,19 +18,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LineMethodCallWatcherTest {
     MethodElementName targetTestClassName;
-
+    final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
     MethodElementName getTargetTestMethod(String shortMethodName){
-        return new MethodElementName(targetTestClassName.getFullyQualifiedClassName() + "#" + shortMethodName + "()");
+        return new MethodElementName(targetTestClassName.fullyQualifiedClassName() + "#" + shortMethodName + "()");
     }
 
     @BeforeEach
     void setUp(){
         Dotenv dotenv = Dotenv.load();
         Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
-        PropertyLoader.setTargetSrcDir(testProjectDir.resolve("src/main/java").toString());
-        PropertyLoader.setTestSrcDir(testProjectDir.resolve("src/test/java").toString());
-        PropertyLoader.setTargetBinDir(testProjectDir.resolve("build/classes/java/main").toString());
-        PropertyLoader.setTestBinDir(testProjectDir.resolve("build/classes/java/test").toString());
+        PropertyLoader.ProjectConfig config = new PropertyLoader.ProjectConfig(
+                testProjectDir,
+                Path.of("src/main/java"),
+                Path.of("src/test/java"),
+                Path.of("build/classes/java/main"),
+                Path.of("build/classes/java/test")
+        );
+        PropertyLoader.setProjectConfig(config);
 
         targetTestClassName = new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTest");
     }
@@ -38,7 +44,7 @@ class LineMethodCallWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("simpleValueReturn");
         LineMethodCallWatcher watcher = new LineMethodCallWatcher(targetTestMethod);
 
-        SuspiciousReturnValue expected = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#simpleValueReturn()"),
                 17,
@@ -55,14 +61,14 @@ class LineMethodCallWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("methodCallReturn");
         LineMethodCallWatcher watcher = new LineMethodCallWatcher(targetTestMethod);
 
-        SuspiciousReturnValue expected1 = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected1 = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#simpleValueReturn()"),
                 17,
                 "25"
         );
 
-        SuspiciousReturnValue expected2 = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected2 = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#methodCallReturn(int)"),
                 21,
@@ -80,28 +86,28 @@ class LineMethodCallWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("nestedMethodCallReturn");
         LineMethodCallWatcher watcher = new LineMethodCallWatcher(targetTestMethod);
 
-        SuspiciousReturnValue expected1 = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected1 = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#simpleValueReturn()"),
                 17,
                 "25"
         );
 
-        SuspiciousReturnValue expected2 = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected2 = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#methodCallReturn(int)"),
                 21,
                 "35"
         );
 
-        SuspiciousReturnValue expected3 = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected3 = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#nestedMethodCallReturn()"),
                 26,
                 "360"
         );
 
-        SuspiciousReturnValue expected4 = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected4 = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#getFieldValue()"),
                 11,
@@ -121,14 +127,14 @@ class LineMethodCallWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("callInArgument");
         LineMethodCallWatcher watcher = new LineMethodCallWatcher(targetTestMethod);
 
-        SuspiciousReturnValue expected1 = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected1 = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#simpleValueReturn()"),
                 17,
                 "25"
         );
 
-        SuspiciousReturnValue expected2 = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected2 = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#methodCallReturn(int)"),
                 21,
@@ -146,7 +152,7 @@ class LineMethodCallWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("callStandardLibrary");
         LineMethodCallWatcher watcher = new LineMethodCallWatcher(targetTestMethod);
 
-        SuspiciousReturnValue expected = new SuspiciousReturnValue(
+        SuspiciousReturnValue expected = factory.createReturnValue(
                 targetTestMethod,
                 new MethodElementName("experiment.util.internal.finder.LineMethodCallWatcherTarget#getFieldValue()"),
                 11,

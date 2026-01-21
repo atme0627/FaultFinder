@@ -1,21 +1,18 @@
 package experiment.setUp;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import experiment.defect4j.Defects4jUtil;
-import experiment.util.SuspiciousVariableFinder;
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.probe.Probe;
-import jisd.fl.probe.info.SuspiciousExpression;
-import jisd.fl.probe.info.SuspiciousVariable;
+import jisd.fl.mapper.SuspiciousVariableMapper;
+import jisd.fl.usecase.Probe;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
-import jisd.fl.util.analyze.MethodElementName;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 public class doProbe {
@@ -34,7 +31,8 @@ public class doProbe {
             Defects4jUtil.changeTargetVersion(project, bugId);
             Defects4jUtil.compileBuggySrc(project, bugId);
 
-            List<?> probeTargets = JsonIO.importFromJson(inputFile, new TypeReference<List<SuspiciousVariable>>() {});
+            String jsonString = Files.readString(inputFile.toPath());
+            List<SuspiciousVariable> probeTargets = SuspiciousVariableMapper.fromJsonArray(jsonString);
             if(probeTargets.isEmpty()) continue;
 
             System.out.println("Finding target: [PROJECT] " + project + "  [BUG ID] " + bugId);
@@ -59,7 +57,7 @@ public class doProbe {
                 }
 
                 Probe prb = new Probe(target);
-                SuspiciousExpression result = prb.run(2000);
+                SuspiciousExpression result = prb.run(2000).suspExpr;
                 JsonIO.export(result, outputFile);
             }
         }

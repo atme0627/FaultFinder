@@ -1,10 +1,10 @@
 package experiment.util.internal.finder;
 
 import com.sun.jdi.*;
-import jisd.debug.EnhancedDebugger;
-import jisd.fl.probe.info.SuspiciousVariable;
-import jisd.fl.util.TestUtil;
-import jisd.fl.util.analyze.MethodElementName;
+import jisd.fl.infra.jdi.EnhancedDebugger;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.infra.junit.JUnitDebugger;
+import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +18,7 @@ public class LineValueWatcher {
     public List<SuspiciousVariable> watchAllValuesInAssertLine(int failureLine, MethodElementName locateMethod){
         final List<SuspiciousVariable> result = new ArrayList<>();
         //Debugger生成
-        String main = TestUtil.getJVMMain(this.targetTestCaseName);
-        String options = TestUtil.getJVMOption();
-        EnhancedDebugger eDbg = new EnhancedDebugger(main, options);
+        JUnitDebugger debugger = new JUnitDebugger(this.targetTestCaseName);
 
         //失敗行にブレークポイントを置きsuspend
         EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
@@ -38,7 +36,7 @@ public class LineValueWatcher {
         };
 
         //VMを実行し情報を収集
-        eDbg.handleAtBreakPoint(locateMethod.getFullyQualifiedClassName(), failureLine, handler);
+        debugger.handleAtBreakPoint(locateMethod.fullyQualifiedClassName(), failureLine, handler);
         return result;
     }
 
@@ -62,7 +60,7 @@ public class LineValueWatcher {
                 if(!(ar.getValue(0) instanceof PrimitiveValue)) return;
                 result.add(new SuspiciousVariable(
                         this.targetTestCaseName,
-                        locateMethod.getFullyQualifiedMethodName(),
+                        locateMethod.fullyQualifiedName(),
                         lv.name(),
                         ar.getValue(0).toString(),
                         true,
@@ -73,7 +71,7 @@ public class LineValueWatcher {
             if(v instanceof PrimitiveValue || (v != null && v.type().name().equals("java.lang.String"))) {
                 result.add(new SuspiciousVariable(
                         this.targetTestCaseName,
-                        locateMethod.getFullyQualifiedMethodName(),
+                        locateMethod.fullyQualifiedName(),
                         lv.name(),
                         v.toString(),
                         true,
@@ -92,7 +90,7 @@ public class LineValueWatcher {
 
                 result.add(new SuspiciousVariable(
                         this.targetTestCaseName,
-                        locateMethod.getFullyQualifiedClassName(),
+                        locateMethod.fullyQualifiedClassName(),
                         f.name(),
                         thisObj.getValue(f).toString(),
                         true,
