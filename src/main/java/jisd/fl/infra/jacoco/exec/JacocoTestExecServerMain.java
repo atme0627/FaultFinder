@@ -45,6 +45,11 @@ import static java.lang.System.out;
 public class JacocoTestExecServerMain {
     public static void main(String[] args) throws IOException {
         int port = parsePort(args, 30000);
+        //親プロセスの監視 -> 自動シャットダウン
+        long ppid = parseLongArg(args, "--ppid", -1);
+        if (ppid > 0) {
+            startParentWatchdog(ppid);
+        }
 
         final IAgent agent;
         try {
@@ -143,11 +148,11 @@ public class JacocoTestExecServerMain {
                         writeLine(out, m.fullyQualifiedName());
                     }
                     out.flush();
-                    continue;
                 } catch (IllegalArgumentException e){
                     writeLine(out, "ERROR " + sanitize(e.getMessage()));
                     out.flush();
                 }
+                continue;
             }
 
             writeLine(rawOut, "ERROR: unknown command: " + line);
@@ -171,6 +176,34 @@ public class JacocoTestExecServerMain {
     private static String sanitize(String s) {
         // avoid newlines in protocol
         return s.replace('\n', ' ').replace('\r', ' ');
+    }
+
+    private static long parseLongArg(String[] args, String key, long def) {
+        for (int i = 0; i < args.length - 1; i++) {
+            if (args[i].equals(key)) return Long.parseLong(args[i + 1]);
+        }
+        return def;
+    }
+
+    private static void startParentWatchdog(long ppid) {
+        Thread t = new Thread(() -> {
+            while (true) {
+                boolean alive = ProcessHandle.of(ppid)
+                        .map(ProcessHandle::isAlive)
+                        .orElse(false);
+                if (!alive) {
+                    System.err.println("[server] parent died -> exit");
+                    System.exit(0);
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
+        }, "parent-watchdog");
+        t.setDaemon(true);
+        t.start();
     }
 }
 

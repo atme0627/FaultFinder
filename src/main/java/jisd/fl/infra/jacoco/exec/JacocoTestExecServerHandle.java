@@ -36,7 +36,7 @@ public class JacocoTestExecServerHandle implements Closeable {
     public static JacocoTestExecServerHandle start(String host, int port, Duration waitReady) throws IOException {
         JVMLaunchSpec spec = JacocoTestExecServerLaunchSpecFactory.defaultSpec(port);
         JVMProcess proc = JVMLauncher.launch(spec);
-        installShutdownHook(proc, host, port);
+
         // wait until server listens
         waitUntilReady(host, port, waitReady);
 
@@ -126,26 +126,5 @@ public class JacocoTestExecServerHandle implements Closeable {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-    }
-
-    //親JVMが強制終了した際に必ず子JVMを終了するようにする。
-    private static void installShutdownHook(JVMProcess proc, String host, int port) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                // まずQUIT（可能なら）
-                try (JacocoTestExecClient c = new JacocoTestExecClient(host, port)) {
-                    c.quit();
-                } catch (Throwable ignore) {}
-
-                Process p = proc.process; // あなたのAPIに合わせて
-                if (p != null && p.isAlive()) {
-                    p.destroy();
-                    p.waitFor(500, java.util.concurrent.TimeUnit.MILLISECONDS);
-                }
-                if (p != null && p.isAlive()) {
-                    p.destroyForcibly();
-                }
-            } catch (Throwable ignore) {}
-        }, "jacoco-test-exec-server-shutdown"));
     }
 }
