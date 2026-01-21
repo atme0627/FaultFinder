@@ -36,8 +36,8 @@ public class SimpleProbe extends Probe {
         int depth = 0;
         while(!probingTargets.isEmpty()) {
             for (SuspiciousVariable target : probingTargets) {
-                CauseLineFinder finder = new CauseLineFinder(target);
-                SuspiciousExpression suspExpr = finder.find().orElseThrow(() -> new RuntimeException("Cause line is not found."));
+                CauseLineFinder finder = new CauseLineFinder();
+                SuspiciousExpression suspExpr = finder.find(target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
 
                 //SuspExprで観測できる全ての変数
                 nextTargets = neighborSearcher.neighborSuspiciousVariables(true, suspExpr);

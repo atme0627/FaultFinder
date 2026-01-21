@@ -21,13 +21,11 @@ import java.util.List;
 import java.util.Optional;
 
 public class CauseLineFinder {
-    SuspiciousVariable target;
     SuspiciousExpressionFactory factory;
     SuspiciousArgumentsSearcher suspiciousArgumentsSearcher;
     TargetVariableTracer tracer;
 
-    public CauseLineFinder(SuspiciousVariable target) {
-        this.target = target;
+    public CauseLineFinder() {
         this.factory = new JavaParserSuspiciousExpressionFactory();
         this.suspiciousArgumentsSearcher = new JDISuspiciousArgumentsSearcher();
         this.tracer = new TargetVariableTracer();
@@ -37,7 +35,7 @@ public class CauseLineFinder {
      * 原因が呼び出し元の引数にある場合は、その引数のExprに対応するものを返す
      *
      */
-    public Optional<SuspiciousExpression> find() {
+    public Optional<SuspiciousExpression> find(SuspiciousVariable target) {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         List<TracedValue> tracedValues = tracer.traceValuesOfTarget(target);
         tracedValues.sort(TracedValue::compareTo);
@@ -45,7 +43,7 @@ public class CauseLineFinder {
             System.out.println("     " + tv);
         }
         //対象の変数に変更が起き、actualを取るようになった行（原因行）を探索
-        Optional<SuspiciousExpression> result = searchProbeLine(tracedValues);
+        Optional<SuspiciousExpression> result = searchProbeLine(target, tracedValues);
         return result;
     }
 
@@ -58,16 +56,16 @@ public class CauseLineFinder {
      *
      * @return
      */
-    private Optional<SuspiciousExpression> searchProbeLine(List<TracedValue> tracedValues) {
+    private Optional<SuspiciousExpression> searchProbeLine(SuspiciousVariable target, List<TracedValue> tracedValues) {
         /* 1a. すでに定義されていた変数に代入が行われたパターン */
         //代入の実行後にactualの値に変化している行の特定(ない場合あり)
-        List<TracedValue> changeToActualLines = valueChangedToActualLine(tracedValues, target.getActualValue());
+        List<TracedValue> changeToActualLines = valueChangedToActualLine(target, tracedValues, target.getActualValue());
         //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
         if (!changeToActualLines.isEmpty()) {
             //原因行
             TracedValue causeLine = changeToActualLines.get(changeToActualLines.size() - 1);
             int causeLineNumber = causeLine.lineNumber;
-            return Optional.of(resultIfAssigned(causeLineNumber));
+            return Optional.of(resultIfAssigned(target, causeLineNumber));
         }
 
         //fieldは代入以外での値の変更を特定できない
@@ -78,7 +76,7 @@ public class CauseLineFinder {
 
         /* 2. その変数が引数由来で、かつメソッド内で上書きされていないパターン */
         //初めて変数が観測された時点ですでにactualの値を取っている
-        return resultIfNotAssigned();
+        return resultIfNotAssigned(target);
 
         /* 3. throw内などブレークポイントが置けない行で、代入が行われているパターン */
 //            System.err.println("There is no value which same to actual.");
@@ -86,7 +84,7 @@ public class CauseLineFinder {
     }
 
 
-    private List<TracedValue> valueChangedToActualLine(List<TracedValue> tracedValues, String actual) {
+    private List<TracedValue> valueChangedToActualLine(SuspiciousVariable target, List<TracedValue> tracedValues, String actual) {
         //対象の変数に値の変化が起きている行の特定
         List<Integer> assignedLine = ValueChangingLineFinder.find(target);
         List<TracedValue> changedToActualLines = new ArrayList<>();
@@ -116,7 +114,7 @@ public class CauseLineFinder {
      * 調査対象の変数がfieldの場合もあるので必ずしもsuspicious assignmentは対象の変数と同じメソッドでは起きない
      * が、同じクラスであることは保証される
      */
-    private SuspiciousAssignment resultIfAssigned(int causeLineNumber) {
+    private SuspiciousAssignment resultIfAssigned(SuspiciousVariable target, int causeLineNumber) {
         try {
             LineElementNameResolver resolver = JavaParserLineElementNameResolverFactory.create(target.getLocateMethodElement().classElementName);
             MethodElementName locateMethodElementName = resolver.lineElementAt(causeLineNumber).methodElementName;
@@ -145,7 +143,7 @@ public class CauseLineFinder {
      * ...
      * }
      */
-    private Optional<SuspiciousExpression> resultIfNotAssigned() {
+    private Optional<SuspiciousExpression> resultIfNotAssigned(SuspiciousVariable target) {
         //実行しているメソッド名を取得
         MethodElementName locateMethodElementName = target.getLocateMethodElement();
         Optional<SuspiciousArgument> result = suspiciousArgumentsSearcher.searchSuspiciousArgument(target, locateMethodElementName);
