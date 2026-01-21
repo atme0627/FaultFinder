@@ -5,8 +5,6 @@ import jisd.fl.infra.jacoco.JacocoTestUtil;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.infra.jacoco.exec.JacocoTestExecClient;
 import jisd.fl.infra.jacoco.exec.JacocoTestExecServerHandle;
-import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
-import jisd.fl.util.*;
 import jisd.fl.core.entity.element.MethodElementName;
 import org.jacoco.core.data.ExecutionDataStore;
 
@@ -15,11 +13,9 @@ import java.util.Set;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
-    Set<String> targetClassNames;
     NewMyCoverageVisitor visitor;
 
     public CoverageAnalyzer(){
-        targetClassNames = JavaParserClassNameExtractor.getClassNames();
         visitor = new NewMyCoverageVisitor();
     }
 
