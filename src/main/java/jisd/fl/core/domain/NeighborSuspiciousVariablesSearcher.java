@@ -38,8 +38,6 @@ public class NeighborSuspiciousVariablesSearcher {
                                 true,
                                 t.isField
                         )).distinct().collect(Collectors.toList());
-
-        result.forEach(sv -> sv.setParent(suspExpr));
         return result;
     }
 }

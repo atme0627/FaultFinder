@@ -41,6 +41,7 @@ public class SimpleProbe extends Probe {
 
                 //SuspExprで観測できる全ての変数
                 nextTargets = neighborSearcher.neighborSuspiciousVariables(true, suspExpr);
+                nextTargets.forEach(sv -> sv.setParent(suspExpr));
                 nextTargets.removeAll(investigatedTargets);
 
                 addTreeElement(suspExpr, target);
