@@ -44,8 +44,7 @@ public class FaultFinder {
         this.granularity = Granularity.LINE;
         Formula f = Formula.OCHIAI;
         CoverageAnalyzer coverageAnalyzer = new CoverageAnalyzer();
-        coverageAnalyzer.analyze(targetTestClassName);
-        this.coverage = coverageAnalyzer.result();
+        coverage = coverageAnalyzer.analyze(targetTestClassName);
         flRanking = new FLRanking();
         presenter = new FLRankingPresenter(flRanking);
         calcSuspiciousness(coverage, granularity, f);

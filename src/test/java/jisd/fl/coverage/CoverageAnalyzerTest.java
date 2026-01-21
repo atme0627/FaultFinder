@@ -41,8 +41,7 @@ class CoverageAnalyzerTest {
         @BeforeEach
         void init(){
             CoverageAnalyzer ca = new CoverageAnalyzer();
-            ca.analyze(testClassName);
-            cov = ca.result();
+            cov = ca.analyze(testClassName);
         }
         @Test
         void lineCoverage() {
@@ -68,8 +67,7 @@ class CoverageAnalyzerTest {
         @BeforeEach
         void init(){
             CoverageAnalyzer ca = new CoverageAnalyzer();
-            ca.analyze(testClassName);
-            cov = ca.result();
+            cov = ca.analyze(testClassName);
         }
 
         @Test
@@ -96,8 +94,7 @@ class CoverageAnalyzerTest {
         @BeforeEach
         void init(){
             CoverageAnalyzer ca = new CoverageAnalyzer();
-            ca.analyze(testClassName);
-            cov = ca.result();
+            cov = ca.analyze(testClassName);
         }
 
         @Test

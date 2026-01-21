@@ -16,23 +16,21 @@ import org.jacoco.core.tools.ExecFileLoader;
 import java.io.*;
 import java.util.List;
 
-//テストケースを実行して、jacoco.execファイルを生成するクラス
 public class CoverageAnalyzer {
-    NewMyCoverageVisitor visitor;
+    ProjectSbflCoverage coverage;
+    ClassFileCache cache;
 
     public CoverageAnalyzer(){
-        visitor = new NewMyCoverageVisitor();
-    }
-
-    public void analyze(ClassElementName testClassName){
-        //カバレッジ取得対象のクラスファイルをロード
-        ClassFileCache cache;
+        this.coverage = new ProjectSbflCoverage();
         try {
-            cache = ClassFileCache.loadFromClassesDir(PropertyLoader.getTargetBinDir());
+            //カバレッジ取得対象のクラスファイルをロード
+            this.cache = ClassFileCache.loadFromClassesDir(PropertyLoader.getTargetBinDir());
         } catch (IOException e) {
             throw new RuntimeException("Failed to load class files from target directory: " + e.getMessage(), e);
         }
+    }
 
+    public ProjectSbflCoverage analyze(ClassElementName testClassName){
         try (var handle = JacocoTestExecServerHandle.startDefault(20000)) {
             JacocoTestExecClient client = handle.client();
             List<MethodElementName> testMethodNames = client.listTestMethods(testClassName);
@@ -41,30 +39,15 @@ public class CoverageAnalyzer {
             for(MethodElementName testMethodName : testMethodNames) {
                 JacocoTestExecClient.TestExecReply reply = client.runTest(testMethodName);
                 byte[] coverageData = reply.execBytes();
-                visitor.setTestsPassed(reply.passed());
+                boolean passed = reply.passed();
 
                 ExecutionDataStore execData = execDataFromBytes(coverageData);
-                analyzeExecData(execData, visitor, cache);
+                analyzeExecData(execData, (cc) -> coverage.accept(cc, passed));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    //TODO: 複数テストクラスを計測した際の挙動をテスト
-    public ProjectSbflCoverage result(){
-        return visitor.getCoverages();
-    }
-
-    private static void analyzeExecData(ExecutionDataStore executionData, ICoverageVisitor cv, ClassFileCache cache) throws IOException {
-        //jacocoによるテスト対象の解析
-        final Analyzer analyzer = new Analyzer(executionData, cv);
-        for(ExecutionData execData : executionData.getContents()) {
-            byte[] classBytes = cache.get(execData.getName());
-            if(classBytes != null) {
-                analyzer.analyzeClass(classBytes, execData.getName());
-            }
-        }
+        return coverage;
     }
 
     private static ExecutionDataStore execDataFromBytes(byte[] execBytes) throws IOException {
@@ -73,6 +56,17 @@ public class CoverageAnalyzer {
             loader.load(in);
         }
         return loader.getExecutionDataStore();
+    }
+
+    private void analyzeExecData(ExecutionDataStore executionData, ICoverageVisitor cv) throws IOException {
+        //jacocoによるテスト対象の解析
+        final Analyzer analyzer = new Analyzer(executionData, cv);
+        for(ExecutionData execData : executionData.getContents()) {
+            byte[] classBytes = cache.get(execData.getName());
+            if(classBytes != null) {
+                analyzer.analyzeClass(classBytes, execData.getName());
+            }
+        }
     }
 }
 
