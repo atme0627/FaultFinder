@@ -43,7 +43,6 @@ public class SimpleProbe extends Probe {
                 nextTargets = neighborSearcher.neighborSuspiciousVariables(true, suspExpr);
                 nextTargets.removeAll(investigatedTargets);
 
-                addTreeElement(suspExpr, target);
                 printProbeExInfoFooter(suspExpr, nextTargets);
             }
 

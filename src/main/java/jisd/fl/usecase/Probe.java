@@ -61,7 +61,7 @@ public class Probe{
             }
 
             // 2. suspExpr -- [return]  --> suspExpr
-            children.addAll(NEWCollectInvokedReturnExpressions(targetExpr));
+            children.addAll(collectInvokedReturnExpressions(targetExpr));
 
             //木構造に追加
             addTreeElement(targetExpr, children);
@@ -78,7 +78,7 @@ public class Probe{
     //  -> return add(a, b); <= ここだけ返す。
     //    -> return a + b;       <= ここは[return add(a, b)]の探索で探す。
     // TODO: searcher.searchがList<SuspiciousExpression>を返すようにする。
-    private List<SuspiciousExpression> NEWCollectInvokedReturnExpressions(SuspiciousExpression target){
+    private List<SuspiciousExpression> collectInvokedReturnExpressions(SuspiciousExpression target){
         SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
             List<SuspiciousExpression> result = new ArrayList<>(searcher.search(target));
         reporter.reportInvokedReturnExpression(suspiciousExprTreeRoot.find(target));
@@ -91,26 +91,6 @@ public class Probe{
         System.out.println(" [NEXT TARGET]");
         nextTarget.forEach(v -> System.out.println(v.toString()));
     }
-
-    protected void addTreeElement(SuspiciousExpression suspExpr, SuspiciousVariable targetSuspVar){
-        if(suspiciousExprTreeRoot.suspExpr == null){
-            suspiciousExprTreeRoot = new SuspiciousExprTreeNode(suspExpr);
-            return;
-        }
-        if(targetSuspVar.getParent() == null){
-            System.out.println("Something is wrong");
-        }
-        SuspiciousExprTreeNode parent = suspiciousExprTreeRoot.find(targetSuspVar.getParent());
-        if(parent == null) {
-            suspiciousExprTreeRoot.print();
-            System.out.println("===================================================================================");
-            System.out.println(targetSuspVar.getParent());
-            System.out.println("===================================================================================");
-            throw new RuntimeException("Parent node is not found.");
-        }
-        parent.addChild(suspExpr);
-    }
-
 
 
     protected void addTreeElement(SuspiciousExpression parent, List<SuspiciousExpression> children){
