@@ -11,7 +11,6 @@ import jisd.fl.core.entity.element.MethodElementName;
 import org.jacoco.core.data.ExecutionDataStore;
 
 import java.io.*;
-import java.util.HashSet;
 import java.util.Set;
 
 //テストケースを実行して、jacoco.execファイルを生成するクラス
@@ -22,11 +21,6 @@ public class CoverageAnalyzer {
     NewMyCoverageVisitor visitor;
 
     public CoverageAnalyzer(){
-        this(new HashSet<>());
-    }
-
-    public CoverageAnalyzer(Set<MethodElementName> failedTests) {
-        this.failedTests = failedTests;
         targetClassNames = JavaParserClassNameExtractor.getClassNames();
         visitor = new NewMyCoverageVisitor();
     }

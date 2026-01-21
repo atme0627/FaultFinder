@@ -49,8 +49,7 @@ public class Coverage {
             Defects4jUtil.changeTargetVersion(project, bugId);
             Defects4jUtil.compileBuggySrc(project, bugId);
             List<MethodElementName> testMethods = Defects4jUtil.getFailedTestMethods(project, bugId);
-            Set<MethodElementName> failedTests = new HashSet<>(testMethods);
-            CoverageAnalyzer ca = new CoverageAnalyzer(failedTests);
+            CoverageAnalyzer ca = new CoverageAnalyzer();
             Set<ClassElementName> executed = new HashSet<>();
             for(MethodElementName testMethodName : testMethods) {
                 ClassElementName testClassName = testMethodName.classElementName;
