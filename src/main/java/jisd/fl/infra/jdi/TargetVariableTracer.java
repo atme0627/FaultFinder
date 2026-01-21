@@ -17,17 +17,14 @@ import java.util.Optional;
  * 指定されたsuspiciousVariableに基づき、各行で怪しい変数が取る値を観測、記録する。
  */
 public class TargetVariableTracer {
-    private SuspiciousVariable target;
 
-    public TargetVariableTracer(SuspiciousVariable target) {
-        this.target = target;
+    public TargetVariableTracer() {
     }
 
-    public List<TracedValue> traceValuesOfTarget() {
+    public List<TracedValue> traceValuesOfTarget(SuspiciousVariable target) {
         //targetVariableのVariableDeclaratorを特定
         MethodElementName targetMethod = target.getLocateMethodElement();
-        List<Integer> result1 = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, target.getSimpleVariableName());
-        List<Integer> vdLines = result1;
+        List<Integer> vdLines = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, target.getSimpleVariableName());
         List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(target);
 
         //Debugger生成

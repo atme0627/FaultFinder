@@ -9,7 +9,6 @@ import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousAssignment;
 import jisd.fl.infra.javaparser.JavaParserLineElementNameResolverFactory;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
-import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.infra.jdi.TargetVariableTracer;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
@@ -19,7 +18,6 @@ import jisd.fl.core.entity.TracedValue;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class CauseLineFinder {
@@ -32,7 +30,7 @@ public class CauseLineFinder {
         this.target = target;
         this.factory = new JavaParserSuspiciousExpressionFactory();
         this.suspiciousArgumentsSearcher = new JDISuspiciousArgumentsSearcher();
-        this.tracer = new TargetVariableTracer(target);
+        this.tracer = new TargetVariableTracer();
     }
     /**
      * 与えられたSuspiciousVariableに対して、その直接的な原因となるExpressionをSuspiciousExpressionとして返す
@@ -41,7 +39,7 @@ public class CauseLineFinder {
      */
     public Optional<SuspiciousExpression> find() {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
-        List<TracedValue> tracedValues = tracer.traceValuesOfTarget();
+        List<TracedValue> tracedValues = tracer.traceValuesOfTarget(target);
         tracedValues.sort(TracedValue::compareTo);
         for(TracedValue tv : tracedValues){
             System.out.println("     " + tv);
