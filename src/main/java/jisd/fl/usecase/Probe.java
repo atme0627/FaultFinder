@@ -24,50 +24,101 @@ public class Probe{
     }
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
-    public SuspiciousExprTreeNode run(int sleepTime) {
-        Deque<SuspiciousVariable> probingTargets = new ArrayDeque<>();
-        List<SuspiciousVariable> investigatedTargets = new ArrayList<>();
+//    public SuspiciousExprTreeNode run(int sleepTime) {
+//        Deque<SuspiciousVariable> probingTargets = new ArrayDeque<>();
+//        List<SuspiciousVariable> investigatedTargets = new ArrayList<>();
+//
+//        probingTargets.add(firstTarget);
+//        investigatedTargets.add(firstTarget);
+//
+//        while(!probingTargets.isEmpty()) {
+//            SuspiciousVariable target = probingTargets.removeLast();
+//            reporter.reportProbeTarget(target);
+//            List<SuspiciousExpression> causeExprs = new ArrayList<>();
+//
+//            //search cause line
+//            CauseLineFinder finder = new CauseLineFinder(target);
+//            Optional<SuspiciousExpression> suspExprOpt = finder.find();
+//            if(suspExprOpt.isEmpty()){
+//                System.err.println("[Probe For STATEMENT] Cause line is not found.");
+//                System.err.println("[Probe For STATEMENT] Skip probing");
+//                continue;
+//            }
+//            SuspiciousExpression suspExpr = suspExprOpt.get();
+//            causeExprs.add(suspExpr);
+//            addTreeElement(suspExpr, target);
+//;           reporter.reportCauseExpression(suspExpr);
+//            //include return line of callee method to cause lines
+//
+//            causeExprs.addAll(collectInvokedReturnExpressions(suspExpr));
+//
+//            //search next target
+//            System.out.println(" >>> search next target");
+//            List<SuspiciousVariable> newTargets = new ArrayList<>();
+//            for (SuspiciousExpression ce : causeExprs) {
+//                //SuspExprで観測できる全ての変数
+//                List<SuspiciousVariable> neighbor = neighborSearcher.neighborSuspiciousVariables(false, ce);
+//                neighbor.forEach(sv -> sv.setParent(ce));
+//                neighbor.removeAll(investigatedTargets);
+//                newTargets.addAll(neighbor);
+//            }
+//            newTargets.removeAll(investigatedTargets);
+//
+//            investigatedTargets.addAll(newTargets);
+//            probingTargets.addAll(newTargets);
+//            printProbeExInfoFooter(suspExpr, newTargets);
+//        }
+//        return suspiciousExprTreeRoot;
+//    }
 
-        probingTargets.add(firstTarget);
-        investigatedTargets.add(firstTarget);
+    // SuspExpr単位で探索する。
+    // 0. ユーザ由来のsuspVarから最初のSuspExprを特定する。
+    // 1. suspExpr -- [suspVar] --> suspExpr(, suspArg) 探索済みのsuspVarは除外
+    // 2. suspExpr -- [return]  --> suspExpr
+    public SuspiciousExprTreeNode run(int sleepTime){
+        Deque<SuspiciousExpression> exploringTargets = new ArrayDeque<>();
+        Set<SuspiciousVariable> investigatedVariables = new HashSet<>();
 
-        while(!probingTargets.isEmpty()) {
-            SuspiciousVariable target = probingTargets.removeLast();
-            reporter.reportProbeTarget(target);
-            List<SuspiciousExpression> causeExprs = new ArrayList<>();
+        // 0. ユーザ由来のsuspVarから最初のSuspExprを特定する。
+        investigatedVariables.add(firstTarget);
+        reporter.reportProbeTarget(firstTarget);
+        CauseLineFinder finder = new CauseLineFinder(firstTarget);
+        SuspiciousExpression suspExpr = finder.find().orElseThrow(() -> new RuntimeException("[Probe For STATEMENT] Cause line not found."));
+        exploringTargets.add(suspExpr);
+        suspiciousExprTreeRoot = new SuspiciousExprTreeNode(suspExpr);
+        reporter.reportCauseExpression(suspExpr);
 
-            //search cause line
-            CauseLineFinder finder = new CauseLineFinder(target);
-            Optional<SuspiciousExpression> suspExprOpt = finder.find();
-            if(suspExprOpt.isEmpty()){
-                System.err.println("[Probe For STATEMENT] Cause line is not found.");
-                System.err.println("[Probe For STATEMENT] Skip probing");
-                continue;
+        //expr --> list<expr> の特定ループ
+        while(!exploringTargets.isEmpty()){
+            SuspiciousExpression targetExpr = exploringTargets.removeFirst();
+            List<SuspiciousExpression> children = new ArrayList<>();
+
+            // 1. suspExpr -- [suspVar] --> suspExpr(, suspArg) 探索済みのsuspVarは除外
+            //SuspExprで直接使用されている(≒メソッドの引数でない)全ての変数
+            List<SuspiciousVariable> neighborVariable = neighborSearcher.neighborSuspiciousVariables(false, targetExpr);
+            for(SuspiciousVariable suspVar : neighborVariable){
+                if(investigatedVariables.contains(suspVar)) continue;
+                investigatedVariables.add(suspVar);
+                finder = new CauseLineFinder(suspVar);
+                Optional<SuspiciousExpression> suspExprOpt = finder.find();
+                if(suspExprOpt.isEmpty()){
+                    System.err.println("[Probe For STATEMENT] Cause line is not found.");
+                    System.err.println("[Probe For STATEMENT] Skip probing");
+                    continue;
+                }
+                children.add(suspExprOpt.get());
             }
-            SuspiciousExpression suspExpr = suspExprOpt.get();
-            causeExprs.add(suspExpr);
-            addTreeElement(suspExpr, target);
-;           reporter.reportCauseExpression(suspExpr);
-            //include return line of callee method to cause lines
 
-            causeExprs.addAll(collectInvokedReturnExpressions(suspExpr));
+            // 2. suspExpr -- [return]  --> suspExpr
+            children.addAll(NEWCollectInvokedReturnExpressions(targetExpr));
 
-            //search next target
-            System.out.println(" >>> search next target");
-            List<SuspiciousVariable> newTargets = new ArrayList<>();
-            for (SuspiciousExpression ce : causeExprs) {
-                //SuspExprで観測できる全ての変数
-                List<SuspiciousVariable> neighbor = neighborSearcher.neighborSuspiciousVariables(false, ce);
-                neighbor.forEach(sv -> sv.setParent(ce));
-                neighbor.removeAll(investigatedTargets);
-                newTargets.addAll(neighbor);
-            }
-            newTargets.removeAll(investigatedTargets);
+            //木構造に追加
+            addTreeElement(targetExpr, children);
 
-            investigatedTargets.addAll(newTargets);
-            probingTargets.addAll(newTargets);
-            printProbeExInfoFooter(suspExpr, newTargets);
+            //次の探索対象に追加
+            exploringTargets.addAll(children);
         }
+
         return suspiciousExprTreeRoot;
     }
 
@@ -90,6 +141,18 @@ public class Probe{
             result.addAll(returnsOfTarget);
         }
         reporter.reportInvokedReturnExpression(suspiciousExprTreeRoot.find(targetCauseExpr));
+        return result;
+    }
+
+    //TODO: Exprが直接呼び出しているmethodのreturnのみ返すようにする。
+    // int result = calc(a, b);
+    //  -> return add(a, b); <= ここだけ返す。
+    //    -> return a + b;       <= ここは[return add(a, b)]の探索で探す。
+    // TODO: searcher.searchがList<SuspiciousExpression>を返すようにする。
+    private List<SuspiciousExpression> NEWCollectInvokedReturnExpressions(SuspiciousExpression target){
+        SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
+            List<SuspiciousExpression> result = new ArrayList<>(searcher.search(target));
+        reporter.reportInvokedReturnExpression(suspiciousExprTreeRoot.find(target));
         return result;
     }
 
@@ -117,5 +180,19 @@ public class Probe{
             throw new RuntimeException("Parent node is not found.");
         }
         parent.addChild(suspExpr);
+    }
+
+
+
+    protected void addTreeElement(SuspiciousExpression parent, List<SuspiciousExpression> children){
+        SuspiciousExprTreeNode parentNode = suspiciousExprTreeRoot.find(parent);
+        if(parentNode == null) {
+            suspiciousExprTreeRoot.print();
+            System.out.println("===================================================================================");
+            System.out.println(parent);
+            System.out.println("===================================================================================");
+            throw new RuntimeException("Parent node is not found.");
+        }
+        parentNode.addChild(children);
     }
 }
