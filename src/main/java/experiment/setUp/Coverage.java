@@ -55,7 +55,7 @@ public class Coverage {
                 if(executed.contains(testClassName)) continue;
                 executed.add(testClassName);
 
-                ca.analyze(testClassName);
+                ca.analyze(testMethodName.classElementName);
             }
 //            JsonIO.export(ca.result(), outputFile);
 //            ca.result().free();

@@ -31,11 +31,6 @@ public class CoverageAnalyzer {
         visitor = new NewMyCoverageVisitor();
     }
 
-    @Deprecated
-    public void analyze(String tmp){
-        analyze(new ClassElementName(tmp));
-    }
-
     public void analyze(ClassElementName testClassName){
         FileUtil.createDirectory(jacocoExecFilePath);
         Set<MethodElementName> testMethodNames = JacocoTestUtil.getTestMethods(testClassName);

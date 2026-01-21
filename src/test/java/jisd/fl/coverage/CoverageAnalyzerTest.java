@@ -1,6 +1,8 @@
 package jisd.fl.coverage;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.presenter.SbflCoveragePrinter;
 import jisd.fl.sbfl.coverage.CoverageAnalyzer;
@@ -33,7 +35,7 @@ class CoverageAnalyzerTest {
 
     @Nested
     class conditionalTest {
-        String testClassName = "org.sample.coverage.ConditionalTest";
+        ClassElementName testClassName = new ClassElementName("org.sample.coverage.ConditionalTest");
         ProjectSbflCoverage cov;
 
         @BeforeEach
@@ -60,7 +62,7 @@ class CoverageAnalyzerTest {
 
     @Nested
     class LoopTest {
-        String testClassName = "org.sample.coverage.LoopTest";
+        ClassElementName testClassName = new ClassElementName("org.sample.coverage.LoopTest");
         ProjectSbflCoverage cov;
 
         @BeforeEach
@@ -88,7 +90,7 @@ class CoverageAnalyzerTest {
 
     @Nested
     class InnerClassTest {
-        String testClassName = "org.sample.coverage.InnerClassTest";
+        ClassElementName testClassName = new ClassElementName("org.sample.coverage.InnerClassTest");
         ProjectSbflCoverage cov;
 
         @BeforeEach
