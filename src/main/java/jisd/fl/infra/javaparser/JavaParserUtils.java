@@ -5,6 +5,7 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.CallableDeclaration;
+import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
@@ -81,6 +82,21 @@ public class JavaParserUtils {
             throw new RuntimeException(e);
         }
         return result;
+    }
+
+    public static List<Integer> findFieldVariableDeclarationLine(ClassElementName targetClass, String fieldName){
+        try {
+            CompilationUnit cu = parseClass(targetClass);
+            return cu.findAll(FieldDeclaration.class).stream()
+                    .filter(fd -> fd.getVariables().stream().anyMatch(vd -> vd.getNameAsString().equals(fieldName)))
+                    .map(fd -> fd.getRange().map(r -> r.begin.line).orElse(null))
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .sorted()
+                    .toList();
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static <T extends Node> List<T> extractNode(ClassElementName targetClass, Class<T> nodeClass) throws NoSuchFileException {
