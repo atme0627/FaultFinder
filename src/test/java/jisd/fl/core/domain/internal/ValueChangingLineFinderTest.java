@@ -1,6 +1,8 @@
 package jisd.fl.core.domain.internal;
 
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.util.PropertyLoader;
 import org.junit.jupiter.api.*;
@@ -67,6 +69,16 @@ public class ValueChangingLineFinderTest {
         );
     }
 
+    private static SuspiciousFieldVariable fieldVar(String locateClass, String varName) {
+        return new SuspiciousFieldVariable(
+                new MethodElementName("dummy.Dummy#dummy()"),
+                new ClassElementName(locateClass),
+                varName,
+                "DUMMY_ACTUAL",
+                true
+        );
+    }
+
     @Test
     void localCase_includes_decl_assign_unary_lines() throws Exception {
         SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#localCase()", "x");
@@ -101,6 +113,17 @@ public class ValueChangingLineFinderTest {
         SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#arrayAssign()", "a");
 
         int arrAssign = lineOfFixture("@ARR_ASSIGN");
+
+        List<Integer> lines = ValueChangingLineFinder.find(sv);
+
+        assertTrue(lines.contains(arrAssign));
+    }
+
+    @Test
+    void field_assign() throws Exception {
+        SuspiciousFieldVariable sv = fieldVar("jisd.fl.fixture.ValueChangingLineFinderFixture", "f");
+
+        int arrAssign = lineOfFixture("@FIELD_ASSIGN");
 
         List<Integer> lines = ValueChangingLineFinder.find(sv);
 
