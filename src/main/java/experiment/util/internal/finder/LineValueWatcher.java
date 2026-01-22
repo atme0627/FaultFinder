@@ -2,7 +2,7 @@ package experiment.util.internal.finder;
 
 import com.sun.jdi.*;
 import jisd.fl.infra.jdi.EnhancedDebugger;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.infra.junit.JUnitDebugger;
 import jisd.fl.core.entity.element.MethodElementName;
 
@@ -15,8 +15,8 @@ public class LineValueWatcher {
     public LineValueWatcher(MethodElementName targetTestCaseName) {
         this.targetTestCaseName = targetTestCaseName;
     }
-    public List<SuspiciousVariable> watchAllValuesInAssertLine(int failureLine, MethodElementName locateMethod){
-        final List<SuspiciousVariable> result = new ArrayList<>();
+    public List<SuspiciousLocalVariable> watchAllValuesInAssertLine(int failureLine, MethodElementName locateMethod){
+        final List<SuspiciousLocalVariable> result = new ArrayList<>();
         //Debugger生成
         JUnitDebugger debugger = new JUnitDebugger(this.targetTestCaseName);
 
@@ -41,8 +41,8 @@ public class LineValueWatcher {
     }
 
 
-    private List<SuspiciousVariable> watchAllVariablesInLine(StackFrame frame, MethodElementName locateMethod){
-        List<SuspiciousVariable> result = new ArrayList<>();
+    private List<SuspiciousLocalVariable> watchAllVariablesInLine(StackFrame frame, MethodElementName locateMethod){
+        List<SuspiciousLocalVariable> result = new ArrayList<>();
 
         // （1）ローカル変数
         List<LocalVariable> locals;
@@ -58,7 +58,7 @@ public class LineValueWatcher {
                 if(ar.length() == 0) return;
                 if(ar.getValue(0) == null) return;
                 if(!(ar.getValue(0) instanceof PrimitiveValue)) return;
-                result.add(new SuspiciousVariable(
+                result.add(new SuspiciousLocalVariable(
                         this.targetTestCaseName,
                         locateMethod.fullyQualifiedName(),
                         lv.name(),
@@ -69,7 +69,7 @@ public class LineValueWatcher {
                 ));
             }
             if(v instanceof PrimitiveValue || (v != null && v.type().name().equals("java.lang.String"))) {
-                result.add(new SuspiciousVariable(
+                result.add(new SuspiciousLocalVariable(
                         this.targetTestCaseName,
                         locateMethod.fullyQualifiedName(),
                         lv.name(),
@@ -88,7 +88,7 @@ public class LineValueWatcher {
                 if (f.isStatic()) continue;
                 if(thisObj.getValue(f) == null) continue;
 
-                result.add(new SuspiciousVariable(
+                result.add(new SuspiciousLocalVariable(
                         this.targetTestCaseName,
                         locateMethod.fullyQualifiedClassName(),
                         f.name(),

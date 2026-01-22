@@ -65,7 +65,7 @@ class SuspiciousExpressionTest {
             String testMethodName = "polymorphism";
             MethodElementName locateClass = new MethodElementName(testFqcn);
             int locateLine = 19;
-            SuspiciousVariable suspVariable = new SuspiciousVariable(
+            SuspiciousLocalVariable suspVariable = new SuspiciousLocalVariable(
                     new MethodElementName(getFqmn(testMethodName)),
                     getFqmn(testMethodName),
                     "totalArea",
@@ -123,7 +123,7 @@ class SuspiciousExpressionTest {
             String testMethodName = "polymorphismLoop";
             MethodElementName locateClass = new MethodElementName(testFqcn);
             int locateLine = 34;
-            SuspiciousVariable suspVariable = new SuspiciousVariable(
+            SuspiciousLocalVariable suspVariable = new SuspiciousLocalVariable(
                     new MethodElementName(getFqmn(testMethodName)),
                     getFqmn(testMethodName),
                     "totalArea",

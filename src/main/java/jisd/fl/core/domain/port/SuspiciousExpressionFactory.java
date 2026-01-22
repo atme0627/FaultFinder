@@ -4,10 +4,10 @@ import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousAssignment;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 
 public interface SuspiciousExpressionFactory {
-    SuspiciousAssignment createAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget);
+    SuspiciousAssignment createAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousLocalVariable assignTarget);
     SuspiciousReturnValue createReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue);
     SuspiciousArgument createArgument(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue, MethodElementName calleeMethodName, int argIndex, int callCountAfterTargetInLine);
 }

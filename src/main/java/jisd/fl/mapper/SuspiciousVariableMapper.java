@@ -1,7 +1,7 @@
 package jisd.fl.mapper;
 
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -13,7 +13,7 @@ import java.util.Map;
 import com.google.gson.Gson;
 
 public class SuspiciousVariableMapper {
-    public static String toJson(SuspiciousVariable suspValue) {
+    public static String toJson(SuspiciousLocalVariable suspValue) {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("failedTest", suspValue.getFailedTest().toString());
         map.put("locateMethod", suspValue.getLocateMethod(true));
@@ -25,10 +25,10 @@ public class SuspiciousVariableMapper {
         return gson.toJson(map);
     }
 
-    public static SuspiciousVariable fromJson(String jsonString){
+    public static SuspiciousLocalVariable fromJson(String jsonString){
         return fromJson(new JSONObject(jsonString));
     }
-    public static SuspiciousVariable fromJson(JSONObject json){
+    public static SuspiciousLocalVariable fromJson(JSONObject json){
             MethodElementName failedTest = new MethodElementName(json.getString("failedTest"));
             MethodElementName locateMethod = new MethodElementName(json.getString("locateMethod"));
             boolean isPrimitive = json.getBoolean("isPrimitive");
@@ -39,7 +39,7 @@ public class SuspiciousVariableMapper {
             if(variableName.contains("[")){
                 int arrayNth = Integer.parseInt(variableName.substring(variableName.indexOf("[") + 1, variableName.indexOf("]")));
                 variableName = variableName.substring(0, variableName.indexOf("["));
-                return new SuspiciousVariable(
+                return new SuspiciousLocalVariable(
                         failedTest,
                         locateMethod.fullyQualifiedName(),
                         variableName,
@@ -50,7 +50,7 @@ public class SuspiciousVariableMapper {
                 );
             }
 
-            return new SuspiciousVariable(
+            return new SuspiciousLocalVariable(
                     failedTest,
                     locateMethod.fullyQualifiedName(),
                     variableName,
@@ -60,11 +60,11 @@ public class SuspiciousVariableMapper {
             );
     }
 
-    public static List<SuspiciousVariable> fromJsonArray(String jsonArrayString){
+    public static List<SuspiciousLocalVariable> fromJsonArray(String jsonArrayString){
         return fromJsonArray(new JSONArray(jsonArrayString));
     }
-    public static List<SuspiciousVariable> fromJsonArray(JSONArray jsonArray){
-        List<SuspiciousVariable> ret = new ArrayList<>();
+    public static List<SuspiciousLocalVariable> fromJsonArray(JSONArray jsonArray){
+        List<SuspiciousLocalVariable> ret = new ArrayList<>();
         for(Object o : jsonArray){
             if(!(o instanceof JSONObject)){
                 throw new RuntimeException("SuspiciousVariableMapper.fromJsonArray: invalid jsonArray \n[content]\n" + o.toString());

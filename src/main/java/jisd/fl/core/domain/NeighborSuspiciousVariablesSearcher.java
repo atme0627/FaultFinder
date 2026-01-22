@@ -1,7 +1,7 @@
 package jisd.fl.core.domain;
 
 import jisd.fl.core.domain.internal.ValueAtSuspiciousExpressionTracer;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.TracedValue;
 
@@ -15,7 +15,7 @@ public class NeighborSuspiciousVariablesSearcher {
     public NeighborSuspiciousVariablesSearcher(){
         this.tracer = new ValueAtSuspiciousExpressionTracer();
     }
-    public List<SuspiciousVariable> neighborSuspiciousVariables(boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
+    public List<SuspiciousLocalVariable> neighborSuspiciousVariables(boolean includeIndirectUsedVariable, SuspiciousExpression suspExpr){
         //SuspExprで観測できる全ての変数
         List<TracedValue> tracedNeighborValue = tracer.traceAll(suspExpr);
         //SuspExpr内で使用されている変数を静的解析により取得
@@ -25,12 +25,12 @@ public class NeighborSuspiciousVariablesSearcher {
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         //TODO: 今の実装だと、変数がローカルかフィールドか区別できない
         // ex. this.x = x の時, this.xも探索してしまう。
-        List<SuspiciousVariable> result =
+        List<SuspiciousLocalVariable> result =
                 tracedNeighborValue.stream()
                         .filter(t -> neighborVariableNames.contains(t.variableName))
                         .filter(t -> !t.isReference)
                         //
-                        .map(t -> new SuspiciousVariable(
+                        .map(t -> new SuspiciousLocalVariable(
                                 suspExpr.failedTest,
                                 suspExpr.locateMethod.fullyQualifiedName(),
                                 t.variableName,

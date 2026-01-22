@@ -4,7 +4,7 @@ import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
 import jisd.fl.core.domain.SuspiciousReturnsSearcher;
 import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.domain.CauseLineFinder;
 import jisd.fl.presenter.ProbeReporter;
 
@@ -12,12 +12,12 @@ import java.util.*;
 
 public class Probe{
     private SuspiciousExprTreeNode suspiciousExprTreeRoot = new SuspiciousExprTreeNode(null);
-    private final SuspiciousVariable firstTarget;
+    private final SuspiciousLocalVariable firstTarget;
     private final ProbeReporter reporter;
     private final CauseLineFinder causeLineFinder;
     protected final NeighborSuspiciousVariablesSearcher neighborSearcher;
 
-    public Probe(SuspiciousVariable target) {
+    public Probe(SuspiciousLocalVariable target) {
         this.firstTarget = target;
         this.reporter = new ProbeReporter();
         this.causeLineFinder = new CauseLineFinder();
@@ -30,7 +30,7 @@ public class Probe{
     // 2. suspExpr -- [return]  --> suspExpr
     public SuspiciousExprTreeNode run(int sleepTime){
         Deque<SuspiciousExpression> exploringTargets = new ArrayDeque<>();
-        Set<SuspiciousVariable> investigatedVariables = new HashSet<>();
+        Set<SuspiciousLocalVariable> investigatedVariables = new HashSet<>();
 
         // 0. ユーザ由来のsuspVarから最初のSuspExprを特定する。
         investigatedVariables.add(firstTarget);
@@ -49,8 +49,8 @@ public class Probe{
 
             // 1. suspExpr -- [suspVar] --> suspExpr(, suspArg) 探索済みのsuspVarは除外
             //SuspExprで直接使用されている(≒メソッドの引数でない)全ての変数
-            List<SuspiciousVariable> neighborVariable = neighborSearcher.neighborSuspiciousVariables(false, targetExpr);
-            for(SuspiciousVariable suspVar : neighborVariable){
+            List<SuspiciousLocalVariable> neighborVariable = neighborSearcher.neighborSuspiciousVariables(false, targetExpr);
+            for(SuspiciousLocalVariable suspVar : neighborVariable){
                 if(investigatedVariables.contains(suspVar)) continue;
                 investigatedVariables.add(suspVar);
                 Optional<SuspiciousExpression> suspExprOpt = causeLineFinder.find(suspVar);
@@ -84,7 +84,7 @@ public class Probe{
         return result;
     }
 
-    protected void printProbeExInfoFooter(SuspiciousExpression suspExpr, List<SuspiciousVariable> nextTarget){
+    protected void printProbeExInfoFooter(SuspiciousExpression suspExpr, List<SuspiciousLocalVariable> nextTarget){
         System.out.println("------------------------------------------------------------------------------------------------------------");
         System.out.println(suspExpr);
         System.out.println(" [NEXT TARGET]");

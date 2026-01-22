@@ -2,7 +2,7 @@ package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;
 import jisd.fl.infra.javaparser.JavaParserUtils;
@@ -21,7 +21,7 @@ public class TargetVariableTracer {
     public TargetVariableTracer() {
     }
 
-    public List<TracedValue> traceValuesOfTarget(SuspiciousVariable target) {
+    public List<TracedValue> traceValuesOfTarget(SuspiciousLocalVariable target) {
         //targetVariableのVariableDeclaratorを特定
         MethodElementName targetMethod = target.getLocateMethodElement();
         List<Integer> vdLines = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, target.getSimpleVariableName());
@@ -59,7 +59,7 @@ public class TargetVariableTracer {
         return result;
     }
 
-    private Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousVariable sv, LocalDateTime watchedAt) {
+    private Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousLocalVariable sv, LocalDateTime watchedAt) {
         int locateLine = frame.location().lineNumber();
         // （1）ローカル変数
         if (!sv.isField()) {

@@ -1,17 +1,17 @@
 package jisd.fl.mapper;
 
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SuspiciousVariableMapperTest {
+class SuspiciousLocalVariableMapperTest {
     @Test
     void toJson() {
-        SuspiciousVariable target = new SuspiciousVariable(
+        SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                 new MethodElementName("org.sample.ExampleTest#test1()"),
                 "org.sample.Example#method(int)",
                 "nums",
@@ -47,7 +47,7 @@ class SuspiciousVariableMapperTest {
                 "isField":false
                 }
         """;
-        SuspiciousVariable expected = new SuspiciousVariable(
+        SuspiciousLocalVariable expected = new SuspiciousLocalVariable(
                 new MethodElementName("org.sample.ExampleTest#test1()"),
                 "org.sample.Example#method(int)",
                 "nums",
@@ -56,7 +56,7 @@ class SuspiciousVariableMapperTest {
                 false,
                 2
         );
-        SuspiciousVariable actual = SuspiciousVariableMapper.fromJson(json);
+        SuspiciousLocalVariable actual = SuspiciousVariableMapper.fromJson(json);
         assertEquals(expected, actual);
 
     }
@@ -83,8 +83,8 @@ class SuspiciousVariableMapperTest {
                     },
                 ]
         """;
-        List<SuspiciousVariable> expected = List.of(
-                new SuspiciousVariable(
+        List<SuspiciousLocalVariable> expected = List.of(
+                new SuspiciousLocalVariable(
                         new MethodElementName("org.sample.ExampleTest#test1()"),
                         "org.sample.Example#method(int)",
                         "nums",
@@ -93,7 +93,7 @@ class SuspiciousVariableMapperTest {
                         false,
                         2
                 ),
-                new SuspiciousVariable(
+                new SuspiciousLocalVariable(
                         new MethodElementName("org.sample.ExampleTest#test2()"),
                         "org.sample.Example#calc(int)",
                         "answer",
@@ -102,7 +102,7 @@ class SuspiciousVariableMapperTest {
                         false
                 )
         );
-        List<SuspiciousVariable> actual = SuspiciousVariableMapper.fromJsonArray(json);
+        List<SuspiciousLocalVariable> actual = SuspiciousVariableMapper.fromJsonArray(json);
         assertEquals(expected, actual);
     }
 }

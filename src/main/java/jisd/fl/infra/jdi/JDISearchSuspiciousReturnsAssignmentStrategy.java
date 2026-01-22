@@ -14,7 +14,7 @@ import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousAssignment;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.infra.junit.JUnitDebugger;
 
@@ -111,7 +111,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
 
     //この行の評価結果( = assignTargetへ代入された値)がactualValueと一致するか確認
     //TODO: 配列はとりあえず考えない
-    static boolean validateIsTargetExecution(StepEvent se, SuspiciousVariable assignTarget){
+    static boolean validateIsTargetExecution(StepEvent se, SuspiciousLocalVariable assignTarget){
         try {
             if (!assignTarget.isPrimitive()) throw new RuntimeException("Reference type has not been supported yet.");
             if (assignTarget.isArray()) throw new RuntimeException("Array type has not been supported yet.");

@@ -12,7 +12,7 @@ import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.infra.jdi.TargetVariableTracer;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.TracedValue;
 
 import java.nio.file.NoSuchFileException;
@@ -35,7 +35,7 @@ public class CauseLineFinder {
      * 原因が呼び出し元の引数にある場合は、その引数のExprに対応するものを返す
      *
      */
-    public Optional<SuspiciousExpression> find(SuspiciousVariable target) {
+    public Optional<SuspiciousExpression> find(SuspiciousLocalVariable target) {
         //ターゲット変数が変更されうる行を観測し、全変数の情報を取得
         List<TracedValue> tracedValues = tracer.traceValuesOfTarget(target);
         tracedValues.sort(TracedValue::compareTo);
@@ -53,7 +53,7 @@ public class CauseLineFinder {
      *
      * @return
      */
-    private Optional<SuspiciousExpression> searchProbeLine(SuspiciousVariable target, List<TracedValue> tracedValues) {
+    private Optional<SuspiciousExpression> searchProbeLine(SuspiciousLocalVariable target, List<TracedValue> tracedValues) {
         /* 1a. すでに定義されていた変数に代入が行われたパターン */
         //代入の実行後にactualの値に変化している行の特定(ない場合あり)
         List<TracedValue> changeToActualLines = valueChangedToActualLine(target, tracedValues, target.getActualValue());
@@ -81,7 +81,7 @@ public class CauseLineFinder {
     }
 
 
-    private List<TracedValue> valueChangedToActualLine(SuspiciousVariable target, List<TracedValue> tracedValues, String actual) {
+    private List<TracedValue> valueChangedToActualLine(SuspiciousLocalVariable target, List<TracedValue> tracedValues, String actual) {
         //対象の変数に値の変化が起きている行の特定
         List<Integer> assignedLine = ValueChangingLineFinder.find(target);
         List<TracedValue> changedToActualLines = new ArrayList<>();
@@ -111,7 +111,7 @@ public class CauseLineFinder {
      * 調査対象の変数がfieldの場合もあるので必ずしもsuspicious assignmentは対象の変数と同じメソッドでは起きない
      * が、同じクラスであることは保証される
      */
-    private SuspiciousAssignment resultIfAssigned(SuspiciousVariable target, int causeLineNumber) {
+    private SuspiciousAssignment resultIfAssigned(SuspiciousLocalVariable target, int causeLineNumber) {
         try {
             LineElementNameResolver resolver = JavaParserLineElementNameResolverFactory.create(target.getLocateMethodElement().classElementName);
             MethodElementName locateMethodElementName = resolver.lineElementAt(causeLineNumber).methodElementName;
@@ -140,7 +140,7 @@ public class CauseLineFinder {
      * ...
      * }
      */
-    private Optional<SuspiciousExpression> resultIfNotAssigned(SuspiciousVariable target) {
+    private Optional<SuspiciousExpression> resultIfNotAssigned(SuspiciousLocalVariable target) {
         //実行しているメソッド名を取得
         MethodElementName locateMethodElementName = target.getLocateMethodElement();
         Optional<SuspiciousArgument> result = suspiciousArgumentsSearcher.searchSuspiciousArgument(target, locateMethodElementName);

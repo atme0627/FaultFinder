@@ -1,7 +1,7 @@
 package experiment.util.internal.finder;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.core.entity.element.MethodElementName;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,22 +43,22 @@ class LineValueWatcherTest {
         LineValueWatcher valueWatcher = new LineValueWatcher(targetTestMethod);
 
         List<Integer> assertLines = List.of(21, 22, 23, 24, 25, 26, 27, 28);
-        List<SuspiciousVariable> expectedSuspiciousVariables = List.of(
-            new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constByte", "127", true, false),
-            new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constChar", "x", true, false),
-            new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constShort", "16", true, false),
-            new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constInteger", "32", true, false),
-            new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constFloat", "2.0", true, false),
-            new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constLong", "5", true, false),
-            new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constDouble", "1.2", true, false),
-            new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constBoolean", "true", true, false)
+        List<SuspiciousLocalVariable> expectedSuspiciousLocalVariables = List.of(
+            new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constByte", "127", true, false),
+            new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constChar", "x", true, false),
+            new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constShort", "16", true, false),
+            new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constInteger", "32", true, false),
+            new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constFloat", "2.0", true, false),
+            new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constLong", "5", true, false),
+            new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constDouble", "1.2", true, false),
+            new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constBoolean", "true", true, false)
         );
 
         for(int i = 0; i < 8; i++) {
-            List<SuspiciousVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLines.get(i), targetTestMethod);
+            List<SuspiciousLocalVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLines.get(i), targetTestMethod);
             assertTrue(
-            watchedValuesInLine.contains(expectedSuspiciousVariables.get(i)),
-                    "Line " + assertLines.get(i) + " should contain: " + expectedSuspiciousVariables.get(i)
+            watchedValuesInLine.contains(expectedSuspiciousLocalVariables.get(i)),
+                    "Line " + assertLines.get(i) + " should contain: " + expectedSuspiciousLocalVariables.get(i)
             );
         }
     }
@@ -68,8 +68,8 @@ class LineValueWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("stringVariable");
         LineValueWatcher valueWatcher = new LineValueWatcher(targetTestMethod);
         int assertLine = 34;
-        List<SuspiciousVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
-        SuspiciousVariable expected = new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constString", "\"const string\"", true, false);
+        List<SuspiciousLocalVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
+        SuspiciousLocalVariable expected = new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constString", "\"const string\"", true, false);
         assertTrue(
                 watchedValuesInLine.contains(expected),
                 "Line " + assertLine + " should contain: " + expected
@@ -83,21 +83,21 @@ class LineValueWatcherTest {
         LineValueWatcher valueWatcher = new LineValueWatcher(targetTestMethod);
 
         List<Integer> assertLines = List.of(48, 49, 50, 51, 52, 53, 54, 55);
-        List<SuspiciousVariable> expectedSuspiciousVariables = List.of(
-                new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constByte", "127", true, false),
-                new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constChar", "x", true, false),
-                new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constShort", "16", true, false),
-                new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constInteger", "32", true, false),
-                new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constFloat", "2.0", true, false),
-                new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constLong", "5", true, false),
-                new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constDouble", "1.2", true, false),
-                new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constBoolean", "true", true, false)
+        List<SuspiciousLocalVariable> expectedSuspiciousLocalVariables = List.of(
+                new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constByte", "127", true, false),
+                new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constChar", "x", true, false),
+                new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constShort", "16", true, false),
+                new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constInteger", "32", true, false),
+                new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constFloat", "2.0", true, false),
+                new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constLong", "5", true, false),
+                new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constDouble", "1.2", true, false),
+                new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "constBoolean", "true", true, false)
         );
 
         for (int i = 0; i < assertLines.size(); i++) {
-            List<SuspiciousVariable> watchedValuesInLine =
+            List<SuspiciousLocalVariable> watchedValuesInLine =
                     valueWatcher.watchAllValuesInAssertLine(assertLines.get(i), targetTestMethod);
-            assertFalse(watchedValuesInLine.contains(expectedSuspiciousVariables.get(i)));
+            assertFalse(watchedValuesInLine.contains(expectedSuspiciousLocalVariables.get(i)));
         }
     }
 
@@ -107,11 +107,11 @@ class LineValueWatcherTest {
         LineValueWatcher valueWatcher = new LineValueWatcher(targetTestMethod);
         int assertLine = 60;
 
-        List<SuspiciousVariable> watchedValuesInLine =
+        List<SuspiciousLocalVariable> watchedValuesInLine =
                 valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
 
-        SuspiciousVariable expected =
-                new SuspiciousVariable(
+        SuspiciousLocalVariable expected =
+                new SuspiciousLocalVariable(
                         targetTestClassName,
                         targetTestClassName.fullyQualifiedClassName(),
                         "fieldVariable",
@@ -131,11 +131,11 @@ class LineValueWatcherTest {
         LineValueWatcher valueWatcher = new LineValueWatcher(targetTestMethod);
         int assertLine = 66;
 
-        List<SuspiciousVariable> watchedValuesInLine =
+        List<SuspiciousLocalVariable> watchedValuesInLine =
                 valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
 
-        SuspiciousVariable expected =
-                new SuspiciousVariable(
+        SuspiciousLocalVariable expected =
+                new SuspiciousLocalVariable(
                         targetTestClassName,
                         targetTestMethod.fullyQualifiedName(),
                         "constIntArray",
@@ -155,10 +155,10 @@ class LineValueWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("multipleVariablesInAssertLine");
         LineValueWatcher valueWatcher = new LineValueWatcher(targetTestMethod);
         int assertLine = 73;
-        List<SuspiciousVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
+        List<SuspiciousLocalVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
 
-        SuspiciousVariable expectedAlpha = new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "alpha", "2", true, false);
-        SuspiciousVariable expectedBeta = new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "beta", "3", true, false);
+        SuspiciousLocalVariable expectedAlpha = new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "alpha", "2", true, false);
+        SuspiciousLocalVariable expectedBeta = new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "beta", "3", true, false);
         assertTrue(watchedValuesInLine.contains(expectedAlpha));
         assertTrue(watchedValuesInLine.contains(expectedBeta));
     }
@@ -168,8 +168,8 @@ class LineValueWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("multipleAssertExecution");
         LineValueWatcher valueWatcher = new LineValueWatcher(targetTestMethod);
         int assertLine = 80;
-        List<SuspiciousVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
-        SuspiciousVariable expected = new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "i", "3", true, false);
+        List<SuspiciousLocalVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
+        SuspiciousLocalVariable expected = new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "i", "3", true, false);
         assertTrue(watchedValuesInLine.contains(expected));
     }
 
@@ -178,10 +178,10 @@ class LineValueWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("crash");
         LineValueWatcher valueWatcher = new LineValueWatcher(targetTestMethod);
         int assertLine = 88;
-        List<SuspiciousVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
+        List<SuspiciousLocalVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
 
-        SuspiciousVariable expectedAlpha = new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "alpha", "2", true, false);
-        SuspiciousVariable expectedBeta = new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "beta", "0", true, false);
+        SuspiciousLocalVariable expectedAlpha = new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "alpha", "2", true, false);
+        SuspiciousLocalVariable expectedBeta = new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "beta", "0", true, false);
         assertTrue(watchedValuesInLine.contains(expectedAlpha));
         assertTrue(watchedValuesInLine.contains(expectedBeta));
     }
@@ -191,10 +191,10 @@ class LineValueWatcherTest {
         MethodElementName targetTestMethod = getTargetTestMethod("crashInMultipleExecution");
         LineValueWatcher valueWatcher = new LineValueWatcher(targetTestMethod);
         int assertLine = 96;
-        List<SuspiciousVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
+        List<SuspiciousLocalVariable> watchedValuesInLine = valueWatcher.watchAllValuesInAssertLine(assertLine, targetTestMethod);
 
-        SuspiciousVariable expectedAlpha = new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "alpha", "2", true, false);
-        SuspiciousVariable expectedBeta = new SuspiciousVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "i", "0", true, false);
+        SuspiciousLocalVariable expectedAlpha = new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "alpha", "2", true, false);
+        SuspiciousLocalVariable expectedBeta = new SuspiciousLocalVariable(targetTestClassName, targetTestMethod.fullyQualifiedName(), "i", "0", true, false);
         assertTrue(watchedValuesInLine.contains(expectedAlpha));
         assertTrue(watchedValuesInLine.contains(expectedBeta));
     }

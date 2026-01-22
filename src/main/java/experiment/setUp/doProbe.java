@@ -5,7 +5,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.usecase.Probe;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.util.JsonIO;
 
 import java.io.File;
@@ -32,13 +32,13 @@ public class doProbe {
             Defects4jUtil.compileBuggySrc(project, bugId);
 
             String jsonString = Files.readString(inputFile.toPath());
-            List<SuspiciousVariable> probeTargets = SuspiciousVariableMapper.fromJsonArray(jsonString);
+            List<SuspiciousLocalVariable> probeTargets = SuspiciousVariableMapper.fromJsonArray(jsonString);
             if(probeTargets.isEmpty()) continue;
 
             System.out.println("Finding target: [PROJECT] " + project + "  [BUG ID] " + bugId);
 
             for(int i = 0; i < probeTargets.size(); i++) {
-                SuspiciousVariable target = (SuspiciousVariable) probeTargets.get(i);
+                SuspiciousLocalVariable target = (SuspiciousLocalVariable) probeTargets.get(i);
                 System.out.println("failedTest " + target.getFailedTest());
 
                 File outputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probe/" +

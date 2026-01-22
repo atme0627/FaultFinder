@@ -1,7 +1,7 @@
 package jisd.debug.util;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.jdi.TargetVariableTracer;
 import jisd.fl.core.util.PropertyLoader;
@@ -38,7 +38,7 @@ class TargetVariableTracerTest {
     public void simple() {
         MethodElementName failedTest = new MethodElementName("jisd.debug.util.TargetVariableTracerTest#test1()");
         MethodElementName locateMethod = new MethodElementName("jisd.debug.util.TargetVariableTracerTarget#run(int)");
-        SuspiciousVariable target = new SuspiciousVariable(failedTest, locateMethod.fullyQualifiedName(), "x", "13", true, false);
+        SuspiciousLocalVariable target = new SuspiciousLocalVariable(failedTest, locateMethod.fullyQualifiedName(), "x", "13", true, false);
         TargetVariableTracer targetVariableTracer = new TargetVariableTracer();
 
         List<TracedValue> actual = targetVariableTracer.traceValuesOfTarget(target);

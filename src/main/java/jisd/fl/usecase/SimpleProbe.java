@@ -2,7 +2,7 @@ package jisd.fl.usecase;
 
 import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.domain.CauseLineFinder;
 import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 
@@ -15,27 +15,27 @@ import java.util.*;
  * 卒論での実装
  */
 public class SimpleProbe extends Probe {
-    Set<SuspiciousVariable> probedValue = new HashSet<>();
+    Set<SuspiciousLocalVariable> probedValue = new HashSet<>();
     Set<String> targetClasses = JavaParserClassNameExtractor.getClassNames();
     SuspiciousExprTreeNode suspiciousExprTreeRoot = null;
-    SuspiciousVariable firstTarget;
+    SuspiciousLocalVariable firstTarget;
 
-    public SimpleProbe(SuspiciousVariable target) {
+    public SimpleProbe(SuspiciousLocalVariable target) {
         super(target);
     }
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
     public SuspiciousExprTreeNode run(int sleepTime) {
-        List<SuspiciousVariable> probingTargets = new ArrayList<>();
-        List<SuspiciousVariable> nextTargets = new ArrayList<>();
-        List<SuspiciousVariable> investigatedTargets = new ArrayList<>();
+        List<SuspiciousLocalVariable> probingTargets = new ArrayList<>();
+        List<SuspiciousLocalVariable> nextTargets = new ArrayList<>();
+        List<SuspiciousLocalVariable> investigatedTargets = new ArrayList<>();
 
         probingTargets.add(firstTarget);
         investigatedTargets.add(firstTarget);
 
         int depth = 0;
         while(!probingTargets.isEmpty()) {
-            for (SuspiciousVariable target : probingTargets) {
+            for (SuspiciousLocalVariable target : probingTargets) {
                 CauseLineFinder finder = new CauseLineFinder();
                 SuspiciousExpression suspExpr = finder.find(target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
 

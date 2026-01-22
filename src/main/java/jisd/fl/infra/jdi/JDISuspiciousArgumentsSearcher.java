@@ -8,7 +8,7 @@ import com.sun.jdi.request.StepRequest;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.infra.junit.JUnitDebugger;
@@ -22,7 +22,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
     /**
      * ある変数がその値を取る原因が呼び出し元の引数のあると判明した場合に使用
      */
-    public Optional<SuspiciousArgument> searchSuspiciousArgument(SuspiciousVariable suspVar, MethodElementName calleeMethodName){
+    public Optional<SuspiciousArgument> searchSuspiciousArgument(SuspiciousLocalVariable suspVar, MethodElementName calleeMethodName){
         //Debugger生成
         JUnitDebugger debugger = new JUnitDebugger(suspVar.getFailedTest());
 

@@ -1,7 +1,7 @@
 package demo;
 import jisd.fl.FaultFinder;
 import jisd.fl.core.entity.sbfl.Granularity;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.presenter.SbflCoveragePrinter;
@@ -34,7 +34,7 @@ public class FaultFinderDemo {
 
     @Test
     void probe(){
-        SuspiciousVariable targetValue = new SuspiciousVariable(
+        SuspiciousLocalVariable targetValue = new SuspiciousLocalVariable(
                 failedTestMethodName,
                 failedTestMethodName.fullyQualifiedName(),
                 "actual",
@@ -55,7 +55,7 @@ public class FaultFinderDemo {
         faultFinder.printRanking();
 
         //間違った値を取る変数"actual"をヒントとしてランキングに与えることで、疑惑値に差が生まれ調べるべき行が絞られる。
-        SuspiciousVariable targetValue = new SuspiciousVariable(
+        SuspiciousLocalVariable targetValue = new SuspiciousLocalVariable(
                 failedTestMethodName,
                 failedTestMethodName.fullyQualifiedName(),
                 "actual",

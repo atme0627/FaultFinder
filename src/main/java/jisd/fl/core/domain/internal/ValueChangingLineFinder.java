@@ -6,7 +6,7 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 
 import java.nio.file.NoSuchFileException;
@@ -23,12 +23,12 @@ import java.util.Set;
  */
 public class ValueChangingLineFinder {
     /** 互換: 従来 find は BP用（範囲展開）として扱う */
-    public static List<Integer> find(SuspiciousVariable v) {
+    public static List<Integer> find(SuspiciousLocalVariable v) {
         return findBreakpointLines(v);
     }
 
     /** Cause用: 変更イベントごとの代表行（begin）だけ返す */
-    public static List<Integer> findCauseLines(SuspiciousVariable v) {
+    public static List<Integer> findCauseLines(SuspiciousLocalVariable v) {
         List<LineRange> ranges = collectMutationRanges(v);
 
         List<Integer> out = new ArrayList<>();
@@ -38,7 +38,7 @@ public class ValueChangingLineFinder {
     }
 
     /** BP用: 変更イベントの begin..end をすべて展開して返す */
-    public static List<Integer> findBreakpointLines(SuspiciousVariable v) {
+    public static List<Integer> findBreakpointLines(SuspiciousLocalVariable v) {
         List<LineRange> ranges = collectMutationRanges(v);
 
         Set<Integer> out = new HashSet<>();
@@ -48,7 +48,7 @@ public class ValueChangingLineFinder {
         return out.stream().sorted().toList();
     }
 
-    private static List<LineRange> collectMutationRanges(SuspiciousVariable v) {
+    private static List<LineRange> collectMutationRanges(SuspiciousLocalVariable v) {
         MethodElementName locate = v.getLocateMethodElement();
         List<LineRange> ranges = new ArrayList<>();
 
@@ -109,7 +109,7 @@ public class ValueChangingLineFinder {
      * - a[0] = ... は name 部分(a)で一致
      * - this.f = ... は field名で一致
      */
-    private static boolean matchesTarget(SuspiciousVariable v, Expression target) {
+    private static boolean matchesTarget(SuspiciousLocalVariable v, Expression target) {
         String name = target.isNameExpr() ? target.asNameExpr().getNameAsString()
                 : target.isFieldAccessExpr() ? target.asFieldAccessExpr().getNameAsString()
                 : target.isArrayAccessExpr() ? target.asArrayAccessExpr().getName().toString()

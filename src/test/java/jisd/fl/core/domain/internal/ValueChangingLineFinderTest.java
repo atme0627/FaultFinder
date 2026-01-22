@@ -1,7 +1,7 @@
 package jisd.fl.core.domain.internal;
 
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.util.PropertyLoader;
 import org.junit.jupiter.api.*;
 
@@ -56,8 +56,8 @@ public class ValueChangingLineFinderTest {
         throw new IllegalStateException("Marker not found: " + marker);
     }
 
-    private static SuspiciousVariable localVar(String locateMethodFqmn, String varName) {
-        return new SuspiciousVariable(
+    private static SuspiciousLocalVariable localVar(String locateMethodFqmn, String varName) {
+        return new SuspiciousLocalVariable(
                 new MethodElementName("dummy.Dummy#dummy()"),
                 locateMethodFqmn,
                 varName,
@@ -69,7 +69,7 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void localCase_includes_decl_assign_unary_lines() throws Exception {
-        SuspiciousVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#localCase()", "x");
+        SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#localCase()", "x");
 
         int decl = lineOfFixture("@DECL");
         int assign1 = lineOfFixture("@ASSIGN1");
@@ -84,7 +84,7 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void multiLineAssign_includes_begin_to_end_range() throws Exception {
-        SuspiciousVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
+        SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
 
         int begin = lineOfFixture("@ML_BEGIN");
         int end = lineOfFixture("@ML_END");
@@ -98,7 +98,7 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void arrayAssign_includes_array_assignment_line() throws Exception {
-        SuspiciousVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#arrayAssign()", "a");
+        SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#arrayAssign()", "a");
 
         int arrAssign = lineOfFixture("@ARR_ASSIGN");
 

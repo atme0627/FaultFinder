@@ -4,7 +4,7 @@ import experiment.defect4j.Defects4jUtil;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.mapper.SuspiciousExpressionMapper;
 import jisd.fl.usecase.Probe;
 import jisd.fl.util.JsonIO;
@@ -51,7 +51,7 @@ class ProbeTest {
          */
         @Test
         void CheckRunTestAndWatchVariable() {
-            SuspiciousVariable target = new SuspiciousVariable(
+            SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                     new MethodElementName("org.sample.MinimumTest#CheckRunTestAndWatchVariable()"),
                     "org.sample.MinimumTest#CheckRunTestAndWatchVariable()",
                     "x",
@@ -69,7 +69,7 @@ class ProbeTest {
     class CalcTest {
         @Test
         void runTest() {
-            SuspiciousVariable target = new SuspiciousVariable(
+            SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                     new MethodElementName("org.sample.CalcTest#methodCall1()"),
                     "org.sample.CalcTest#methodCall1()",
                     "actual",
@@ -90,7 +90,7 @@ class ProbeTest {
     class ConditionalTest {
         @Test
         void runTest() {
-            SuspiciousVariable target = new SuspiciousVariable(
+            SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                     new MethodElementName("org.sample.coverage.ConditionalTest#testXEqualY()"),
                     "org.sample.coverage.ConditionalTest#testXEqualY()",
                     "result",
@@ -120,7 +120,7 @@ class ProbeTest {
     class LoopTest {
         @Test
         void runTest() {
-            SuspiciousVariable target = new SuspiciousVariable(
+            SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                     new MethodElementName("org.sample.coverage.LoopTest#testCase1_forAndWhile_prodGreaterThanSum()"),
                     "org.sample.coverage.LoopTest#testCase1_forAndWhile_prodGreaterThanSum()",
                     "result",
@@ -150,12 +150,12 @@ class ProbeTest {
         Defects4jUtil.compileBuggySrc(project, bugId);
 
         String jsonString = Files.readString(inputFile.toPath());
-        List<SuspiciousVariable> probeTargets = SuspiciousVariableMapper.fromJsonArray(jsonString);
+        List<SuspiciousLocalVariable> probeTargets = SuspiciousVariableMapper.fromJsonArray(jsonString);
 
         System.out.println("Finding target: [PROJECT] " + project + "  [BUG ID] " + bugId);
 
         for(int i = 0; i < probeTargets.size(); i++) {
-            SuspiciousVariable target = (SuspiciousVariable) probeTargets.get(i);
+            SuspiciousLocalVariable target = (SuspiciousLocalVariable) probeTargets.get(i);
             System.out.println("failedTest " + target.getFailedTest());
 
             File outputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probe/" +

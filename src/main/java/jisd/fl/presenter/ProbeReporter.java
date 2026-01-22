@@ -2,7 +2,7 @@ package jisd.fl.presenter;
 
 import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.Map;
 public class ProbeReporter {
     static private final int HEADER_LENGTH = 100;
 
-    public void reportSuspiciousVariable(SuspiciousVariable target) {
+    public void reportSuspiciousVariable(SuspiciousLocalVariable target) {
         Map<String, String> infoMap = new HashMap<String, String>();
         infoMap.put("LOCATION", target.getLocateMethod(true));
         infoMap.put("TARGET", target.getSimpleVariableName() + " == " + target.getActualValue());
