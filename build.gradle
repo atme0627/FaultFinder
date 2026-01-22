@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 apply plugin: 'application'
@@ -79,8 +78,21 @@ jar {
     exclude 'locallib/jisd-0.3.0_bata.jar'
 }
 
-shadowJar {
-    into('fl_properties'){
-        from 'fl_properties'
+//fixtureコンパイル
+sourceSets {
+    fixtureExec {
+        java.srcDir("src/test/resources/fixtures/exec/src/main/java")
+        compileClasspath += configurations.testCompileClasspath
+        runtimeClasspath += output + compileClasspath
+        test {
+            compileClasspath += sourceSets.fixtureExec.output
+            runtimeClasspath += sourceSets.fixtureExec.output
+        }
     }
+}
+
+def fixtureExec = sourceSets.fixtureExec
+tasks.named(fixtureExec.compileJavaTaskName, JavaCompile) {
+    options.debug = true
+    options.debugOptions.debugLevel = 'source,lines,vars'
 }
