@@ -113,7 +113,7 @@ public class ValueChangingLineFinder {
                 : null;
 
         if(name == null || !name.equals(v.variableName())) return false;
-        return (v.isField() ==  target.isFieldAccessExpr());
+        return (v.isField() == target.isFieldAccessExpr());
     }
 
     private record LineRange(int begin, int end) {

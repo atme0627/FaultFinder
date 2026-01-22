@@ -79,6 +79,7 @@ public class ValueChangingLineFinderTest {
         );
     }
 
+
     @Test
     void localCase_includes_decl_assign_unary_lines() throws Exception {
         SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#localCase()", "x");
@@ -95,13 +96,25 @@ public class ValueChangingLineFinderTest {
     }
 
     @Test
-    void multiLineAssign_includes_begin_to_end_range() throws Exception {
+    void multiLineAssignCauseLines_includes_begin_to_end_range() throws Exception {
         SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
 
         int begin = lineOfFixture("@ML_BEGIN");
         int end = lineOfFixture("@ML_END");
 
-        List<Integer> lines = ValueChangingLineFinder.find(sv);
+        List<Integer> lines = ValueChangingLineFinder.findCauseLines(sv);
+        assertTrue(lines.contains(begin));
+        assertFalse(lines.contains(end));
+    }
+
+    @Test
+    void multiLineAssignBpLines_includes_begin_to_end_range() throws Exception {
+        SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
+
+        int begin = lineOfFixture("@ML_BEGIN");
+        int end = lineOfFixture("@ML_END");
+
+        List<Integer> lines = ValueChangingLineFinder.findBreakpointLines(sv);
 
         for (int ln : IntStream.rangeClosed(begin, end).toArray()) {
             assertTrue(lines.contains(ln), "missing line: " + ln + " in " + lines);
@@ -120,7 +133,7 @@ public class ValueChangingLineFinderTest {
     }
 
     @Test
-    void field_assign() throws Exception {
+    void fieldAssign_includes_field_assignment_line() throws Exception {
         SuspiciousFieldVariable sv = fieldVar("jisd.fl.fixture.ValueChangingLineFinderFixture", "f");
 
         int arrAssign = lineOfFixture("@FIELD_ASSIGN");
