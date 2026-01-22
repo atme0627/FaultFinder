@@ -11,10 +11,7 @@ import com.github.javaparser.printer.configuration.PrinterConfiguration;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousArgument;
-import jisd.fl.core.entity.susp.SuspiciousAssignment;
-import jisd.fl.core.entity.susp.SuspiciousReturnValue;
-import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
+import jisd.fl.core.entity.susp.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +23,7 @@ import static com.github.javaparser.printer.configuration.DefaultPrinterConfigur
 public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressionFactory {
 
     @Override
-    public SuspiciousAssignment createAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousLocalVariable assignTarget) {
+    public SuspiciousAssignment createAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         Statement stmt = JavaParserUtils.extractStmt(locateMethod.classElementName, locateLine);
         Expression expr = JavaParserExpressionExtractor.extractExprAssign(true, stmt);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();

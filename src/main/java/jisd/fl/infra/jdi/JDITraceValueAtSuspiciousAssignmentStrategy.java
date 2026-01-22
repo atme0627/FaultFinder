@@ -7,9 +7,7 @@ import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.StepRequest;
 import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
-import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
-import jisd.fl.core.entity.susp.SuspiciousAssignment;
-import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.*;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.infra.junit.JUnitDebugger;
 
@@ -77,12 +75,12 @@ public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAt
 
     //この行の評価結果( = assignTargetへ代入された値)がactualValueと一致するか確認
     //TODO: 配列はとりあえず考えない
-    static boolean validateIsTargetExecution(StepEvent se, SuspiciousLocalVariable assignTarget){
+    static boolean validateIsTargetExecution(StepEvent se, SuspiciousVariable assignTarget){
         try {
             if (!assignTarget.isPrimitive()) throw new RuntimeException("Reference type has not been supported yet.");
             if (assignTarget.isArray()) throw new RuntimeException("Array type has not been supported yet.");
 
-            if (assignTarget.isField()) {
+            if (assignTarget instanceof SuspiciousFieldVariable) {
                 //フィールドを持つクラスの型情報を取得
                 ReferenceType refType;
                 StackFrame frame = se.thread().frame(0);
