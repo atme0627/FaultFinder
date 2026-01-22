@@ -26,7 +26,7 @@ public class ValueChangingLineFinderTest {
 
         var cfg = new PropertyLoader.ProjectConfig(
                 Path.of("/Users/ezaki/IdeaProjects/FaultFinder/src/test/resources/fixtures"),
-                Path.of("src/main/java"),
+                Path.of("parse/src/java"),
                 original.testSrcPath(),
                 original.targetBinPath(),
                 original.testBinPath()
@@ -43,7 +43,7 @@ public class ValueChangingLineFinderTest {
     }
 
     private static int lineOfFixture(String marker) throws Exception {
-        String resPath = "/fixtures/src/main/java/jisd/fl/fixture/ValueChangingLineFinderFixture.java";
+        String resPath = "/fixtures/parse/src/java/jisd/fl/fixture/ValueChangingLineFinderFixture.java";
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
                 ValueChangingLineFinderTest.class.getResourceAsStream(resPath),
                 StandardCharsets.UTF_8
@@ -136,10 +136,12 @@ public class ValueChangingLineFinderTest {
     void fieldAssign_includes_field_assignment_line() throws Exception {
         SuspiciousFieldVariable sv = fieldVar("jisd.fl.fixture.ValueChangingLineFinderFixture", "f");
 
-        int arrAssign = lineOfFixture("@FIELD_ASSIGN");
+        int fieldAssign = lineOfFixture("@FIELD_ASSIGN");
+        int fieldAssignInMethod = lineOfFixture("@FIELD_ASSIGN_IN_METHOD");
 
         List<Integer> lines = ValueChangingLineFinder.find(sv);
 
-        assertTrue(lines.contains(arrAssign));
+        assertTrue(lines.contains(fieldAssign));
+        assertTrue(lines.contains(fieldAssignInMethod));
     }
 }

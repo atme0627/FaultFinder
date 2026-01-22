@@ -1,7 +1,7 @@
 package jisd.fl.fixture;
 
 public class ValueChangingLineFinderFixture {
-    private static int a = 0;
+    private static int f = 0; //@FIELD_ASSIGN
     public static int localCase() {
         int x = 0;          // @DECL
         x = 10;             // @ASSIGN1
@@ -24,7 +24,7 @@ public class ValueChangingLineFinderFixture {
     }
 
     public static int fieldAssign() {
-        this.f = 1; // @FIELD_ASSIGN
+        this.f = 1; // @FIELD_ASSIGN_IN_METHOD
         return this.f;
     }
 }
