@@ -5,6 +5,7 @@ import experiment.util.internal.finder.LineMethodCallWatcher;
 import experiment.util.internal.finder.LineVariableNameExtractor;
 import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.LineElementNameResolver;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.JavaParserLineElementNameResolverFactory;
 import jisd.fl.infra.junit.JUnitTestLauncherForFinder;
 import experiment.util.internal.finder.LineValueWatcher;
@@ -42,7 +43,7 @@ public class SuspiciousVariableFinder {
     }
 
 
-    public List<SuspiciousLocalVariable> findSuspiciousVariableInAssertLine() throws NoSuchFileException {
+    public List<SuspiciousVariable> findSuspiciousVariableInAssertLine() throws NoSuchFileException {
         //失敗テストを実行し、失敗したAssert行、またはクラッシュ時に最後に実行された行（失敗行）を取得
         JUnitTestLauncherForFinder.TestFailureInfo info = testLauncher.runTestAndGetFailureLine().orElse(null);
         if(info == null) return Collections.emptyList();
@@ -62,7 +63,7 @@ public class SuspiciousVariableFinder {
         List<String> neighborVariableNames = VarNameExtractor.extractVariableNamesInLine(failureLine, locateMethod.classElementName);
 
         //失敗行に含まれる各変数の、テスト実行時の値を動的解析で取得する。
-        List<SuspiciousLocalVariable> result = new ArrayList<>();
+        List<SuspiciousVariable> result = new ArrayList<>();
         result.addAll(valueWatcher.watchAllValuesInAssertLine(failureLine, locateMethod));
         result = result.stream().filter(sv -> neighborVariableNames.contains(sv.variableName()))
                 .collect(Collectors.toList());

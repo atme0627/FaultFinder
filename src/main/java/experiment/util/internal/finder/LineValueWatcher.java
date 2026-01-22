@@ -1,6 +1,8 @@
 package experiment.util.internal.finder;
 
 import com.sun.jdi.*;
+import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.jdi.EnhancedDebugger;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.infra.junit.JUnitDebugger;
@@ -15,8 +17,8 @@ public class LineValueWatcher {
     public LineValueWatcher(MethodElementName targetTestCaseName) {
         this.targetTestCaseName = targetTestCaseName;
     }
-    public List<SuspiciousLocalVariable> watchAllValuesInAssertLine(int failureLine, MethodElementName locateMethod){
-        final List<SuspiciousLocalVariable> result = new ArrayList<>();
+    public List<SuspiciousVariable> watchAllValuesInAssertLine(int failureLine, MethodElementName locateMethod){
+        final List<SuspiciousVariable> result = new ArrayList<>();
         //Debugger生成
         JUnitDebugger debugger = new JUnitDebugger(this.targetTestCaseName);
 
@@ -41,8 +43,8 @@ public class LineValueWatcher {
     }
 
 
-    private List<SuspiciousLocalVariable> watchAllVariablesInLine(StackFrame frame, MethodElementName locateMethod){
-        List<SuspiciousLocalVariable> result = new ArrayList<>();
+    private List<SuspiciousVariable> watchAllVariablesInLine(StackFrame frame, MethodElementName locateMethod){
+        List<SuspiciousVariable> result = new ArrayList<>();
 
         // （1）ローカル変数
         List<LocalVariable> locals;
@@ -88,12 +90,11 @@ public class LineValueWatcher {
                 if (f.isStatic()) continue;
                 if(thisObj.getValue(f) == null) continue;
 
-                result.add(new SuspiciousLocalVariable(
+                result.add(new SuspiciousFieldVariable(
                         this.targetTestCaseName,
-                        locateMethod.fullyQualifiedClassName(),
+                        locateMethod.classElementName,
                         f.name(),
                         thisObj.getValue(f).toString(),
-                        true,
                         true
                 ));
             }

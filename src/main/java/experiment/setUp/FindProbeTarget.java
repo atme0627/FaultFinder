@@ -3,6 +3,7 @@ package experiment.setUp;
 import experiment.defect4j.Defects4jUtil;
 import experiment.util.SuspiciousVariableFinder;
 import io.github.cdimascio.dotenv.Dotenv;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.util.JsonIO;
@@ -47,7 +48,7 @@ public class FindProbeTarget {
         System.out.println("Finding target: [PROJECT] " + project + "  [BUG ID] " + bugId);
         Defects4jUtil.changeTargetVersion(project, bugId);
         Defects4jUtil.compileBuggySrc(project, bugId);
-        List<SuspiciousLocalVariable> result = new ArrayList<>();
+        List<SuspiciousVariable> result = new ArrayList<>();
         List<MethodElementName> failedMethods = Defects4jUtil.getFailedTestMethods("Lang", bugId);
         for (MethodElementName me : failedMethods) {
             SuspiciousVariableFinder finder = new SuspiciousVariableFinder(me);
@@ -58,10 +59,13 @@ public class FindProbeTarget {
         return convertToJsonAndBundle(result);
     }
 
-    private static JSONObject convertToJsonAndBundle(List<SuspiciousLocalVariable> result){
+    private static JSONObject convertToJsonAndBundle(List<SuspiciousVariable> result){
         JSONArray array = new JSONArray();
-        for(SuspiciousLocalVariable vi : result) {
-            array.put(SuspiciousVariableMapper.toJson(vi));
+        for(SuspiciousVariable vi : result) {
+            //TODO: fieldに対応
+            if(vi instanceof SuspiciousLocalVariable l) {
+                array.put(SuspiciousVariableMapper.toJson(l));
+            }
         }
         JSONObject bundle = new JSONObject();
         bundle.put("suspiciousVariables", array);
