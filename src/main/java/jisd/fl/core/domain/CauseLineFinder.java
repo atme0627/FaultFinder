@@ -56,7 +56,7 @@ public class CauseLineFinder {
     private Optional<SuspiciousExpression> searchProbeLine(SuspiciousLocalVariable target, List<TracedValue> tracedValues) {
         /* 1a. すでに定義されていた変数に代入が行われたパターン */
         //代入の実行後にactualの値に変化している行の特定(ない場合あり)
-        List<TracedValue> changeToActualLines = valueChangedToActualLine(target, tracedValues, target.getActualValue());
+        List<TracedValue> changeToActualLines = valueChangedToActualLine(target, tracedValues, target.actualValue());
         //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
         if (!changeToActualLines.isEmpty()) {
             //原因行
@@ -67,7 +67,7 @@ public class CauseLineFinder {
 
         //fieldは代入以外での値の変更を特定できない
         if (target.isField()) {
-            System.err.println("Cannot find probe line of field. [FIELD NAME] " + target.getSimpleVariableName());
+            System.err.println("Cannot find probe line of field. [FIELD NAME] " + target.variableName());
             return Optional.empty();
         }
 
@@ -113,9 +113,9 @@ public class CauseLineFinder {
      */
     private SuspiciousAssignment resultIfAssigned(SuspiciousLocalVariable target, int causeLineNumber) {
         try {
-            LineElementNameResolver resolver = JavaParserLineElementNameResolverFactory.create(target.getLocateMethodElement().classElementName);
+            LineElementNameResolver resolver = JavaParserLineElementNameResolverFactory.create(target.locateMethod().classElementName);
             MethodElementName locateMethodElementName = resolver.lineElementAt(causeLineNumber).methodElementName;
-            return factory.createAssignment(target.getFailedTest(), locateMethodElementName, causeLineNumber, target);
+            return factory.createAssignment(target.failedTest(), locateMethodElementName, causeLineNumber, target);
         } catch (NoSuchFileException e) {
             throw new RuntimeException(e);
         }
@@ -142,7 +142,7 @@ public class CauseLineFinder {
      */
     private Optional<SuspiciousExpression> resultIfNotAssigned(SuspiciousLocalVariable target) {
         //実行しているメソッド名を取得
-        MethodElementName locateMethodElementName = target.getLocateMethodElement();
+        MethodElementName locateMethodElementName = target.locateMethod();
         Optional<SuspiciousArgument> result = suspiciousArgumentsSearcher.searchSuspiciousArgument(target, locateMethodElementName);
         if(result.isEmpty()){
             return Optional.empty();

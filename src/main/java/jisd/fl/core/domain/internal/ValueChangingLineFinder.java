@@ -49,11 +49,11 @@ public class ValueChangingLineFinder {
     }
 
     private static List<LineRange> collectMutationRanges(SuspiciousLocalVariable v) {
-        MethodElementName locate = v.getLocateMethodElement();
+        MethodElementName locate = v.locateMethod();
         List<LineRange> ranges = new ArrayList<>();
 
         // 0) ローカル変数の宣言行（フィールドなら空の想定）
-        for (int ln : JavaParserUtils.findLocalVariableDeclarationLine(locate, v.getSimpleVariableName())) {
+        for (int ln : JavaParserUtils.findLocalVariableDeclarationLine(locate, v.variableName())) {
             ranges.add(new LineRange(ln, ln));
         }
 
@@ -115,7 +115,7 @@ public class ValueChangingLineFinder {
                 : target.isArrayAccessExpr() ? target.asArrayAccessExpr().getName().toString()
                 : target.toString(); // fallback（最後の手段）
 
-        return name.equals(v.getSimpleVariableName());
+        return name.equals(v.variableName());
     }
 
     private record LineRange(int begin, int end) {}

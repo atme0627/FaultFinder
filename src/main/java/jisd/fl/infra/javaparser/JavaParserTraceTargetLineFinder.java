@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 public class JavaParserTraceTargetLineFinder {
     public static List<Integer> traceTargetLineNumbers(SuspiciousLocalVariable suspiciousLocalVariable) {
         if(suspiciousLocalVariable.isField()) {
-            return traceLinesOfClass(suspiciousLocalVariable.getLocateMethodElement().classElementName, suspiciousLocalVariable.getSimpleVariableName());
+            return traceLinesOfClass(suspiciousLocalVariable.locateMethod().classElementName, suspiciousLocalVariable.variableName());
         }
         else {
-            return traceLineOfMethod(suspiciousLocalVariable.getLocateMethodElement(), suspiciousLocalVariable.getSimpleVariableName());
+            return traceLineOfMethod(suspiciousLocalVariable.locateMethod(), suspiciousLocalVariable.variableName());
         }
     }
 

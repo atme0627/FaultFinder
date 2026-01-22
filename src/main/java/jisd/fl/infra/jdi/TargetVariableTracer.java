@@ -23,12 +23,12 @@ public class TargetVariableTracer {
 
     public List<TracedValue> traceValuesOfTarget(SuspiciousLocalVariable target) {
         //targetVariableのVariableDeclaratorを特定
-        MethodElementName targetMethod = target.getLocateMethodElement();
-        List<Integer> vdLines = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, target.getSimpleVariableName());
+        MethodElementName targetMethod = target.locateMethod();
+        List<Integer> vdLines = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, target.variableName());
         List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(target);
 
         //Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(target.getFailedTest());
+        JUnitDebugger debugger = new JUnitDebugger(target.failedTest());
         List<TracedValue> result = new ArrayList<>();
 
         EnhancedDebugger.BreakpointHandler handler = (vm, event) -> {
@@ -45,7 +45,7 @@ public class TargetVariableTracer {
                 if (vdLines.contains(frame.location().lineNumber())) {
                     result.add(new TracedValue(
                             watchTime,
-                            target.getVariableName(true, true),
+                            target.variableName(true, true),
                             "null",
                             frame.location().lineNumber()
                     ));
@@ -65,7 +65,7 @@ public class TargetVariableTracer {
         if (!sv.isField()) {
             LocalVariable local;
             try {
-                local = frame.visibleVariableByName(sv.getSimpleVariableName());
+                local = frame.visibleVariableByName(sv.variableName());
                 if(local == null) return Optional.empty();
             } catch (AbsentInformationException e) {
                 throw new RuntimeException(e);
@@ -76,7 +76,7 @@ public class TargetVariableTracer {
             //配列の場合[0]のみ観測
             if (local instanceof ArrayReference ar) {
                 if (!sv.isArray()) {
-                    System.err.println("Something is wrong. [ARRAY NAME] " + sv.getSimpleVariableName());
+                    System.err.println("Something is wrong. [ARRAY NAME] " + sv.variableName());
                     if (ar.length() == 0) {
                         return Optional.of(
                                 new TracedValue(
@@ -107,7 +107,7 @@ public class TargetVariableTracer {
             ObjectReference thisObj = frame.thisObject();
             if (thisObj != null) {
                 ReferenceType rt = thisObj.referenceType();
-                Field f = rt.fieldByName(sv.getSimpleVariableName());
+                Field f = rt.fieldByName(sv.variableName());
                 if (f != null) {
                     return Optional.of(new TracedValue(
                             watchedAt,
@@ -119,7 +119,7 @@ public class TargetVariableTracer {
             }
             // (3) static フィールド
             ReferenceType rt = frame.location().declaringType();
-            Field f = rt.fieldByName(sv.getSimpleVariableName());
+            Field f = rt.fieldByName(sv.variableName());
             if (f != null) {
                 return Optional.of(new TracedValue(
                         watchedAt,

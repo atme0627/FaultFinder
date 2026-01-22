@@ -14,8 +14,8 @@ public class ProbeReporter {
 
     public void reportSuspiciousVariable(SuspiciousLocalVariable target) {
         Map<String, String> infoMap = new HashMap<String, String>();
-        infoMap.put("LOCATION", target.getLocateMethod(true));
-        infoMap.put("TARGET", target.getSimpleVariableName() + " == " + target.getActualValue());
+        infoMap.put("LOCATION", target.getLocateMethodString(true));
+        infoMap.put("TARGET", target.variableName() + " == " + target.actualValue());
         printRoundedBox("", formattedMapString(infoMap, 0));
     }
 

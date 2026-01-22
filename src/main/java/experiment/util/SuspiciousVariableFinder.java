@@ -64,7 +64,7 @@ public class SuspiciousVariableFinder {
         //失敗行に含まれる各変数の、テスト実行時の値を動的解析で取得する。
         List<SuspiciousLocalVariable> result = new ArrayList<>();
         result.addAll(valueWatcher.watchAllValuesInAssertLine(failureLine, locateMethod));
-        result = result.stream().filter(sv -> neighborVariableNames.contains(sv.getSimpleVariableName()))
+        result = result.stream().filter(sv -> neighborVariableNames.contains(sv.variableName()))
                 .collect(Collectors.toList());
 
         //失敗行で呼び出しが行われているメソッドの情報を動的解析で取得し、それらのreturn行で使用されている変数の情報を抽出する。

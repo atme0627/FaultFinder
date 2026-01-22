@@ -15,10 +15,10 @@ import com.google.gson.Gson;
 public class SuspiciousVariableMapper {
     public static String toJson(SuspiciousLocalVariable suspValue) {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("failedTest", suspValue.getFailedTest().toString());
-        map.put("locateMethod", suspValue.getLocateMethod(true));
-        map.put("variableName", suspValue.getVariableName(true, true));
-        map.put("actualValue", suspValue.getActualValue());
+        map.put("failedTest", suspValue.failedTest().toString());
+        map.put("locateMethod", suspValue.getLocateMethodString(true));
+        map.put("variableName", suspValue.variableName(true, true));
+        map.put("actualValue", suspValue.actualValue());
         map.put("isPrimitive", suspValue.isPrimitive());
         map.put("isField", suspValue.isField());
         Gson gson = new Gson();
