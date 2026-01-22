@@ -1,11 +1,12 @@
 package jisd.fl.core.entity.susp;
 
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.Objects;
 
 //TODO: fieldで使っている部分をSuspiciousFieldVariableに置き換える。
-public class SuspiciousLocalVariable {
+public final class SuspiciousLocalVariable implements SuspiciousVariable{
     //ローカル変数の場合のみ
     private final MethodElementName failedTest;
     private final MethodElementName locateMethod;
@@ -26,7 +27,8 @@ public class SuspiciousLocalVariable {
             boolean isField) {
         this(failedTest, locateMethod, variableName, actualValue, isPrimitive, isField, -1);
     }
-    
+
+    @Deprecated
     //locateはローカル変数の場合はメソッド名まで(フルネーム、シグニチャあり)
     //フィールドの場合はクラス名まで
     //配列の場合
@@ -49,43 +51,32 @@ public class SuspiciousLocalVariable {
         this.actualValue = actualValue;
     }
 
-    public String getLocateClass() {
-        return locateMethod.fullyQualifiedClassName();
-    }
-
-    public String getSimpleVariableName() {
-        return getVariableName(false, false);
-    }
-
-    public String getVariableName(boolean withThis, boolean withArray) {
+    @Override public MethodElementName failedTest() { return failedTest; }
+    @Override public ClassElementName locateClass() { return locateMethod.classElementName;}
+    @Override public String actualValue() { return actualValue; }
+    @Override public boolean isPrimitive() { return isPrimitive; }
+    @Override public boolean isArray() { return isArray; }
+    @Override public int arrayNth() { return arrayNth; }
+    @Override  public String variableName() { return variableName(false, false); }
+    @Override
+    public String variableName(boolean withThis, boolean withArray) {
         return (isField() && withThis ? "this." : "") + variableName + (isArray() && withArray ? "[" + arrayNth + "]" : "");
     }
 
-    public boolean isArray() {
-        return isArray;
+    public MethodElementName locateMethod() {
+        return locateMethod;
     }
 
-    public boolean isPrimitive() {
-        return isPrimitive;
+    @Deprecated
+    public String getLocateClass() {
+        return locateMethod.fullyQualifiedClassName();
     }
-
+    @Deprecated
     public boolean isField() {
         return isField;
     }
-
-    public int getArrayNth() {
-        return arrayNth;
-    }
-
-    public String getActualValue() {
-        return actualValue;
-    }
-
-    public MethodElementName getFailedTest() {
-        return failedTest;
-    }
-
-    public String getLocateMethod(boolean withClass) {
+    @Deprecated
+    public String getLocateMethodString(boolean withClass) {
         if (withClass) {
             return locateMethod.fullyQualifiedName();
         } else {
@@ -93,9 +84,7 @@ public class SuspiciousLocalVariable {
         }
     }
 
-    public MethodElementName getLocateMethodElement() {
-        return locateMethod;
-    }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -128,6 +117,6 @@ public class SuspiciousLocalVariable {
     @Override
     public String toString() {
         return  "     [LOCATION] " + locateMethod +
-                " [PROBE TARGET] " + getVariableName(true, true) + " == " + getActualValue();
+                " [PROBE TARGET] " + variableName(true, true) + " == " + actualValue();
     }
 }
