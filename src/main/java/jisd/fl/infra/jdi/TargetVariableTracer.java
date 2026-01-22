@@ -4,6 +4,7 @@ import com.sun.jdi.*;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.TracedValue;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.infra.junit.JUnitDebugger;
@@ -21,21 +22,23 @@ public class TargetVariableTracer {
     public TargetVariableTracer() {
     }
 
-    public List<TracedValue> traceValuesOfTarget(SuspiciousLocalVariable target) {
+    //TODO: field未対応
+    public List<TracedValue> traceValuesOfTarget(SuspiciousVariable target) {
+        if(!(target instanceof SuspiciousLocalVariable localVariable)) throw new RuntimeException("Field variable has not been supported.");
         //targetVariableのVariableDeclaratorを特定
-        MethodElementName targetMethod = target.locateMethod();
-        List<Integer> vdLines = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, target.variableName());
-        List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(target);
+        MethodElementName targetMethod = localVariable.locateMethod();
+        List<Integer> vdLines = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, localVariable.variableName());
+        List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(localVariable);
 
         //Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(target.failedTest());
+        JUnitDebugger debugger = new JUnitDebugger(localVariable.failedTest());
         List<TracedValue> result = new ArrayList<>();
 
         EnhancedDebugger.BreakpointHandler handler = (vm, event) -> {
             LocalDateTime watchTime = LocalDateTime.now();
             try {
                 StackFrame frame = event.thread().frame(0);
-                Optional<TracedValue> v = watchVariableInLine(frame, target, watchTime);
+                Optional<TracedValue> v = watchVariableInLine(frame, localVariable, watchTime);
                 if (v.isPresent()) {
                     result.add(v.get());
                     return;
@@ -45,7 +48,7 @@ public class TargetVariableTracer {
                 if (vdLines.contains(frame.location().lineNumber())) {
                     result.add(new TracedValue(
                             watchTime,
-                            target.variableName(true, true),
+                            localVariable.variableName(true, true),
                             "null",
                             frame.location().lineNumber()
                     ));
@@ -55,7 +58,7 @@ public class TargetVariableTracer {
             }
         };
 
-        debugger.handleAtBreakPoint(target.getLocateClass(), canSetLines, handler);
+        debugger.handleAtBreakPoint(localVariable.getLocateClass(), canSetLines, handler);
         return result;
     }
 

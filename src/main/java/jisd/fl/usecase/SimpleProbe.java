@@ -4,6 +4,7 @@ import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.domain.CauseLineFinder;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.JavaParserClassNameExtractor;
 
 import java.util.*;
@@ -26,16 +27,16 @@ public class SimpleProbe extends Probe {
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
     public SuspiciousExprTreeNode run(int sleepTime) {
-        List<SuspiciousLocalVariable> probingTargets = new ArrayList<>();
-        List<SuspiciousLocalVariable> nextTargets = new ArrayList<>();
-        List<SuspiciousLocalVariable> investigatedTargets = new ArrayList<>();
+        List<SuspiciousVariable> probingTargets = new ArrayList<>();
+        List<SuspiciousVariable> nextTargets = new ArrayList<>();
+        List<SuspiciousVariable> investigatedTargets = new ArrayList<>();
 
         probingTargets.add(firstTarget);
         investigatedTargets.add(firstTarget);
 
         int depth = 0;
         while(!probingTargets.isEmpty()) {
-            for (SuspiciousLocalVariable target : probingTargets) {
+            for (SuspiciousVariable target : probingTargets) {
                 CauseLineFinder finder = new CauseLineFinder();
                 SuspiciousExpression suspExpr = finder.find(target).orElseThrow(() -> new RuntimeException("Cause line is not found."));
 

@@ -5,8 +5,11 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.UnaryExpr;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 
 import java.nio.file.NoSuchFileException;
@@ -23,12 +26,12 @@ import java.util.Set;
  */
 public class ValueChangingLineFinder {
     /** 互換: 従来 find は BP用（範囲展開）として扱う */
-    public static List<Integer> find(SuspiciousLocalVariable v) {
+    public static List<Integer> find(SuspiciousVariable v) {
         return findBreakpointLines(v);
     }
 
     /** Cause用: 変更イベントごとの代表行（begin）だけ返す */
-    public static List<Integer> findCauseLines(SuspiciousLocalVariable v) {
+    public static List<Integer> findCauseLines(SuspiciousVariable v) {
         List<LineRange> ranges = collectMutationRanges(v);
 
         List<Integer> out = new ArrayList<>();
@@ -38,7 +41,7 @@ public class ValueChangingLineFinder {
     }
 
     /** BP用: 変更イベントの begin..end をすべて展開して返す */
-    public static List<Integer> findBreakpointLines(SuspiciousLocalVariable v) {
+    public static List<Integer> findBreakpointLines(SuspiciousVariable v) {
         List<LineRange> ranges = collectMutationRanges(v);
 
         Set<Integer> out = new HashSet<>();
@@ -48,30 +51,33 @@ public class ValueChangingLineFinder {
         return out.stream().sorted().toList();
     }
 
-    private static List<LineRange> collectMutationRanges(SuspiciousLocalVariable v) {
-        MethodElementName locate = v.locateMethod();
+    private static List<LineRange> collectMutationRanges(SuspiciousVariable v) {
+        ClassElementName locate = v.locateClass();
         List<LineRange> ranges = new ArrayList<>();
 
         // 0) ローカル変数の宣言行（フィールドなら空の想定）
-        for (int ln : JavaParserUtils.findLocalVariableDeclarationLine(locate, v.variableName())) {
-            ranges.add(new LineRange(ln, ln));
+        if(v instanceof SuspiciousLocalVariable localVariable) {
+            for (int ln : JavaParserUtils.findLocalVariableDeclarationLine(localVariable.locateMethod(), v.variableName())) {
+                ranges.add(new LineRange(ln, ln));
+            }
         }
 
         // 1) スコープに応じて Assign/Unary を収集
         List<AssignExpr> assigns;
         List<UnaryExpr> unaries;
-        if (v.isField()) {
+        if (v instanceof SuspiciousFieldVariable) {
             try {
-                CompilationUnit unit = JavaParserUtils.parseClass(locate.classElementName);
+                CompilationUnit unit = JavaParserUtils.parseClass(locate);
                 assigns = unit.findAll(AssignExpr.class);
                 unaries = unit.findAll(UnaryExpr.class, ValueChangingLineFinder::isIncDec);
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }
         } else {
+            SuspiciousLocalVariable localVariable = (SuspiciousLocalVariable) v;
             BlockStmt body;
             try {
-                body = JavaParserUtils.extractBodyOfMethod(locate);
+                body = JavaParserUtils.extractBodyOfMethod(localVariable.locateMethod());
             } catch (NoSuchFileException e) {
                 throw new RuntimeException(e);
             }
@@ -109,7 +115,7 @@ public class ValueChangingLineFinder {
      * - a[0] = ... は name 部分(a)で一致
      * - this.f = ... は field名で一致
      */
-    private static boolean matchesTarget(SuspiciousLocalVariable v, Expression target) {
+    private static boolean matchesTarget(SuspiciousVariable v, Expression target) {
         String name = target.isNameExpr() ? target.asNameExpr().getNameAsString()
                 : target.isFieldAccessExpr() ? target.asFieldAccessExpr().getNameAsString()
                 : target.isArrayAccessExpr() ? target.asArrayAccessExpr().getName().toString()
