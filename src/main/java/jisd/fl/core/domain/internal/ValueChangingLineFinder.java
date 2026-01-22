@@ -1,6 +1,7 @@
 package jisd.fl.core.domain.internal;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.UnaryExpr;
@@ -63,29 +64,19 @@ public class ValueChangingLineFinder {
         }
 
         // 1) スコープに応じて Assign/Unary を収集
+        Node node;
         List<AssignExpr> assigns;
         List<UnaryExpr> unaries;
-        if (v instanceof SuspiciousFieldVariable) {
-            try {
-                CompilationUnit unit = JavaParserUtils.parseClass(locate);
-                assigns = unit.findAll(AssignExpr.class);
-                unaries = unit.findAll(UnaryExpr.class, ValueChangingLineFinder::isIncDec);
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            SuspiciousLocalVariable localVariable = (SuspiciousLocalVariable) v;
-            BlockStmt body;
-            try {
-                body = JavaParserUtils.extractBodyOfMethod(localVariable.locateMethod());
-            } catch (NoSuchFileException e) {
-                throw new RuntimeException(e);
-            }
-            if (body == null) return ranges;
-
-            assigns = body.findAll(AssignExpr.class);
-            unaries = body.findAll(UnaryExpr.class, ValueChangingLineFinder::isIncDec);
+        try {
+            node = (v instanceof SuspiciousLocalVariable local) ?
+                    JavaParserUtils.extractBodyOfMethod(local.locateMethod())
+                    : JavaParserUtils.parseClass(locate);
+        } catch (NoSuchFileException e) {
+            throw new RuntimeException(e);
         }
+        if (node == null) return ranges;
+        assigns = node.findAll(AssignExpr.class);
+        unaries = node.findAll(UnaryExpr.class, ValueChangingLineFinder::isIncDec);
 
         // 2) 代入
         for (AssignExpr ae : assigns) {
@@ -119,10 +110,19 @@ public class ValueChangingLineFinder {
         String name = target.isNameExpr() ? target.asNameExpr().getNameAsString()
                 : target.isFieldAccessExpr() ? target.asFieldAccessExpr().getNameAsString()
                 : target.isArrayAccessExpr() ? target.asArrayAccessExpr().getName().toString()
-                : target.toString(); // fallback（最後の手段）
+                : null;
 
-        return name.equals(v.variableName());
+        if(name == null || !name.equals(v.variableName())) return false;
+        return (v.isField() ==  target.isFieldAccessExpr());
     }
 
-    private record LineRange(int begin, int end) {}
+    private record LineRange(int begin, int end) {
+        LineRange {
+            if (begin > end) {
+                int tmp = begin;
+                begin = end;
+                end = tmp;
+            }
+        }
+    }
 }
