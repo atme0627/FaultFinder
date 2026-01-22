@@ -11,6 +11,9 @@ public sealed interface SuspiciousVariable permits SuspiciousLocalVariable, Susp
     boolean isPrimitive();
     boolean isArray();
     int arrayNth(); // 非配列は -1
+    default boolean isField(){
+        return (this instanceof SuspiciousFieldVariable);
+    }
 
     default String variableName(boolean withThis, boolean withArray) {
         String head = (this instanceof SuspiciousFieldVariable && withThis) ? "this." : "";
