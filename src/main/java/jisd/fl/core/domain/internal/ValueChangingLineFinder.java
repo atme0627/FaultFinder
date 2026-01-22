@@ -56,9 +56,14 @@ public class ValueChangingLineFinder {
         ClassElementName locate = v.locateClass();
         List<LineRange> ranges = new ArrayList<>();
 
-        // 0) ローカル変数の宣言行（フィールドなら空の想定）
+        // 0-a) ローカル変数の宣言行（フィールドなら空の想定）
         if(v instanceof SuspiciousLocalVariable localVariable) {
             for (int ln : JavaParserUtils.findLocalVariableDeclarationLine(localVariable.locateMethod(), v.variableName())) {
+                ranges.add(new LineRange(ln, ln));
+            }
+        // 0-b) フィールドの宣言行
+        } else {
+            for(int ln : JavaParserUtils.findFieldVariableDeclarationLine(locate, v.variableName())) {
                 ranges.add(new LineRange(ln, ln));
             }
         }
