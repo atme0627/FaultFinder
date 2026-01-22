@@ -19,17 +19,26 @@ public final class SuspiciousFieldVariable implements SuspiciousVariable {
             ClassElementName locateClass,
             String variableName,
             String actualValue,
+            boolean isPrimitive) {
+        this(failedTest, locateClass, variableName, actualValue, isPrimitive, -1);
+    }
+
+    public SuspiciousFieldVariable(
+            MethodElementName failedTest,
+            ClassElementName locateClass,
+            String variableName,
+            String actualValue,
             boolean isPrimitive,
-            boolean isArray,
             int arrayNth) {
         this.failedTest = failedTest;
         this.locateClass = locateClass;
         this.variableName = variableName;
         this.isPrimitive = isPrimitive;
-        this.isArray = isArray;
+        this.isArray = arrayNth >= 1;
         this.arrayNth = arrayNth;
         this.actualValue = actualValue;
     }
+
     @Override public MethodElementName failedTest() { return failedTest; }
     @Override public ClassElementName locateClass() { return locateClass; }
     @Override public String variableName() { return variableName; }

@@ -28,7 +28,6 @@ public final class SuspiciousLocalVariable implements SuspiciousVariable{
         this(failedTest, locateMethod, variableName, actualValue, isPrimitive, isField, -1);
     }
 
-    @Deprecated
     //locateはローカル変数の場合はメソッド名まで(フルネーム、シグニチャあり)
     //フィールドの場合はクラス名まで
     //配列の場合
