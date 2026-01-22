@@ -6,6 +6,7 @@ import jisd.fl.core.entity.element.MethodElementName;
 public sealed interface SuspiciousVariable permits SuspiciousLocalVariable, SuspiciousFieldVariable {
     MethodElementName failedTest();
     ClassElementName locateClass();
+    String variableName();
     String actualValue();
     boolean isPrimitive();
     boolean isArray();
@@ -17,5 +18,4 @@ public sealed interface SuspiciousVariable permits SuspiciousLocalVariable, Susp
         return head + variableName() + arr;
     }
 
-    default String variableName() { return variableName(false, false); }
 }

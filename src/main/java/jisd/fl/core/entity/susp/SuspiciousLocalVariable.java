@@ -57,11 +57,7 @@ public final class SuspiciousLocalVariable implements SuspiciousVariable{
     @Override public boolean isPrimitive() { return isPrimitive; }
     @Override public boolean isArray() { return isArray; }
     @Override public int arrayNth() { return arrayNth; }
-    @Override  public String variableName() { return variableName(false, false); }
-    @Override
-    public String variableName(boolean withThis, boolean withArray) {
-        return (isField() && withThis ? "this." : "") + variableName + (isArray() && withArray ? "[" + arrayNth + "]" : "");
-    }
+    @Override  public String variableName() { return variableName; }
 
     public MethodElementName locateMethod() {
         return locateMethod;
@@ -83,7 +79,6 @@ public final class SuspiciousLocalVariable implements SuspiciousVariable{
             return locateMethod.methodSignature;
         }
     }
-
 
 
     @Override
