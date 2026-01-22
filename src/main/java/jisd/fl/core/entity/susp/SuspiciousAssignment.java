@@ -19,7 +19,7 @@ public class SuspiciousAssignment extends SuspiciousExpression {
             List<String> directNeighborVariableNames,
             List<String> indirectNeighborVariableNames
     ) {
-        super(failedTest, locateMethod, locateLine, assignTarget.getActualValue(), stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
+        super(failedTest, locateMethod, locateLine, assignTarget.actualValue(), stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
         this.assignTarget = assignTarget;
     }
 

@@ -128,7 +128,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
                 }
 
                 //フィールド情報を取得
-                Field field = refType.fieldByName(assignTarget.getSimpleVariableName());
+                Field field = refType.fieldByName(assignTarget.variableName());
                 if(field == null) throw new NoSuchElementException();
 
                 //評価結果を比較
@@ -140,19 +140,19 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
                     if(targetObject == null) throw new RuntimeException("Something is wrong.");
                     evaluatedValue = targetObject.getValue(field).toString();
                 }
-                return evaluatedValue.equals(assignTarget.getActualValue());
+                return evaluatedValue.equals(assignTarget.actualValue());
 
             } else {
                 //ローカル変数を取り出す
                 StackFrame frame = se.thread().frame(0);
                 List<LocalVariable> lvs = frame.visibleVariables();
-                LocalVariable lvalue = lvs.stream().filter(lv -> lv.name().equals(assignTarget.getSimpleVariableName()))
+                LocalVariable lvalue = lvs.stream().filter(lv -> lv.name().equals(assignTarget.variableName()))
                         .findFirst()
                         .orElseThrow();
 
                 //評価結果を比較
                 String evaluatedValue = JDIUtils.getValueString(frame.getValue(lvalue));
-                return evaluatedValue.equals(assignTarget.getActualValue());
+                return evaluatedValue.equals(assignTarget.actualValue());
             }
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException("Target thread must be suspended.");

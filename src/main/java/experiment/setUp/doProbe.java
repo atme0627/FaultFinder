@@ -39,10 +39,10 @@ public class doProbe {
 
             for(int i = 0; i < probeTargets.size(); i++) {
                 SuspiciousLocalVariable target = (SuspiciousLocalVariable) probeTargets.get(i);
-                System.out.println("failedTest " + target.getFailedTest());
+                System.out.println("failedTest " + target.failedTest());
 
                 File outputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probe/" +
-                        target.getFailedTest() + "_" + target.getSimpleVariableName()).toFile();
+                        target.failedTest() + "_" + target.variableName()).toFile();
 
                 if(CACHE) {
                     if (outputFile.exists() && outputFile.length() != 0) {

@@ -24,7 +24,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
      */
     public Optional<SuspiciousArgument> searchSuspiciousArgument(SuspiciousLocalVariable suspVar, MethodElementName calleeMethodName){
         //Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(suspVar.getFailedTest());
+        JUnitDebugger debugger = new JUnitDebugger(suspVar.failedTest());
 
         //探索によって求める値
         MethodElementName[] locateMethod = new MethodElementName[1];
@@ -47,14 +47,14 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
                 }
 
                 //調査対象の変数がactualValueをとっているか確認
-                LocalVariable topVar = topFrame.visibleVariableByName(suspVar.getSimpleVariableName());
+                LocalVariable topVar = topFrame.visibleVariableByName(suspVar.variableName());
                 if(topVar == null) return;
                 Value argValue = topFrame.getValue(topVar);
-                if(!JDIUtils.getValueString(argValue).equals(suspVar.getActualValue())) return;
+                if(!JDIUtils.getValueString(argValue).equals(suspVar.actualValue())) return;
                 //対象の引数のインデックスを取得
                 List<LocalVariable> args = mEntry.method().arguments();
                 for(int idx = 0; idx < args.size(); idx++){
-                    if(args.get(idx).name().equals(suspVar.getSimpleVariableName())){
+                    if(args.get(idx).name().equals(suspVar.variableName())){
                         argIndex[0] = idx;
                     }
                 }
@@ -88,10 +88,10 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
             return Optional.empty();
         }
         return Optional.of(factory.createArgument(
-                suspVar.getFailedTest(),
+                suspVar.failedTest(),
                 locateMethod[0],
                 locateLine[0],
-                suspVar.getActualValue(),
+                suspVar.actualValue(),
                 calleeMethodName,
                 argIndex[0],
                 callCountAfterTarget[0]
