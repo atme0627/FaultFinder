@@ -8,16 +8,14 @@ import com.sun.jdi.request.*;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.infra.jvm.JVMProcess;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
 
 
-public abstract class EnhancedDebugger {
+public abstract class EnhancedDebugger implements Closeable {
     public VirtualMachine vm;
     public JVMProcess p;
+    private volatile boolean closed = false;
 
     public EnhancedDebugger(JVMProcess p, String hostName, String port) {
         this.vm = createVM(hostName, port);
@@ -28,7 +26,6 @@ public abstract class EnhancedDebugger {
         vm.resume();
     }
     protected VirtualMachine createVM(String hostName, String port) {
-        try {
             VirtualMachineManager vmManager = Bootstrap.virtualMachineManager();
             AttachingConnector socket = vmManager.attachingConnectors().stream()
                     .filter(c -> c.name().equals("com.sun.jdi.SocketAttach"))
@@ -36,12 +33,27 @@ public abstract class EnhancedDebugger {
             Map<String, Connector.Argument> args = socket.defaultArguments();
             args.get("hostname").setValue(hostName);
             args.get("port").setValue(port);
-            return socket.attach(args);
+
+            // debuggee が listen を開始する前に attach すると Connection refused になるのでリトライする
+            int maxTry = 50;          // 50 * 50ms = 2.5s
+            long sleepMs = 50;
+
+            for (int i = 0; i < maxTry; i++) {
+                try {
+                    return socket.attach(args);
+                } catch (IOException e) {
+                    try {
+                        Thread.sleep(sleepMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException(ie);
+                    }
+                } catch (IllegalConnectorArgumentsException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            throw new RuntimeException("Failed to attach debugger (Connection refused). host=" + hostName + " port=" + port);
         }
-        catch (IOException | IllegalConnectorArgumentsException e){
-            throw new RuntimeException(e);
-        }
-    }
 
     /**
      * プレークポイントを行で指定し、ヒットした場合handlerで指定された処理を行う
@@ -107,6 +119,8 @@ public abstract class EnhancedDebugger {
         } catch (VMDisconnectedException ignored) {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
+        } finally {
+            close();
         }
     }
 
@@ -144,7 +158,36 @@ public abstract class EnhancedDebugger {
                 }
                 eventSet.resume();
             } catch (VMDisconnectedException | InterruptedException e) {
+                close();
                 break;
+            }
+        }
+    }
+
+    @Override
+    public void close() {
+        if(closed) return;
+        closed = true;
+
+        //VMを止める
+        try {
+            if (vm != null){
+                try {
+                    vm.dispose();
+                } catch (VMDisconnectedException ignored) {
+                }
+            }
+        } finally {
+            //プロセスを止める
+            if (p != null && p.process != null && p.process.isAlive()) {
+                p.process.destroy();
+                try {
+                    p.process.waitFor();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    if (p.process.isAlive()) p.process.destroyForcibly();
+                }
             }
         }
     }
