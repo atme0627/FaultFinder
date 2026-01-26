@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class JUnitDebugger extends EnhancedDebugger {
     static private final String hostName = "localhost";
-    static private final String port = "5000";
+    static private final String port = "5001";
 
     public JUnitDebugger(MethodElementName testMethod) {
         super(createJVM(testMethod, hostName, port), hostName, port);

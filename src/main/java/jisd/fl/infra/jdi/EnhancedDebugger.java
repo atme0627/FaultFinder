@@ -83,6 +83,7 @@ public abstract class EnhancedDebugger {
                 for (Event ev : eventSet) {
                     //VMStartEventは無視
                     if (ev instanceof VMStartEvent) {
+                        vm.resume();
                         continue;
                     }
                     //ブレークポイントを設置したいクラスがロードされたら対象の行にBPを置く
