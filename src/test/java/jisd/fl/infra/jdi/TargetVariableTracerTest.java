@@ -52,7 +52,7 @@ class TargetVariableTracerTest {
 
     @Test
     @Timeout(20)
-    void observes_pre_state_at_assignment_lines() throws Exception {
+    void observes_post_state_at_assignment_lines() throws Exception {
         // 対象：failedTest_for_tracing 内の x
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#failedTest_for_tracing()");
 
@@ -66,22 +66,21 @@ class TargetVariableTracerTest {
         TargetVariableTracer tracer = new TargetVariableTracer();
         List<TracedValue> traced = tracer.traceValuesOfTarget(sv);
 
-        // 宣言行マーカー（現状仕様の固定）
-        // ※宣言行で実測できない場合、"null" が入る設計だったのでそれを固定
-        assertTrue(hasValueAtLine(traced, lineDeclX, "null") || hasAnyAtLine(traced, lineDeclX),
-                "宣言行を踏んだことがトレースに現れるべき（現状仕様: null marker など）");
+        // 宣言行の post-state を観測（int x = 0; の実行後）
+        assertTrue(hasValueAtLine(traced, lineDeclX, "0"),
+                "宣言行 (int x = 0;) の実行後、x は 0 を観測できるべき。 line=" + lineDeclX);
 
-        // 行頭BPで pre-state を観測できることを固定
-        assertTrue(hasValueAtLine(traced, lineAssign10, "0"),
-                "x=10 行の行頭で x は代入前の 0 を観測できるべき。 line=" + lineAssign10);
+        // 各行の post-state を観測できることを固定
+        assertTrue(hasValueAtLine(traced, lineAssign10, "10"),
+                "x=10 行の実行後、x は 10 を観測できるべき。 line=" + lineAssign10);
 
-        assertTrue(hasValueAtLine(traced, lineAssign20, "10"),
-                "x=20 行の行頭で x は代入前の 10 を観測できるべき。 line=" + lineAssign20);
+        assertTrue(hasValueAtLine(traced, lineAssign20, "20"),
+                "x=20 行の実行後、x は 20 を観測できるべき。 line=" + lineAssign20);
     }
 
     @Test
     @Timeout(20)
-    void multiple_statements_in_one_line_stops_before_first_statement() throws Exception {
+    void multiple_statements_in_one_line_observes_post_state() throws Exception {
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#multiple_statements_in_one_line()");
 
         // x = 1; x = 2; は同一行。AST上は AssignExpr が2つとも同じ begin line になるはず
@@ -92,10 +91,10 @@ class TargetVariableTracerTest {
         TargetVariableTracer tracer = new TargetVariableTracer();
         List<TracedValue> traced = tracer.traceValuesOfTarget(sv);
 
-        // earliest codeIndex の Location に BP を張っているので、同一行なら「1つ目の代入の前」で止まる想定
-        // その時点の x は 0 のはず（int x=0; の直後）
-        assertTrue(hasValueAtLine(traced, sameLine, "0"),
-                "同一行の最初の命令の前で止まるなら x は 0 を観測できるべき。 line=" + sameLine);
+        // 同一行の post-state を観測（x = 1; x = 2; の実行後）
+        // Step で次の行に進んだ時点では x = 2 になっているはず
+        assertTrue(hasValueAtLine(traced, sameLine, "2"),
+                "同一行 (x = 1; x = 2;) の実行後、x は 2 を観測できるべき。 line=" + sameLine);
     }
 
     // -------------------------
