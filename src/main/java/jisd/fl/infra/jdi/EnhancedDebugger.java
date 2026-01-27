@@ -138,6 +138,7 @@ public abstract class EnhancedDebugger implements Closeable {
      * @param line    対象の行
      * @param handler プレークポイントがヒットした場合の処理
      */
+    @Deprecated
     public void handleAtBreakPoint(String fqcn, int line, BreakpointHandler handler) {
         handleAtBreakPoint(fqcn, Collections.singletonList(line), handler);
     }
