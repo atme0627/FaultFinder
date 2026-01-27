@@ -10,6 +10,7 @@ import jisd.fl.infra.jvm.JVMProcess;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.Supplier;
 
 
 public abstract class EnhancedDebugger implements Closeable {
@@ -41,6 +42,10 @@ public abstract class EnhancedDebugger implements Closeable {
     }
 
     public void execute() {
+        execute(null);
+    }
+
+    public void execute(Supplier<Boolean> shouldStop) {
         //ロード済みのクラスに対しbreakPointを設定
         EventRequestManager manager = vm.eventRequestManager();
         //通常は一つのはず
@@ -63,6 +68,11 @@ public abstract class EnhancedDebugger implements Closeable {
         EventSet eventSet = null;
         try {
             while((eventSet = queue.remove()) != null) {
+                // 終了条件チェック
+                if (shouldStop != null && shouldStop.get()) {
+                    break;
+                }
+
                 for(Event ev : eventSet) {
                     //VMStartEventは無視
                     if (ev instanceof VMStartEvent) {
@@ -85,6 +95,7 @@ public abstract class EnhancedDebugger implements Closeable {
                         if (eventType.isInstance(ev)) {
                             List<JDIEventHandler<?>> eventHandlers = entry.getValue();
                             for (JDIEventHandler handler : eventHandlers) {
+                                //noinspection unchecked
                                 handler.handle(vm, ev);
                             }
                         }
