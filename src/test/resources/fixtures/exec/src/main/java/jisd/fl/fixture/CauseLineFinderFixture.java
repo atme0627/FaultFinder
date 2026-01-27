@@ -16,10 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class CauseLineFinderFixture {
 
-    // フィールド変数（SuspiciousFieldVariable 用）
-    private int fieldVar;
-    private static int staticFieldVar;
-
     // ===== Pattern 1a: 既存変数への代入 =====
 
     /**
@@ -203,83 +199,29 @@ public class CauseLineFinderFixture {
         assertEquals(999, result);
     }
 
-    /**
-     * Pattern 2-2e: フィールド（汚染済み）を引数として渡す
-     * フィールドが汚染されており、それを引数として渡す
-     */
-    @Test
-    void pattern2_2_contaminated_field_as_argument() {
-        this.fieldVar = calculateWrong();  // フィールドが汚染される
-        int result = calleeMethod(this.fieldVar);  // cause line: 汚染されたフィールドを引数
-        assertEquals(999, result);
-    }
-
     // ===== Field Pattern: フィールド変数への代入 =====
+    // 実際のシナリオ: テスト対象クラス FieldTarget のフィールドが複数メソッドから変更される
 
     /**
-     * Field Pattern 1: 同じクラス内でのフィールド代入
-     * フィールドへの代入行が cause line となる
-     */
-    @Test
-    void field_pattern_same_class_assignment() {
-        this.fieldVar = 42;  // cause line
-        assertEquals(999, this.fieldVar);
-    }
-
-    /**
-     * Field Pattern 2: 別メソッドでフィールドを変更
-     * 別メソッド内でのフィールド代入行が cause line となる
+     * Field Pattern: 別メソッドでフィールドを変更
+     * FieldTarget.setValue() 内でのフィールド代入行が cause line となる
      */
     @Test
     void field_pattern_modified_in_another_method() {
-        modifyField(42);
-        assertEquals(999, this.fieldVar);
+        FieldTarget target = new FieldTarget();
+        target.setValue(42);
+        assertEquals(999, target.value);
     }
 
     /**
-     * Field Pattern 3: staticフィールドへの代入
-     * static フィールドへの代入行が cause line となる
+     * Field Pattern: ネストしたメソッド呼び出しでフィールドを変更
+     * prepareAndSet() が内部で initialize() と setValue() を呼ぶ
      */
     @Test
-    void field_pattern_static_field_assignment() {
-        CauseLineFinderFixture.staticFieldVar = 42;  // cause line
-        assertEquals(999, CauseLineFinderFixture.staticFieldVar);
-    }
-
-    /**
-     * Field Pattern 4: 複数回のフィールド代入
-     * 最後のフィールド代入行が cause line となる
-     */
-    @Test
-    void field_pattern_multiple_field_assignments() {
-        this.fieldVar = 0;
-        this.fieldVar = 10;
-        this.fieldVar = 42;  // cause line
-        assertEquals(999, this.fieldVar);
-    }
-
-    /**
-     * Field Pattern 5: 条件分岐内でのフィールド代入
-     * 条件を満たした場合のフィールド代入行が cause line となる
-     */
-    @Test
-    void field_pattern_conditional_field_assignment() {
-        this.fieldVar = 0;
-        if (true) {
-            this.fieldVar = 42;  // cause line
-        }
-        assertEquals(999, this.fieldVar);
-    }
-
-    /**
-     * Field Pattern 6: 汚染された変数をフィールドに代入
-     * 事前に汚染された変数をフィールドに代入する行が cause line となる
-     */
-    @Test
-    void field_pattern_contaminated_variable_to_field() {
-        int dirty = calculateWrong();  // dirty が汚染される
-        this.fieldVar = dirty;  // cause line
-        assertEquals(999, this.fieldVar);
+    void field_pattern_nested_method_calls() {
+        FieldTarget target = new FieldTarget();
+        target.prepareAndSet(42);
+        assertEquals(999, target.value);
     }
 
     // ===== ヘルパーメソッド =====
@@ -287,10 +229,6 @@ public class CauseLineFinderFixture {
     private int calleeMethod(int param) {
         // param はメソッド内で上書きされない
         return param;
-    }
-
-    private void modifyField(int value) {
-        this.fieldVar = value;  // cause line
     }
 
     private int helperReturnInt() {

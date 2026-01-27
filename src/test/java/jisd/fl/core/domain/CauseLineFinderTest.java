@@ -3,6 +3,7 @@ package jisd.fl.core.domain;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.core.util.PropertyLoader;
@@ -190,7 +191,67 @@ class CauseLineFinderTest {
                 "引数として渡された汚染変数も SuspiciousArgument として検出されるべき");
     }
 
+    // ===== Field Pattern: フィールド変数への代入 =====
+    // 実際のシナリオ: テスト対象クラス FieldTarget のフィールドが複数メソッドから変更される
+
+    private static final String FIELD_TARGET_FQCN = "jisd.fl.fixture.FieldTarget";
+
+    @Test
+    @Timeout(20)
+    void field_pattern_modified_in_another_method() throws Exception {
+        // 別メソッド (setValue) でフィールドが変更されるケース
+        MethodElementName failedTest = new MethodElementName(FIXTURE_FQCN + "#field_pattern_modified_in_another_method()");
+        MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
+        ClassElementName locateClass = new ClassElementName(FIELD_TARGET_FQCN);
+
+        int expectedLine = findFieldAssignLine(setValueMethod, "value", "v");
+
+        SuspiciousFieldVariable sv = new SuspiciousFieldVariable(failedTest, locateClass, "value", "42", true);
+        CauseLineFinder finder = new CauseLineFinder();
+        Optional<SuspiciousExpression> result = finder.find(sv);
+
+        assertTrue(result.isPresent(), "cause line が見つかるべき");
+        assertTrue(result.get() instanceof SuspiciousAssignment, "SuspiciousAssignment であるべき");
+        SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
+        assertEquals(expectedLine, assignment.locateLine,
+                String.format("setValue 内の代入行 (%d) が cause line であるべき", expectedLine));
+    }
+
+    @Test
+    @Timeout(20)
+    void field_pattern_nested_method_calls() throws Exception {
+        // ネストしたメソッド呼び出し: prepareAndSet() → initialize() → setValue()
+        MethodElementName failedTest = new MethodElementName(FIXTURE_FQCN + "#field_pattern_nested_method_calls()");
+        MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
+        ClassElementName locateClass = new ClassElementName(FIELD_TARGET_FQCN);
+
+        int expectedLine = findFieldAssignLine(setValueMethod, "value", "v");
+
+        SuspiciousFieldVariable sv = new SuspiciousFieldVariable(failedTest, locateClass, "value", "42", true);
+        CauseLineFinder finder = new CauseLineFinder();
+        Optional<SuspiciousExpression> result = finder.find(sv);
+
+        assertTrue(result.isPresent(), "cause line が見つかるべき");
+        assertTrue(result.get() instanceof SuspiciousAssignment, "SuspiciousAssignment であるべき");
+        SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
+        assertEquals(expectedLine, assignment.locateLine,
+                String.format("setValue 内の代入行 (%d) が cause line であるべき", expectedLine));
+    }
+
     // ===== AST helpers (行番号導出) =====
+
+    private static int findFieldAssignLine(MethodElementName method, String var, String rhsLiteral) throws NoSuchFileException {
+        BlockStmt bs = JavaParserUtils.extractBodyOfMethod(method);
+        assertNotNull(bs, "method body is null: " + method);
+
+        Optional<AssignExpr> found = bs.findAll(AssignExpr.class).stream()
+                .filter(ae -> targetNameOf(ae.getTarget()).equals(var))
+                .filter(ae -> ae.getValue().toString().equals(rhsLiteral))
+                .findFirst();
+
+        assertTrue(found.isPresent(), "代入行が見つかりません: " + var + " = " + rhsLiteral + " in " + method);
+        return found.get().getBegin().orElseThrow().line;
+    }
 
     private static int findLocalDeclLine(MethodElementName method, String var) throws NoSuchFileException {
         List<Integer> lines = JavaParserUtils.findLocalVariableDeclarationLine(method, var);
