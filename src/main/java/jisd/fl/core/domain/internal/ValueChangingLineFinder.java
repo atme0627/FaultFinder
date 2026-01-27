@@ -110,6 +110,11 @@ public class ValueChangingLineFinder {
      * 対象変数への書き込みかどうかを判定
      * - a[0] = ... は name 部分(a)で一致
      * - this.f = ... は field名で一致
+     *
+     * TODO: static フィールドへの代入（例: `f = 1` や `ClassName.f = 1`）は
+     *       FieldAccessExpr ではなく NameExpr として解析されるため、
+     *       現在の実装では検出されない。static フィールドのサポートが必要な場合は
+     *       NameExpr でもフィールド名と一致するか確認するロジックの追加が必要。
      */
     private static boolean matchesTarget(SuspiciousVariable v, Expression target) {
         String name = target.isNameExpr() ? target.asNameExpr().getNameAsString()

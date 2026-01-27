@@ -8,6 +8,7 @@ import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.infra.javaparser.JavaParserUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -31,21 +32,31 @@ import static org.junit.jupiter.api.Assertions.*;
 class CauseLineFinderTest {
 
     private static final String FIXTURE_FQCN = "jisd.fl.fixture.CauseLineFinderFixture";
+    private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
     private static PropertyLoader.ProjectConfig original;
+
+    private final CauseLineFinder finder = new CauseLineFinder();
 
     @BeforeAll
     static void setUpProjectConfigForFixtures() {
         original = PropertyLoader.getTargetProjectConfig();
 
         var cfg = new PropertyLoader.ProjectConfig(
-                Path.of("/Users/ezaki/IdeaProjects/FaultFinder/src/test/resources/fixtures"),
+                PROJECT_ROOT.resolve("src/test/resources/fixtures"),
                 Path.of("exec/src/main/java"),
                 Path.of("exec/src/main/java"),
-                Path.of("/Users/ezaki/IdeaProjects/FaultFinder/build/classes/java/fixtureExec"),
-                Path.of("/Users/ezaki/IdeaProjects/FaultFinder/build/classes/java/fixtureExec")
+                PROJECT_ROOT.resolve("build/classes/java/fixtureExec"),
+                PROJECT_ROOT.resolve("build/classes/java/fixtureExec")
         );
 
         PropertyLoader.setProjectConfig(cfg);
+    }
+
+    @AfterAll
+    static void restoreProjectConfig() {
+        if (original != null) {
+            PropertyLoader.setProjectConfig(original);
+        }
     }
 
     // ===== Pattern 1a: 既存変数への代入 =====
@@ -56,15 +67,9 @@ class CauseLineFinderTest {
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#pattern1a_simple_assignment()");
         int expectedLine = findAssignLine(m, "x", "42");
 
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(m, m.toString(), "x", "42", true, false);
-        CauseLineFinder finder = new CauseLineFinder();
-        Optional<SuspiciousExpression> result = finder.find(sv);
+        Optional<SuspiciousExpression> result = finder.find(localVar(m, "x", "42"));
 
-        assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousAssignment, "SuspiciousAssignment であるべき");
-        SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
-        assertEquals(expectedLine, assignment.locateLine,
-                String.format("cause line は %d 行目であるべき", expectedLine));
+        assertAssignmentAt(result, expectedLine, "cause line は " + expectedLine + " 行目であるべき");
     }
 
     @Test
@@ -73,15 +78,9 @@ class CauseLineFinderTest {
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#pattern1a_multiple_assignments()");
         int expectedLine = findAssignLine(m, "x", "42");
 
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(m, m.toString(), "x", "42", true, false);
-        CauseLineFinder finder = new CauseLineFinder();
-        Optional<SuspiciousExpression> result = finder.find(sv);
+        Optional<SuspiciousExpression> result = finder.find(localVar(m, "x", "42"));
 
-        assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousAssignment);
-        SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
-        assertEquals(expectedLine, assignment.locateLine,
-                "最後の代入行が cause line であるべき");
+        assertAssignmentAt(result, expectedLine, "最後の代入行が cause line であるべき");
     }
 
     @Test
@@ -90,15 +89,9 @@ class CauseLineFinderTest {
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#pattern1a_conditional_assignment()");
         int expectedLine = findAssignLine(m, "x", "42");
 
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(m, m.toString(), "x", "42", true, false);
-        CauseLineFinder finder = new CauseLineFinder();
-        Optional<SuspiciousExpression> result = finder.find(sv);
+        Optional<SuspiciousExpression> result = finder.find(localVar(m, "x", "42"));
 
-        assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousAssignment);
-        SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
-        assertEquals(expectedLine, assignment.locateLine,
-                "条件分岐内の代入行が cause line であるべき");
+        assertAssignmentAt(result, expectedLine, "条件分岐内の代入行が cause line であるべき");
     }
 
     // ===== Pattern 1b: 宣言時の初期化 =====
@@ -109,15 +102,9 @@ class CauseLineFinderTest {
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#pattern1b_declaration_with_initialization()");
         int expectedLine = findLocalDeclLine(m, "x");
 
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(m, m.toString(), "x", "42", true, false);
-        CauseLineFinder finder = new CauseLineFinder();
-        Optional<SuspiciousExpression> result = finder.find(sv);
+        Optional<SuspiciousExpression> result = finder.find(localVar(m, "x", "42"));
 
-        assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousAssignment);
-        SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
-        assertEquals(expectedLine, assignment.locateLine,
-                "宣言と初期化が同時の行が cause line であるべき");
+        assertAssignmentAt(result, expectedLine, "宣言と初期化が同時の行が cause line であるべき");
     }
 
     @Test
@@ -127,15 +114,9 @@ class CauseLineFinderTest {
         int expectedLine = findLocalDeclLine(m, "x");
 
         // Fixture: int a = 10; int b = 16; int x = a * 2 + b; → x = 36
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(m, m.toString(), "x", "36", true, false);
-        CauseLineFinder finder = new CauseLineFinder();
-        Optional<SuspiciousExpression> result = finder.find(sv);
+        Optional<SuspiciousExpression> result = finder.find(localVar(m, "x", "36"));
 
-        assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousAssignment);
-        SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
-        assertEquals(expectedLine, assignment.locateLine,
-                "複雑な式での初期化行が cause line であるべき");
+        assertAssignmentAt(result, expectedLine, "複雑な式での初期化行が cause line であるべき");
     }
 
     // ===== Pattern 2-1: 引数由来（直接渡す） =====
@@ -146,15 +127,9 @@ class CauseLineFinderTest {
         MethodElementName caller = new MethodElementName(FIXTURE_FQCN + "#pattern2_1_literal_argument()");
         MethodElementName callee = new MethodElementName(FIXTURE_FQCN + "#calleeMethod(int)");
 
-        // calleeMethod 内の param が suspicious variable
-        // failedTest=caller, locateMethod=callee.toString()
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(caller, callee.toString(), "param", "42", true, false);
-        CauseLineFinder finder = new CauseLineFinder();
-        Optional<SuspiciousExpression> result = finder.find(sv);
+        Optional<SuspiciousExpression> result = finder.find(localVarWithCallee(caller, callee, "param", "42"));
 
-        assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousArgument,
-                "引数由来の場合 SuspiciousArgument であるべき");
+        assertArgumentFound(result, "引数由来の場合 SuspiciousArgument であるべき");
     }
 
     @Test
@@ -163,13 +138,9 @@ class CauseLineFinderTest {
         MethodElementName caller = new MethodElementName(FIXTURE_FQCN + "#pattern2_1_variable_argument()");
         MethodElementName callee = new MethodElementName(FIXTURE_FQCN + "#calleeMethod(int)");
 
-        // failedTest=caller, locateMethod=callee.toString()
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(caller, callee.toString(), "param", "42", true, false);
-        CauseLineFinder finder = new CauseLineFinder();
-        Optional<SuspiciousExpression> result = finder.find(sv);
+        Optional<SuspiciousExpression> result = finder.find(localVarWithCallee(caller, callee, "param", "42"));
 
-        assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousArgument);
+        assertArgumentFound(result, "SuspiciousArgument であるべき");
     }
 
     // ===== Pattern 2-2: 引数由来（汚染された変数を渡す） =====
@@ -180,62 +151,63 @@ class CauseLineFinderTest {
         MethodElementName caller = new MethodElementName(FIXTURE_FQCN + "#pattern2_2_contaminated_variable_as_argument()");
         MethodElementName callee = new MethodElementName(FIXTURE_FQCN + "#calleeMethod(int)");
 
-        // calleeMethod 内の param が suspicious variable
-        // failedTest=caller, locateMethod=callee.toString()
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(caller, callee.toString(), "param", "42", true, false);
-        CauseLineFinder finder = new CauseLineFinder();
-        Optional<SuspiciousExpression> result = finder.find(sv);
+        Optional<SuspiciousExpression> result = finder.find(localVarWithCallee(caller, callee, "param", "42"));
 
-        assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousArgument,
-                "引数として渡された汚染変数も SuspiciousArgument として検出されるべき");
+        assertArgumentFound(result, "引数として渡された汚染変数も SuspiciousArgument として検出されるべき");
     }
 
     // ===== Field Pattern: フィールド変数への代入 =====
-    // 実際のシナリオ: テスト対象クラス FieldTarget のフィールドが複数メソッドから変更される
 
     private static final String FIELD_TARGET_FQCN = "jisd.fl.fixture.FieldTarget";
 
     @Test
     @Timeout(20)
     void field_pattern_modified_in_another_method() throws Exception {
-        // 別メソッド (setValue) でフィールドが変更されるケース
         MethodElementName failedTest = new MethodElementName(FIXTURE_FQCN + "#field_pattern_modified_in_another_method()");
         MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
         ClassElementName locateClass = new ClassElementName(FIELD_TARGET_FQCN);
-
         int expectedLine = findAssignLine(setValueMethod, "value", "v");
 
         SuspiciousFieldVariable sv = new SuspiciousFieldVariable(failedTest, locateClass, "value", "42", true);
-        CauseLineFinder finder = new CauseLineFinder();
         Optional<SuspiciousExpression> result = finder.find(sv);
 
-        assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousAssignment, "SuspiciousAssignment であるべき");
-        SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
-        assertEquals(expectedLine, assignment.locateLine,
-                String.format("setValue 内の代入行 (%d) が cause line であるべき", expectedLine));
+        assertAssignmentAt(result, expectedLine, "setValue 内の代入行 (" + expectedLine + ") が cause line であるべき");
     }
 
     @Test
     @Timeout(20)
     void field_pattern_nested_method_calls() throws Exception {
-        // ネストしたメソッド呼び出し: prepareAndSet() → initialize() → setValue()
         MethodElementName failedTest = new MethodElementName(FIXTURE_FQCN + "#field_pattern_nested_method_calls()");
         MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
         ClassElementName locateClass = new ClassElementName(FIELD_TARGET_FQCN);
-
         int expectedLine = findAssignLine(setValueMethod, "value", "v");
 
         SuspiciousFieldVariable sv = new SuspiciousFieldVariable(failedTest, locateClass, "value", "42", true);
-        CauseLineFinder finder = new CauseLineFinder();
         Optional<SuspiciousExpression> result = finder.find(sv);
 
+        assertAssignmentAt(result, expectedLine, "setValue 内の代入行 (" + expectedLine + ") が cause line であるべき");
+    }
+
+    // ===== Test helpers =====
+
+    private SuspiciousLocalVariable localVar(MethodElementName method, String varName, String actual) {
+        return new SuspiciousLocalVariable(method, method.toString(), varName, actual, true, false);
+    }
+
+    private SuspiciousLocalVariable localVarWithCallee(MethodElementName caller, MethodElementName callee, String varName, String actual) {
+        return new SuspiciousLocalVariable(caller, callee.toString(), varName, actual, true, false);
+    }
+
+    private void assertAssignmentAt(Optional<SuspiciousExpression> result, int expectedLine, String message) {
         assertTrue(result.isPresent(), "cause line が見つかるべき");
-        assertTrue(result.get() instanceof SuspiciousAssignment, "SuspiciousAssignment であるべき");
+        assertInstanceOf(SuspiciousAssignment.class, result.get(), "SuspiciousAssignment であるべき");
         SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
-        assertEquals(expectedLine, assignment.locateLine,
-                String.format("setValue 内の代入行 (%d) が cause line であるべき", expectedLine));
+        assertEquals(expectedLine, assignment.locateLine, message);
+    }
+
+    private void assertArgumentFound(Optional<SuspiciousExpression> result, String message) {
+        assertTrue(result.isPresent(), "cause line が見つかるべき");
+        assertInstanceOf(SuspiciousArgument.class, result.get(), message);
     }
 
     // ===== AST helpers (行番号導出) =====
@@ -248,7 +220,7 @@ class CauseLineFinderTest {
 
     private static int findAssignLine(MethodElementName method, String var, String rhsLiteral) throws NoSuchFileException {
         BlockStmt bs = JavaParserUtils.extractBodyOfMethod(method);
-        assertNotNull(bs, "method body is null: " + method);
+        assertNotNull(bs, "メソッド本体が見つかりません: " + method);
 
         Optional<AssignExpr> found = bs.findAll(AssignExpr.class).stream()
                 .filter(ae -> targetNameOf(ae.getTarget()).equals(var))

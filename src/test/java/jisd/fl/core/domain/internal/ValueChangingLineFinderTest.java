@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ValueChangingLineFinderTest {
 
+    private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
     private static PropertyLoader.ProjectConfig original;
 
     @BeforeAll
@@ -25,7 +26,7 @@ public class ValueChangingLineFinderTest {
         original = PropertyLoader.getTargetProjectConfig();
 
         var cfg = new PropertyLoader.ProjectConfig(
-                Path.of("/Users/ezaki/IdeaProjects/FaultFinder/src/test/resources/fixtures"),
+                PROJECT_ROOT.resolve("src/test/resources/fixtures"),
                 Path.of("parse/src/java"),
                 original.testSrcPath(),
                 original.targetBinPath(),
@@ -117,7 +118,7 @@ public class ValueChangingLineFinderTest {
         List<Integer> lines = ValueChangingLineFinder.findBreakpointLines(sv);
 
         for (int ln : IntStream.rangeClosed(begin, end).toArray()) {
-            assertTrue(lines.contains(ln), "missing line: " + ln + " in " + lines);
+            assertTrue(lines.contains(ln), "行が見つかりません: " + ln + " in " + lines);
         }
     }
 
