@@ -195,7 +195,7 @@ class TargetVariableTracerTest {
                 .filter(ae -> ae.getValue().toString().equals(rhsLiteral))
                 .findFirst();
 
-        assertTrue(found.isPresent(), "代入行が見つかりません。: " + var + " = " + rhsLiteral + " in " + method);
+        assertTrue(found.isPresent(), "代入行が見つかりません: " + var + " = " + rhsLiteral + " in " + method);
         return found.get().getBegin().orElseThrow().line;
     }
 
@@ -252,7 +252,7 @@ class TargetVariableTracerTest {
         // 別メソッド (setValue) でフィールドが変更されるケース
         MethodElementName failedTest = new MethodElementName(FIXTURE_FQCN + "#field_modified_in_another_method()");
         MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
-        int lineSetValue = findFieldAssignLineInClass(setValueMethod, "value", "v");
+        int lineSetValue = findAssignLine(setValueMethod, "value", "v");
 
         List<TracedValue> traced = traceFieldVariable(failedTest, "value");
 
@@ -269,9 +269,9 @@ class TargetVariableTracerTest {
         MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
         MethodElementName incrementMethod = new MethodElementName(FIELD_TARGET_FQCN + "#increment()");
 
-        int lineInit = findFieldAssignLineInClass(initMethod, "value", "0");
-        int lineSetValue = findFieldAssignLineInClass(setValueMethod, "value", "v");
-        int lineIncrement = findFieldAssignLineInClass(incrementMethod, "value", "this.value + 1");
+        int lineInit = findAssignLine(initMethod, "value", "0");
+        int lineSetValue = findAssignLine(setValueMethod, "value", "v");
+        int lineIncrement = findAssignLine(incrementMethod, "value", "this.value + 1");
 
         List<TracedValue> traced = traceFieldVariable(failedTest, "value");
 
@@ -297,8 +297,8 @@ class TargetVariableTracerTest {
         MethodElementName initMethod = new MethodElementName(FIELD_TARGET_FQCN + "#initialize()");
         MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
 
-        int lineInit = findFieldAssignLineInClass(initMethod, "value", "0");
-        int lineSetValue = findFieldAssignLineInClass(setValueMethod, "value", "v");
+        int lineInit = findAssignLine(initMethod, "value", "0");
+        int lineSetValue = findAssignLine(setValueMethod, "value", "v");
 
         List<TracedValue> traced = traceFieldVariable(failedTest, "value");
 
@@ -320,18 +320,5 @@ class TargetVariableTracerTest {
                 variableName, DUMMY_ACTUAL_VALUE, true);
         TargetVariableTracer tracer = new TargetVariableTracer();
         return tracer.traceValuesOfTarget(sv);
-    }
-
-    private static int findFieldAssignLineInClass(MethodElementName method, String var, String rhsLiteral) throws NoSuchFileException {
-        BlockStmt bs = JavaParserUtils.extractBodyOfMethod(method);
-        assertNotNull(bs, "method body is null: " + method);
-
-        Optional<AssignExpr> found = bs.findAll(AssignExpr.class).stream()
-                .filter(ae -> targetNameOf(ae.getTarget()).equals(var))
-                .filter(ae -> ae.getValue().toString().equals(rhsLiteral))
-                .findFirst();
-
-        assertTrue(found.isPresent(), "代入行が見つかりません: " + var + " = " + rhsLiteral + " in " + method);
-        return found.get().getBegin().orElseThrow().line;
     }
 }

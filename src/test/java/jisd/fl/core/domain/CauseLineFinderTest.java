@@ -204,7 +204,7 @@ class CauseLineFinderTest {
         MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
         ClassElementName locateClass = new ClassElementName(FIELD_TARGET_FQCN);
 
-        int expectedLine = findFieldAssignLine(setValueMethod, "value", "v");
+        int expectedLine = findAssignLine(setValueMethod, "value", "v");
 
         SuspiciousFieldVariable sv = new SuspiciousFieldVariable(failedTest, locateClass, "value", "42", true);
         CauseLineFinder finder = new CauseLineFinder();
@@ -225,7 +225,7 @@ class CauseLineFinderTest {
         MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
         ClassElementName locateClass = new ClassElementName(FIELD_TARGET_FQCN);
 
-        int expectedLine = findFieldAssignLine(setValueMethod, "value", "v");
+        int expectedLine = findAssignLine(setValueMethod, "value", "v");
 
         SuspiciousFieldVariable sv = new SuspiciousFieldVariable(failedTest, locateClass, "value", "42", true);
         CauseLineFinder finder = new CauseLineFinder();
@@ -239,19 +239,6 @@ class CauseLineFinderTest {
     }
 
     // ===== AST helpers (行番号導出) =====
-
-    private static int findFieldAssignLine(MethodElementName method, String var, String rhsLiteral) throws NoSuchFileException {
-        BlockStmt bs = JavaParserUtils.extractBodyOfMethod(method);
-        assertNotNull(bs, "method body is null: " + method);
-
-        Optional<AssignExpr> found = bs.findAll(AssignExpr.class).stream()
-                .filter(ae -> targetNameOf(ae.getTarget()).equals(var))
-                .filter(ae -> ae.getValue().toString().equals(rhsLiteral))
-                .findFirst();
-
-        assertTrue(found.isPresent(), "代入行が見つかりません: " + var + " = " + rhsLiteral + " in " + method);
-        return found.get().getBegin().orElseThrow().line;
-    }
 
     private static int findLocalDeclLine(MethodElementName method, String var) throws NoSuchFileException {
         List<Integer> lines = JavaParserUtils.findLocalVariableDeclarationLine(method, var);
