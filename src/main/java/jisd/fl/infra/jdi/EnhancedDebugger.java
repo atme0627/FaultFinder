@@ -17,7 +17,7 @@ public abstract class EnhancedDebugger implements Closeable {
     public JVMProcess p;
     private volatile boolean closed = false;
 
-    private final Map<Class<? extends Event>, List<JDIEventhandler<? extends Event>>> handlers = new HashMap<>();
+    private final Map<Class<? extends Event>, List<JDIEventHandler<? extends Event>>> handlers = new HashMap<>();
     private final Set<Integer> breakpointLines = new HashSet<>();
     //breakpointは単一のクラスにのみ置く想定
     private String targetClass;
@@ -27,7 +27,7 @@ public abstract class EnhancedDebugger implements Closeable {
         this.p = p;
     }
 
-    public void registerEventHandler(Class<? extends Event> eventType, JDIEventhandler<? extends Event> handler) {
+    public void registerEventHandler(Class<? extends Event> eventType, JDIEventHandler<? extends Event> handler) {
         handlers.computeIfAbsent(eventType, k -> new ArrayList<>()).add(handler);
     }
 
@@ -36,10 +36,68 @@ public abstract class EnhancedDebugger implements Closeable {
         this.breakpointLines.addAll(lines);
     }
 
-
-    public void execute() {
+    public void executeTMP() {
         vm.resume();
     }
+
+    public void execute() {
+        //ロード済みのクラスに対しbreakPointを設定
+        EventRequestManager manager = vm.eventRequestManager();
+        //通常は一つのはず
+        List<ReferenceType> loaded = vm.classesByName(targetClass);
+        for (ReferenceType rt : loaded) {
+            for(int line : breakpointLines) {
+                setBreakpointIfLoaded(rt, manager, line);
+            }
+        }
+
+        //未ロードのクラスがロードされたタイミングを監視
+        //ロードされたらbreakpointをセットする予定
+        ClassPrepareRequest cpr = manager.createClassPrepareRequest();
+        cpr.addClassFilter(targetClass);
+        cpr.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        cpr.enable();
+
+        // 統合イベントループ
+        EventQueue queue = vm.eventQueue();
+        EventSet eventSet = null;
+        try {
+            while((eventSet = queue.remove()) != null) {
+                for(Event ev : eventSet) {
+                    //VMStartEventは無視
+                    if (ev instanceof VMStartEvent) {
+                        continue;
+                    }
+                    //ブレークポイントを設置したいクラスがロードされたら対象の行にBPを置く
+                    if (ev instanceof ClassPrepareEvent cpe) {
+                        ReferenceType ref = cpe.referenceType();
+                        if (ref.name().equals(targetClass)) {
+                            for(int line : breakpointLines) {
+                                setBreakpointIfLoaded(ref, manager, line);
+                            }
+                        }
+                        continue;
+                    }
+
+                    //登録されたハンドラを実行
+                    Class<? extends Event> eventType = ev.getClass();
+                    List<JDIEventHandler<? extends Event>> eventHandlers = handlers.get(eventType);
+                    if(eventHandlers != null){
+                        for(JDIEventHandler<? extends Event> handler : eventHandlers){
+                            handler.handle(vm, ev);
+                        }
+                    }
+                }
+                vm.resume();
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (VMDisconnectedException ignored) {
+        } finally {
+            close();
+        }
+    }
+
     protected VirtualMachine createVM(String hostName, String port) {
             VirtualMachineManager vmManager = Bootstrap.virtualMachineManager();
             AttachingConnector socket = vmManager.attachingConnectors().stream()
@@ -91,7 +149,6 @@ public abstract class EnhancedDebugger implements Closeable {
                 setBreakpointIfLoaded(rt, manager, line);
             }
         }
-
         //未ロードのクラスがロードされたタイミングを監視
         //ロードされたらbreakpointをセットする予定
         ClassPrepareRequest cpr = manager.createClassPrepareRequest();
@@ -100,7 +157,7 @@ public abstract class EnhancedDebugger implements Closeable {
         cpr.enable();
 
         //リクエストが立ったらVMをスタート
-        execute();
+        executeTMP();
 
         //イベントループ
         EventQueue queue = vm.eventQueue();
@@ -154,7 +211,7 @@ public abstract class EnhancedDebugger implements Closeable {
         methodEntryRequest.enable();
 
         //Requestが経ったらDebuggeeスレッドを再開
-        execute();
+        executeTMP();
 
         EventQueue queue = vm.eventQueue();
         while (true) {
