@@ -125,7 +125,8 @@ class CauseLineFinderTest {
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#pattern1b_complex_expression_initialization()");
         int expectedLine = findLocalDeclLine(m, "x");
 
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(m, m.toString(), "x", "42", true, false);
+        // Fixture: int a = 10; int b = 16; int x = a * 2 + b; → x = 36
+        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(m, m.toString(), "x", "36", true, false);
         CauseLineFinder finder = new CauseLineFinder();
         Optional<SuspiciousExpression> result = finder.find(sv);
 
@@ -145,7 +146,8 @@ class CauseLineFinderTest {
         MethodElementName callee = new MethodElementName(FIXTURE_FQCN + "#calleeMethod(int)");
 
         // calleeMethod 内の param が suspicious variable
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(callee, caller.toString(), "param", "42", true, false);
+        // failedTest=caller, locateMethod=callee.toString()
+        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(caller, callee.toString(), "param", "42", true, false);
         CauseLineFinder finder = new CauseLineFinder();
         Optional<SuspiciousExpression> result = finder.find(sv);
 
@@ -160,7 +162,8 @@ class CauseLineFinderTest {
         MethodElementName caller = new MethodElementName(FIXTURE_FQCN + "#pattern2_1_variable_argument()");
         MethodElementName callee = new MethodElementName(FIXTURE_FQCN + "#calleeMethod(int)");
 
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(callee, caller.toString(), "param", "42", true, false);
+        // failedTest=caller, locateMethod=callee.toString()
+        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(caller, callee.toString(), "param", "42", true, false);
         CauseLineFinder finder = new CauseLineFinder();
         Optional<SuspiciousExpression> result = finder.find(sv);
 
@@ -177,7 +180,8 @@ class CauseLineFinderTest {
         MethodElementName callee = new MethodElementName(FIXTURE_FQCN + "#calleeMethod(int)");
 
         // calleeMethod 内の param が suspicious variable
-        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(callee, caller.toString(), "param", "42", true, false);
+        // failedTest=caller, locateMethod=callee.toString()
+        SuspiciousLocalVariable sv = new SuspiciousLocalVariable(caller, callee.toString(), "param", "42", true, false);
         CauseLineFinder finder = new CauseLineFinder();
         Optional<SuspiciousExpression> result = finder.find(sv);
 
