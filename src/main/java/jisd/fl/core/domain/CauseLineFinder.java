@@ -55,7 +55,7 @@ public class CauseLineFinder {
         //代入の実行後にactualの値に変化している行の特定(ない場合あり)
         Optional<TracedValue> changeToActualLine = valueChangedToActualLine(target, tracedValues, target.actualValue());
         //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
-        if (!changeToActualLine.isEmpty()) {
+        if (changeToActualLine.isPresent()) {
             //原因行
             TracedValue causeLine = changeToActualLine.get();
             int causeLineNumber = causeLine.lineNumber;
@@ -81,10 +81,10 @@ public class CauseLineFinder {
 
     private Optional<TracedValue> valueChangedToActualLine(SuspiciousVariable target, List<TracedValue> tracedValues, String actual) {
         //対象の変数に値の変化が起きている行の特定
-        List<Integer> assignedLine = ValueChangingLineFinder.find(target);
+        List<Integer> assignedLine = ValueChangingLineFinder.findCauseLines(target);
         return tracedValues.stream()
                 .filter(tv -> assignedLine.contains(tv.lineNumber))
-                .filter(tv -> tv.value.equals(actual))
+                .filter(tv -> !tv.value.equals(actual))
                 .max(TracedValue::compareTo);
     }
 
