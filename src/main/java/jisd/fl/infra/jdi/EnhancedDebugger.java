@@ -17,12 +17,27 @@ public abstract class EnhancedDebugger implements Closeable {
     public JVMProcess p;
     private volatile boolean closed = false;
 
+    private final Map<Class<? extends Event>, List<JDIEventhandler<? extends Event>>> handlers = new HashMap<>();
+    private final Set<Integer> breakpointLines = new HashSet<>();
+    //breakpointは単一のクラスにのみ置く想定
+    private String targetClass;
+
     public EnhancedDebugger(JVMProcess p, String hostName, String port) {
         this.vm = createVM(hostName, port);
         this.p = p;
     }
 
-    public void run() {
+    public void registerEventHandler(Class<? extends Event> eventType, JDIEventhandler<? extends Event> handler) {
+        handlers.computeIfAbsent(eventType, k -> new ArrayList<>()).add(handler);
+    }
+
+    public void setBreakpoints(String fqcn, List<Integer> lines) {
+        this.targetClass = fqcn;
+        this.breakpointLines.addAll(lines);
+    }
+
+
+    public void execute() {
         vm.resume();
     }
     protected VirtualMachine createVM(String hostName, String port) {
@@ -85,7 +100,7 @@ public abstract class EnhancedDebugger implements Closeable {
         cpr.enable();
 
         //リクエストが立ったらVMをスタート
-        run();
+        execute();
 
         //イベントループ
         EventQueue queue = vm.eventQueue();
@@ -139,7 +154,7 @@ public abstract class EnhancedDebugger implements Closeable {
         methodEntryRequest.enable();
 
         //Requestが経ったらDebuggeeスレッドを再開
-        run();
+        execute();
 
         EventQueue queue = vm.eventQueue();
         while (true) {
