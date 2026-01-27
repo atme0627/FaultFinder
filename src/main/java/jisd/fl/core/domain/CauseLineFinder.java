@@ -53,11 +53,11 @@ public class CauseLineFinder {
     private Optional<SuspiciousExpression> searchProbeLine(SuspiciousVariable target, List<TracedValue> tracedValues) {
         /* 1a. すでに定義されていた変数に代入が行われたパターン */
         //代入の実行後にactualの値に変化している行の特定(ない場合あり)
-        List<TracedValue> changeToActualLines = valueChangedToActualLine(target, tracedValues, target.actualValue());
+        Optional<TracedValue> changeToActualLine = valueChangedToActualLine(target, tracedValues, target.actualValue());
         //代入の実行後にactualの値に変化している行あり -> その中で最後に実行された行がprobe line
-        if (!changeToActualLines.isEmpty()) {
+        if (!changeToActualLine.isEmpty()) {
             //原因行
-            TracedValue causeLine = changeToActualLines.get(changeToActualLines.size() - 1);
+            TracedValue causeLine = changeToActualLine.get();
             int causeLineNumber = causeLine.lineNumber;
             return Optional.of(resultIfAssigned(target, causeLineNumber));
         }
@@ -79,20 +79,13 @@ public class CauseLineFinder {
     }
 
 
-    private List<TracedValue> valueChangedToActualLine(SuspiciousVariable target, List<TracedValue> tracedValues, String actual) {
+    private Optional<TracedValue> valueChangedToActualLine(SuspiciousVariable target, List<TracedValue> tracedValues, String actual) {
         //対象の変数に値の変化が起きている行の特定
         List<Integer> assignedLine = ValueChangingLineFinder.find(target);
-        List<TracedValue> changedToActualLines = new ArrayList<>();
-        for (int i = 0; i < tracedValues.size() - 1; i++) {
-            TracedValue watchingLine = tracedValues.get(i);
-            //watchingLineでは代入が行われていない -> 原因行ではない
-            if (!assignedLine.contains(watchingLine.lineNumber)) continue;
-            //次の行で値がactualに変わっている -> その行が原因行の候補
-            TracedValue afterAssignLine = tracedValues.get(i + 1);
-            if (afterAssignLine.value.equals(actual)) changedToActualLines.add(watchingLine);
-        }
-        changedToActualLines.sort(TracedValue::compareTo);
-        return changedToActualLines;
+        return tracedValues.stream()
+                .filter(tv -> assignedLine.contains(tv.lineNumber))
+                .filter(tv -> tv.value.equals(actual))
+                .max(TracedValue::compareTo);
     }
 
 
