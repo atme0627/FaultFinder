@@ -140,8 +140,4 @@ class TargetVariableTracerTest {
                 .filter(tv -> tv.lineNumber == line)
                 .anyMatch(tv -> expectedValue.equals(tv.value));
     }
-
-    private static boolean hasAnyAtLine(List<TracedValue> traced, int line) {
-        return traced.stream().anyMatch(tv -> tv.lineNumber == line);
-    }
 }
