@@ -79,14 +79,17 @@ public abstract class EnhancedDebugger implements Closeable {
                         continue;
                     }
 
-                    //登録されたハンドラを実行
-                    Class<? extends Event> eventType = ev.getClass();
-                    List<JDIEventHandler<? extends Event>> eventHandlers = handlers.get(eventType);
-                    if(eventHandlers != null){
-                        for(JDIEventHandler<? extends Event> handler : eventHandlers){
-                            handler.handle(vm, ev);
+                    // 登録されたハンドラーを実行
+                    for (Map.Entry<Class<? extends Event>, List<JDIEventHandler<?>>> entry : handlers.entrySet()) {
+                        Class<? extends Event> eventType = entry.getKey();
+                        if (eventType.isInstance(ev)) {
+                            List<JDIEventHandler<?>> eventHandlers = entry.getValue();
+                            for (JDIEventHandler handler : eventHandlers) {
+                                handler.handle(vm, ev);
+                            }
                         }
                     }
+
                 }
                 vm.resume();
             }
