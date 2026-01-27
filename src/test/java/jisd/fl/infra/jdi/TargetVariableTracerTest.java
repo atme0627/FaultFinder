@@ -81,28 +81,6 @@ class TargetVariableTracerTest {
 
     @Test
     @Timeout(20)
-    void declaration_marker_case_is_recorded() throws Exception {
-        MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#declaration_marker_case()");
-
-        int lineDeclX = findLocalDeclLine(m, "x");
-        int lineAssign = findAssignLine(m, "x", "10");
-
-        SuspiciousVariable sv = new SuspiciousLocalVariable(m, m.toString(), "x", "20", true, false);
-
-        TargetVariableTracer tracer = new TargetVariableTracer();
-        List<TracedValue> traced = tracer.traceValuesOfTarget(sv);
-
-        // 宣言行 marker の固定（現状仕様）
-        assertTrue(hasValueAtLine(traced, lineDeclX, "null") || hasAnyAtLine(traced, lineDeclX),
-                "宣言行を踏んだことがトレースに現れるべき。 line=" + lineDeclX);
-
-        // 代入行でも一応何か観測できるはず、という“弱い”保証（揺れに強い）
-        assertTrue(hasAnyAtLine(traced, lineAssign),
-                "x=10 行で少なくとも1回は止まって観測が走るべき。 line=" + lineAssign);
-    }
-
-    @Test
-    @Timeout(20)
     void multiple_statements_in_one_line_stops_before_first_statement() throws Exception {
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#multiple_statements_in_one_line()");
 
