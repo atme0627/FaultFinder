@@ -11,12 +11,16 @@ import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.infra.jdi.JDISuspiciousArgumentsSearcher;
 import jisd.fl.infra.jdi.TargetVariableTracer;
 import jisd.fl.core.entity.TracedValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.NoSuchFileException;
 import java.util.List;
 import java.util.Optional;
 
 public class CauseLineFinder {
+    private static final Logger logger = LoggerFactory.getLogger(CauseLineFinder.class);
+
     private final SuspiciousExpressionFactory factory;
     private final SuspiciousArgumentsSearcher suspiciousArgumentsSearcher;
     private final TargetVariableTracer tracer;
@@ -82,7 +86,7 @@ public class CauseLineFinder {
 
         //fieldは代入以外での値の変更を特定できない
         if (target instanceof SuspiciousFieldVariable) {
-            System.err.println("Cannot find probe line of field. [FIELD NAME] " + target.variableName());
+            logger.warn("Cannot find probe line of field. [FIELD NAME] {}", target.variableName());
             return Optional.empty();
         }
 
@@ -91,9 +95,9 @@ public class CauseLineFinder {
         //初めて変数が観測された時点ですでにactualの値を取っている
         return resultIfNotAssigned(localVariable);
 
-        /* 3. throw内などブレークポイントが置けない行で、代入が行われているパターン */
-//            System.err.println("There is no value which same to actual.");
-//            return Optional.empty();
+        // TODO: Pattern 3 の実装
+        // throw内などブレークポイントが置けない行で、代入が行われているパターンへの対応
+        // 現在は未実装。静的解析の拡張が必要。
     }
 
 
@@ -152,12 +156,7 @@ public class CauseLineFinder {
     private Optional<SuspiciousExpression> resultIfNotAssigned(SuspiciousLocalVariable target) {
         //実行しているメソッド名を取得
         MethodElementName locateMethodElementName = target.locateMethod();
-        Optional<SuspiciousArgument> result = suspiciousArgumentsSearcher.searchSuspiciousArgument(target, locateMethodElementName);
-        if(result.isEmpty()){
-            return Optional.empty();
-        }
-        else {
-            return Optional.of(result.get());
-        }
+        return suspiciousArgumentsSearcher.searchSuspiciousArgument(target, locateMethodElementName)
+                .map(arg -> arg);
     }
 }
