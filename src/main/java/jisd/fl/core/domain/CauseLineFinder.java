@@ -13,19 +13,37 @@ import jisd.fl.infra.jdi.TargetVariableTracer;
 import jisd.fl.core.entity.TracedValue;
 
 import java.nio.file.NoSuchFileException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class CauseLineFinder {
-    SuspiciousExpressionFactory factory;
-    SuspiciousArgumentsSearcher suspiciousArgumentsSearcher;
-    TargetVariableTracer tracer;
+    private final SuspiciousExpressionFactory factory;
+    private final SuspiciousArgumentsSearcher suspiciousArgumentsSearcher;
+    private final TargetVariableTracer tracer;
 
+    /**
+     * 依存性注入用のコンストラクタ
+     * テスト時や特定の実装を注入したい場合に使用
+     */
+    public CauseLineFinder(
+            SuspiciousExpressionFactory factory,
+            SuspiciousArgumentsSearcher suspiciousArgumentsSearcher,
+            TargetVariableTracer tracer) {
+        this.factory = factory;
+        this.suspiciousArgumentsSearcher = suspiciousArgumentsSearcher;
+        this.tracer = tracer;
+    }
+
+    /**
+     * デフォルトコンストラクタ
+     * 標準的な実装を使用する
+     */
     public CauseLineFinder() {
-        this.factory = new JavaParserSuspiciousExpressionFactory();
-        this.suspiciousArgumentsSearcher = new JDISuspiciousArgumentsSearcher();
-        this.tracer = new TargetVariableTracer();
+        this(
+            new JavaParserSuspiciousExpressionFactory(),
+            new JDISuspiciousArgumentsSearcher(),
+            new TargetVariableTracer()
+        );
     }
     /**
      * 与えられたSuspiciousVariableに対して、その直接的な原因となるExpressionをSuspiciousExpressionとして返す
@@ -84,7 +102,7 @@ public class CauseLineFinder {
         List<Integer> assignedLine = ValueChangingLineFinder.findCauseLines(target);
         return tracedValues.stream()
                 .filter(tv -> assignedLine.contains(tv.lineNumber))
-                .filter(tv -> !tv.value.equals(actual))
+                .filter(tv -> tv.value.equals(actual))
                 .max(TracedValue::compareTo);
     }
 
