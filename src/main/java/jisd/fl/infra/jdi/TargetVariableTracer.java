@@ -3,7 +3,9 @@ package jisd.fl.infra.jdi;
 import com.sun.jdi.*;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.StepEvent;
+import jisd.fl.core.domain.internal.ValueChangingLineFinder;
 import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
@@ -22,26 +24,27 @@ public class TargetVariableTracer {
     public TargetVariableTracer() {
     }
 
-    //TODO: field未対応
     public List<TracedValue> traceValuesOfTarget(SuspiciousVariable target) {
-        if(!(target instanceof SuspiciousLocalVariable localVariable)) throw new RuntimeException("Field variable has not been supported.");
-        //targetVariableのVariableDeclaratorを特定
-        MethodElementName targetMethod = localVariable.locateMethod();
-        List<Integer> vdLines = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, localVariable.variableName());
-        List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(localVariable);
+        // ブレークポイントを設置する行を決定
+        List<Integer> canSetLines;
+        if (target instanceof SuspiciousLocalVariable localVariable) {
+            // ローカル変数: メソッド内の変更行
+            canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(localVariable);
+        } else {
+            // フィールド: クラス全体の変更行
+            canSetLines = ValueChangingLineFinder.findBreakpointLines(target);
+        }
 
-        //step後に観測した値が、どの行の実行によるものだったのかを記録する。
+        // step後に観測した値が、どの行の実行によるものだったのかを記録する。
         // マルチスレッドに備えて、Thread -> line のmapで管理
         final Map<ThreadReference, Integer> stepSourceLine = new HashMap<>();
 
-
-
-        //Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(localVariable.failedTest());
+        // Debugger生成
+        JUnitDebugger debugger = new JUnitDebugger(target.failedTest());
         List<TracedValue> result = new ArrayList<>();
 
-        //ブレークポイント設定
-        debugger.setBreakpoints(localVariable.locateClass().fullyQualifiedClassName(), canSetLines);
+        // ブレークポイント設定
+        debugger.setBreakpoints(target.locateClass().fullyQualifiedClassName(), canSetLines);
 
         //BreakPointEvent handler を登録
         debugger.registerEventHandler(BreakpointEvent.class, (vm, event) -> {
@@ -64,7 +67,7 @@ public class TargetVariableTracer {
                 // post-state を観測
                 StackFrame frame = stepEvent.thread().frame(0);
                 Optional<TracedValue> postState = watchVariableInLine(
-                        frame, localVariable, stepSourceLine.get(stepEvent.thread()), LocalDateTime.now());
+                        frame, target, stepSourceLine.get(stepEvent.thread()), LocalDateTime.now());
                 if (postState.isPresent()) {
                     result.add(postState.get());
                 }
@@ -85,9 +88,9 @@ public class TargetVariableTracer {
         return result;
     }
 
-    private Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousLocalVariable sv, int locateLine, LocalDateTime watchedAt) {
+    private Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousVariable sv, int locateLine, LocalDateTime watchedAt) {
         // （1）ローカル変数
-        if (!sv.isField()) {
+        if (sv instanceof SuspiciousLocalVariable) {
             LocalVariable local;
             try {
                 local = frame.visibleVariableByName(sv.variableName());

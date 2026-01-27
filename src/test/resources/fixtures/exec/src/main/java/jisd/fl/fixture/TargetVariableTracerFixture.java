@@ -76,4 +76,40 @@ public class TargetVariableTracerFixture {
     private int helperMethod() {
         return 42;
     }
+
+    // ===== フィールド変数用テストケース =====
+    // 実際のシナリオ: テスト対象クラスのフィールドが複数メソッドから変更される
+
+    /**
+     * 別メソッドでフィールドが変更されるケース
+     */
+    @Test
+    void field_modified_in_another_method() {
+        FieldTarget target = new FieldTarget();
+        target.setValue(42);
+        assertEquals(999, target.value);
+    }
+
+    /**
+     * 複数メソッドから連続してフィールドが変更されるケース
+     */
+    @Test
+    void field_modified_across_multiple_methods() {
+        FieldTarget target = new FieldTarget();
+        target.initialize();         // value = 0
+        target.setValue(10);         // value = 10
+        target.increment();          // value = 11
+        target.setValue(42);         // value = 42
+        assertEquals(999, target.value);
+    }
+
+    /**
+     * ネストしたメソッド呼び出しでフィールドが変更されるケース
+     */
+    @Test
+    void field_modified_in_nested_method_calls() {
+        FieldTarget target = new FieldTarget();
+        target.prepareAndSet(42);    // 内部で initialize() → setValue() を呼ぶ
+        assertEquals(999, target.value);
+    }
 }

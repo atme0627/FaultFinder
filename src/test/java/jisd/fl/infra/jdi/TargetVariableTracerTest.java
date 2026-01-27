@@ -4,7 +4,9 @@ import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.TracedValue;
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.util.PropertyLoader;
@@ -237,5 +239,99 @@ class TargetVariableTracerTest {
 
     private static String assertMsg(String description, int line, List<TracedValue> traced) {
         return String.format("%s (line %d)。traced=%s", description, line, formatTracedValues(traced));
+    }
+
+    // ===== フィールド変数用テスト =====
+    // テスト対象クラス FieldTarget のフィールド value を追跡
+
+    private static final String FIELD_TARGET_FQCN = "jisd.fl.fixture.FieldTarget";
+
+    @Test
+    @Timeout(20)
+    void field_modified_in_another_method() throws Exception {
+        // 別メソッド (setValue) でフィールドが変更されるケース
+        MethodElementName failedTest = new MethodElementName(FIXTURE_FQCN + "#field_modified_in_another_method()");
+        MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
+        int lineSetValue = findFieldAssignLineInClass(setValueMethod, "value", "v");
+
+        List<TracedValue> traced = traceFieldVariable(failedTest, "value");
+
+        assertTrue(hasValueAtLine(traced, lineSetValue, "42"),
+                assertMsg("setValue(42) の実行後、value=42 を観測できるべき", lineSetValue, traced));
+    }
+
+    @Test
+    @Timeout(20)
+    void field_modified_across_multiple_methods() throws Exception {
+        // 複数メソッドから連続してフィールドが変更されるケース
+        MethodElementName failedTest = new MethodElementName(FIXTURE_FQCN + "#field_modified_across_multiple_methods()");
+        MethodElementName initMethod = new MethodElementName(FIELD_TARGET_FQCN + "#initialize()");
+        MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
+        MethodElementName incrementMethod = new MethodElementName(FIELD_TARGET_FQCN + "#increment()");
+
+        int lineInit = findFieldAssignLineInClass(initMethod, "value", "0");
+        int lineSetValue = findFieldAssignLineInClass(setValueMethod, "value", "v");
+        int lineIncrement = findFieldAssignLineInClass(incrementMethod, "value", "this.value + 1");
+
+        List<TracedValue> traced = traceFieldVariable(failedTest, "value");
+
+        // initialize() で 0
+        assertTrue(hasValueAtLine(traced, lineInit, "0"),
+                assertMsg("initialize() の実行後、value=0 を観測できるべき", lineInit, traced));
+        // setValue(10) で 10、その後 setValue(42) で 42
+        assertTrue(hasValueAtLine(traced, lineSetValue, "10"),
+                assertMsg("setValue(10) の実行後、value=10 を観測できるべき", lineSetValue, traced));
+        assertTrue(hasValueAtLine(traced, lineSetValue, "42"),
+                assertMsg("setValue(42) の実行後、value=42 を観測できるべき", lineSetValue, traced));
+        // increment() で 11
+        assertTrue(hasValueAtLine(traced, lineIncrement, "11"),
+                assertMsg("increment() の実行後、value=11 を観測できるべき", lineIncrement, traced));
+    }
+
+    @Test
+    @Timeout(20)
+    void field_modified_in_nested_method_calls() throws Exception {
+        // ネストしたメソッド呼び出しでフィールドが変更されるケース
+        // prepareAndSet() が内部で initialize() と setValue() を呼ぶ
+        MethodElementName failedTest = new MethodElementName(FIXTURE_FQCN + "#field_modified_in_nested_method_calls()");
+        MethodElementName initMethod = new MethodElementName(FIELD_TARGET_FQCN + "#initialize()");
+        MethodElementName setValueMethod = new MethodElementName(FIELD_TARGET_FQCN + "#setValue(int)");
+
+        int lineInit = findFieldAssignLineInClass(initMethod, "value", "0");
+        int lineSetValue = findFieldAssignLineInClass(setValueMethod, "value", "v");
+
+        List<TracedValue> traced = traceFieldVariable(failedTest, "value");
+
+        // prepareAndSet(42) 内の initialize() で 0
+        assertTrue(hasValueAtLine(traced, lineInit, "0"),
+                assertMsg("initialize() の実行後、value=0 を観測できるべき", lineInit, traced));
+        // prepareAndSet(42) 内の setValue(42) で 42
+        assertTrue(hasValueAtLine(traced, lineSetValue, "42"),
+                assertMsg("setValue(42) の実行後、value=42 を観測できるべき", lineSetValue, traced));
+    }
+
+    // -------------------------
+    // Field helpers
+    // -------------------------
+
+    private static List<TracedValue> traceFieldVariable(MethodElementName failedTest, String variableName) {
+        ClassElementName locateClass = new ClassElementName(FIELD_TARGET_FQCN);
+        SuspiciousVariable sv = new SuspiciousFieldVariable(failedTest, locateClass,
+                variableName, DUMMY_ACTUAL_VALUE, true);
+        TargetVariableTracer tracer = new TargetVariableTracer();
+        return tracer.traceValuesOfTarget(sv);
+    }
+
+    private static int findFieldAssignLineInClass(MethodElementName method, String var, String rhsLiteral) throws NoSuchFileException {
+        BlockStmt bs = JavaParserUtils.extractBodyOfMethod(method);
+        assertNotNull(bs, "method body is null: " + method);
+
+        Optional<AssignExpr> found = bs.findAll(AssignExpr.class).stream()
+                .filter(ae -> targetNameOf(ae.getTarget()).equals(var))
+                .filter(ae -> ae.getValue().toString().equals(rhsLiteral))
+                .findFirst();
+
+        assertTrue(found.isPresent(), "代入行が見つかりません: " + var + " = " + rhsLiteral + " in " + method);
+        return found.get().getBegin().orElseThrow().line;
     }
 }
