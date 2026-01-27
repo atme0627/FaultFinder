@@ -1,6 +1,8 @@
 package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
+import com.sun.jdi.event.BreakpointEvent;
+import com.sun.jdi.event.StepEvent;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.TracedValue;
@@ -30,35 +32,64 @@ public class TargetVariableTracer {
         List<Integer> vdLines = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, localVariable.variableName());
         List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(localVariable);
 
+
         //Debugger生成
         JUnitDebugger debugger = new JUnitDebugger(localVariable.failedTest());
         List<TracedValue> result = new ArrayList<>();
 
-        EnhancedDebugger.BreakpointHandler handler = (vm, event) -> {
-            LocalDateTime watchTime = LocalDateTime.now();
+        //ブレークポイント設定
+        debugger.setBreakpoints(localVariable.locateClass().fullyQualifiedClassName(), canSetLines);
+
+        //BreakPointEvent handler を登録
+        debugger.registerEventHandler(BreakpointEvent.class, (vm, event) -> {
+            BreakpointEvent bpEvent = (BreakpointEvent) event;
             try {
-                StackFrame frame = event.thread().frame(0);
-                Optional<TracedValue> v = watchVariableInLine(frame, localVariable, watchTime);
+                StackFrame frame = bpEvent.thread().frame(0);
+                int currentLine = frame.location().lineNumber();
+
+                // pre-state を観測
+                Optional<TracedValue> v = watchVariableInLine(frame,
+                        localVariable, LocalDateTime.now());
                 if (v.isPresent()) {
                     result.add(v.get());
-                    return;
+                } else if (vdLines.contains(currentLine)) {
+                    result.add(new TracedValue(LocalDateTime.now(),
+                            localVariable.variableName(true, true), "null",
+                            currentLine));
                 }
 
-                //実行している行が宣言行の場合、そこを実行したことを示すためnullを追加する
-                if (vdLines.contains(frame.location().lineNumber())) {
-                    result.add(new TracedValue(
-                            watchTime,
-                            localVariable.variableName(true, true),
-                            "null",
-                            frame.location().lineNumber()
-                    ));
+                // StepRequest を作成
+                EnhancedDebugger.createStepOverRequest(vm.eventRequestManager(), bpEvent.thread());
+            }catch (IncompatibleThreadStateException e){
+                throw new RuntimeException(e);
+            }
+        });
+
+        //stepEvent handler を登録
+        debugger.registerEventHandler(StepEvent.class, (vm, event) -> {
+            StepEvent stepEvent = (StepEvent) event;
+            try {
+                // post-state を観測
+                StackFrame frame = stepEvent.thread().frame(0);
+                Optional<TracedValue> postState = watchVariableInLine(
+                        frame, localVariable, LocalDateTime.now());
+                if (postState.isPresent()) {
+                    result.add(postState.get());
                 }
+
+                // StepRequest を削除
+                // （どの StepRequest を削除するか特定が必要）
+                vm.eventRequestManager().stepRequests().forEach(req -> {
+                    req.disable();
+                    vm.eventRequestManager().deleteEventRequest(req);
+                });
+
             } catch (IncompatibleThreadStateException e) {
                 throw new RuntimeException(e);
             }
-        };
+        });
 
-        debugger.handleAtBreakPoint(localVariable.getLocateClass(), canSetLines, handler);
+        debugger.execute();
         return result;
     }
 
