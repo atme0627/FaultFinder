@@ -12,9 +12,7 @@ import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.infra.junit.JUnitDebugger;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * 指定されたsuspiciousVariableに基づき、各行で怪しい変数が取る値を観測、記録する。
@@ -32,6 +30,11 @@ public class TargetVariableTracer {
         List<Integer> vdLines = JavaParserUtils.findLocalVariableDeclarationLine(targetMethod, localVariable.variableName());
         List<Integer> canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(localVariable);
 
+        //step後に観測した値が、どの行の実行によるものだったのかを記録する。
+        // マルチスレッドに備えて、Thread -> line のmapで管理
+        final Map<ThreadReference, Integer> stepSourceLine = new HashMap<>();
+
+
 
         //Debugger生成
         JUnitDebugger debugger = new JUnitDebugger(localVariable.failedTest());
@@ -46,18 +49,7 @@ public class TargetVariableTracer {
             try {
                 StackFrame frame = bpEvent.thread().frame(0);
                 int currentLine = frame.location().lineNumber();
-
-                // pre-state を観測
-                Optional<TracedValue> v = watchVariableInLine(frame,
-                        localVariable, LocalDateTime.now());
-                if (v.isPresent()) {
-                    result.add(v.get());
-                } else if (vdLines.contains(currentLine)) {
-                    result.add(new TracedValue(LocalDateTime.now(),
-                            localVariable.variableName(true, true), "null",
-                            currentLine));
-                }
-
+                stepSourceLine.put(bpEvent.thread(), currentLine);
                 // StepRequest を作成
                 EnhancedDebugger.createStepOverRequest(vm.eventRequestManager(), bpEvent.thread());
             }catch (IncompatibleThreadStateException e){
@@ -72,7 +64,7 @@ public class TargetVariableTracer {
                 // post-state を観測
                 StackFrame frame = stepEvent.thread().frame(0);
                 Optional<TracedValue> postState = watchVariableInLine(
-                        frame, localVariable, LocalDateTime.now());
+                        frame, localVariable, stepSourceLine.get(stepEvent.thread()), LocalDateTime.now());
                 if (postState.isPresent()) {
                     result.add(postState.get());
                 }
@@ -93,8 +85,7 @@ public class TargetVariableTracer {
         return result;
     }
 
-    private Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousLocalVariable sv, LocalDateTime watchedAt) {
-        int locateLine = frame.location().lineNumber();
+    private Optional<TracedValue> watchVariableInLine(StackFrame frame, SuspiciousLocalVariable sv, int locateLine, LocalDateTime watchedAt) {
         // （1）ローカル変数
         if (!sv.isField()) {
             LocalVariable local;
