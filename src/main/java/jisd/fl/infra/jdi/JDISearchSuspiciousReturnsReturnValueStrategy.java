@@ -15,11 +15,14 @@ import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.infra.junit.JUnitDebugger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSuspiciousReturnsStrategy {
+    private static final Logger logger = LoggerFactory.getLogger(JDISearchSuspiciousReturnsReturnValueStrategy.class);
     private final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
 
     // 状態フィールド
@@ -61,9 +64,8 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         debugger.execute(() -> !result.isEmpty());
 
         if (result.isEmpty()) {
-            System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
-                    + "(return value) == " + currentTarget.actualValue
-                    + " ] on " + currentTarget.locateMethod + " line:" + currentTarget.locateLine);
+            logger.warn("戻り値の確認に失敗: actualValue={}, method={}, line={}",
+                    currentTarget.actualValue, currentTarget.locateMethod, currentTarget.locateLine);
         }
         return result;
     }
@@ -129,7 +131,8 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
             );
             resultCandidate.add(suspReturn);
         } catch (RuntimeException e) {
-            System.out.println("cannot create SuspiciousReturnValue: " + e.getMessage() + " at " + invokedMethod + " line:" + locateLine);
+            logger.debug("SuspiciousReturnValue の作成に失敗: {} (method={}, line={})",
+                    e.getMessage(), invokedMethod, locateLine);
         }
     }
 }
