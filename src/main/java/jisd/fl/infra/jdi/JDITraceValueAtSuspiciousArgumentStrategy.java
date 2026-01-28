@@ -15,81 +15,85 @@ import java.util.List;
 
 public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSuspiciousExpressionStrategy {
 
+    // 状態フィールド
+    private List<TracedValue> result;
+    private List<TracedValue> resultCandidate;
+    private SuspiciousArgument currentTarget;
+    private MethodEntryRequest activeMethodEntryRequest;
+    private boolean targetMethodFound;
+
     public List<TracedValue> traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr){
-        SuspiciousArgument suspArg = (SuspiciousArgument) suspExpr;
-        final List<TracedValue> result = new ArrayList<>();
+        // 状態の初期化
+        this.currentTarget = (SuspiciousArgument) suspExpr;
+        this.result = new ArrayList<>();
+        this.resultCandidate = null;
+        this.activeMethodEntryRequest = null;
+        this.targetMethodFound = false;
 
-        //Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(suspArg.failedTest);
-        //調査対象の行実行に到達した時に行う処理を定義
-        EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
-            //既に情報が取得できている場合は終了
-            if(!result.isEmpty()) return;
+        // Debugger生成
+        JUnitDebugger debugger = new JUnitDebugger(currentTarget.failedTest);
 
-            EventRequestManager manager = vm.eventRequestManager();
+        // ハンドラ登録
+        debugger.registerEventHandler(BreakpointEvent.class,
+                (vm, ev) -> handleBreakpoint(vm, (BreakpointEvent) ev));
+        debugger.registerEventHandler(MethodEntryEvent.class,
+                (vm, ev) -> handleMethodEntry(vm, (MethodEntryEvent) ev));
 
-            //メソッドの呼び出しが行われたことを検知するステップリクエストを作成
-            //目的の行であったかの判断は、メソッドに入った時の引数の値で確認する。
-            //calleeのMethodEntryの通知タイミングで、今調査していた行が調べたい行だったかを確認
-            ThreadReference thread = bpe.thread();
-            MethodEntryRequest mEntryReq = EnhancedDebugger.createMethodEntryRequest(manager, thread);
-
-            //周辺の値を観測
-            List<TracedValue> resultCandidate;
-            try {
-                StackFrame frame = thread.frame(0);
-                resultCandidate = JDIUtils.watchAllVariablesInLine(frame, suspArg.locateLine);
-            } catch (IncompatibleThreadStateException e) {
-                throw new RuntimeException(e);
-            }
-
-            //resume してステップイベントを待つ
-            vm.resume();
-            boolean done = false;
-            while (!done) {
-                EventSet es = vm.eventQueue().remove();
-                for (Event ev : es) {
-                    //あるメソッドに入った
-                    if(ev instanceof MethodEntryEvent){
-                        //かつ対象の引数が目的の値を取っている場合、目的の行実行であったとし探索終了
-                        MethodEntryEvent mEntry = (MethodEntryEvent) ev;
-
-                        // 1) 通常メソッドの場合は name() で比較
-                        // 2) コンストラクタの場合は declaringType().name()（FQCN）で比較
-                        boolean isTarget;
-                        Method method = mEntry.method();
-                        if (method.isConstructor()) {
-                            // calleeMethodName には FullyQualifiedClassName を保持している想定
-                            isTarget = method.declaringType().name()
-                                    .equals(suspArg.calleeMethodName.fullyQualifiedClassName());
-                        } else {
-                            isTarget = method.name().equals(suspArg.calleeMethodName.shortMethodName());
-                        }
-
-                        //entryしたメソッドが目的のcalleeメソッドか確認
-                        if(isTarget) {
-                            if (JDIUtils.validateIsTargetExecutionArg(mEntry, suspArg.actualValue, suspArg.argIndex)) {
-                                done = true;
-                                result.addAll(resultCandidate);
-                            }
-                            else {
-                                //ここに到達した時点で、今回の実行は目的の実行でなかった
-                                done = true;
-                            }
-                        }
-                        else {
-                            vm.resume();
-                        }
-
-                    }
-                }
-            };
-            //動的に作ったリクエストを無効化;
-            mEntryReq.disable();
-        };
-
-        //VMを実行し情報を収集
-        debugger.handleAtBreakPoint(suspArg.locateMethod.fullyQualifiedClassName(), suspArg.locateLine, handler);
+        // ブレークポイント設定と実行
+        debugger.setBreakpoints(currentTarget.locateMethod.fullyQualifiedClassName(), List.of(currentTarget.locateLine));
+        debugger.execute(() -> !result.isEmpty());
         return result;
+    }
+
+    private void handleBreakpoint(VirtualMachine vm, BreakpointEvent bpe) {
+        // 既に情報が取得できている場合は終了
+        if (!result.isEmpty()) return;
+
+        // 前回の検索状態をリセット
+        this.targetMethodFound = false;
+
+        EventRequestManager manager = vm.eventRequestManager();
+
+        // メソッドの呼び出しが行われたことを検知する MethodEntryRequest を作成
+        // 目的の行であったかの判断は、メソッドに入った時の引数の値で確認する
+        ThreadReference thread = bpe.thread();
+        activeMethodEntryRequest = EnhancedDebugger.createMethodEntryRequest(manager, thread);
+
+        // 周辺の値を観測
+        try {
+            StackFrame frame = thread.frame(0);
+            resultCandidate = JDIUtils.watchAllVariablesInLine(frame, currentTarget.locateLine);
+        } catch (IncompatibleThreadStateException e) {
+            throw new RuntimeException(e);
+        }
+        // execute() のループが resume を処理
+    }
+
+    private void handleMethodEntry(VirtualMachine vm, MethodEntryEvent mEntry) {
+        // 既に結果が取得できている、または今回のブレークポイントで対象メソッドが見つかった場合はスキップ
+        if (!result.isEmpty() || targetMethodFound) return;
+
+        // 1) 通常メソッドの場合は name() で比較
+        // 2) コンストラクタの場合は declaringType().name()（FQCN）で比較
+        boolean isTarget;
+        Method method = mEntry.method();
+        if (method.isConstructor()) {
+            // calleeMethodName には FullyQualifiedClassName を保持している想定
+            isTarget = method.declaringType().name()
+                    .equals(currentTarget.calleeMethodName.fullyQualifiedClassName());
+        } else {
+            isTarget = method.name().equals(currentTarget.calleeMethodName.shortMethodName());
+        }
+
+        // entryしたメソッドが目的のcalleeメソッドか確認
+        if (isTarget) {
+            targetMethodFound = true;
+            if (JDIUtils.validateIsTargetExecutionArg(mEntry, currentTarget.actualValue, currentTarget.argIndex)) {
+                result.addAll(resultCandidate);
+            }
+            // 一致しない場合は次のブレークポイントへ（現在の実装では同一行の2回目は検出できない）
+            activeMethodEntryRequest.disable();
+        }
+        // isTarget が false の場合は execute() のループが resume を処理し、次の MethodEntryEvent を待つ
     }
 }
