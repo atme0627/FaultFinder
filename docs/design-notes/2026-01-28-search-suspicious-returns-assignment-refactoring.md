@@ -92,7 +92,7 @@ BreakpointEvent
 | loop_identifies_first_execution | ✅ Pass | ループ内で actualValue により実行を特定 |
 | loop_identifies_third_execution | ✅ Pass | ループ内で3回目の実行を特定 |
 | no_method_call_returns_empty | ✅ Pass | メソッド呼び出しがない場合は空リスト |
-| chained_method_calls_collects_return_values | ⏸ Disabled | factory が内部クラスに未対応 |
+| chained_method_calls_collects_return_values | ✅ Pass | 連鎖呼び出しの戻り値収集 |
 
 ## 技術的な議論
 
@@ -115,21 +115,35 @@ BreakpointEvent
 | パフォーマンス | 低（深いコールスタックで悪化） | 高（必要なイベントのみ） |
 | 正確性 | 深さ比較で判定 | 呼び出し元位置で判定 |
 
+### 5. 1行メソッドの ReturnStmt 取得問題の修正
+
+**問題:**
+`chained_method_calls` テストで内部クラスの1行メソッドが失敗:
+```java
+int getValue() { return value; }  // 1行メソッド
+```
+
+`getStatementByLine` が `BlockStmt` `{ return value; }` を返すため、
+`extractExprReturnValue` が `ReturnStmt` を期待して失敗。
+
+**原因:**
+- `BlockStmt` と `ReturnStmt` の両方が同じ行数 (1行)
+- `min(lineCount)` では区別できない
+
+**修正:**
+```java
+.min(Comparator
+    .comparingInt((Statement stmt) -> stmt.getRange().get().getLineCount())
+    .thenComparingInt(stmt ->
+        stmt.getRange().get().end.column - stmt.getRange().get().begin.column));
+```
+
+行数が同じ場合は列スパンが小さい（より具体的な）文を優先。
+これにより `{ return value; }` (BlockStmt) より `return value;` (ReturnStmt) が返される。
+
 ## 今後の課題
 
-### 内部クラス対応
-
-`chained_method_calls` テストが失敗する原因:
-```
-SuspiciousReturnValue の作成に失敗: Cannot extract expression from [{
-    return value;
-}]. (method=...SearchReturnsAssignmentFixture$ChainHelper#getValue(), line=136)
-```
-
-`JavaParserSuspiciousExpressionFactory.createReturnValue()` が `Outer$Inner` 形式の
-FQCN を持つ内部クラスのメソッドからソースコードを抽出できない。
-
-**対応箇所**: `JavaParserUtils` または `JavaParserSuspiciousExpressionFactory`
+現時点で未解決の課題はなし。
 
 ## コミット履歴
 
@@ -139,9 +153,11 @@ FQCN を持つ内部クラスのメソッドからソースコードを抽出で
 4. `refactor: validateIsTargetExecution をフィールド/ローカル変数処理に分割`
 5. `refactor: JDISearchSuspiciousReturnsAssignmentStrategy を StepIn/StepOut パターンに変更`
 6. `test: nested_method_call テストを全戻り値収集に変更`
+7. `fix: getStatementByLine で1行メソッドの ReturnStmt を正しく取得`
 
 ## 関連ファイル
 
 - `src/main/java/jisd/fl/infra/jdi/JDISearchSuspiciousReturnsAssignmentStrategy.java` - 本クラス
+- `src/main/java/jisd/fl/infra/javaparser/JavaParserUtils.java` - getStatementByLine 修正
 - `src/test/java/jisd/fl/infra/jdi/JDISearchSuspiciousReturnsAssignmentStrategyTest.java` - テスト
 - `src/test/resources/fixtures/exec/src/main/java/jisd/fl/fixture/SearchReturnsAssignmentFixture.java` - フィクスチャ
