@@ -104,7 +104,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
                             //ここには到達しないはず
                             throw new RuntimeException("Something is wrong.");
                         }
-                        if(JDIUtils.validateIsTargetExecution(recentMee, suspReturn.actualValue)) result.addAll(resultCandidate);
+                        if(JDIUtils.getValueString(recentMee.returnValue()).equals(suspReturn.actualValue)) result.addAll(resultCandidate);
                         //vmをresumeしない
                     }
                 }

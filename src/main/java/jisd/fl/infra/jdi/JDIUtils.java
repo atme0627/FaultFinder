@@ -2,7 +2,6 @@ package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
 import com.sun.jdi.event.MethodEntryEvent;
-import com.sun.jdi.event.MethodExitEvent;
 import jisd.fl.core.entity.TracedValue;
 
 import java.time.LocalDateTime;
@@ -28,10 +27,6 @@ public class JDIUtils {
             return WRAPPER_CLASS_NAMES.contains(type.name());
         }
         return false;
-    }
-
-    static public boolean validateIsTargetExecution(MethodExitEvent recent, String actualValue){
-        return JDIUtils.getValueString(recent.returnValue()).equals(actualValue);
     }
 
     static public boolean validateIsTargetExecutionArg(MethodEntryEvent mEntry, String actualValue, int argIndex){
