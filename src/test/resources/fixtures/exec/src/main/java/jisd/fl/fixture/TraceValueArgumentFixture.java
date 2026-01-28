@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 4. 引数が actualValue と一致するかチェック
  * 5. 一致したら観測した変数の値を返す
  */
-public class ArgumentStrategyFixture {
+public class TraceValueArgumentFixture {
 
     // ===== 単純な引数 =====
 

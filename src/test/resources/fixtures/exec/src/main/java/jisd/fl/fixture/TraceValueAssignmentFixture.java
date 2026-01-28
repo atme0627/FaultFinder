@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * 主なテスト観点: actualValue による実行の特定が正しく機能するか
  * - 同じ行が複数回実行される場合、正しい実行を特定できるか
  */
-public class AssignmentStrategyFixture {
+public class TraceValueAssignmentFixture {
 
     // ===== actualValue による実行特定のテスト =====
 
