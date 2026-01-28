@@ -35,8 +35,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
 
     // StepIn/StepOut 状態管理
     private boolean steppingIn;        // true: StepIn 完了待ち, false: StepOut 完了待ち
-    private boolean collectingReturn;  // true: MethodExitEvent 待ち
-    private int enteredMethodDepth;    // 入ったメソッドの深さ
+    private int depthAtBreakpoint;     // ブレークポイント地点でのコールスタックの深さ
     @Override
     public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
         // 状態の初期化
@@ -48,8 +47,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         this.activeStepRequest = null;
         this.recentMethodExitEvent = null;
         this.steppingIn = false;
-        this.collectingReturn = false;
-        this.enteredMethodDepth = 0;
+        this.depthAtBreakpoint = 0;
 
         if (!currentTarget.hasMethodCalling()) return result;
 
@@ -86,37 +84,37 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         resultCandidate.clear();
         recentMethodExitEvent = null;
         steppingIn = true;
-        collectingReturn = false;
+
+        // ブレークポイント地点でのコールスタックの深さを取得
+        depthAtBreakpoint = JDIUtils.getCallStackDepth(targetThread);
+
+        // MethodExitRequest を作成（行の処理が完了するまで有効）
+        activeMethodExitRequest = EnhancedDebugger.createMethodExitRequest(manager, targetThread);
 
         // メソッド呼び出しに入るための StepInRequest を作成
         activeStepRequest = EnhancedDebugger.createStepInRequest(manager, targetThread);
     }
 
     private void handleMethodExit(VirtualMachine vm, MethodExitEvent mee) {
-        // 戻り値収集中でない場合はスキップ
-        if (!collectingReturn) return;
-
         // 対象スレッドでない場合はスキップ
         if (!mee.thread().equals(targetThread)) return;
 
         int currentDepth = JDIUtils.getCallStackDepth(mee.thread());
 
-        if (currentDepth == enteredMethodDepth) {
-            // 入ったメソッドからの終了 → 戻り値を収集
+        // 直前の MethodExitEvent を保持（検証用）
+        recentMethodExitEvent = mee;
+
+        if (currentDepth == depthAtBreakpoint + 1) {
+            // 直接呼び出したメソッドの終了 → 戻り値を収集
             collectReturnValue(mee);
-            // MethodExitRequest を無効化（このメソッドの戻り値を取得したので）
-            activeMethodExitRequest.disable();
-            activeMethodExitRequest = null;
-            collectingReturn = false;
-        } else if (currentDepth == enteredMethodDepth - 1) {
+        } else if (currentDepth == depthAtBreakpoint) {
             // 親メソッドの終了 → return 文全体の戻り値で検証
-            recentMethodExitEvent = mee;
             if (validateIsTargetExecution()) {
                 result.addAll(resultCandidate);
             }
+            // MethodExitRequest を無効化
             activeMethodExitRequest.disable();
             activeMethodExitRequest = null;
-            collectingReturn = false;
         }
         // 他の深さのイベントは無視
     }
@@ -146,49 +144,24 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         // 対象位置からの呼び出しかを確認
         if (!isCalledFromTargetLocation(thread)) {
             // メソッドに入っていない、または対象位置からの呼び出しでない
-            // → 行の実行が終わった可能性がある → 親メソッドの終了を待って検証
-            waitForParentMethodExit(manager, thread);
+            // → 行の実行が終わった → 親メソッドの MethodExitEvent を待つ（handleMethodExit で処理）
+            // StepRequest は不要（次の BreakpointEvent を待つ）
             return;
         }
 
-        // 直接呼び出しのメソッドに入った
-        enteredMethodDepth = JDIUtils.getCallStackDepth(thread);
-
-        // このメソッドの戻り値を取得するための MethodExitRequest を作成
-        activeMethodExitRequest = EnhancedDebugger.createMethodExitRequest(manager, thread);
-        collectingReturn = true;
-
-        // メソッドから抜けるための StepOutRequest を作成
+        // 直接呼び出しのメソッドに入った → メソッドから抜けるための StepOutRequest を作成
         activeStepRequest = EnhancedDebugger.createStepOutRequest(manager, thread);
         steppingIn = false;
     }
 
     /**
-     * StepOut 完了後の処理。呼び出し元に戻った状態。
+     * StepOut 完了後の処理。呼び出し元（return 文の行）に戻った状態。
+     * StepOut 完了時は必ず return 文の行にいるはず。
      */
     private void handleStepOutCompleted(EventRequestManager manager, ThreadReference thread, StepEvent se) {
-        int currentLine = se.location().lineNumber();
-
-        if (currentLine == currentTarget.locateLine) {
-            // まだ同じ行にいる → 次のメソッド呼び出しを探す
-            steppingIn = true;
-            activeStepRequest = EnhancedDebugger.createStepInRequest(manager, thread);
-        } else {
-            // 行を離れた → 親メソッドの終了を待って検証
-            waitForParentMethodExit(manager, thread);
-        }
-    }
-
-    /**
-     * 親メソッドの終了を待つ状態に移行する。
-     * return 文全体の戻り値は親メソッドの MethodExitEvent で取得する。
-     */
-    private void waitForParentMethodExit(EventRequestManager manager, ThreadReference thread) {
-        enteredMethodDepth = JDIUtils.getCallStackDepth(thread);
-        activeMethodExitRequest = EnhancedDebugger.createMethodExitRequest(manager, thread);
-        collectingReturn = true;
-        activeStepRequest = EnhancedDebugger.createStepOutRequest(manager, thread);
-        steppingIn = false;
+        // 次のメソッド呼び出しを探す
+        steppingIn = true;
+        activeStepRequest = EnhancedDebugger.createStepInRequest(manager, thread);
     }
 
     /**
