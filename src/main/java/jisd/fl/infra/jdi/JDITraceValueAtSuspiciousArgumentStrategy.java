@@ -87,13 +87,13 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
 
         // entryしたメソッドが目的のcalleeメソッドか確認
         if (isTarget) {
-            targetMethodFound = true;
             if (JDIUtils.validateIsTargetExecutionArg(mEntry, currentTarget.actualValue, currentTarget.argIndex)) {
+                targetMethodFound = true;
                 result.addAll(resultCandidate);
+                activeMethodEntryRequest.disable();
             }
-            // 一致しない場合は次のブレークポイントへ（現在の実装では同一行の2回目は検出できない）
-            activeMethodEntryRequest.disable();
+            // 引数が一致しない場合は検索を続行（同一行の次のメソッド呼び出しを待つ）
         }
-        // isTarget が false の場合は execute() のループが resume を処理し、次の MethodEntryEvent を待つ
+        // isTarget が false の場合も execute() のループが resume を処理し、次の MethodEntryEvent を待つ
     }
 }
