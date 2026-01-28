@@ -12,6 +12,7 @@ import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.parallel.Execution;
@@ -108,6 +109,39 @@ class JDITraceValueAtSuspiciousAssignmentStrategyTest {
         // 2回目のループ: i=1, x=10 の時点で観測
         assertTrue(hasValue(result, "i", "1"), "i=1 を観測できるべき: " + formatResult(result));
         assertTrue(hasValue(result, "x", "10"), "x=10 を観測できるべき: " + formatResult(result));
+    }
+
+    // ===== 同一行に複数代入テスト =====
+    // 既知の制限: JDI のブレークポイントは行単位のため、同じ行の複数操作を区別できない
+
+    @Disabled("JDI の制限: 同じ行の複数代入を区別できない")
+    @Test
+    @Timeout(20)
+    void same_line_multiple_assignments_identifies_first() throws Exception {
+        // actualValue = "1" で1回目の代入を特定
+        MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#same_line_multiple_assignments()");
+        int targetLine = findAssignLine(testMethod, "x", "1");
+
+        List<TracedValue> result = traceAssignment(testMethod, targetLine, "x", "1");
+
+        assertFalse(result.isEmpty(), "結果が空であってはならない");
+        // 1回目の代入前: x=0
+        assertTrue(hasValue(result, "x", "0"), "x=0 を観測できるべき: " + formatResult(result));
+    }
+
+    @Disabled("JDI の制限: 同じ行の複数代入を区別できない")
+    @Test
+    @Timeout(20)
+    void same_line_multiple_assignments_identifies_second() throws Exception {
+        // actualValue = "2" で2回目の代入を特定
+        MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#same_line_multiple_assignments()");
+        int targetLine = findAssignLine(testMethod, "x", "2");
+
+        List<TracedValue> result = traceAssignment(testMethod, targetLine, "x", "2");
+
+        assertFalse(result.isEmpty(), "結果が空であってはならない");
+        // 2回目の代入前: x=1
+        assertTrue(hasValue(result, "x", "1"), "x=1 を観測できるべき: " + formatResult(result));
     }
 
     // ===== 条件分岐テスト =====
