@@ -13,12 +13,15 @@ import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.infra.junit.JUnitDebugger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspiciousReturnsStrategy {
+    private static final Logger logger = LoggerFactory.getLogger(JDISearchSuspiciousReturnsAssignmentStrategy.class);
     private final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
 
     // 状態フィールド
@@ -59,9 +62,8 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
         debugger.execute(() -> !result.isEmpty());
 
         if (result.isEmpty()) {
-            System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
-                    + "(return value) == " + currentTarget.actualValue
-                    + " ] on " + currentTarget.locateMethod + " line:" + currentTarget.locateLine);
+            logger.warn("戻り値の確認に失敗: actualValue={}, method={}, line={}",
+                    currentTarget.actualValue, currentTarget.locateMethod, currentTarget.locateLine);
         }
         return result;
     }
@@ -122,7 +124,8 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
             );
             resultCandidate.add(suspReturn);
         } catch (RuntimeException e) {
-            System.out.println("cannot create SuspiciousReturnValue: " + e.getMessage() + " at " + invokedMethod + " line:" + locateLine);
+            logger.debug("SuspiciousReturnValue の作成に失敗: {} (method={}, line={})",
+                    e.getMessage(), invokedMethod, locateLine);
         }
     }
 
@@ -130,8 +133,8 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
     //TODO: 配列はとりあえず考えない
     static boolean validateIsTargetExecution(StepEvent se, SuspiciousVariable assignTarget){
         try {
-            if (!assignTarget.isPrimitive()) throw new RuntimeException("Reference type has not been supported yet.");
-            if (assignTarget.isArray()) throw new RuntimeException("Array type has not been supported yet.");
+            if (!assignTarget.isPrimitive()) throw new RuntimeException("参照型はまだサポートされていません: " + assignTarget.variableName());
+            if (assignTarget.isArray()) throw new RuntimeException("配列型はまだサポートされていません: " + assignTarget.variableName());
 
             if (assignTarget instanceof SuspiciousFieldVariable) {
                 //フィールドを持つクラスの型情報を取得
@@ -154,7 +157,8 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
                     evaluatedValue = refType.getValue(field).toString();
                 }
                 else {
-                    if(targetObject == null) throw new RuntimeException("Something is wrong.");
+                    if(targetObject == null) throw new RuntimeException(
+                            "インスタンスフィールドの取得にはthisオブジェクトが必要ですが、nullでした: " + assignTarget.variableName());
                     evaluatedValue = targetObject.getValue(field).toString();
                 }
                 return evaluatedValue.equals(assignTarget.actualValue());
@@ -172,9 +176,9 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
                 return evaluatedValue.equals(assignTarget.actualValue());
             }
         } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException("Target thread must be suspended.");
+            throw new RuntimeException("対象スレッドが中断状態ではありません", e);
         } catch (AbsentInformationException e){
-            throw new RuntimeException("Something is wrong.");
+            throw new RuntimeException("デバッグ情報が不足しています（-g オプションでコンパイルされていない可能性）", e);
         } catch (NoSuchElementException e){
             //値がそもそも存在しない --> 目的の実行ではない
             return false;
