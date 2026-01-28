@@ -1,8 +1,7 @@
 package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
-import com.sun.jdi.event.Event;
-import com.sun.jdi.event.EventSet;
+import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.MethodExitEvent;
 import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.request.EventRequestManager;
@@ -20,90 +19,111 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspiciousReturnsStrategy {
-    final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
+    private final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
+
+    // 状態フィールド
+    private List<SuspiciousExpression> result;
+    private List<SuspiciousReturnValue> resultCandidate;
+    private SuspiciousAssignment currentTarget;
+    private int depthBeforeCall;
+    private ThreadReference targetThread;
+    private MethodExitRequest activeMethodExitRequest;
+    private StepRequest activeStepRequest;
+
     @Override
     public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
-        SuspiciousAssignment suspAssign = (SuspiciousAssignment) suspExpr;
-        final List<SuspiciousExpression> result = new ArrayList<>();
-        if(!(suspAssign).hasMethodCalling()) return result;
+        // 状態の初期化
+        this.currentTarget = (SuspiciousAssignment) suspExpr;
+        this.result = new ArrayList<>();
+        this.resultCandidate = new ArrayList<>();
+        this.depthBeforeCall = 0;
+        this.targetThread = null;
+        this.activeMethodExitRequest = null;
+        this.activeStepRequest = null;
 
-        //Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(suspAssign.failedTest);
+        if (!currentTarget.hasMethodCalling()) return result;
 
-        //対象の引数が属する行にたどり着いた時に行う処理を定義
-        //ここではその行で呼ばれてるメソッド情報を抽出
-        EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
-            //既に情報が取得できている場合は終了
-            if(!result.isEmpty()) return;
+        // Debugger生成
+        JUnitDebugger debugger = new JUnitDebugger(currentTarget.failedTest);
 
-            List<SuspiciousReturnValue> resultCandidate = new ArrayList<>();
-            EventRequestManager manager = vm.eventRequestManager();
+        // ハンドラ登録
+        debugger.registerEventHandler(BreakpointEvent.class,
+                (vm, ev) -> handleBreakpoint(vm, (BreakpointEvent) ev));
+        debugger.registerEventHandler(MethodExitEvent.class,
+                (vm, ev) -> handleMethodExit(vm, (MethodExitEvent) ev));
+        debugger.registerEventHandler(StepEvent.class,
+                (vm, ev) -> handleStep(vm, (StepEvent) ev));
 
-            //このスレッドでの MethodExit を記録するリクエストを作成
-            ThreadReference thread = bpe.thread();
-            MethodExitRequest meReq = EnhancedDebugger.createMethodExitRequest(manager, thread);
-            //この行の実行が終わったことを検知するステップリクエストを作成
-            //この具象クラスではステップイベントの通知タイミングで、今調査していた行が調べたい行だったかを確認
-            StepRequest stepReq = EnhancedDebugger.createStepOverRequest(manager, thread);
+        // ブレークポイント設定と実行
+        debugger.setBreakpoints(currentTarget.locateMethod.fullyQualifiedClassName(), List.of(currentTarget.locateLine));
+        debugger.execute(() -> !result.isEmpty());
 
-            // ブレークポイント地点でのコールスタックの深さを取得
-            // 呼び出しメソッドの取得条件を 深さ == depthBeforeCall + 1　にすることで
-            // 再帰呼び出し含め、その行で直接呼ばれたメソッドのみ取ってこれる
-            int depthBeforeCall = JDIUtils.getCallStackDepth(thread);
-
-            //一旦 resume して、内部ループで MethodExit／Step を待つ
-            vm.resume();
-            boolean done = false;
-            while (!done) {
-                EventSet es = vm.eventQueue().remove();
-                for (Event ev : es) {
-                    //実行された、とあるメソッドから抜けた
-                    if (ev instanceof MethodExitEvent) {
-                        MethodExitEvent mee = (MethodExitEvent) ev;
-
-                        //収集するのは指定した行で直接呼び出したメソッドのみ
-                        //depthBeforeCallとコールスタックの深さを比較することで直接呼び出したメソッドかどうかを判定
-                        if (mee.thread().equals(thread) && JDIUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
-                            MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
-                            int locateLine = mee.location().lineNumber();
-                            String actualValue = JDIUtils.getValueString(mee.returnValue());
-                            try {
-                                SuspiciousReturnValue suspReturn = factory.createReturnValue(
-                                        (suspAssign).failedTest,
-                                        invokedMethod,
-                                        locateLine,
-                                        actualValue
-                                );
-                                resultCandidate.add(suspReturn);
-                            } catch (RuntimeException e) {
-                                System.out.println("cannot create SuspiciousReturnValue: " + e.getMessage() + " at " + invokedMethod + " line:" + locateLine);
-                            }
-                        }
-                        vm.resume();
-                    }
-                    //調査対象の行の実行(実行インスタンス)が終了
-                    //ここで、調査した行が目的のものであったかチェック
-                    if (ev instanceof StepEvent) {
-                        done = true;
-                        StepEvent se = (StepEvent) ev;
-                        if(validateIsTargetExecution(se, (suspAssign).assignTarget)) result.addAll(resultCandidate);
-                        //vmをresumeしない
-                    }
-                }
-            }
-            //動的に作ったリクエストを無効化
-            meReq.disable();
-            stepReq.disable();
-        };
-
-        //VMを実行し情報を収集
-        debugger.handleAtBreakPoint((suspAssign).locateMethod.fullyQualifiedClassName(), (suspAssign).locateLine, handler);
-        if(result.isEmpty()){
+        if (result.isEmpty()) {
             System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
-                    + "(return value) == " + (suspAssign).actualValue
-                    + " ] on " + (suspAssign).locateMethod + " line:" + (suspAssign).locateLine);
+                    + "(return value) == " + currentTarget.actualValue
+                    + " ] on " + currentTarget.locateMethod + " line:" + currentTarget.locateLine);
         }
         return result;
+    }
+
+    private void handleBreakpoint(VirtualMachine vm, BreakpointEvent bpe) {
+        // 既に結果が取得できている場合は終了
+        if (!result.isEmpty()) return;
+
+        EventRequestManager manager = vm.eventRequestManager();
+        targetThread = bpe.thread();
+
+        // 検索状態をリセット
+        resultCandidate.clear();
+
+        // ブレークポイント地点でのコールスタックの深さを取得
+        depthBeforeCall = JDIUtils.getCallStackDepth(targetThread);
+
+        // MethodExitRequest と StepOverRequest を作成
+        activeMethodExitRequest = EnhancedDebugger.createMethodExitRequest(manager, targetThread);
+        activeStepRequest = EnhancedDebugger.createStepOverRequest(manager, targetThread);
+    }
+
+    private void handleMethodExit(VirtualMachine vm, MethodExitEvent mee) {
+        // 対象スレッドでない場合はスキップ
+        if (!mee.thread().equals(targetThread)) return;
+
+        // 直接呼び出したメソッドのみ収集
+        if (JDIUtils.getCallStackDepth(mee.thread()) == depthBeforeCall + 1) {
+            collectReturnValue(mee);
+        }
+    }
+
+    private void handleStep(VirtualMachine vm, StepEvent se) {
+        // リクエストを無効化
+        activeMethodExitRequest.disable();
+        activeStepRequest.disable();
+
+        // 目的の実行かを検証
+        if (validateIsTargetExecution(se, currentTarget.assignTarget)) {
+            result.addAll(resultCandidate);
+        }
+        // 結果が空の場合は次の BreakpointEvent を待つ
+    }
+
+    /**
+     * MethodExitEvent から戻り値を収集し、resultCandidate に追加する。
+     */
+    private void collectReturnValue(MethodExitEvent mee) {
+        MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
+        int locateLine = mee.location().lineNumber();
+        String actualValue = JDIUtils.getValueString(mee.returnValue());
+        try {
+            SuspiciousReturnValue suspReturn = factory.createReturnValue(
+                    currentTarget.failedTest,
+                    invokedMethod,
+                    locateLine,
+                    actualValue
+            );
+            resultCandidate.add(suspReturn);
+        } catch (RuntimeException e) {
+            System.out.println("cannot create SuspiciousReturnValue: " + e.getMessage() + " at " + invokedMethod + " line:" + locateLine);
+        }
     }
 
     //この行の評価結果( = assignTargetへ代入された値)がactualValueと一致するか確認
