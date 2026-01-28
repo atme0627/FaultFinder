@@ -63,108 +63,61 @@ public void execute() {
 ### 3. import 追加
 - `java.util.function.Supplier` を EnhancedDebugger に追加
 
-## 次のステップ（未着手）
+## 完了した追加作業（2026-01-28）
 
-### 1. テストケースの作成
+### 4. テストケースの作成 ✅
 
-Assignment 戦略のリファクタリング前に、現状の動作を保証するテストを作成する。
+Assignment 戦略のリファクタリング前に、現状の動作を保証するテストを作成。
 
-テスト観点:
-- 単純な代入文 (`x = 1`)
-- 式を含む代入 (`x = a + b`)
-- メソッド呼び出しを含む代入 (`x = compute(y)`)
-- ローカル変数への代入
-- フィールドへの代入
-- 複数回実行される代入（ループ内）
+**作成したファイル:**
+- `src/test/java/jisd/fl/infra/jdi/JDITraceValueAtSuspiciousAssignmentStrategyTest.java`
+- `src/test/resources/fixtures/exec/src/main/java/jisd/fl/fixture/AssignmentStrategyFixture.java`
 
-### 2. Assignment 戦略の書き換え
+**テストケース（10件）:**
+- ループ内の代入（actualValue による実行特定）
+- 条件分岐による代入パス
+- メソッド呼び出しを含む代入
+- フィールドへの複数回代入
 
-**目指す構造:**
-```java
-public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAtSuspiciousExpressionStrategy {
+### 5. Assignment 戦略の execute() ベースへの移行 ✅
 
-    // 状態フィールド
-    private List<TracedValue> result;
-    private List<TracedValue> resultCandidate;
-    private SuspiciousAssignment currentTarget;
-    private StepRequest activeStepRequest;
-    private boolean done;
+段階的にリファクタリングを実施:
 
-    public List<TracedValue> traceAllValuesAtSuspExpr(SuspiciousExpression suspExpr) {
-        // 初期化
-        SuspiciousAssignment suspAssign = (SuspiciousAssignment) suspExpr;
-        this.result = new ArrayList<>();
-        this.resultCandidate = null;
-        this.currentTarget = suspAssign;
-        this.activeStepRequest = null;
-        this.done = false;
+1. **状態をフィールドに抽出**: result, resultCandidate, currentTarget, activeStepRequest
+2. **BreakpointHandler を別メソッドに抽出**: handleBreakpoint()
+3. **StepEvent 処理を別メソッドに抽出**: handleStep()
+4. **registerEventHandler + execute() に切り替え**: handleAtBreakPoint() を廃止
+5. **内部イベントループを削除**: 統合イベントループを使用
 
-        JUnitDebugger debugger = new JUnitDebugger(suspAssign.failedTest);
-
-        // ハンドラ登録
-        debugger.registerEventHandler(BreakpointEvent.class, this::handleBreakpoint);
-        debugger.registerEventHandler(StepEvent.class, this::handleStep);
-
-        // ブレークポイント設定
-        debugger.setBreakpoints(
-            suspAssign.locateMethod.fullyQualifiedClassName(),
-            List.of(suspAssign.locateLine)
-        );
-
-        // 実行（終了条件付き）
-        debugger.execute(() -> done);
-
-        return result;
-    }
-
-    private void handleBreakpoint(VirtualMachine vm, BreakpointEvent bpe) {
-        if (done) return;
-
-        // 周辺変数を観測
-        try {
-            StackFrame frame = bpe.thread().frame(0);
-            resultCandidate = JDIUtils.watchAllVariablesInLine(frame, currentTarget.locateLine);
-        } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException(e);
-        }
-
-        // StepRequest 作成
-        EventRequestManager manager = vm.eventRequestManager();
-        activeStepRequest = EnhancedDebugger.createStepOverRequest(manager, bpe.thread());
-    }
-
-    private void handleStep(VirtualMachine vm, StepEvent se) {
-        if (done) return;
-
-        // 検証
-        if (validateIsTargetExecution(se, currentTarget.assignTarget)) {
-            result.addAll(resultCandidate);
-            done = true;
-        }
-
-        // StepRequest 無効化
-        if (activeStepRequest != null) {
-            activeStepRequest.disable();
-            activeStepRequest = null;
-        }
-
-        // 候補をクリア（次のブレークポイント用）
-        resultCandidate = null;
-    }
-
-    // validateIsTargetExecution は現状のまま
-}
+**最終的な構造:**
+```
+execute() の統合イベントループ
+    ├─ BreakpointEvent → handleBreakpoint()
+    └─ StepEvent → handleStep()
 ```
 
-### 3. ReturnValue / Argument 戦略の対応
+### 6. validateIsTargetExecution のリファクタリング ✅
 
-Assignment 戦略が完了後、同様のリファクタリングを行う。
+- メソッド分割: getAssignedValue, getFieldValue, getLocalVariableValue
+- 値取得を `JDIUtils.getValueString()` に統一
+- frame 取得の重複を削除
+- エラーメッセージを具体的に改善（原因チェーン追加）
+- Javadoc を追加
+
+## 次のステップ（未着手）
+
+### ReturnValue / Argument 戦略の対応
+
+Assignment 戦略と同様のリファクタリングを行う:
+- execute() ベースへの移行
+- ハンドラの分離
+- validateIsTargetExecution の統一
 
 ## 関連ファイル
 
 - `src/main/java/jisd/fl/infra/jdi/JDIEventHandler.java` - 変更済み
 - `src/main/java/jisd/fl/infra/jdi/EnhancedDebugger.java` - 変更済み
-- `src/main/java/jisd/fl/infra/jdi/JDITraceValueAtSuspiciousAssignmentStrategy.java` - 次に変更予定
+- `src/main/java/jisd/fl/infra/jdi/JDITraceValueAtSuspiciousAssignmentStrategy.java` - **リファクタリング完了**
 - `src/main/java/jisd/fl/core/domain/internal/ValueAtSuspiciousExpressionTracer.java` - Facade クラス
 
 ## 議論で決まったこと
