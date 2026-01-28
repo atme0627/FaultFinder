@@ -129,59 +129,71 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
         }
     }
 
-    //この行の評価結果( = assignTargetへ代入された値)がactualValueと一致するか確認
-    //TODO: 配列はとりあえず考えない
-    static boolean validateIsTargetExecution(StepEvent se, SuspiciousVariable assignTarget){
+    /**
+     * 代入先変数の現在値が actualValue と一致するか検証する。
+     * 一致すれば目的の実行であると判断する。
+     *
+     * @return 目的の実行であれば true
+     */
+    static boolean validateIsTargetExecution(StepEvent se, SuspiciousVariable assignTarget) {
+        // TODO: 配列はとりあえず考えない
+        if (!assignTarget.isPrimitive()) {
+            throw new RuntimeException("参照型はまだサポートされていません: " + assignTarget.variableName());
+        }
+        if (assignTarget.isArray()) {
+            throw new RuntimeException("配列型はまだサポートされていません: " + assignTarget.variableName());
+        }
+
         try {
-            if (!assignTarget.isPrimitive()) throw new RuntimeException("参照型はまだサポートされていません: " + assignTarget.variableName());
-            if (assignTarget.isArray()) throw new RuntimeException("配列型はまだサポートされていません: " + assignTarget.variableName());
-
-            if (assignTarget instanceof SuspiciousFieldVariable) {
-                //フィールドを持つクラスの型情報を取得
-                ReferenceType refType;
-                StackFrame frame = se.thread().frame(0);
-                ObjectReference targetObject = frame.thisObject();
-                if (targetObject != null) {
-                    refType = targetObject.referenceType();
-                } else {
-                    refType = frame.location().declaringType();
-                }
-
-                //フィールド情報を取得
-                Field field = refType.fieldByName(assignTarget.variableName());
-                if(field == null) throw new NoSuchElementException();
-
-                //評価結果を比較
-                String evaluatedValue;
-                if(field.isStatic()){
-                    evaluatedValue = refType.getValue(field).toString();
-                }
-                else {
-                    if(targetObject == null) throw new RuntimeException(
-                            "インスタンスフィールドの取得にはthisオブジェクトが必要ですが、nullでした: " + assignTarget.variableName());
-                    evaluatedValue = targetObject.getValue(field).toString();
-                }
-                return evaluatedValue.equals(assignTarget.actualValue());
-
-            } else {
-                //ローカル変数を取り出す
-                StackFrame frame = se.thread().frame(0);
-                List<LocalVariable> lvs = frame.visibleVariables();
-                LocalVariable lvalue = lvs.stream().filter(lv -> lv.name().equals(assignTarget.variableName()))
-                        .findFirst()
-                        .orElseThrow();
-
-                //評価結果を比較
-                String evaluatedValue = JDIUtils.getValueString(frame.getValue(lvalue));
-                return evaluatedValue.equals(assignTarget.actualValue());
-            }
+            StackFrame frame = se.thread().frame(0);
+            String evaluatedValue = (assignTarget instanceof SuspiciousFieldVariable)
+                    ? getFieldValue(frame, assignTarget.variableName())
+                    : getLocalVariableValue(frame, assignTarget.variableName());
+            return evaluatedValue.equals(assignTarget.actualValue());
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException("対象スレッドが中断状態ではありません", e);
-        } catch (AbsentInformationException e){
+        } catch (AbsentInformationException e) {
             throw new RuntimeException("デバッグ情報が不足しています（-g オプションでコンパイルされていない可能性）", e);
-        } catch (NoSuchElementException e){
-            //値がそもそも存在しない --> 目的の実行ではない
+        } catch (NoSuchElementException e) {
+            // 変数が存在しない → 目的の実行ではない
             return false;
         }
+    }
+
+    /**
+     * フィールド変数の値を取得する。
+     */
+    private static String getFieldValue(StackFrame frame, String fieldName) {
+        ObjectReference thisObject = frame.thisObject();
+        ReferenceType refType = (thisObject != null)
+                ? thisObject.referenceType()
+                : frame.location().declaringType();
+
+        Field field = refType.fieldByName(fieldName);
+        if (field == null) {
+            throw new NoSuchElementException("フィールドが見つかりません: " + fieldName);
+        }
+
+        if (field.isStatic()) {
+            return refType.getValue(field).toString();
+        } else {
+            if (thisObject == null) {
+                throw new RuntimeException(
+                        "インスタンスフィールドの取得にはthisオブジェクトが必要ですが、nullでした: " + fieldName);
+            }
+            return thisObject.getValue(field).toString();
+        }
+    }
+
+    /**
+     * ローカル変数の値を取得する。
+     */
+    private static String getLocalVariableValue(StackFrame frame, String variableName)
+            throws AbsentInformationException {
+        LocalVariable localVar = frame.visibleVariables().stream()
+                .filter(lv -> lv.name().equals(variableName))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("ローカル変数が見つかりません: " + variableName));
+        return JDIUtils.getValueString(frame.getValue(localVar));
     }
 }
