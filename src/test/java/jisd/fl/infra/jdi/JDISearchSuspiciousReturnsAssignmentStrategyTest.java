@@ -156,7 +156,6 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
 
     // ===== 連鎖メソッド呼び出しテスト =====
 
-    @Disabled("factory.createReturnValue が内部クラスのメソッドに対応していない")
     @Test
     @Timeout(20)
     void chained_method_calls_collects_return_values() throws Exception {

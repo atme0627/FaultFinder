@@ -59,13 +59,17 @@ public class JavaParserUtils {
     }
 
     //その行を含む最小範囲のStatementを返す
+    //行数が同じ場合は、列スパンが小さい（より具体的な）文を優先
     public static Optional<Statement> getStatementByLine(ClassElementName targetClass, int line) throws NoSuchFileException {
         return extractNode(targetClass, Statement.class)
                 .stream()
                 .filter(stmt -> stmt.getRange().isPresent())
                 .filter(stmt -> (stmt.getBegin().get().line <= line))
                 .filter(stmt -> (stmt.getEnd().get().line >= line))
-                .min(Comparator.comparingInt(stmt -> stmt.getRange().get().getLineCount()));
+                .min(Comparator
+                        .comparingInt((Statement stmt) -> stmt.getRange().get().getLineCount())
+                        .thenComparingInt(stmt ->
+                                stmt.getRange().get().end.column - stmt.getRange().get().begin.column));
     }
 
     //あるメソッド内の特定の変数の定義行の番号を取得する。
