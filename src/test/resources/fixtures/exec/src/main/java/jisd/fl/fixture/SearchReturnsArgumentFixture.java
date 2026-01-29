@@ -154,6 +154,33 @@ public class SearchReturnsArgumentFixture {
         return n * 2;  // 3*2=6, 6*2=12
     }
 
+    // ===== callee メソッドがネストして呼ばれる =====
+
+    /**
+     * callee メソッドが引数内にもネストして呼ばれるケース
+     * target8(helper2(target8(3)))
+     * 内側の target8(3) → 4, helper2(4) → 8, 外側の target8(8) → 9
+     * 外側の target8 の引数は 8
+     *
+     * 既知の問題: 内側の target8 の MethodEntryEvent で callee チェックが通り、
+     * 引数 3 != actualValue 8 で検証失敗、disableRequests() される。
+     * その後の外側 target8 の検証が行われない。
+     */
+    @Test
+    void nested_callee() {
+        int result;
+        result = target8(helper2(target8(3)));  // target line: target8 がネスト
+        assertEquals(999, result);
+    }
+
+    private int target8(int n) {
+        return n + 1;  // 3+1=4, 8+1=9
+    }
+
+    private int helper2(int n) {
+        return n * 2;  // 4*2=8
+    }
+
     // ===== メソッド呼び出しを含まない引数 =====
 
     /**

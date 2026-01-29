@@ -4,6 +4,7 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.Method;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.MethodEntryRequest;
@@ -22,6 +23,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspiciousReturnsStrategy {
+    private final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
+
+    // 状態フィールド
+    private List<SuspiciousExpression> result;
+    private List<SuspiciousReturnValue> resultCandidate;
+    private SuspiciousArgument currentTarget;
+    private ThreadReference targetThread;
+    private MethodExitRequest activeMethodExitRequest;
+    private StepRequest activeStepRequest;
+    private MethodEntryRequest activeMethodEntryRequest;
+    private int callCount;
 
     //引数のindexを指定してその引数の評価の直前でsuspendするのは激ムズなのでやらない
     //引数を区別せず、引数の評価の際に呼ばれたすべてのメソッドについて情報を取得し
@@ -29,143 +41,152 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
     //ex.) expressionがx.f(y.g())の時、fのみとる。y.g()はfの探索の後行われるはず
     @Override
     public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
-        SuspiciousArgument suspArg = (SuspiciousArgument) suspExpr;
-        SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
-        final List<SuspiciousExpression> result = new ArrayList<>();
-        if(!(suspArg).hasMethodCalling()) return result;
+        // 状態の初期化
+        this.currentTarget = (SuspiciousArgument) suspExpr;
+        this.result = new ArrayList<>();
+        this.resultCandidate = new ArrayList<>();
+        this.targetThread = null;
+        this.activeMethodExitRequest = null;
+        this.activeStepRequest = null;
+        this.activeMethodEntryRequest = null;
+        this.callCount = 0;
 
-        //探索対象のmethod名リストを取得
-        List<String> targetMethodName = (suspArg).targetMethodNames();
-        //対象の引数内の最初のmethodCallがstmtで何番目か
-        int targetCallCount = (suspArg).targetCallCount;
-        //methodCallの回数をカウント
-        int[] callCount = new int[]{0};
+        if (!currentTarget.hasMethodCalling()) return result;
 
-        //Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(suspArg.failedTest);
-        //調査対象の行実行に到達した時に行う処理を定義
-        EnhancedDebugger.BreakpointHandler handler = (vm, bpe) -> {
-            //既に情報が取得できている場合は終了
-            if(!result.isEmpty()) return;
+        // Debugger生成
+        JUnitDebugger debugger = new JUnitDebugger(currentTarget.failedTest);
 
-            List<SuspiciousReturnValue> resultCandidate = new ArrayList<>();
-            EventRequestManager manager = vm.eventRequestManager();
+        // ハンドラ登録
+        debugger.registerEventHandler(BreakpointEvent.class,
+                (vm, ev) -> handleBreakpoint(vm, (BreakpointEvent) ev));
+        debugger.registerEventHandler(MethodEntryEvent.class,
+                (vm, ev) -> handleMethodEntry(vm, (MethodEntryEvent) ev));
+        debugger.registerEventHandler(MethodExitEvent.class,
+                (vm, ev) -> handleMethodExit(vm, (MethodExitEvent) ev));
+        debugger.registerEventHandler(StepEvent.class,
+                (vm, ev) -> handleStep(vm, (StepEvent) ev));
 
-            //このスレッドでの MethodExit を記録するリクエストを作成
-            ThreadReference thread = bpe.thread();
-            MethodExitRequest meReq = EnhancedDebugger.createMethodExitRequest(manager, thread);
-            //メソッドの呼び出しが行われたことを検知するステップリクエストを作成
-            //ステップイベントの通知タイミングで、今調査していた行が調べたい行だったかを確認
-            StepRequest stepReq = EnhancedDebugger.createStepOverRequest(manager, thread);
-            //目的の行であったかの判断は、メソッドに入った時の引数の値で確認する。
-            MethodEntryRequest mEntryReq = EnhancedDebugger.createMethodEntryRequest(manager, thread);
+        // ブレークポイント設定と実行
+        debugger.setBreakpoints(currentTarget.locateMethod.fullyQualifiedClassName(), List.of(currentTarget.locateLine));
+        debugger.execute(() -> !result.isEmpty());
 
-            //一旦 resume して、内部ループで MethodExit／Step を待つ
-            vm.resume();
-
-            //直前に通知されたMethodEntryEventを保持
-
-            boolean done = false;
-            while (!done) {
-                EventSet es = vm.eventQueue().remove();
-                boolean doResume = true;
-                for (Event ev : es) {
-                    //あるメソッドに入った
-                    if(ev instanceof MethodEntryEvent){
-                        //かつ対象の引数が目的の値を取っている場合、目的の行実行であったとし探索終了
-                        MethodEntryEvent mEntry = (MethodEntryEvent) ev;
-
-                        // 1) 通常メソッドの場合は name() で比較
-                        // 2) コンストラクタの場合は declaringType().name()（FQCN）で比較
-                        boolean isTarget;
-                        Method method = mEntry.method();
-                        if (method.isConstructor()) {
-                            // calleeMethodName には FullyQualifiedClassName を保持している想定
-                            isTarget = method.declaringType().name()
-                                    .equals((suspArg).calleeMethodName.fullyQualifiedClassName());
-                        } else {
-                            isTarget = method.name().equals((suspArg).calleeMethodName.shortMethodName());
-                        }
-
-                        //entryしたメソッドが目的のcalleeメソッドか確認
-                        if(isTarget) {
-                            if (JDIUtils.validateIsTargetExecutionArg(mEntry, (suspArg).actualValue, (suspArg).argIndex)) {
-                                done = true;
-                                result.addAll(resultCandidate);
-                                //vmをresumeしない
-                                doResume = false;
-                            }
-                            else {
-                                //ここに到達した時点で、今回の実行は目的の実行でなかった
-                                done = true;
-                                //vmをresumeしない
-                                doResume = false;
-                            }
-                        }
-                    }
-                    //あるメソッドから抜けた
-                    if (ev instanceof MethodExitEvent) {
-                        callCount[0]++;
-                        MethodExitEvent mee = (MethodExitEvent) ev;
-                        StackFrame caller = null;
-                        try {
-                            //thread()がsuspendされていないと例外を投げる
-                            //普通は成功するはず
-                            //waitForThreadPreparation(mee.thread());
-                            caller = mee.thread().frame(1);
-                        } catch (IncompatibleThreadStateException e) {
-                            throw new RuntimeException("Target thread must be suspended.");
-                        }
-
-                        //収集するのは指定した行で直接呼び出したメソッドのみ
-                        if (mee.thread().equals(thread) && caller.location().method().equals(bpe.location().method())) {
-                            if(callCount[0] >= targetCallCount) {
-                                //targetMethodのみ収集
-                                if (targetMethodName.contains(mee.method().name())) {
-                                    MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
-                                    int locateLine = mee.location().lineNumber();
-                                    String actualValue = JDIUtils.getValueString(mee.returnValue());
-                                    try {
-                                        SuspiciousReturnValue suspReturn = factory.createReturnValue(
-                                                (suspArg).failedTest,
-                                                invokedMethod,
-                                                locateLine,
-                                                actualValue
-                                        );
-                                        resultCandidate.add(suspReturn);
-                                    }
-                                    catch (RuntimeException e){
-                                        System.out.println("cannot create SuspiciousReturnValue: " + e.getMessage() + " at " + invokedMethod + " line:" + locateLine);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    //調査対象の行の実行が終了
-                    //ここに到達した時点で、今回の実行は目的の実行でなかった
-                    if (ev instanceof StepEvent) {
-                        done = true;
-                        //vmをresumeしない
-                        doResume = false;
-                    }
-                }
-                if(doResume){
-                    vm.resume();
-                }
-            }
-            //動的に作ったリクエストを無効化
-            meReq.disable();
-            stepReq.disable();
-            mEntryReq.disable();
-        };
-
-        //VMを実行し情報を収集
-        debugger.handleAtBreakPoint((suspArg).locateMethod.fullyQualifiedClassName(), (suspArg).locateLine, handler);
-        if(result.isEmpty()){
+        if (result.isEmpty()) {
             System.err.println("[[searchSuspiciousReturns]] Could not confirm [ "
-                    + "(return value) == " + (suspArg).actualValue
-                    + " ] on " + (suspArg).locateMethod + " line:" + (suspArg).locateLine);
+                    + "(return value) == " + currentTarget.actualValue
+                    + " ] on " + currentTarget.locateMethod + " line:" + currentTarget.locateLine);
         }
         return result;
+    }
+
+    private void handleBreakpoint(VirtualMachine vm, BreakpointEvent bpe) {
+        // 既に結果が取得できている場合は終了
+        if (!result.isEmpty()) return;
+
+        EventRequestManager manager = vm.eventRequestManager();
+        targetThread = bpe.thread();
+
+        // 検索状態をリセット
+        resultCandidate.clear();
+        callCount = 0;
+
+        // リクエストを作成
+        activeMethodExitRequest = EnhancedDebugger.createMethodExitRequest(manager, targetThread);
+        activeStepRequest = EnhancedDebugger.createStepOverRequest(manager, targetThread);
+        activeMethodEntryRequest = EnhancedDebugger.createMethodEntryRequest(manager, targetThread);
+    }
+
+    private void handleMethodEntry(VirtualMachine vm, MethodEntryEvent mEntry) {
+        // 対象スレッドでない場合はスキップ
+        if (!mEntry.thread().equals(targetThread)) return;
+
+        // callee メソッドかを確認
+        Method method = mEntry.method();
+        boolean isTarget;
+        if (method.isConstructor()) {
+            // calleeMethodName には FullyQualifiedClassName を保持している想定
+            isTarget = method.declaringType().name()
+                    .equals(currentTarget.calleeMethodName.fullyQualifiedClassName());
+        } else {
+            isTarget = method.name().equals(currentTarget.calleeMethodName.shortMethodName());
+        }
+
+        if (!isTarget) return;
+
+        // callee メソッドに入った → 引数の値で目的の実行かを検証
+        if (JDIUtils.validateIsTargetExecutionArg(mEntry, currentTarget.actualValue, currentTarget.argIndex)) {
+            result.addAll(resultCandidate);
+        }
+        // 検証完了（成功・失敗とも）→ リクエストを無効化し、次の BreakpointEvent を待つ
+        disableRequests();
+    }
+
+    private void handleMethodExit(VirtualMachine vm, MethodExitEvent mee) {
+        // 対象スレッドでない場合はスキップ
+        if (!mee.thread().equals(targetThread)) return;
+
+        callCount++;
+
+        // 収集するのは指定した行で直接呼び出したメソッドのみ
+        // caller のメソッドが breakpoint のメソッド（locateMethod）と一致するか確認
+        try {
+            StackFrame caller = mee.thread().frame(1);
+            String callerMethodName = caller.location().method().name();
+            if (!callerMethodName.equals(currentTarget.locateMethod.shortMethodName())) {
+                return;
+            }
+        } catch (IncompatibleThreadStateException e) {
+            throw new RuntimeException("Target thread must be suspended.");
+        }
+
+        // targetCallCount に達していない場合はスキップ
+        if (callCount < currentTarget.targetCallCount) return;
+
+        // targetMethod のみ収集
+        if (currentTarget.targetMethodNames().contains(mee.method().name())) {
+            collectReturnValue(mee);
+        }
+    }
+
+    private void handleStep(VirtualMachine vm, StepEvent se) {
+        // 行の実行が終了 → リクエストを無効化し、次の BreakpointEvent を待つ
+        disableRequests();
+    }
+
+    /**
+     * 動的に作成したリクエストを無効化する。
+     */
+    private void disableRequests() {
+        if (activeMethodExitRequest != null) {
+            activeMethodExitRequest.disable();
+            activeMethodExitRequest = null;
+        }
+        if (activeStepRequest != null) {
+            activeStepRequest.disable();
+            activeStepRequest = null;
+        }
+        if (activeMethodEntryRequest != null) {
+            activeMethodEntryRequest.disable();
+            activeMethodEntryRequest = null;
+        }
+    }
+
+    /**
+     * MethodExitEvent から戻り値を収集し、resultCandidate に追加する。
+     */
+    private void collectReturnValue(MethodExitEvent mee) {
+        MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
+        int locateLine = mee.location().lineNumber();
+        String actualValue = JDIUtils.getValueString(mee.returnValue());
+        try {
+            SuspiciousReturnValue suspReturn = factory.createReturnValue(
+                    currentTarget.failedTest,
+                    invokedMethod,
+                    locateLine,
+                    actualValue
+            );
+            resultCandidate.add(suspReturn);
+        } catch (RuntimeException e) {
+            System.out.println("cannot create SuspiciousReturnValue: " + e.getMessage() + " at " + invokedMethod + " line:" + locateLine);
+        }
     }
 }
