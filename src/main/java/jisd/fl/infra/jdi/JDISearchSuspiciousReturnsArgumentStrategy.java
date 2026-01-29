@@ -1,8 +1,6 @@
 package jisd.fl.infra.jdi;
 
-import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.Method;
-import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.*;
@@ -37,6 +35,8 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
     private StepRequest activeStepRequest;
     private MethodEntryRequest activeMethodEntryRequest;
     private int callCount;
+    private boolean steppingIn;
+    private int depthAtBreakpoint;
 
     //引数のindexを指定してその引数の評価の直前でsuspendするのは激ムズなのでやらない
     //引数を区別せず、引数の評価の際に呼ばれたすべてのメソッドについて情報を取得し
@@ -90,10 +90,12 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         // 検索状態をリセット
         resultCandidate.clear();
         callCount = 0;
+        depthAtBreakpoint = JDIUtils.getCallStackDepth(targetThread);
+        steppingIn = true;
 
         // リクエストを作成
         activeMethodExitRequest = EnhancedDebugger.createMethodExitRequest(manager, targetThread);
-        activeStepRequest = EnhancedDebugger.createStepOverRequest(manager, targetThread);
+        activeStepRequest = EnhancedDebugger.createStepInRequest(manager, targetThread);
         activeMethodEntryRequest = EnhancedDebugger.createMethodEntryRequest(manager, targetThread);
     }
 
@@ -126,19 +128,9 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         // 対象スレッドでない場合はスキップ
         if (!mee.thread().equals(targetThread)) return;
 
-        callCount++;
-
-        // 収集するのは指定した行で直接呼び出したメソッドのみ
-        // caller のメソッドが breakpoint のメソッド（locateMethod）と一致するか確認
-        try {
-            StackFrame caller = mee.thread().frame(1);
-            String callerMethodName = caller.location().method().name();
-            if (!callerMethodName.equals(currentTarget.locateMethod.shortMethodName())) {
-                return;
-            }
-        } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException("Target thread must be suspended.");
-        }
+        // 直接呼び出したメソッドの終了のみ処理（depth チェック）
+        int currentDepth = JDIUtils.getCallStackDepth(mee.thread());
+        if (currentDepth != depthAtBreakpoint + 1) return;
 
         // targetCallCount に達していない場合はスキップ
         if (callCount < currentTarget.targetCallCount) return;
@@ -150,8 +142,38 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
     }
 
     private void handleStep(VirtualMachine vm, StepEvent se) {
-        // 行の実行が終了 → リクエストを無効化し、次の BreakpointEvent を待つ
-        disableRequests();
+        // MethodEntryEvent で既に処理完了している場合はスキップ
+        if (activeStepRequest == null) return;
+        if (!se.thread().equals(targetThread)) return;
+
+        EventRequestManager manager = vm.eventRequestManager();
+        activeStepRequest.disable();
+        activeStepRequest = null;
+
+        if (steppingIn) {
+            handleStepInCompleted(manager, se);
+        } else {
+            handleStepOutCompleted(manager, se);
+        }
+    }
+
+    private void handleStepInCompleted(EventRequestManager manager, StepEvent se) {
+        int currentDepth = JDIUtils.getCallStackDepth(se.thread());
+        if (currentDepth > depthAtBreakpoint) {
+            // メソッドに入った → callCount をインクリメントし、StepOut で戻る
+            callCount++;
+            steppingIn = false;
+            activeStepRequest = EnhancedDebugger.createStepOutRequest(manager, se.thread());
+        } else {
+            // 行を離れた（メソッド呼び出しなし）→ 終了
+            disableRequests();
+        }
+    }
+
+    private void handleStepOutCompleted(EventRequestManager manager, StepEvent se) {
+        // 行に戻った → 次の StepIn
+        steppingIn = true;
+        activeStepRequest = EnhancedDebugger.createStepInRequest(manager, se.thread());
     }
 
     /**
