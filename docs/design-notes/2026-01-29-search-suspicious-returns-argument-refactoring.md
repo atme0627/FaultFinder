@@ -100,6 +100,148 @@ SuspiciousArgument 自体の変更が必要なため、将来の課題とする�
 | MethodEntryRequest | 不要 | 不要 | 必要 |
 | callCount | 不要 | 不要 | 必要 (targetCallCount) |
 
+## 次のステップ: SuspiciousArgument の設計変更
+
+### 問題
+
+nested_callee の問題と、暗黙メソッド呼び出し（文字列結合、オートボクシング等）による
+callCount のずれを根本的に解決するため、SuspiciousArgument の設計変更が必要。
+
+### 現状の問題点
+
+1. **targetCallCount**: 「文中の全直接呼び出しの中で、引数式内の最初のメソッド呼び出しが何番目か」
+   - 暗黙メソッド呼び出しがあるとカウントがずれる
+2. **targetMethodNames**: 「収集すべきメソッドの名前リスト」
+   - 同名メソッドがネストしている場合に区別できない（例: `target(dummy(dummy(20)), dummy(10))`）
+3. **calleeMethodName**: callee メソッドの名前一致で判定
+   - nested_callee（`target(helper2(target(3)))`）で内側の callee に誤マッチ
+
+### 解決方針: 呼び出し順の歯抜けリスト + invokeCallCount
+
+targetMethodNames（名前リスト）と targetCallCount（開始位置）を廃止し、
+**収集すべき各メソッド呼び出しの callCount をリストで保持**する。
+
+```java
+// 変更前
+public final int targetCallCount;          // 引数式の開始位置
+final List<String> targetMethodNames;      // 収集すべきメソッド名
+
+// 変更後
+public final List<Integer> collectAtCounts; // 収集すべき callCount のリスト
+public final int invokeCallCount;           // invoke メソッドの callCount
+```
+
+**例: `target(dummy(dummy(20)), dummy(10))`**
+- 評価順: 1. dummy(20)内側, 2. dummy(helper1相当), 3. dummy(10), 4. target
+- collectAtCounts = [2, 3] (収集すべき位置)
+- invokeCallCount = 4 (invoke メソッドの位置)
+
+1. callCount=1 → リストにない → 収集しない ✓
+2. callCount=2 → リストにある → 収集 ✓
+3. callCount=3 → リストにある → 収集 ✓
+4. callCount=4 → invokeCallCount 一致 → 検証
+
+### リネーム
+
+- `calleeMethodName` → `invokeMethodName`（callee は分かりにくいため）
+
+### depth チェックの限界
+
+`parent(target(helper(10)))` のようにメソッド呼び出しがさらに別のメソッドの引数内にある場合、
+target や helper の depth は depthAtBreakpoint + 1 ではなくなるため、depth チェックが破綻する。
+
+現状（StepIn/StepOut 変換前の caller メソッド名比較）でも同じ問題がある。
+バイトコードの `location.codeIndex()` を使えば位置ベースの判定が可能だが、
+実装が複雑になるため現時点では見送り。
+
+### callCount をどこでインクリメントするか
+
+MethodEntryEvent と StepEvent の発火順序は JDI の仕様で保証されていない。
+そのため callCount のインクリメントを MethodEntryEvent に移すと、
+handleMethodExit の `callCount < targetCallCount` フィルタとの整合性が取れない可能性がある。
+
+最終的な方針: MethodEntryEvent で depth チェック付きで callCount++ し、
+同じ handleMethodEntry 内で `callCount == invokeCallCount` を判定する。
+handleMethodExit では `collectAtCounts.contains(callCount)` で判定する。
+これにより StepEvent との順序依存がなくなる。
+
+### targetMethodNames vs collectAtCounts
+
+targetMethodNames（名前リスト）では同名メソッドのネストを区別できない。
+
+例: `target(dummy(dummy(20)), dummy(10))`
+- targetMethodNames = ["dummy"] → 内側の dummy(20) も収集されてしまう
+- collectAtCounts = [2, 3] → callCount で区別できる
+
+### start (targetCallCount) は廃止可能か
+
+start の目的は「引数式より前の MethodExit を収集しない」こと。
+collectAtCounts で収集すべき位置を明示的に指定するため、start は不要になる。
+
+dummy(10) + target(helper(10)) の場合:
+- collectAtCounts = [2] (helper が2番目)
+- callCount=1 (dummy) → リストにない → 収集しない
+- callCount=2 (helper) → リストにある → 収集する
+
+### 暗黙メソッド呼び出しの検出
+
+callCount が invokeCallCount に達した時に invoke メソッド名と一致しなければ、
+暗黙メソッド呼び出しの可能性がある → warn ログを出して打ち切り。
+
+暗黙メソッド呼び出しが発生するケース:
+- 文字列結合 `"a" + "b"` → StringBuilder 系（ただしコンパイル時定数畳み込みの場合あり）
+- オートボクシング `Integer x = 10` → `Integer.valueOf(10)`
+- アンボクシング `int x = integerObj` → `integerObj.intValue()`
+
+疑わしい行の引数式内でこれらが発生する頻度は低いため、
+検出してログ出力 + 打ち切りで十分。
+
+### 影響範囲
+
+- `SuspiciousArgument` - フィールド変更
+- `JavaParserSuspiciousExpressionFactory` - collectAtCounts, invokeCallCount の算出
+- `JDISearchSuspiciousReturnsArgumentStrategy` - 新しいフィールドを使った判定
+- `JDITraceValueAtSuspiciousArgumentStrategy` - calleeMethodName の参照
+- `SuspiciousExpressionFactory` - createArgument のシグネチャ
+- `SuspiciousArgumentsSearcher` - calleeMethodName の参照
+- `JDISuspiciousArgumentsSearcher` - calleeMethodName の参照
+- テストクラス - 新しいフィールドに対応
+
+### 議論の流れ
+
+1. StepIn/StepOut パターン適用後、nested_callee (`target8(helper2(target8(3)))`) の @Disabled テストを解決しようとした
+2. 最初の案: MethodEntry の depth チェック → 内側の target8 も depth D+1 なので区別不可
+3. 次の案: 検証失敗時に disableRequests しない → ループで2回実行されるケースが弾けなくなる
+4. callCount == targetCallCount で判定する案 → targetCallCount は callee の位置ではなく引数式の開始位置
+5. MethodEntry で callCount をインクリメントする案 → StepEvent との発火順序が保証されない問題
+6. callee の呼び出し回数のみカウントする案 → start フィルタの代替が必要
+7. start フィルタ不要論 → targetMethodNames で十分では？ → 同名メソッドネストで破綻
+8. collectAtCounts（歯抜けリスト）方式に到達 → 全問題を解決
+
+### 次回開始時の手順
+
+```bash
+# テストを実行して現状確認（7 pass, 1 skip）
+./gradlew test --tests "jisd.fl.infra.jdi.JDISearchSuspiciousReturnsArgumentStrategyTest" --no-daemon -q
+
+# 変更対象ファイルの確認
+# 1. SuspiciousArgument のフィールド変更
+cat src/main/java/jisd/fl/core/entity/susp/SuspiciousArgument.java
+# 2. 静的解析で collectAtCounts, invokeCallCount を算出
+cat src/main/java/jisd/fl/infra/javaparser/JavaParserSuspiciousExpressionFactory.java
+# 3. Strategy の判定ロジック変更
+cat src/main/java/jisd/fl/infra/jdi/JDISearchSuspiciousReturnsArgumentStrategy.java
+```
+
+### 実装の順序（案）
+
+1. SuspiciousArgument のフィールド変更 + リネーム (calleeMethodName → invokeMethodName)
+2. JavaParserSuspiciousExpressionFactory で collectAtCounts, invokeCallCount を算出
+3. JDISearchSuspiciousReturnsArgumentStrategy の判定ロジック変更
+4. テスト修正 + nested_callee テストの @Disabled 解除
+5. 他の参照箇所の修正 (JDITraceValueAtSuspiciousArgumentStrategy 等)
+6. 全テスト実行で確認
+
 ## コミット履歴
 
 1. `test: JDISearchSuspiciousReturnsArgumentStrategy のテストを追加`
@@ -112,5 +254,11 @@ SuspiciousArgument 自体の変更が必要なため、将来の課題とする�
 - `src/main/java/jisd/fl/infra/jdi/JDISearchSuspiciousReturnsArgumentStrategy.java` - 本クラス
 - `src/test/java/jisd/fl/infra/jdi/JDISearchSuspiciousReturnsArgumentStrategyTest.java` - テスト
 - `src/test/resources/fixtures/exec/src/main/java/jisd/fl/fixture/SearchReturnsArgumentFixture.java` - フィクスチャ
+- `src/main/java/jisd/fl/core/entity/susp/SuspiciousArgument.java` - エンティティ（変更対象）
+- `src/main/java/jisd/fl/infra/javaparser/JavaParserSuspiciousExpressionFactory.java` - 静的解析（変更対象）
+- `src/main/java/jisd/fl/core/domain/port/SuspiciousExpressionFactory.java` - ファクトリインタフェース
+- `src/main/java/jisd/fl/core/domain/port/SuspiciousArgumentsSearcher.java` - サーチャーインタフェース
+- `src/main/java/jisd/fl/infra/jdi/JDISuspiciousArgumentsSearcher.java` - サーチャー実装
+- `src/main/java/jisd/fl/infra/jdi/JDITraceValueAtSuspiciousArgumentStrategy.java` - トレース戦略
 - `docs/design-notes/2026-01-28-search-suspicious-returns-assignment-refactoring.md` - Assignment の設計記録
 - `docs/design-notes/2026-01-28-search-suspicious-returns-returnvalue-refactoring.md` - ReturnValue の設計記録
