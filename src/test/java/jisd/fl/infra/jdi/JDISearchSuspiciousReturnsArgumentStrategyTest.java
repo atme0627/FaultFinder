@@ -9,7 +9,6 @@ import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.parallel.Execution;
@@ -58,7 +57,7 @@ class JDISearchSuspiciousReturnsArgumentStrategyTest {
 
         List<SuspiciousExpression> result = searchReturns(
                 testMethod, targetLine, callee, 0, "20",
-                List.of("helper"), 1, true);
+                List.of(1), 2, true);
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(1, result.size(), "1つのメソッド呼び出しの戻り値を収集: " + formatResult(result));
@@ -79,7 +78,7 @@ class JDISearchSuspiciousReturnsArgumentStrategyTest {
 
         List<SuspiciousExpression> result = searchReturns(
                 testMethod, targetLine, callee, 0, "19",
-                List.of("add", "multiply"), 1, true);
+                List.of(1, 2), 3, true);
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(2, result.size(), "2つのメソッド呼び出しの戻り値を収集: " + formatResult(result));
@@ -100,7 +99,7 @@ class JDISearchSuspiciousReturnsArgumentStrategyTest {
 
         List<SuspiciousExpression> result = searchReturns(
                 testMethod, targetLine, callee, 0, "0",
-                List.of("compute"), 1, true);
+                List.of(1), 2, true);
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(1, result.size(), "compute の戻り値を収集: " + formatResult(result));
@@ -119,7 +118,7 @@ class JDISearchSuspiciousReturnsArgumentStrategyTest {
 
         List<SuspiciousExpression> result = searchReturns(
                 testMethod, targetLine, callee, 0, "4",
-                List.of("compute"), 1, true);
+                List.of(1), 2, true);
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(1, result.size(), "compute の戻り値を収集: " + formatResult(result));
@@ -156,7 +155,7 @@ class JDISearchSuspiciousReturnsArgumentStrategyTest {
 
         List<SuspiciousExpression> result = searchReturns(
                 testMethod, targetLine, callee, 0, "16",
-                List.of("twice"), 1, true);
+                List.of(1, 2), 3, true);
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(2, result.size(), "twice が2回呼ばれ、両方の戻り値を収集: " + formatResult(result));
@@ -177,7 +176,7 @@ class JDISearchSuspiciousReturnsArgumentStrategyTest {
 
         List<SuspiciousExpression> result = searchReturns(
                 testMethod, targetLine, callee, 0, "12",
-                List.of("doubler"), 1, true);
+                List.of(1, 2), 3, true);
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(2, result.size(), "doubler が2回呼ばれ、両方の戻り値を収集: " + formatResult(result));
@@ -188,40 +187,38 @@ class JDISearchSuspiciousReturnsArgumentStrategyTest {
 
     // ===== callee メソッドがネストして呼ばれるテスト（既知の問題） =====
 
-    /**
-     * 既知の問題: 内側の target8 の MethodEntryEvent で callee チェックが通り、
-     * 引数 3 != actualValue 8 で検証失敗、disableRequests() される。
-     * その後の外側 target8 の検証が行われない。
-     */
-    @Disabled("既知の問題: callee メソッドがネストしている場合、内側の呼び出しで検証失敗し外側が検証されない")
     @Test
     @Timeout(20)
-    void nested_callee_is_known_issue() throws Exception {
+    void nested_callee_collects_inner_return_values() throws Exception {
         // target8(helper2(target8(3))) で外側の target8 の引数は 8
+        // 評価順: target8(3) → helper2(...) → target8(...)  → collectAtCounts=[1,2], invokeCallCount=3
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#nested_callee()");
         int targetLine = findAssignLine(testMethod, "result", "target8(helper2(target8(3)))");
         MethodElementName callee = new MethodElementName(FIXTURE_FQCN + "#target8(int)");
 
         List<SuspiciousExpression> result = searchReturns(
                 testMethod, targetLine, callee, 0, "8",
-                List.of("helper2", "target8"), 1, true);
+                List.of(1, 2), 3, true);
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
+        assertEquals(2, result.size(), "target8(3) と helper2 の戻り値を収集: " + formatResult(result));
+        assertTrue(hasReturnValue(result, "4"), "target8(3) の戻り値 4 を収集: " + formatResult(result));
+        assertTrue(hasReturnValue(result, "8"), "helper2(4) の戻り値 8 を収集: " + formatResult(result));
     }
 
     // ===== Helper methods =====
 
     private static List<SuspiciousExpression> searchReturns(
             MethodElementName testMethod, int locateLine,
-            MethodElementName calleeMethodName, int argIndex,
-            String actualValue, List<String> targetMethodNames,
-            int targetCallCount, boolean hasMethodCalling) {
+            MethodElementName invokeMethodName, int argIndex,
+            String actualValue, List<Integer> collectAtCounts,
+            int invokeCallCount, boolean hasMethodCalling) {
 
         SuspiciousArgument suspArg = new SuspiciousArgument(
                 testMethod, testMethod, locateLine, actualValue,
-                calleeMethodName, argIndex,
+                invokeMethodName, argIndex,
                 "", hasMethodCalling, List.of(), List.of(),
-                targetMethodNames, targetCallCount);
+                collectAtCounts, invokeCallCount);
 
         JDISearchSuspiciousReturnsArgumentStrategy strategy =
                 new JDISearchSuspiciousReturnsArgumentStrategy();

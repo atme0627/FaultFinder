@@ -22,7 +22,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
     /**
      * ある変数がその値を取る原因が呼び出し元の引数のあると判明した場合に使用
      */
-    public Optional<SuspiciousArgument> searchSuspiciousArgument(SuspiciousLocalVariable suspVar, MethodElementName calleeMethodName){
+    public Optional<SuspiciousArgument> searchSuspiciousArgument(SuspiciousLocalVariable suspVar, MethodElementName invokeMethodName){
         //Debugger生成
         JUnitDebugger debugger = new JUnitDebugger(suspVar.failedTest());
 
@@ -80,7 +80,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
             }
         };
 
-        debugger.handleAtMethodEntry(calleeMethodName.fullyQualifiedName(), handler);
+        debugger.handleAtMethodEntry(invokeMethodName.fullyQualifiedName(), handler);
 
         //nullチェック
         if(locateMethod[0] == null || locateLine[0] == 0 || argIndex[0] == -1){
@@ -92,7 +92,7 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
                 locateMethod[0],
                 locateLine[0],
                 suspVar.actualValue(),
-                calleeMethodName,
+                invokeMethodName,
                 argIndex[0],
                 callCountAfterTarget[0]
         ));

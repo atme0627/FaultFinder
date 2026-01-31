@@ -134,9 +134,9 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
     private boolean isTargetMethod(Method method) {
         if (method.isConstructor()) {
             return method.declaringType().name()
-                    .equals(currentTarget.calleeMethodName.fullyQualifiedClassName());
+                    .equals(currentTarget.invokeMethodName.fullyQualifiedClassName());
         } else {
-            return method.name().equals(currentTarget.calleeMethodName.shortMethodName());
+            return method.name().equals(currentTarget.invokeMethodName.shortMethodName());
         }
     }
 
@@ -148,7 +148,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
                     JDIUtils.getValueString(args.get(argIndex)).equals(currentTarget.actualValue);
         } catch (IncompatibleThreadStateException e) {
             String msg = String.format("引数の検証中にスレッドがサスペンド状態ではありません。対象メソッド=%s, argIndex=%d",
-                    currentTarget.calleeMethodName, currentTarget.argIndex);
+                    currentTarget.invokeMethodName, currentTarget.argIndex);
             logger.error(msg, e);
             throw new IllegalStateException(msg, e);
         }

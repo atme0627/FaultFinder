@@ -31,7 +31,7 @@ class SuspiciousArgumentTest {
 
     @Test
     void searchSuspiciousArgument() {
-        MethodElementName calleeMethodName = new MethodElementName("org.sample.util.Calc#methodCalling(int, int)");
+        MethodElementName invokeMethodName = new MethodElementName("org.sample.util.Calc#methodCalling(int, int)");
         SuspiciousLocalVariable suspVar = new SuspiciousLocalVariable(
                 new MethodElementName("org.sample.CalcTest#methodCall1()"),
                 "org.sample.util.Calc#methodCalling(int, int)",
@@ -41,7 +41,7 @@ class SuspiciousArgumentTest {
                 false
         );
 
-        SuspiciousArgument suspArg = searcher.searchSuspiciousArgument(suspVar, calleeMethodName).get();
+        SuspiciousArgument suspArg = searcher.searchSuspiciousArgument(suspVar, invokeMethodName).get();
         System.out.println(suspArg);
     }
 }

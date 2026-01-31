@@ -5,43 +5,39 @@ import jisd.fl.core.entity.element.MethodElementName;
 import java.util.*;
 
 public class SuspiciousArgument extends SuspiciousExpression {
-    //引数を与え実行しようとしているメソッド
-    public final MethodElementName calleeMethodName;
-    //何番目の引数に与えられたexprかを指定
+    /** 引数を与え実行しようとしているメソッド */
+    public final MethodElementName invokeMethodName;
+    /** 何番目の引数に与えられた expr かを指定 */
     public final int argIndex;
 
-    //対象の引数内の最初のmethodCallがstmtで何番目か
-    public final int targetCallCount;
+    /** invoke メソッドが文中の何番目の直接呼び出しか（1-based） */
+    public final int invokeCallCount;
 
-    //return位置を調べたいmethod一覧
-    final List<String> targetMethodNames;
+    /** 戻り値を収集すべき直接呼び出しの番号リスト（1-based） */
+    public final List<Integer> collectAtCounts;
 
     public SuspiciousArgument(MethodElementName failedTest,
                               MethodElementName locateMethod,
                               int locateLine,
                               String actualValue,
-                              MethodElementName calleeMethodName,
+                              MethodElementName invokeMethodName,
                               int argIndex,
                               String stmtString,
                               boolean hasMethodCalling,
                               List<String> directNeighborVariableNames,
                               List<String> indirectNeighborVariableNames,
-                              List<String> targetMethodNames,
-                              int targetCallCount
+                              List<Integer> collectAtCounts,
+                              int invokeCallCount
     ) {
         super(failedTest, locateMethod, locateLine, actualValue, stmtString, hasMethodCalling, directNeighborVariableNames, indirectNeighborVariableNames);
         this.argIndex = argIndex;
-        this.calleeMethodName = calleeMethodName;
-        this.targetCallCount = targetCallCount;
-        this.targetMethodNames = targetMethodNames;
+        this.invokeMethodName = invokeMethodName;
+        this.invokeCallCount = invokeCallCount;
+        this.collectAtCounts = collectAtCounts;
     }
 
     @Override
     public String toString() {
         return "[ ARGUMENT ] ( " + locateMethod + " line:" + locateLine + " ) " + stmtString();
-    }
-
-    public List<String> targetMethodNames() {
-        return targetMethodNames;
     }
 }

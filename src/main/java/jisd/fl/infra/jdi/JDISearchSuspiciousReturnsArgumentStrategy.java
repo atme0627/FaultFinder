@@ -1,6 +1,5 @@
 package jisd.fl.infra.jdi;
 
-import com.sun.jdi.Method;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.*;
@@ -38,10 +37,9 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
     private boolean steppingIn;
     private int depthAtBreakpoint;
 
-    //引数のindexを指定してその引数の評価の直前でsuspendするのは激ムズなのでやらない
-    //引数を区別せず、引数の評価の際に呼ばれたすべてのメソッドについて情報を取得し
-    //Expressionを静的解析してexpressionで直接呼ばれてるメソッドのみに絞る
-    //ex.) expressionがx.f(y.g())の時、fのみとる。y.g()はfの探索の後行われるはず
+    // 引数式内で呼ばれたメソッドの戻り値を収集する。
+    // collectAtCounts で収集すべき直接呼び出しの番号を、
+    // invokeCallCount で invoke メソッドの番号を指定し、callCount で判定する。
     @Override
     public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
         // 状態の初期化
@@ -103,25 +101,39 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         // 対象スレッドでない場合はスキップ
         if (!mEntry.thread().equals(targetThread)) return;
 
-        // callee メソッドかを確認
-        Method method = mEntry.method();
-        boolean isTarget;
-        if (method.isConstructor()) {
-            // calleeMethodName には FullyQualifiedClassName を保持している想定
-            isTarget = method.declaringType().name()
-                    .equals(currentTarget.calleeMethodName.fullyQualifiedClassName());
-        } else {
-            isTarget = method.name().equals(currentTarget.calleeMethodName.shortMethodName());
+        // 直接呼び出し（depth == depthAtBreakpoint + 1）のみ処理
+        int currentDepth = JDIUtils.getCallStackDepth(mEntry.thread());
+        if (currentDepth != depthAtBreakpoint + 1) return;
+
+        // 直接呼び出しの回数をカウント（全メソッド対象）
+        callCount++;
+
+        // invokeCallCount 番目の直接呼び出しでのみ検証する
+        if (callCount != currentTarget.invokeCallCount) return;
+
+        // 暗黙メソッド呼び出しの検出: invokeCallCount に達したが invoke メソッド名が不一致
+        if (!isInvokeMethod(mEntry.method())) {
+            logger.warn("暗黙メソッド呼び出しの可能性: invokeCallCount={} で期待={} だが実際={}",
+                    callCount, currentTarget.invokeMethodName.shortMethodName(), mEntry.method().name());
+            disableRequests();
+            return;
         }
 
-        if (!isTarget) return;
-
-        // callee メソッドに入った → 引数の値で目的の実行かを検証
+        // invoke メソッドに入った → 引数の値で目的の実行かを検証
         if (JDIUtils.validateIsTargetExecutionArg(mEntry, currentTarget.actualValue, currentTarget.argIndex)) {
             result.addAll(resultCandidate);
         }
         // 検証完了（成功・失敗とも）→ リクエストを無効化し、次の BreakpointEvent を待つ
         disableRequests();
+    }
+
+    private boolean isInvokeMethod(com.sun.jdi.Method method) {
+        if (method.isConstructor()) {
+            return method.declaringType().name()
+                    .equals(currentTarget.invokeMethodName.fullyQualifiedClassName());
+        } else {
+            return method.name().equals(currentTarget.invokeMethodName.shortMethodName());
+        }
     }
 
     private void handleMethodExit(VirtualMachine vm, MethodExitEvent mee) {
@@ -132,11 +144,8 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         int currentDepth = JDIUtils.getCallStackDepth(mee.thread());
         if (currentDepth != depthAtBreakpoint + 1) return;
 
-        // targetCallCount に達していない場合はスキップ
-        if (callCount < currentTarget.targetCallCount) return;
-
-        // targetMethod のみ収集
-        if (currentTarget.targetMethodNames().contains(mee.method().name())) {
+        // collectAtCounts に含まれる直接呼び出しのみ収集
+        if (currentTarget.collectAtCounts.contains(callCount)) {
             collectReturnValue(mee);
         }
     }
@@ -160,8 +169,7 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
     private void handleStepInCompleted(EventRequestManager manager, StepEvent se) {
         int currentDepth = JDIUtils.getCallStackDepth(se.thread());
         if (currentDepth > depthAtBreakpoint) {
-            // メソッドに入った → callCount をインクリメントし、StepOut で戻る
-            callCount++;
+            // メソッドに入った → StepOut で戻る
             steppingIn = false;
             activeStepRequest = EnhancedDebugger.createStepOutRequest(manager, se.thread());
         } else {
