@@ -242,12 +242,63 @@ cat src/main/java/jisd/fl/infra/jdi/JDISearchSuspiciousReturnsArgumentStrategy.j
 5. 他の参照箇所の修正 (JDITraceValueAtSuspiciousArgumentStrategy 等)
 6. 全テスト実行で確認
 
+## 実施結果: SuspiciousArgument 設計変更 (2026-01-31)
+
+### 変更内容
+
+上記「次のステップ」の方針に基づき、以下を実施:
+
+1. **SuspiciousArgument のフィールド変更**
+   - `calleeMethodName` → `invokeMethodName`
+   - `targetCallCount` (int) → `invokeCallCount` (int)
+   - `targetMethodNames` (List\<String\>) → `collectAtCounts` (List\<Integer\>)
+   - `targetMethodNames()` アクセサを削除
+
+2. **JavaParserSuspiciousExpressionFactory の変更**
+   - `extractArgTargetMethodNames()` と `getCallCountBeforeTargetArgEval()` を廃止
+   - `getEvalOrder()`: StatementEvalOrderVisitor で文中の全メソッド呼び出しを評価順に取得
+   - `getCollectAtCounts()`: 引数式内の直接呼び出し（親 MethodCallExpr が式内にない）の評価順位置を返す
+   - `getInvokeCallCount()`: invoke メソッド（引数式の親 MethodCallExpr）の評価順位置を返す
+
+3. **JDISearchSuspiciousReturnsArgumentStrategy の変更**
+   - `handleMethodEntry`: depth チェック → callCount++ → `callCount == invokeCallCount` で検証
+   - `handleMethodExit`: `collectAtCounts.contains(callCount)` で収集判定
+   - 暗黙メソッド呼び出し検出: invokeCallCount 到達時に invoke メソッド名が不一致なら warn ログ + 打ち切り
+   - callCount のインクリメントを handleStepInCompleted から handleMethodEntry に移動
+
+4. **nested_callee テスト (@Disabled 解除)**
+   - `target8(helper2(target8(3)))`: collectAtCounts=[1,2], invokeCallCount=3
+   - 内側 target8 は callCount=1（invokeCallCount=3 と不一致）→ スキップされる
+   - 外側 target8 が callCount=3 で正しく検証される
+
+### テスト結果
+
+全8テスト通過（nested_callee 含む）:
+
+| テスト名 | collectAtCounts | invokeCallCount | 結果 |
+|---------|----------------|-----------------|------|
+| single_method_call | [1] | 2 | PASS |
+| multiple_method_calls | [1, 2] | 3 | PASS |
+| loop (1st) | [1] | 2 | PASS |
+| loop (3rd) | [1] | 2 | PASS |
+| no_method_call | [] | 1 | PASS |
+| same_method_twice_in_arg | [1, 2] | 3 | PASS |
+| same_method_nested | [1, 2] | 3 | PASS |
+| nested_callee | [1, 2] | 3 | PASS |
+
+### 今後の課題
+
+- **暗黙メソッド呼び出し**: 文字列結合、オートボクシング等で callCount がずれた場合は warn ログ + 打ち切り。テストでのカバーは未実施。
+- **depth チェックの限界**: `parent(target(helper(10)))` のように呼び出しがネストしている場合、depth チェックが機能しない問題は未解決。
+
 ## コミット履歴
 
 1. `test: JDISearchSuspiciousReturnsArgumentStrategy のテストを追加`
 2. `refactor: JDISearchSuspiciousReturnsArgumentStrategy を execute() ベースに変換`
 3. `refactor: JDISearchSuspiciousReturnsArgumentStrategy のエラーハンドリングを改善`
 4. `refactor: JDISearchSuspiciousReturnsArgumentStrategy を StepIn/StepOut パターンに変更`
+5. `docs: SuspiciousArgument 設計変更の議論と方針を記録`
+6. `refactor: SuspiciousArgument を collectAtCounts/invokeCallCount 方式に redesign`
 
 ## 関連ファイル
 

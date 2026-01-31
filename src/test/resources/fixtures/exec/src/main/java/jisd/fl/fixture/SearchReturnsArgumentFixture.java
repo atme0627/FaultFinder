@@ -162,9 +162,8 @@ public class SearchReturnsArgumentFixture {
      * 内側の target8(3) → 4, helper2(4) → 8, 外側の target8(8) → 9
      * 外側の target8 の引数は 8
      *
-     * 既知の問題: 内側の target8 の MethodEntryEvent で callee チェックが通り、
-     * 引数 3 != actualValue 8 で検証失敗、disableRequests() される。
-     * その後の外側 target8 の検証が行われない。
+     * collectAtCounts=[1,2], invokeCallCount=3 により
+     * 内側の target8 と helper2 の戻り値を収集し、外側 target8 で検証する。
      */
     @Test
     void nested_callee() {
