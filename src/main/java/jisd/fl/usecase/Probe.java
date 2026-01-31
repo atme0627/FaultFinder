@@ -17,12 +17,14 @@ public class Probe{
     private final ProbeReporter reporter;
     private final CauseLineFinder causeLineFinder;
     protected final NeighborSuspiciousVariablesSearcher neighborSearcher;
+    private final SuspiciousReturnsSearcher searcher;
 
     public Probe(SuspiciousLocalVariable target) {
         this.firstTarget = target;
         this.reporter = new ProbeReporter();
         this.causeLineFinder = new CauseLineFinder();
         this.neighborSearcher = new NeighborSuspiciousVariablesSearcher();
+        this.searcher = new SuspiciousReturnsSearcher();
     }
 
     // SuspExpr単位で探索する。
@@ -64,7 +66,12 @@ public class Probe{
             }
 
             // 2. suspExpr -- [return]  --> suspExpr
-            children.addAll(collectInvokedReturnExpressions(targetExpr));
+            //Exprが直接呼び出しているmethodのreturnのみ返す。
+            // int result = calc(a, b);
+            //  -> return add(a, b); <= ここだけ返す。
+            //    -> return a + b;       <= ここは[return add(a, b)]の探索で探す。
+            List<SuspiciousExpression> result = searcher.search(targetExpr);
+            children.addAll(result);
 
             //木構造に追加
             addTreeElement(targetExpr, children);
@@ -75,15 +82,6 @@ public class Probe{
         return suspiciousExprTreeRoot;
     }
 
-    //Exprが直接呼び出しているmethodのreturnのみ返す。
-    // int result = calc(a, b);
-    //  -> return add(a, b); <= ここだけ返す。
-    //    -> return a + b;       <= ここは[return add(a, b)]の探索で探す。
-    private List<SuspiciousExpression> collectInvokedReturnExpressions(SuspiciousExpression target){
-        SuspiciousReturnsSearcher searcher = new SuspiciousReturnsSearcher();
-            List<SuspiciousExpression> result = searcher.search(target);
-        return result;
-    }
 
     protected void printProbeExInfoFooter(SuspiciousExpression suspExpr, List<SuspiciousVariable> nextTarget){
         System.out.println("------------------------------------------------------------------------------------------------------------");
