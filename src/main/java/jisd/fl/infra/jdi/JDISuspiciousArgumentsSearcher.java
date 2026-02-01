@@ -3,6 +3,7 @@ package jisd.fl.infra.jdi;
 import com.sun.jdi.*;
 import com.sun.jdi.event.*;
 import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
@@ -15,6 +16,8 @@ import jisd.fl.infra.junit.JUnitDebugger;
 
 import java.util.List;
 import java.util.Optional;
+
+import com.sun.jdi.request.EventRequest;
 
 public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearcher {
     static public final SuspiciousExpressionFactory factory = new JavaParserSuspiciousExpressionFactory();
@@ -31,20 +34,27 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
         int[] locateLine = new int[1];
         int[] argIndex = new int[1];
         int[] callCountAfterTarget = new int[]{0};
+        boolean[] found = new boolean[]{false};
 
-        //調査対象の行実行に到達した時に行う処理を定義
-        EnhancedDebugger.MethodEntryHandler handler = (vm, mEntry) -> {
+        //MethodEntryRequestを設定
+        EventRequestManager manager = debugger.vm.eventRequestManager();
+        MethodEntryRequest methodEntryRequest = manager.createMethodEntryRequest();
+        methodEntryRequest.addClassFilter(invokeMethodName.fullyQualifiedName().split("#")[0]);
+        methodEntryRequest.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        methodEntryRequest.enable();
+
+        //MethodEntryEvent handler を登録
+        debugger.registerEventHandler(MethodEntryEvent.class, (vm, event) -> {
+            MethodEntryEvent mEntry = (MethodEntryEvent) event;
+            //ターゲットのメソッドでない場合は無視
+            String targetFqmn = EnhancedDebugger.getFqmn(mEntry.method());
+            if (!targetFqmn.equals(invokeMethodName.fullyQualifiedName())) return;
+
             try {
                 //呼び出しメソッドを取得
                 ThreadReference thread = mEntry.thread();
-                StackFrame topFrame = null;
-                StackFrame callerFrame = null;
-                try {
-                    topFrame = thread.frame(0);
-                    callerFrame = thread.frame(1);
-                } catch (IncompatibleThreadStateException e) {
-                    throw new RuntimeException(e);
-                }
+                StackFrame topFrame = thread.frame(0);
+                StackFrame callerFrame = thread.frame(1);
 
                 //調査対象の変数がactualValueをとっているか確認
                 LocalVariable topVar = topFrame.visibleVariableByName(suspVar.variableName());
@@ -74,13 +84,17 @@ public class JDISuspiciousArgumentsSearcher implements SuspiciousArgumentsSearch
                 //この段階でリクエストは全てdisabledになっている必要がある。
                 //今は呼び出されたメソッドの中にいる。
                 callCountAfterTarget[0] = countMethodCallAfterTarget(vm, mEntry);
+                found[0] = true;
 
-            } catch (AbsentInformationException e) {
+            } catch (AbsentInformationException | IncompatibleThreadStateException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new RuntimeException(e);
             }
-        };
+        });
 
-        debugger.handleAtMethodEntry(invokeMethodName.fullyQualifiedName(), handler);
+        debugger.execute(() -> found[0]);
 
         //nullチェック
         if(locateMethod[0] == null || locateLine[0] == 0 || argIndex[0] == -1){

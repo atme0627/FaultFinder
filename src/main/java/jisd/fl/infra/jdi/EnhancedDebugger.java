@@ -78,6 +78,7 @@ public abstract class EnhancedDebugger implements Closeable {
      * {@link #setBreakpoints(String, List)} で登録済みの情報を元にリクエストを発行する。
      */
     protected void setupBreakpointsAndRequests() {
+        if (targetClass == null) return; // MethodEntry 等、ブレークポイント不要の場合
         EventRequestManager manager = vm.eventRequestManager();
         //ロード済みのクラスに対しbreakPointを設定
         List<ReferenceType> loaded = vm.classesByName(targetClass);
