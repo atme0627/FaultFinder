@@ -1,6 +1,7 @@
 package jisd.fl.presenter;
 
 import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 
 import java.util.List;
@@ -24,6 +25,10 @@ public class ProbeReporter {
     private static final String STR_COLOR = "\u001B[38;5;173m"; // orange - string literals
     private static final String TYPE_COLOR = "\u001B[38;5;79m"; // teal - type names
     private static final String METHOD_COLOR = "\u001B[38;5;222m"; // light yellow - method calls
+
+    private static final String BLUE = "\u001B[34m";
+    private static final String MAGENTA = "\u001B[35m";
+    private static final String TREE_DIM = "\u001B[2;90m"; // dim gray for tree lines
 
     private static final int SEPARATOR_WIDTH = 80;
 
@@ -89,6 +94,53 @@ public class ProbeReporter {
         System.out.println(DIM + "═".repeat(SEPARATOR_WIDTH) + RESET);
         System.out.println();
         System.out.println(BOLD + "[Cause Tree]" + RESET);
+    }
+
+    public void printCauseTree(SuspiciousExprTreeNode root) {
+        StringBuilder sb = new StringBuilder();
+        printTreeNode(sb, root, "", true);
+        System.out.print(sb);
+    }
+
+    private void printTreeNode(StringBuilder sb, SuspiciousExprTreeNode node, String prefix, boolean isTail) {
+        SuspiciousExpression expr = node.suspExpr;
+
+        // Tree lines (prefix + connector) in dim gray
+        String connector = isTail ? "└── " : "├── ";
+        sb.append(TREE_DIM).append(prefix).append(connector).append(RESET);
+
+        // Type tag with color
+        sb.append(coloredTypeTag(expr));
+
+        // Location in dimmer blue
+        sb.append(LOCATION_DIM).append("( ").append(expr.locateMethod).append(" line:").append(expr.locateLine).append(" )").append(RESET);
+
+        // Source code with syntax highlighting
+        sb.append(" ").append(highlightJava(expr.stmtString().replace("\n", " ").trim()));
+        sb.append("\n");
+
+        // Recurse children — prefix is plain text (no ANSI) so it renders correctly in dim gray
+        var children = node.childSuspExprs;
+        String childPrefix = prefix + (isTail ? "    " : "│   ");
+        for (int i = 0; i < children.size() - 1; i++) {
+            printTreeNode(sb, children.get(i), childPrefix, false);
+        }
+        if (!children.isEmpty()) {
+            printTreeNode(sb, children.getLast(), childPrefix, true);
+        }
+    }
+
+    private String coloredTypeTag(SuspiciousExpression expr) {
+        return switch (expr) {
+            case jisd.fl.core.entity.susp.SuspiciousAssignment ignored ->
+                    BLUE + "[  ASSIGN  ]" + RESET + " ";
+            case jisd.fl.core.entity.susp.SuspiciousReturnValue ignored ->
+                    MAGENTA + "[  RETURN  ]" + RESET + " ";
+            case jisd.fl.core.entity.susp.SuspiciousArgument ignored ->
+                    YELLOW + "[ ARGUMENT ]" + RESET + " ";
+            default ->
+                    DIM + "[   EXPR   ]" + RESET + " ";
+        };
     }
 
     /**

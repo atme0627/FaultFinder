@@ -12,6 +12,7 @@ import jisd.fl.core.entity.sbfl.Formula;
 import jisd.fl.usecase.CoverageAnalyzer;
 import jisd.fl.core.entity.sbfl.Granularity;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
+import jisd.fl.presenter.ProbeReporter;
 import jisd.fl.presenter.ScoreUpdateReport;
 import jisd.fl.core.entity.element.CodeElementIdentifier;
 
@@ -121,7 +122,7 @@ public class FaultFinder {
     public void probe(SuspiciousLocalVariable target){
         Probe prb = new Probe(target);
         SuspiciousExprTreeNode causeTree = prb.run(2000);
-        causeTree.print();
+        new ProbeReporter().printCauseTree(causeTree);
         probe(causeTree);
     }
 
