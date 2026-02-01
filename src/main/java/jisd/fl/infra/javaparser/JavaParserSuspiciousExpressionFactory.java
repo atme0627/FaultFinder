@@ -94,16 +94,16 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
 
 
     private static String createArgStmtString(Statement stmt, int callCountAfterTargetInLine, int argIndex, MethodElementName calleeMethodName) {
-        final String BG_GREEN = "\u001B[42m";
+        final String BG_GREEN = "\u001B[48;5;22m";
         final String RESET = "\u001B[0m";
         LexicalPreservingPrinter.setup(stmt);
         JavaParserExpressionExtractor.extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, calleeMethodName).getTokenRange().ifPresent(tokenRange -> {
-                    // 子ノードに属するすべてのトークンに色付け
-                    tokenRange.forEach(token -> {
-                        String original = token.getText();
-                        // ANSI エスケープシーケンスで背景黄色
-                        token.setText(BG_GREEN + original + RESET);
-                    });
+                    // 先頭トークンに BG_GREEN を付与、末尾トークンに RESET を付与
+                    // トークン間のスペースも含めて連続ハイライトされる
+                    var first = tokenRange.getBegin();
+                    var last = tokenRange.getEnd();
+                    first.setText(BG_GREEN + first.getText());
+                    last.setText(last.getText() + RESET);
                 }
         );
         return LexicalPreservingPrinter.print(stmt);

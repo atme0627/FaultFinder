@@ -38,20 +38,18 @@ public class Probe{
       try (JDIDebugServerHandle session = JDIDebugServerHandle.startShared()) {
         Deque<SuspiciousExpression> exploringTargets = new ArrayDeque<>();
         Set<SuspiciousVariable> investigatedVariables = new HashSet<>();
+        int stepCount = 0;
 
         // 0. ユーザ由来のsuspVarから最初のSuspExprを特定する。
         investigatedVariables.add(firstTarget);
-        reporter.reportSuspiciousVariable(firstTarget);
+        reporter.reportProbeStart(firstTarget);
         SuspiciousExpression suspExpr = causeLineFinder.find(firstTarget).orElseThrow(() -> new RuntimeException("[Probe For STATEMENT] Cause line not found."));
         exploringTargets.add(suspExpr);
         this.suspiciousExprTreeRoot = new SuspiciousExprTreeNode(suspExpr);
-        reporter.reportTargetSuspiciousExpression(suspExpr);
 
         //expr --> list<expr> の特定ループ
         while(!exploringTargets.isEmpty()){
-            reporter.printHeader("", 150);
             SuspiciousExpression targetExpr = exploringTargets.removeFirst();
-            reporter.reportTargetSuspiciousExpression(targetExpr);
             List<SuspiciousExpression> children = new ArrayList<>();
 
             // 1. suspExpr -- [suspVar] --> suspExpr(, suspArg) 探索済みのsuspVarは除外
@@ -81,8 +79,13 @@ public class Probe{
             addTreeElement(targetExpr, children);
             //次の探索対象に追加
             exploringTargets.addAll(children);
+
+            // 逐次ログ出力
+            stepCount++;
+            reporter.reportExplorationStep(stepCount, targetExpr, children);
         }
 
+        reporter.reportSectionEnd();
         return suspiciousExprTreeRoot;
       } catch (IOException e) {
           throw new RuntimeException("Failed to start shared debug session", e);
@@ -97,7 +100,6 @@ public class Probe{
         nextTarget.forEach(v -> System.out.println(v.toString()));
     }
 
-
     protected void addTreeElement(SuspiciousExpression parent, List<SuspiciousExpression> children){
         SuspiciousExprTreeNode parentNode = suspiciousExprTreeRoot.find(parent);
         if(parentNode == null) {
@@ -105,6 +107,5 @@ public class Probe{
             throw new RuntimeException("Parent node is not found.");
         }
         parentNode.addChild(children);
-        if(!children.isEmpty()) parentNode.printChildren();
     }
 }

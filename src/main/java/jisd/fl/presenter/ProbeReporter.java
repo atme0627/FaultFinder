@@ -1,153 +1,137 @@
 package jisd.fl.presenter;
 
-import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ProbeReporter {
-    static private final int HEADER_LENGTH = 100;
+    // ANSI color constants
+    private static final String RESET = "\u001B[0m";
+    private static final String BOLD = "\u001B[1m";
+    private static final String DIM = "\u001B[90m";
+    private static final String CYAN = "\u001B[36m";
+    private static final String GREEN = "\u001B[32m";
+    private static final String YELLOW = "\u001B[33m";
+    private static final String LOCATION_BOLD = "\u001B[38;5;75m"; // bright blue (step header)
+    private static final String LOCATION_DIM = "\u001B[38;5;67m";  // dimmer blue (child nodes)
 
-    public void reportSuspiciousVariable(SuspiciousLocalVariable target) {
-        Map<String, String> infoMap = new HashMap<String, String>();
-        infoMap.put("LOCATION", target.getLocateMethodString(true));
-        infoMap.put("TARGET", target.variableName() + " == " + target.actualValue());
-        printRoundedBox("", formattedMapString(infoMap, 0));
+    // VS Code Dark+ theme colors for Java syntax
+    private static final String KW_COLOR = "\u001B[34m";     // blue - keywords
+    private static final String NUM_COLOR = "\u001B[38;5;178m"; // light olive - numeric literals
+    private static final String STR_COLOR = "\u001B[38;5;173m"; // orange - string literals
+    private static final String TYPE_COLOR = "\u001B[38;5;79m"; // teal - type names
+    private static final String METHOD_COLOR = "\u001B[38;5;222m"; // light yellow - method calls
+
+    private static final int SEPARATOR_WIDTH = 80;
+
+    // Java keywords
+    private static final String KEYWORDS = "\\b(?:abstract|assert|boolean|break|byte|case|catch|char|class|const|continue"
+            + "|default|do|double|else|enum|extends|final|finally|float|for|goto|if|implements"
+            + "|import|instanceof|int|interface|long|native|new|package|private|protected|public"
+            + "|return|short|static|strictfp|super|switch|synchronized|this|throw|throws"
+            + "|transient|try|void|volatile|while|var|record|sealed|permits|yield)\\b";
+
+    // Matches: digits (int, float, hex, binary), true, false, null
+    private static final String LITERALS = "\\b(?:0[xX][0-9a-fA-F_]+[lL]?|0[bB][01_]+[lL]?|\\d[\\d_]*(?:\\.[\\d_]+)?(?:[eE][+-]?\\d+)?[fFdDlL]?|true|false|null)\\b";
+
+    // String/char literals (handles escaped quotes)
+    private static final String STRINGS = "\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*'";
+
+    // Type names: capitalized identifiers (e.g., String, List, MyClass)
+    private static final String TYPE_NAMES = "\\b[A-Z][a-zA-Z0-9]*\\b";
+
+    // Method calls: identifier followed by (
+    // Note: no capture group - we use group(0) directly
+    private static final String METHOD_CALLS = "\\b[a-z][a-zA-Z0-9]*(?=\\s*\\()";
+
+    // Combined pattern: ANSI escape sequences first (to skip them), then tokens
+    private static final Pattern TOKEN_PATTERN = Pattern.compile(
+            "(?<ANSI>\u001B\\[[;\\d]*[A-Za-z])"      // existing ANSI escapes (skip)
+            + "|(?<STRING>" + STRINGS + ")"
+            + "|(?<KEYWORD>" + KEYWORDS + ")"
+            + "|(?<LITERAL>" + LITERALS + ")"
+            + "|(?<TYPE>" + TYPE_NAMES + ")"
+            + "|(?<METHOD>" + METHOD_CALLS + ")"
+    );
+
+    public void reportProbeStart(SuspiciousLocalVariable target) {
+        System.out.println(BOLD + "[Probe]" + RESET
+                + " Target: " + target.variableName() + " == " + target.actualValue()
+                + " @ " + target.getLocateMethodString(false));
+        System.out.println(DIM + "─".repeat(SEPARATOR_WIDTH) + RESET);
     }
 
-    public void reportTargetSuspiciousExpression(SuspiciousExpression cause){
-        Map<String, String> infoMap = new HashMap<String, String>();
-        infoMap.put("LOCATION", cause.locateMethod + ": line " + cause.locateLine);
-        infoMap.put("LINE", cause.stmtString().replace("\n", " "));
-        printDoubleBox("CAUSE LINE", formattedMapString(infoMap, 1));
+    public void reportExplorationStep(int step, SuspiciousExpression target, List<SuspiciousExpression> children) {
+        System.out.println();
+        // Step header: [N] location (bold + white)
+        System.out.println(CYAN + "[" + step + "]" + RESET
+                + " " + BOLD + LOCATION_BOLD + target.locateMethod + ":" + target.locateLine + RESET);
+        // Source code line (syntax highlighted)
+        System.out.println("    " + highlightJava(target.stmtString().replace("\n", " ")));
 
-    }
-
-    public void reportInvokedReturnExpression(SuspiciousExprTreeNode root){
-        if(root.childSuspExprs.isEmpty()) return;
-        printHeader("INVOKED RETURNS", HEADER_LENGTH);
-        reportInvokedReturnExpression(root, 1);
-    }
-
-    private void reportInvokedReturnExpression(SuspiciousExprTreeNode target, int indentLevel){
-        Map<String, String> infoMap = new HashMap<String, String>();
-        infoMap.put("LOCATION", target.suspExpr.locateMethod + ": line " + target.suspExpr.locateLine);
-        infoMap.put("LINE", target.suspExpr.stmtString().replace("\n", " "));
-        List<String> formatted = formattedMapString(infoMap, indentLevel);
-        for (String line : formatted) {
-            System.out.println(line);
-        }
-        for(SuspiciousExprTreeNode child : target.childSuspExprs) {
-            reportInvokedReturnExpression(child, indentLevel + 1);
-        }
-
-    }
-
-
-    private void printRoundedBox(String title, List<String> body){
-        int maxLen = body.stream().mapToInt(String::length).max().orElse(0);
-        int innerWidth = Math.max(maxLen, title.length() + 2);
-
-        String top    = "╭─ " + title + " " + "─".repeat(Math.max(0, innerWidth - title.length() - 1)) + "╮";
-        String bottom = "╰" + "─".repeat(innerWidth + 2) + "╯";
-
-        System.out.println(top);
-        for (String line : body) {
-            System.out.println("│ " + padRight(line, innerWidth) + " │");
-        }
-        System.out.println(bottom);
-    }
-
-    private void printWithHeader(String title, List<String> body){
-        int maxLen = body.stream().mapToInt(String::length).max().orElse(0);
-        printHeader(title, HEADER_LENGTH);
-        for (String line : body) {
-            System.out.println(line);
-        }
-    }
-
-    public void printHeader(String title, int length){
-        String header;
-        if(title.isEmpty()) {
-            header = "─".repeat(length);
+        if (children.isEmpty()) {
+            System.out.println("    " + YELLOW + "(leaf)" + RESET);
         } else {
-            header = "── " + title + " " + "─".repeat(Math.max(0, length - title.length()) - 4);
-        }
-        System.out.println(header);
-    }
-
-
-    static private String padLeft(String s, int length) {
-        if (s == null) s = "";
-        return String.format("%" + length + "s", s);
-    }
-
-    static private List<String> formattedMapString(Map<String, String> map, int indentLevel) {
-        int maxKeyLen = map.keySet().stream().mapToInt(String::length).max().orElse(0) + 1;
-        List<String> ret = new ArrayList<>();
-        for(Map.Entry<String, String> entry : map.entrySet()) {
-            String formatted = "";
-            if (indentLevel > 0) {
-                formatted += padRight("", indentLevel * 4);
+            for (SuspiciousExpression child : children) {
+                String type = expressionType(child);
+                System.out.println("    " + GREEN + "→" + RESET
+                        + " " + type + "  " + LOCATION_DIM + child.locateMethod + ":" + child.locateLine + RESET
+                        + "  " + highlightJava(child.stmtString().replace("\n", " ")));
             }
-            formatted += padRight(entry.getKey(), maxKeyLen);
-            formatted += ": ";
-            formatted += entry.getValue();
-            ret.add(formatted);
         }
-        return ret;
     }
 
-    private void printDoubleBox(String title, List<String> body){
-        int maxLen = body.stream().mapToInt(String::length).max().orElse(0);
-        int innerWidth = Math.max(maxLen, title.length() + 2);
+    public void reportSectionEnd() {
+        System.out.println();
+        System.out.println(DIM + "═".repeat(SEPARATOR_WIDTH) + RESET);
+        System.out.println();
+        System.out.println(BOLD + "[Cause Tree]" + RESET);
+    }
 
-        // 上辺：╔═ title ═══╗ みたいにする
-        String top = "╔═ " + title + " " + "═".repeat(Math.max(0, innerWidth - title.length() - 1)) + "╗";
-        String bottom = "╚" + "═".repeat(innerWidth + 2) + "╝";
+    /**
+     * Java ソースコードに VS Code Dark+ 風のシンタックスハイライトを適用する。
+     * 既存の ANSI エスケープ（引数ハイライト等）は保持する。
+     */
+    static String highlightJava(String source) {
+        StringBuilder sb = new StringBuilder();
+        Matcher m = TOKEN_PATTERN.matcher(source);
+        int lastEnd = 0;
 
-        System.out.println(top);
-        for (String line : body) {
-            System.out.println("║ " + padRight(line, innerWidth) + " ║");
+        while (m.find()) {
+            // マッチ前のテキストをそのまま追加
+            sb.append(source, lastEnd, m.start());
+
+            if (m.group("ANSI") != null) {
+                // 既存の ANSI エスケープはそのまま
+                sb.append(m.group());
+            } else if (m.group("STRING") != null) {
+                sb.append(STR_COLOR).append(m.group()).append(RESET);
+            } else if (m.group("KEYWORD") != null) {
+                sb.append(KW_COLOR).append(m.group()).append(RESET);
+            } else if (m.group("LITERAL") != null) {
+                sb.append(NUM_COLOR).append(m.group()).append(RESET);
+            } else if (m.group("TYPE") != null) {
+                sb.append(TYPE_COLOR).append(m.group()).append(RESET);
+            } else if (m.group("METHOD") != null) {
+                sb.append(METHOD_COLOR).append(m.group()).append(RESET);
+            } else {
+                sb.append(m.group());
+            }
+            lastEnd = m.end();
         }
-        System.out.println(bottom);
+        sb.append(source, lastEnd, source.length());
+        return sb.toString();
     }
 
-    static private String padRight(String s, int width) {
-        if (s == null) s = "";
-        int pad = Math.max(0, width - displayWidth(s));
-        return s + " ".repeat(pad);
-    }
-
-    static private int displayWidth(String s) {
-        // ANSI除去（色など）
-        String t = s.replaceAll("\u001B\\[[;\\d]*[ -/]*[@-~]", "");
-        int w = 0;
-        for (int i = 0; i < t.length();) {
-            int cp = t.codePointAt(i);
-            i += Character.charCount(cp);
-
-            int type = Character.getType(cp);
-            if (type == Character.NON_SPACING_MARK
-                    || type == Character.ENCLOSING_MARK
-                    || type == Character.COMBINING_SPACING_MARK) continue;
-            if (Character.isISOControl(cp)) continue;
-
-            w += isWide(cp) ? 2 : 1;
-        }
-        return w;
-    }
-
-    static private boolean isWide(int cp) {
-        var b = Character.UnicodeBlock.of(cp);
-        return b == Character.UnicodeBlock.CJK_UNIFIED_IDEOGRAPHS
-                || b == Character.UnicodeBlock.CJK_COMPATIBILITY_IDEOGRAPHS
-                || b == Character.UnicodeBlock.HIRAGANA
-                || b == Character.UnicodeBlock.KATAKANA
-                || b == Character.UnicodeBlock.HANGUL_SYLLABLES;
+    private static String expressionType(SuspiciousExpression expr) {
+        return switch (expr) {
+            case jisd.fl.core.entity.susp.SuspiciousAssignment ignored -> "ASSIGN ";
+            case jisd.fl.core.entity.susp.SuspiciousReturnValue ignored -> "RETURN ";
+            case jisd.fl.core.entity.susp.SuspiciousArgument ignored -> "ARGUMENT";
+            default -> "EXPR    ";
+        };
     }
 }
