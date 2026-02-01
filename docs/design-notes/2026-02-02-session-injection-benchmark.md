@@ -38,5 +38,18 @@ Before のデータは `2026-01-31-benchmark-baseline.md` のベースライン�
 
 - Strategy 単位では **10〜40倍の高速化**。Before の 300-600ms の大部分が JVM 起動 + JDWP 接続コストだったことが裏付けられた。
 - FaultFinder/probe は **37.6秒 → 6.1秒**（83% 短縮）。BFS 探索で Strategy が連鎖的に呼ばれるため、JVM 再利用の効果が大きい。
-- TraceValue/Argument のみ改善が小さい（1.3x）。`JDISuspiciousArgumentsSearcher.countMethodCallAfterTarget()` 内のサブイベントループの処理時間が支配的で、JVM 起動コストの割合が相対的に低い。
 - init（JaCoCo カバレッジ計測）は変更なし。JDI とは独立した JVM プロセスを使用するため。
+
+### TraceValue/Argument の遅延について
+
+TraceValue/Argument のみ After=287ms と改善が小さく見えるが、これは **Strategy 間の性能差ではなく、JUnit テスト実行順序で最初に実行される Strategy の初回ウォームアップコスト** であった。
+
+SharedJUnitDebugger.execute() の内訳をプロファイルした結果:
+
+| 実行順 | eventLoop (ms) | 備考 |
+|---:|---:|---|
+| 1番目（TraceValue/Argument） | 262 ms | 初回ウォームアップ込み |
+| 2番目 | 26 ms | |
+| 3番目以降 | 9-25 ms | |
+
+初回は debuggee JVM 側のクラスロード（fixture クラス + JUnit フレームワーク）や JDWP チャネルの初期化コストが含まれる。2回目以降は全て 10-26ms に収束しており、Strategy 間に本質的な性能差はない。
