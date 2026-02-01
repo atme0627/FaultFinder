@@ -1,6 +1,6 @@
 # Step 6-7: セッション注入 — Static シングルトン方式
 
-## ステータス: 未着手
+## ステータス: 完了
 
 ## 設計
 
@@ -98,11 +98,25 @@ public SuspiciousExprTreeNode run(int sleepTime) {
 
 `run()` 内で `try (JDIDebugServerHandle session = JDIDebugServerHandle.startShared())` で囲む。
 
-### Phase 5: テスト実行 (未着手)
+### Phase 5: テスト移行 + イベントループ改善 (完了)
 
-```bash
-./gradlew test --tests "jisd.fl.infra.*" --no-daemon
-```
+7テストクラスに共有セッションのライフサイクル管理を追加:
+- `@BeforeAll`: `JDIDebugServerHandle.startShared()`
+- `@AfterAll`: `session.close()`
+- `@BeforeEach`: `session.cleanupEventRequests()`
+
+実装中に発見・修正した問題:
+
+1. **`queue.remove()` の無限ブロック**: テスト完了後にイベントが来なくなると `shouldStop` チェックに到達できない。
+   → `queue.remove(200)` に変更し、タイムアウト時に `shouldStop` をポーリング。
+
+2. **SharedJUnitDebugger の MethodExitEvent 依存**: テスト失敗時（例外終了）に MethodExitEvent が発火しない。
+   → CompletableFuture による TCP 応答非同期読み取りに変更。
+
+3. **EventQueue の残存イベント干渉**: EventRequest 削除後もキューに入済みの StepEvent が残り、次の Strategy 実行時に NPE を引き起こす。
+   → `SharedJUnitDebugger.execute()` 終了時に `drainEventQueue()` で残存イベントを読み捨て。
+
+テスト結果: 77テスト全通過（0 failures, 2 skipped）、flaky なし。
 
 ## 設計の経緯
 
