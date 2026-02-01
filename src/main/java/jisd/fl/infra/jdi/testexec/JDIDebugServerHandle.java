@@ -94,10 +94,28 @@ public class JDIDebugServerHandle implements Closeable {
      * @return true: テスト成功、false: テスト失敗
      */
     public boolean runTest(MethodElementName testMethod) throws IOException {
+        sendRunCommand(testMethod);
+        return readRunResult();
+    }
+
+    /**
+     * TCP 経由でテスト実行コマンドを送信する（応答は待たない）。
+     * JDWP でイベントループを回しながらテストを実行する場合に使用。
+     * 応答は {@link #readRunResult()} で後から読み取る。
+     */
+    public void sendRunCommand(MethodElementName testMethod) throws IOException {
         String cmd = "RUN " + testMethod.fullyQualifiedName() + "\n";
         tcpOut.write(cmd.getBytes(StandardCharsets.UTF_8));
         tcpOut.flush();
+    }
 
+    /**
+     * TCP の RUN コマンドに対する応答を読み取る。
+     * {@link #sendRunCommand(MethodElementName)} の後に呼び出す。
+     *
+     * @return true: テスト成功、false: テスト失敗
+     */
+    public boolean readRunResult() throws IOException {
         String response = tcpIn.readLine();
         if (response == null) {
             throw new EOFException("server closed connection");

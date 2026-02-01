@@ -1,7 +1,6 @@
 package jisd.fl.infra.jdi.testexec;
 
 import com.sun.jdi.VirtualMachine;
-import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.util.PropertyLoader;
 import org.junit.jupiter.api.BeforeAll;
@@ -10,27 +9,28 @@ import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * JDIDebugServerHandle の統合テスト。
  * 実際に JVM を起動し、TCP + JDWP 接続を検証する。
+ * フィクスチャ: {@code jisd.fl.fixture.JDIServerFixture}
  */
 @Timeout(30)
 class JDIDebugServerHandleTest {
 
+    private static final String FIXTURE_TEST =
+            "jisd.fl.fixture.JDIServerFixture#simpleAssignment()";
+
     @BeforeAll
     static void initProperty() {
-        Dotenv dotenv = Dotenv.load();
-        Path testProjectDir = Paths.get(dotenv.get("TEST_PROJECT_DIR"));
         var cfg = new PropertyLoader.ProjectConfig(
-                testProjectDir,
-                Path.of("src/main/java"),
-                Path.of("src/test/java"),
-                Path.of("build/classes/java/main"),
-                Path.of("build/classes/java/test")
+                Path.of("/Users/ezaki/IdeaProjects/FaultFinder/src/test/resources/fixtures"),
+                Path.of("exec/src/main/java"),
+                Path.of("exec/src/main/java"),
+                Path.of("/Users/ezaki/IdeaProjects/FaultFinder/build/classes/java/fixtureExec"),
+                Path.of("/Users/ezaki/IdeaProjects/FaultFinder/build/classes/java/fixtureExec")
         );
         PropertyLoader.setProjectConfig(cfg);
     }
@@ -53,19 +53,16 @@ class JDIDebugServerHandleTest {
     @Test
     void runTest_returns_result() throws IOException {
         try (JDIDebugServerHandle session = JDIDebugServerHandle.start()) {
-            MethodElementName testMethod = new MethodElementName(
-                    "org.sample.MinimumTest#CheckRunTestAndWatchVariable()");
+            MethodElementName testMethod = new MethodElementName(FIXTURE_TEST);
             boolean passed = session.runTest(testMethod);
-            // テスト結果はどちらでもよい（接続が動くことを確認）
-            // ただし例外が飛ばないことが重要
+            assertTrue(passed, "simpleAssignment should pass");
         }
     }
 
     @Test
     void runTest_multiple_times_in_same_session() throws IOException {
         try (JDIDebugServerHandle session = JDIDebugServerHandle.start()) {
-            MethodElementName testMethod = new MethodElementName(
-                    "org.sample.MinimumTest#CheckRunTestAndWatchVariable()");
+            MethodElementName testMethod = new MethodElementName(FIXTURE_TEST);
 
             session.runTest(testMethod);
             session.runTest(testMethod);

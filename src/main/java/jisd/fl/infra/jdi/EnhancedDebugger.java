@@ -101,13 +101,10 @@ public abstract class EnhancedDebugger implements Closeable {
     protected void runEventLoop(Supplier<Boolean> shouldStop) {
         EventRequestManager manager = vm.eventRequestManager();
         EventQueue queue = vm.eventQueue();
-        EventSet eventSet = null;
         try {
-            while((eventSet = queue.remove()) != null) {
-                // 終了条件チェック
-                if (shouldStop != null && shouldStop.get()) {
-                    break;
-                }
+            while(true) {
+                EventSet eventSet = queue.remove();
+                if (eventSet == null) break;
 
                 for(Event ev : eventSet) {
                     //VMStartEventは無視
@@ -136,9 +133,12 @@ public abstract class EnhancedDebugger implements Closeable {
                             }
                         }
                     }
-
                 }
                 vm.resume();
+
+                if (shouldStop != null && shouldStop.get()) {
+                    break;
+                }
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
