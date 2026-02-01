@@ -28,6 +28,15 @@ public abstract class EnhancedDebugger implements Closeable {
         this.p = p;
     }
 
+    /**
+     * 外部で確立済みの VirtualMachine を受け取るコンストラクタ。
+     * JVM プロセスのライフサイクルは呼び出し側が管理する（p = null）。
+     */
+    protected EnhancedDebugger(VirtualMachine vm) {
+        this.vm = vm;
+        this.p = null;
+    }
+
     public void registerEventHandler(Class<? extends Event> eventType, JDIEventHandler<? extends Event> handler) {
         handlers.computeIfAbsent(eventType, k -> new ArrayList<>()).add(handler);
     }
@@ -35,6 +44,16 @@ public abstract class EnhancedDebugger implements Closeable {
     public void setBreakpoints(String fqcn, List<Integer> lines) {
         this.targetClass = fqcn;
         this.breakpointLines.addAll(lines);
+    }
+
+    /**
+     * ハンドラ、ブレークポイント行、ターゲットクラスをクリアする。
+     * 共有セッションで複数の Strategy を連続実行する際に使用。
+     */
+    protected void resetState() {
+        handlers.clear();
+        breakpointLines.clear();
+        targetClass = null;
     }
 
     public void executeTMP() {
@@ -46,9 +65,21 @@ public abstract class EnhancedDebugger implements Closeable {
     }
 
     public void execute(Supplier<Boolean> shouldStop) {
-        //ロード済みのクラスに対しbreakPointを設定
+        setupBreakpointsAndRequests();
+        try {
+            runEventLoop(shouldStop);
+        } finally {
+            close();
+        }
+    }
+
+    /**
+     * ブレークポイント設定 + ClassPrepareRequest 作成。
+     * {@link #setBreakpoints(String, List)} で登録済みの情報を元にリクエストを発行する。
+     */
+    protected void setupBreakpointsAndRequests() {
         EventRequestManager manager = vm.eventRequestManager();
-        //通常は一つのはず
+        //ロード済みのクラスに対しbreakPointを設定
         List<ReferenceType> loaded = vm.classesByName(targetClass);
         for (ReferenceType rt : loaded) {
             for(int line : breakpointLines) {
@@ -57,13 +88,18 @@ public abstract class EnhancedDebugger implements Closeable {
         }
 
         //未ロードのクラスがロードされたタイミングを監視
-        //ロードされたらbreakpointをセットする予定
         ClassPrepareRequest cpr = manager.createClassPrepareRequest();
         cpr.addClassFilter(targetClass);
         cpr.setSuspendPolicy(EventRequest.SUSPEND_ALL);
         cpr.enable();
+    }
 
-        // 統合イベントループ
+    /**
+     * 純粋なイベントループ。close は行わない。
+     * サブクラスでオーバーライドしてテスト完了検知等の追加ロジックを差し込める。
+     */
+    protected void runEventLoop(Supplier<Boolean> shouldStop) {
+        EventRequestManager manager = vm.eventRequestManager();
         EventQueue queue = vm.eventQueue();
         EventSet eventSet = null;
         try {
@@ -107,8 +143,6 @@ public abstract class EnhancedDebugger implements Closeable {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } catch (VMDisconnectedException ignored) {
-        } finally {
-            close();
         }
     }
 
