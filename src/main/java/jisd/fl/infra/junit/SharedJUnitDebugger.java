@@ -64,6 +64,9 @@ public class SharedJUnitDebugger extends EnhancedDebugger {
 
             // 6. TCP 応答の完了を確実に待つ
             tcpResult.join();
+
+            // 7. EventQueue に残存するイベントを読み捨てる
+            session.drainEventQueue();
         } catch (IOException e) {
             throw new RuntimeException("Failed to run test via session: " + testMethod, e);
         } finally {

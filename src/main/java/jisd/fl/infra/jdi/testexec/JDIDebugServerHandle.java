@@ -6,6 +6,8 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.connect.AttachingConnector;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
+import com.sun.jdi.event.EventQueue;
+import com.sun.jdi.event.EventSet;
 import com.sun.jdi.request.*;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.infra.jvm.JDIDebugServerLaunchSpecFactory;
@@ -159,6 +161,25 @@ public class JDIDebugServerHandle implements Closeable {
         for (MethodExitRequest r : mgr.methodExitRequests()) mgr.deleteEventRequest(r);
         for (MethodEntryRequest r : mgr.methodEntryRequests()) mgr.deleteEventRequest(r);
         for (ClassPrepareRequest r : mgr.classPrepareRequests()) mgr.deleteEventRequest(r);
+    }
+
+    /**
+     * EventQueue に残っているイベントを全て読み捨てる。
+     * EventRequest 削除後もキューに入済みのイベントは残るため、
+     * 次の Strategy 実行前に呼び出して残存イベントの干渉を防ぐ。
+     */
+    public void drainEventQueue() {
+        EventQueue queue = vm.eventQueue();
+        while (true) {
+            try {
+                EventSet es = queue.remove(1);
+                if (es == null) break;
+                es.resume();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
     }
 
     @Override
