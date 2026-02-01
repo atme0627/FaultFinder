@@ -104,8 +104,11 @@ public abstract class EnhancedDebugger implements Closeable {
         EventQueue queue = vm.eventQueue();
         try {
             while(true) {
-                EventSet eventSet = queue.remove();
-                if (eventSet == null) break;
+                EventSet eventSet = queue.remove(200);
+                if (eventSet == null) {
+                    if (shouldStop != null && shouldStop.get()) break;
+                    continue;
+                }
 
                 for(Event ev : eventSet) {
                     //VMStartEventは無視

@@ -8,11 +8,9 @@ import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 import jisd.fl.infra.javaparser.JavaParserUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
@@ -35,8 +33,10 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
 
     private static final String FIXTURE_FQCN = "jisd.fl.fixture.SearchReturnsAssignmentFixture";
 
+    private static JDIDebugServerHandle session;
+
     @BeforeAll
-    static void setUpProjectConfigForFixtures() {
+    static void setUpProjectConfigForFixtures() throws Exception {
         var cfg = new PropertyLoader.ProjectConfig(
                 Path.of("/Users/ezaki/IdeaProjects/FaultFinder/src/test/resources/fixtures"),
                 Path.of("exec/src/main/java"),
@@ -45,6 +45,17 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
                 Path.of("/Users/ezaki/IdeaProjects/FaultFinder/build/classes/java/fixtureExec")
         );
         PropertyLoader.setProjectConfig(cfg);
+        session = JDIDebugServerHandle.startShared();
+    }
+
+    @AfterAll
+    static void tearDown() throws Exception {
+        if (session != null) { session.close(); session = null; }
+    }
+
+    @BeforeEach
+    void cleanupBeforeEach() {
+        if (session != null) session.cleanupEventRequests();
     }
 
     // ===== 単一メソッド呼び出しテスト =====

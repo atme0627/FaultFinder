@@ -1,15 +1,11 @@
 package jisd.fl.infra.junit;
 
-import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.*;
-import com.sun.jdi.request.EventRequest;
-import com.sun.jdi.request.EventRequestManager;
-import com.sun.jdi.request.MethodExitRequest;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.infra.jdi.EnhancedDebugger;
 import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 /**
@@ -19,7 +15,8 @@ import java.util.function.Supplier;
  * このクラスでは close() は NO-OP とする。
  *
  * テスト実行は TCP 経由で RUN コマンドを送信し、
- * テスト完了は対象テストメソッドの MethodExitEvent で検知する。
+ * テスト完了は TCP 応答の受信で検知する。
+ * （MethodExitEvent はテスト失敗時に発火しないため使用しない）
  */
 public class SharedJUnitDebugger extends EnhancedDebugger {
     private final JDIDebugServerHandle session;
@@ -36,15 +33,23 @@ public class SharedJUnitDebugger extends EnhancedDebugger {
     public void execute(Supplier<Boolean> shouldStop) {
         testCompleted = false;
 
-        // 1. テストメソッドの MethodExitEvent で完了検知用リクエスト設定
-        setupTestCompletionDetection();
-
-        // 2. ブレークポイント・ClassPrepareRequest 設定
+        // 1. ブレークポイント・ClassPrepareRequest 設定
         setupBreakpointsAndRequests();
 
         try {
-            // 3. TCP で RUN 送信（応答は待たない）
+            // 2. TCP で RUN 送信（応答は待たない）
             session.sendRunCommand(testMethod);
+
+            // 3. TCP 応答を別スレッドで読み取り、完了フラグを立てる
+            CompletableFuture<Void> tcpResult = CompletableFuture.runAsync(() -> {
+                try {
+                    session.readRunResult();
+                } catch (IOException e) {
+                    // テスト完了自体は検知できたので、例外は無視
+                } finally {
+                    testCompleted = true;
+                }
+            });
 
             // 4. イベントループ（shouldStop OR testCompleted で終了）
             Supplier<Boolean> combinedStop = () ->
@@ -57,8 +62,8 @@ public class SharedJUnitDebugger extends EnhancedDebugger {
             session.cleanupEventRequests();
             try { vm.resume(); } catch (com.sun.jdi.VMDisconnectedException ignored) {}
 
-            // 6. TCP 応答を読み取る（テスト完了まで待機）
-            session.readRunResult();
+            // 6. TCP 応答の完了を確実に待つ
+            tcpResult.join();
         } catch (IOException e) {
             throw new RuntimeException("Failed to run test via session: " + testMethod, e);
         } finally {
@@ -79,28 +84,5 @@ public class SharedJUnitDebugger extends EnhancedDebugger {
     @Override
     public void close() {
         // do nothing
-    }
-
-    /**
-     * テストメソッドの完了を MethodExitEvent で検知するリクエストを設定する。
-     */
-    private void setupTestCompletionDetection() {
-        EventRequestManager mgr = vm.eventRequestManager();
-        MethodExitRequest meReq = mgr.createMethodExitRequest();
-
-        // テストクラスでフィルタ
-        String testClassName = testMethod.fullyQualifiedClassName();
-        meReq.addClassFilter(testClassName);
-        meReq.setSuspendPolicy(EventRequest.SUSPEND_ALL);
-        meReq.enable();
-
-        // MethodExitEvent ハンドラを登録
-        String testMethodName = testMethod.shortMethodName();
-        registerEventHandler(MethodExitEvent.class, (vm, ev) -> {
-            MethodExitEvent mee = (MethodExitEvent) ev;
-            if (mee.method().name().equals(testMethodName)) {
-                testCompleted = true;
-            }
-        });
     }
 }

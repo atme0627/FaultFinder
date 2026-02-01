@@ -10,10 +10,9 @@ import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.core.util.PropertyLoader;
+import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 import jisd.fl.infra.javaparser.JavaParserUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 
@@ -38,9 +37,10 @@ class TargetVariableTracerTest {
     private static final String DUMMY_ACTUAL_VALUE = "999";
     private static final int LOOP_ITERATIONS = 3;
     private static PropertyLoader.ProjectConfig original;
+    private static JDIDebugServerHandle session;
 
     @BeforeAll
-    static void setUpProjectConfigForFixtures() {
+    static void setUpProjectConfigForFixtures() throws Exception {
         original = PropertyLoader.getTargetProjectConfig();
 
         var cfg = new PropertyLoader.ProjectConfig(
@@ -52,6 +52,17 @@ class TargetVariableTracerTest {
         );
 
         PropertyLoader.setProjectConfig(cfg);
+        session = JDIDebugServerHandle.startShared();
+    }
+
+    @AfterAll
+    static void tearDown() throws Exception {
+        if (session != null) { session.close(); session = null; }
+    }
+
+    @BeforeEach
+    void cleanupBeforeEach() {
+        if (session != null) session.cleanupEventRequests();
     }
 
     @Test
