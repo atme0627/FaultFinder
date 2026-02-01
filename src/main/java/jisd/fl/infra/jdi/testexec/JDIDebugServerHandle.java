@@ -1,4 +1,4 @@
-package jisd.fl.infra.jdi;
+package jisd.fl.infra.jdi.testexec;
 
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachine;
@@ -30,14 +30,14 @@ import java.util.concurrent.TimeUnit;
  * 複数の Strategy 実行にわたって単一の JVM を再利用できる。
  *
  * <pre>
- * try (DebugServerSession session = DebugServerSession.start()) {
+ * try (JDIDebugServerHandle session = JDIDebugServerHandle.start()) {
  *     session.runTest(testMethod);  // TCP で RUN 送信
  *     // JDWP でブレークポイント・ステップ制御
  *     session.cleanupEventRequests();  // 次の Strategy 用にリセット
  * }
  * </pre>
  */
-public class DebugServerSession implements Closeable {
+public class JDIDebugServerHandle implements Closeable {
 
     private final JVMProcess process;
     private final VirtualMachine vm;
@@ -45,8 +45,8 @@ public class DebugServerSession implements Closeable {
     private final BufferedReader tcpIn;
     private final OutputStream tcpOut;
 
-    private DebugServerSession(JVMProcess process, VirtualMachine vm,
-                               Socket tcpSocket, BufferedReader tcpIn, OutputStream tcpOut) {
+    private JDIDebugServerHandle(JVMProcess process, VirtualMachine vm,
+                                Socket tcpSocket, BufferedReader tcpIn, OutputStream tcpOut) {
         this.process = process;
         this.vm = vm;
         this.tcpSocket = tcpSocket;
@@ -54,14 +54,14 @@ public class DebugServerSession implements Closeable {
         this.tcpOut = tcpOut;
     }
 
-    public static DebugServerSession start() throws IOException {
+    public static JDIDebugServerHandle start() throws IOException {
         int tcpPort = findFreePort();
         int jdwpPort = findFreePort();
         return start("127.0.0.1", tcpPort, jdwpPort, Duration.ofSeconds(10));
     }
 
-    public static DebugServerSession start(String host, int tcpPort, int jdwpPort,
-                                           Duration waitReady) throws IOException {
+    public static JDIDebugServerHandle start(String host, int tcpPort, int jdwpPort,
+                                            Duration waitReady) throws IOException {
         // 1. JVM 起動
         String jdwpAddress = host + ":" + jdwpPort;
         JVMLaunchSpec spec = JDIDebugServerLaunchSpecFactory.create(tcpPort, jdwpAddress);
@@ -80,7 +80,7 @@ public class DebugServerSession implements Closeable {
         // 4. JDWP アタッチ
         VirtualMachine vm = attachJDWP(host, String.valueOf(jdwpPort));
 
-        return new DebugServerSession(proc, vm, sock, in, out);
+        return new JDIDebugServerHandle(proc, vm, sock, in, out);
     }
 
     public VirtualMachine vm() {

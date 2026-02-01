@@ -1,4 +1,4 @@
-package jisd.fl.infra.jdi;
+package jisd.fl.infra.jdi.testexec;
 
 import com.sun.jdi.VirtualMachine;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -15,11 +15,11 @@ import java.nio.file.Paths;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * DebugServerSession の統合テスト。
+ * JDIDebugServerHandle の統合テスト。
  * 実際に JVM を起動し、TCP + JDWP 接続を検証する。
  */
 @Timeout(30)
-class DebugServerSessionTest {
+class JDIDebugServerHandleTest {
 
     @BeforeAll
     static void initProperty() {
@@ -37,14 +37,14 @@ class DebugServerSessionTest {
 
     @Test
     void start_and_close() throws IOException {
-        try (DebugServerSession session = DebugServerSession.start()) {
+        try (JDIDebugServerHandle session = JDIDebugServerHandle.start()) {
             assertNotNull(session.vm(), "VirtualMachine should be attached");
         }
     }
 
     @Test
     void vm_is_connected() throws IOException {
-        try (DebugServerSession session = DebugServerSession.start()) {
+        try (JDIDebugServerHandle session = JDIDebugServerHandle.start()) {
             VirtualMachine vm = session.vm();
             assertNotNull(vm.name(), "VM name should not be null");
         }
@@ -52,7 +52,7 @@ class DebugServerSessionTest {
 
     @Test
     void runTest_returns_result() throws IOException {
-        try (DebugServerSession session = DebugServerSession.start()) {
+        try (JDIDebugServerHandle session = JDIDebugServerHandle.start()) {
             MethodElementName testMethod = new MethodElementName(
                     "org.sample.MinimumTest#CheckRunTestAndWatchVariable()");
             boolean passed = session.runTest(testMethod);
@@ -63,7 +63,7 @@ class DebugServerSessionTest {
 
     @Test
     void runTest_multiple_times_in_same_session() throws IOException {
-        try (DebugServerSession session = DebugServerSession.start()) {
+        try (JDIDebugServerHandle session = JDIDebugServerHandle.start()) {
             MethodElementName testMethod = new MethodElementName(
                     "org.sample.MinimumTest#CheckRunTestAndWatchVariable()");
 
@@ -75,7 +75,7 @@ class DebugServerSessionTest {
 
     @Test
     void cleanupEventRequests_does_not_throw() throws IOException {
-        try (DebugServerSession session = DebugServerSession.start()) {
+        try (JDIDebugServerHandle session = JDIDebugServerHandle.start()) {
             // リクエストがない状態でも例外にならない
             session.cleanupEventRequests();
         }

@@ -17,7 +17,7 @@ import java.util.Map;
 public class JDIDebugServerLaunchSpecFactory {
     private JDIDebugServerLaunchSpecFactory() {}
 
-    private static final String SERVER_MAIN = "jisd.fl.infra.jdi.JDIDebugServerMain";
+    private static final String SERVER_MAIN = "jisd.fl.infra.jdi.testexec.JDIDebugServerMain";
 
     /**
      * @param tcpPort     TCP サーバーポート（RUN/QUIT コマンド用）

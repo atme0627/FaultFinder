@@ -10,7 +10,7 @@ import java.util.Map;
 
 public class JacocoTestExecServerLaunchSpecFactory {
     private JacocoTestExecServerLaunchSpecFactory() {}
-    private static final String SERVER_MAIN = "jisd.fl.infra.jacoco.exec.JacocoTestExecServerMain";
+    private static final String SERVER_MAIN = "jisd.fl.infra.jacoco.testexec.JacocoTestExecServerMain";
     /**
      * 固定ポートで JaCoCo agent付きのテスト実行サーバJVMを起動するためのSpec
      */
