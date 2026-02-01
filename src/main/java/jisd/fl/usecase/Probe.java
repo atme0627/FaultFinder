@@ -9,6 +9,9 @@ import jisd.fl.core.domain.CauseLineFinder;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.presenter.ProbeReporter;
 
+import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
+
+import java.io.IOException;
 import java.util.*;
 
 public class Probe{
@@ -32,6 +35,7 @@ public class Probe{
     // 1. suspExpr -- [suspVar] --> suspExpr(, suspArg) 探索済みのsuspVarは除外
     // 2. suspExpr -- [return]  --> suspExpr
     public SuspiciousExprTreeNode run(int sleepTime){
+      try (JDIDebugServerHandle session = JDIDebugServerHandle.startShared()) {
         Deque<SuspiciousExpression> exploringTargets = new ArrayDeque<>();
         Set<SuspiciousVariable> investigatedVariables = new HashSet<>();
 
@@ -80,6 +84,9 @@ public class Probe{
         }
 
         return suspiciousExprTreeRoot;
+      } catch (IOException e) {
+          throw new RuntimeException("Failed to start shared debug session", e);
+      }
     }
 
 

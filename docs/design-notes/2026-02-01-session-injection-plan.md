@@ -92,7 +92,7 @@ public SuspiciousExprTreeNode run(int sleepTime) {
 | JDISearchSuspiciousReturnsReturnValueStrategy | `src/main/java/jisd/fl/infra/jdi/JDISearchSuspiciousReturnsReturnValueStrategy.java` (行55) |
 | JDISearchSuspiciousReturnsArgumentStrategy | `src/main/java/jisd/fl/infra/jdi/JDISearchSuspiciousReturnsArgumentStrategy.java` (行58) |
 
-### Phase 4: Probe に try-with-resources 追加 (未着手)
+### Phase 4: Probe に try-with-resources 追加 (完了)
 
 ファイル: `src/main/java/jisd/fl/usecase/Probe.java`
 
