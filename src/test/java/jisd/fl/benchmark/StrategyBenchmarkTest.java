@@ -10,9 +10,8 @@ import jisd.fl.core.entity.susp.*;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.infra.javaparser.JavaParserUtils;
 import jisd.fl.infra.jdi.*;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
@@ -40,8 +39,10 @@ class StrategyBenchmarkTest {
     private static final String TRACE_RETURN_FQCN = "jisd.fl.fixture.TraceValueReturnValueFixture";
     private static final String TRACE_ARG_FQCN = "jisd.fl.fixture.TraceValueArgumentFixture";
 
+    private static JDIDebugServerHandle session;
+
     @BeforeAll
-    static void setUpProjectConfigForFixtures() {
+    static void setUpProjectConfigForFixtures() throws Exception {
         var cfg = new PropertyLoader.ProjectConfig(
                 Path.of("/Users/ezaki/IdeaProjects/FaultFinder/src/test/resources/fixtures"),
                 Path.of("exec/src/main/java"),
@@ -50,6 +51,17 @@ class StrategyBenchmarkTest {
                 Path.of("/Users/ezaki/IdeaProjects/FaultFinder/build/classes/java/fixtureExec")
         );
         PropertyLoader.setProjectConfig(cfg);
+        session = JDIDebugServerHandle.startShared();
+    }
+
+    @AfterAll
+    static void tearDown() throws Exception {
+        if (session != null) { session.close(); session = null; }
+    }
+
+    @BeforeEach
+    void cleanupBeforeEach() {
+        if (session != null) session.cleanupEventRequests();
     }
 
     // ===== SearchReturns: Assignment =====
