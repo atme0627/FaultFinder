@@ -13,6 +13,8 @@ import jisd.fl.infra.jvm.JVMLaunchSpec;
 import jisd.fl.infra.jvm.JVMLauncher;
 import jisd.fl.infra.jvm.JVMProcess;
 
+import jisd.fl.infra.junit.SharedJUnitDebugger;
+
 import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -39,6 +41,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class JDIDebugServerHandle implements Closeable {
 
+    private static volatile JDIDebugServerHandle shared;
+
     private final JVMProcess process;
     private final VirtualMachine vm;
     private final Socket tcpSocket;
@@ -52,6 +56,19 @@ public class JDIDebugServerHandle implements Closeable {
         this.tcpSocket = tcpSocket;
         this.tcpIn = tcpIn;
         this.tcpOut = tcpOut;
+    }
+
+    /** Probe が呼ぶ。共有セッションを起動する。 */
+    public static JDIDebugServerHandle startShared() throws IOException {
+        if (shared != null) throw new IllegalStateException("shared session already exists");
+        shared = start();
+        return shared;
+    }
+
+    /** Strategy が呼ぶ。共有セッションから debugger を生成する。 */
+    public static SharedJUnitDebugger createSharedDebugger(MethodElementName testMethod) {
+        if (shared == null) throw new IllegalStateException("shared session not started");
+        return new SharedJUnitDebugger(shared, testMethod);
     }
 
     public static JDIDebugServerHandle start() throws IOException {
@@ -146,6 +163,7 @@ public class JDIDebugServerHandle implements Closeable {
 
     @Override
     public void close() throws IOException {
+        if (shared == this) shared = null;
         IOException first = null;
 
         // 1. TCP で QUIT 送信

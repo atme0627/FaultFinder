@@ -55,7 +55,7 @@ public SuspiciousExprTreeNode run(int sleepTime) {
 
 ## 実装順序
 
-### Phase 1: JDISuspiciousArgumentsSearcher リファクタリング (未着手)
+### Phase 1: JDISuspiciousArgumentsSearcher リファクタリング (完了)
 `handleAtMethodEntry()` を `execute()` ベースに書き換え。
 他の Strategy と同じ `setBreakpoints()` + `registerEventHandler()` + `execute()` パターンに統一。
 
@@ -69,7 +69,7 @@ public SuspiciousExprTreeNode run(int sleepTime) {
 
 ファイル: `src/main/java/jisd/fl/infra/jdi/JDISuspiciousArgumentsSearcher.java`
 
-### Phase 2: JDIDebugServerHandle に static 管理 + createSharedDebugger() 追加 (未着手)
+### Phase 2: JDIDebugServerHandle に static 管理 + createSharedDebugger() 追加 (完了)
 
 ファイル: `src/main/java/jisd/fl/infra/jdi/testexec/JDIDebugServerHandle.java`
 
