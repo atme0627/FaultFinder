@@ -26,9 +26,11 @@ public class ProbeReporter {
     private static final String TYPE_COLOR = "\u001B[38;5;79m"; // teal - type names
     private static final String METHOD_COLOR = "\u001B[38;5;222m"; // light yellow - method calls
 
-    private static final String BLUE = "\u001B[34m";
-    private static final String MAGENTA = "\u001B[35m";
-    private static final String TREE_DIM = "\u001B[2;90m"; // dim gray for tree lines
+    // Type tag colors: 背景塗りつぶし + 白文字（やや暗め）
+    private static final String TAG_ASSIGN = "\u001B[97m\u001B[48;5;24m";  // bright-white on dark blue
+    private static final String TAG_RETURN = "\u001B[97m\u001B[48;5;54m";  // bright-white on dark purple
+    private static final String TAG_ARGUMENT = "\u001B[97m\u001B[48;5;94m"; // bright-white on dark gold
+    private static final String TREE_DIM = "\u001B[2;90m";        // dim gray for tree lines
 
     private static final int SEPARATOR_WIDTH = 80;
 
@@ -81,9 +83,8 @@ public class ProbeReporter {
             System.out.println("    " + YELLOW + "(leaf)" + RESET);
         } else {
             for (SuspiciousExpression child : children) {
-                String type = expressionType(child);
                 System.out.println("    " + GREEN + "→" + RESET
-                        + " " + type + "  " + LOCATION_DIM + child.locateMethod + ":" + child.locateLine + RESET
+                        + " " + coloredTypeTag(child) + LOCATION_DIM + child.locateMethod + ":" + child.locateLine + RESET
                         + "  " + highlightJava(child.stmtString().replace("\n", " ")));
             }
         }
@@ -130,14 +131,14 @@ public class ProbeReporter {
         }
     }
 
-    private String coloredTypeTag(SuspiciousExpression expr) {
+    private static String coloredTypeTag(SuspiciousExpression expr) {
         return switch (expr) {
             case jisd.fl.core.entity.susp.SuspiciousAssignment ignored ->
-                    BLUE + "[  ASSIGN  ]" + RESET + " ";
+                    TAG_ASSIGN + "[  ASSIGN  ]" + RESET + " ";
             case jisd.fl.core.entity.susp.SuspiciousReturnValue ignored ->
-                    MAGENTA + "[  RETURN  ]" + RESET + " ";
+                    TAG_RETURN + "[  RETURN  ]" + RESET + " ";
             case jisd.fl.core.entity.susp.SuspiciousArgument ignored ->
-                    YELLOW + "[ ARGUMENT ]" + RESET + " ";
+                    TAG_ARGUMENT + "[ ARGUMENT ]" + RESET + " ";
             default ->
                     DIM + "[   EXPR   ]" + RESET + " ";
         };
@@ -178,12 +179,4 @@ public class ProbeReporter {
         return sb.toString();
     }
 
-    private static String expressionType(SuspiciousExpression expr) {
-        return switch (expr) {
-            case jisd.fl.core.entity.susp.SuspiciousAssignment ignored -> "ASSIGN ";
-            case jisd.fl.core.entity.susp.SuspiciousReturnValue ignored -> "RETURN ";
-            case jisd.fl.core.entity.susp.SuspiciousArgument ignored -> "ARGUMENT";
-            default -> "EXPR    ";
-        };
-    }
 }
