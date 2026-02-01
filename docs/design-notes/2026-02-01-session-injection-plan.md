@@ -77,7 +77,7 @@ public SuspiciousExprTreeNode run(int sleepTime) {
 - `startShared()` — 共有セッション起動、`close()` 時に `shared = null`
 - `createSharedDebugger(testMethod)` — `new SharedJUnitDebugger(shared, testMethod)` を返す
 
-### Phase 3: Strategy 8クラスのデバッガ生成箇所を変更 (未着手)
+### Phase 3: Strategy 8クラスのデバッガ生成箇所を変更 (完了)
 
 各クラスの `new JUnitDebugger(...)` を `JDIDebugServerHandle.createSharedDebugger(...)` に差し替え。
 

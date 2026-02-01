@@ -12,7 +12,7 @@ import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.core.entity.TracedValue;
-import jisd.fl.infra.junit.JUnitDebugger;
+import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
         this.recentReturnValue = null;
 
         //Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(currentTarget.failedTest);
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest);
 
         // ハンドラ登録
         debugger.registerEventHandler(com.sun.jdi.event.BreakpointEvent.class,

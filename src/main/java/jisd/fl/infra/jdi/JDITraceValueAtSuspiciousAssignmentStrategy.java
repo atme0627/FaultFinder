@@ -8,7 +8,7 @@ import com.sun.jdi.request.StepRequest;
 import jisd.fl.core.domain.port.TraceValueAtSuspiciousExpressionStrategy;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.core.entity.TracedValue;
-import jisd.fl.infra.junit.JUnitDebugger;
+import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAt
         this.activeStepRequest = null;
 
         //Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(currentTarget.failedTest);
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest);
 
         // ハンドラ登録
         debugger.registerEventHandler(BreakpointEvent.class,

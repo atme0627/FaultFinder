@@ -8,7 +8,7 @@ import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;
-import jisd.fl.infra.junit.JUnitDebugger;
+import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -37,7 +37,7 @@ public class TargetVariableTracer {
         final Map<ThreadReference, Integer> stepSourceLine = new HashMap<>();
 
         // Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(target.failedTest());
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(target.failedTest());
         List<TracedValue> result = new ArrayList<>();
 
         // ブレークポイント設定

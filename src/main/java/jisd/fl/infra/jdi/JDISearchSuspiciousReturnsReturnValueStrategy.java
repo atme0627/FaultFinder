@@ -13,7 +13,7 @@ import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
-import jisd.fl.infra.junit.JUnitDebugger;
+import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +52,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         if (!currentTarget.hasMethodCalling()) return result;
 
         // Debugger生成
-        JUnitDebugger debugger = new JUnitDebugger(currentTarget.failedTest);
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest);
 
         // ハンドラ登録
         debugger.registerEventHandler(BreakpointEvent.class,
