@@ -207,7 +207,7 @@ try (DebugServerSession session = DebugServerSession.start()) {
 - **何かを新しく実装した場合は必ずテストを書く。**
 - **リファクタをする場合は、まずテストを生成して逐一回帰テストを行う。**
 - **step や phase が終了するたびにユーザーに確認を取る。**
-- **step ごと（必要に応じて step 内でも複数回）にコミットする。**
+- **1コミット = 1タスク（single task commit）。composite commit は避ける。**
 
 ## 検証
 
