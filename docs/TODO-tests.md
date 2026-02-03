@@ -68,19 +68,7 @@
 
 ## 🔄 未実装（残タスク）
 
-### 1. LineMethodCallWatcherTest
-
-- **元ファイル**: `src/test/java/experiment/util/internal/finder/LineMethodCallWatcherTest.java`
-- **テスト対象**: `LineMethodCallWatcher` - メソッド呼び出し行の監視機能
-- **テスト内容**:
-  - `simpleValueReturn()` - 単純な値を返すメソッドの戻り値追跡
-  - `methodCallReturn()` - メソッド呼び出しの戻り値追跡
-  - `nestedMethodCallReturn()` - ネストしたメソッド呼び出しの戻り値追跡
-  - `callInArgument()` - 引数内のメソッド呼び出し追跡
-  - `callStandardLibrary()` - 標準ライブラリ呼び出し時の追跡
-- **優先度**: 低（内部ユーティリティ、experiment パッケージは大幅に変わる可能性あり）
-
-### 2. 厳しめのベンチマーク追加
+### 1. 厳しめのベンチマーク追加
 
 `ProbeBenchmarkTest` に、tree の node 数が多いケースのベンチマークを追加する。
 
