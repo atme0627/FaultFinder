@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Execution(ExecutionMode.SAME_THREAD)
 class JDITraceValueAtSuspiciousArgumentStrategyTest {
 
-    private static final String FIXTURE_FQCN = "jisd.fl.fixture.TraceValueArgumentFixture";
+    private static final String FIXTURE_FQCN = "jisd.fixture.TraceValueArgumentFixture";
 
     private static JDIDebugServerHandle session;
 

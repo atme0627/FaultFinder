@@ -1,4 +1,4 @@
-package jisd.fl.fixture;
+package jisd.fixture;
 
 /**
  * テスト対象クラス: フィールドを持ち、複数メソッドから変更される

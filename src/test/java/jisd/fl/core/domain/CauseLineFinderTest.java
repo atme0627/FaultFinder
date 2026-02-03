@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Execution(ExecutionMode.SAME_THREAD)
 class CauseLineFinderTest {
 
-    private static final String FIXTURE_FQCN = "jisd.fl.fixture.CauseLineFinderFixture";
+    private static final String FIXTURE_FQCN = "jisd.fixture.CauseLineFinderFixture";
     private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
     private static PropertyLoader.ProjectConfig original;
     private static JDIDebugServerHandle session;
@@ -165,7 +165,7 @@ class CauseLineFinderTest {
 
     // ===== Field Pattern: フィールド変数への代入 =====
 
-    private static final String FIELD_TARGET_FQCN = "jisd.fl.fixture.FieldTarget";
+    private static final String FIELD_TARGET_FQCN = "jisd.fixture.FieldTarget";
 
     @Test
     @Timeout(20)

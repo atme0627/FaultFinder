@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Execution(ExecutionMode.SAME_THREAD)
 class JDISearchSuspiciousReturnsArgumentStrategyTest {
 
-    private static final String FIXTURE_FQCN = "jisd.fl.fixture.SearchReturnsArgumentFixture";
+    private static final String FIXTURE_FQCN = "jisd.fixture.SearchReturnsArgumentFixture";
 
     private static JDIDebugServerHandle session;
 

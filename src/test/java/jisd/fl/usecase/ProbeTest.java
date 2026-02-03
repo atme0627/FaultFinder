@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Execution(ExecutionMode.SAME_THREAD)
 class ProbeTest {
 
-    private static final String FIXTURE_FQCN = "jisd.fl.fixture.ProbeFixture";
+    private static final String FIXTURE_FQCN = "jisd.fixture.ProbeFixture";
     private static PropertyLoader.ProjectConfig original;
 
     @BeforeAll

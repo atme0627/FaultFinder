@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Execution(ExecutionMode.SAME_THREAD)
 class TargetVariableTracerTest {
 
-    private static final String FIXTURE_FQCN = "jisd.fl.fixture.TargetVariableTracerFixture";
+    private static final String FIXTURE_FQCN = "jisd.fixture.TargetVariableTracerFixture";
     private static final String DUMMY_ACTUAL_VALUE = "999";
     private static final int LOOP_ITERATIONS = 3;
     private static PropertyLoader.ProjectConfig original;
@@ -255,7 +255,7 @@ class TargetVariableTracerTest {
     // ===== フィールド変数用テスト =====
     // テスト対象クラス FieldTarget のフィールド value を追跡
 
-    private static final String FIELD_TARGET_FQCN = "jisd.fl.fixture.FieldTarget";
+    private static final String FIELD_TARGET_FQCN = "jisd.fixture.FieldTarget";
 
     @Test
     @Timeout(20)

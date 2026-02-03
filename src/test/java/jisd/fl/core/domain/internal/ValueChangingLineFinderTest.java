@@ -44,7 +44,7 @@ public class ValueChangingLineFinderTest {
     }
 
     private static int lineOfFixture(String marker) throws Exception {
-        String resPath = "/fixtures/parse/src/java/jisd/fl/fixture/ValueChangingLineFinderFixture.java";
+        String resPath = "/fixtures/parse/src/java/jisd/fixture/ValueChangingLineFinderFixture.java";
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
                 ValueChangingLineFinderTest.class.getResourceAsStream(resPath),
                 StandardCharsets.UTF_8
@@ -82,7 +82,7 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void localCase_includes_decl_assign_unary_lines() throws Exception {
-        SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#localCase()", "x");
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#localCase()", "x");
 
         int decl = lineOfFixture("@DECL");
         int assign1 = lineOfFixture("@ASSIGN1");
@@ -97,7 +97,7 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void multiLineAssignCauseLines_includes_begin_to_end_range() throws Exception {
-        SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
 
         int begin = lineOfFixture("@ML_BEGIN");
         int end = lineOfFixture("@ML_END");
@@ -109,7 +109,7 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void multiLineAssignBpLines_includes_begin_to_end_range() throws Exception {
-        SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
 
         int begin = lineOfFixture("@ML_BEGIN");
         int end = lineOfFixture("@ML_END");
@@ -123,7 +123,7 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void arrayAssign_includes_array_assignment_line() throws Exception {
-        SuspiciousLocalVariable sv = localVar("jisd.fl.fixture.ValueChangingLineFinderFixture#arrayAssign()", "a");
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#arrayAssign()", "a");
 
         int arrAssign = lineOfFixture("@ARR_ASSIGN");
 
@@ -134,7 +134,7 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void fieldAssign_includes_field_assignment_line() throws Exception {
-        SuspiciousFieldVariable sv = fieldVar("jisd.fl.fixture.ValueChangingLineFinderFixture", "f");
+        SuspiciousFieldVariable sv = fieldVar("jisd.fixture.ValueChangingLineFinderFixture", "f");
 
         int fieldAssign = lineOfFixture("@FIELD_ASSIGN");
         int fieldAssignInMethod = lineOfFixture("@FIELD_ASSIGN_IN_METHOD");

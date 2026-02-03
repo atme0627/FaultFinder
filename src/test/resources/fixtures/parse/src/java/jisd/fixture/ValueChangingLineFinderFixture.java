@@ -1,4 +1,4 @@
-package jisd.fl.fixture;
+package jisd.fixture;
 
 public class ValueChangingLineFinderFixture {
     private int f = 0; // @FIELD_ASSIGN

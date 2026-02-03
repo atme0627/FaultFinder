@@ -17,12 +17,12 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * SharedJUnitDebugger の統合テスト。
  * JDIDebugServerHandle 経由で JVM を共有し、複数回の execute() を検証する。
- * フィクスチャ: {@code jisd.fl.fixture.JDIServerFixture}
+ * フィクスチャ: {@code jisd.fixture.JDIServerFixture}
  */
 @Timeout(60)
 class SharedJUnitDebuggerTest {
 
-    private static final String FIXTURE_CLASS = "jisd.fl.fixture.JDIServerFixture";
+    private static final String FIXTURE_CLASS = "jisd.fixture.JDIServerFixture";
     private static final String FIXTURE_TEST_SIMPLE =
             FIXTURE_CLASS + "#simpleAssignment()";
     /** line 22: {@code x = 10;} */

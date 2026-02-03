@@ -32,12 +32,12 @@ class StrategyBenchmarkTest {
 
     private static final Logger logger = LoggerFactory.getLogger(StrategyBenchmarkTest.class);
 
-    private static final String ASSIGN_FQCN = "jisd.fl.fixture.SearchReturnsAssignmentFixture";
-    private static final String RETURN_FQCN = "jisd.fl.fixture.SearchReturnsReturnValueFixture";
-    private static final String ARG_FQCN = "jisd.fl.fixture.SearchReturnsArgumentFixture";
-    private static final String TRACE_ASSIGN_FQCN = "jisd.fl.fixture.TraceValueAssignmentFixture";
-    private static final String TRACE_RETURN_FQCN = "jisd.fl.fixture.TraceValueReturnValueFixture";
-    private static final String TRACE_ARG_FQCN = "jisd.fl.fixture.TraceValueArgumentFixture";
+    private static final String ASSIGN_FQCN = "jisd.fixture.SearchReturnsAssignmentFixture";
+    private static final String RETURN_FQCN = "jisd.fixture.SearchReturnsReturnValueFixture";
+    private static final String ARG_FQCN = "jisd.fixture.SearchReturnsArgumentFixture";
+    private static final String TRACE_ASSIGN_FQCN = "jisd.fixture.TraceValueAssignmentFixture";
+    private static final String TRACE_RETURN_FQCN = "jisd.fixture.TraceValueReturnValueFixture";
+    private static final String TRACE_ARG_FQCN = "jisd.fixture.TraceValueArgumentFixture";
 
     private static JDIDebugServerHandle session;
 

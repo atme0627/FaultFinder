@@ -33,8 +33,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @Execution(ExecutionMode.SAME_THREAD)
 class JDITraceValueAtSuspiciousAssignmentStrategyTest {
 
-    private static final String FIXTURE_FQCN = "jisd.fl.fixture.TraceValueAssignmentFixture";
-    private static final String FIELD_TARGET_FQCN = "jisd.fl.fixture.FieldTarget";
+    private static final String FIXTURE_FQCN = "jisd.fixture.TraceValueAssignmentFixture";
+    private static final String FIELD_TARGET_FQCN = "jisd.fixture.FieldTarget";
 
     private static JDIDebugServerHandle session;
 

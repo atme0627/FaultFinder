@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Execution(ExecutionMode.SAME_THREAD)
 class JDISearchSuspiciousReturnsAssignmentStrategyTest {
 
-    private static final String FIXTURE_FQCN = "jisd.fl.fixture.SearchReturnsAssignmentFixture";
+    private static final String FIXTURE_FQCN = "jisd.fixture.SearchReturnsAssignmentFixture";
 
     private static JDIDebugServerHandle session;
 

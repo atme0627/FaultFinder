@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Execution(ExecutionMode.SAME_THREAD)
 class PolymorphismSearchReturnsTest {
 
-    private static final String FIXTURE_FQCN = "jisd.fl.fixture.PolymorphismFixture";
+    private static final String FIXTURE_FQCN = "jisd.fixture.PolymorphismFixture";
 
     private static JDIDebugServerHandle session;
 

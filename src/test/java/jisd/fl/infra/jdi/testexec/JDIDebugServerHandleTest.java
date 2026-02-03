@@ -15,13 +15,13 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * JDIDebugServerHandle の統合テスト。
  * 実際に JVM を起動し、TCP + JDWP 接続を検証する。
- * フィクスチャ: {@code jisd.fl.fixture.JDIServerFixture}
+ * フィクスチャ: {@code jisd.fixture.JDIServerFixture}
  */
 @Timeout(30)
 class JDIDebugServerHandleTest {
 
     private static final String FIXTURE_TEST =
-            "jisd.fl.fixture.JDIServerFixture#simpleAssignment()";
+            "jisd.fixture.JDIServerFixture#simpleAssignment()";
 
     @BeforeAll
     static void initProperty() {

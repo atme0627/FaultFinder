@@ -1,4 +1,4 @@
-package jisd.fl.fixture;
+package jisd.fixture;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
