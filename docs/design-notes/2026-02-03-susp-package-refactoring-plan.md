@@ -10,11 +10,17 @@
 | Phase | 内容 | 状態 | コミット |
 |-------|------|------|----------|
 | 1 | isField 問題解決 + sealed + switch | **完了** | ea3d17f |
-| 2 | Value Object 導入 | 未着手 | - |
-| 3 | Record への移行 | 未着手 | - |
+| 2 | ~~Value Object 導入~~ | **スキップ** | Phase 3 に統合 |
+| 3 | Record への移行 + 不変性確保 | 未着手 | - |
 | 4 | ファクトリ・クライアント修正 | 未着手 | - |
 | 5 | Strategy → switch 式 | 未着手 | - |
 | 6 | TreeNode 責務分離 | 未着手 | - |
+
+### Phase 2 スキップの理由
+
+議論の結果、以下の理由で Phase 2 を Phase 3 に統合：
+- **SourceLocation**: 既存の `LineElementName` で代用可能
+- **NeighborVariables**: Value Object は冗長。Record 化で不変性は自動的に確保される
 
 ### 設計方針
 
