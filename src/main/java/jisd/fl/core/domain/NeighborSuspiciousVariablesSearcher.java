@@ -43,7 +43,7 @@ public class NeighborSuspiciousVariablesSearcher {
                             ) :
                             new SuspiciousLocalVariable(
                                     suspExpr.failedTest,
-                                    suspExpr.locateMethod.fullyQualifiedName(),
+                                    suspExpr.locateMethod,
                                     t.variableName,
                                     t.value,
                                     true

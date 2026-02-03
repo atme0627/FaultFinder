@@ -225,7 +225,7 @@ class TargetVariableTracerTest {
     // -------------------------
 
     private static List<TracedValue> traceVariable(MethodElementName method, String variableName) {
-        SuspiciousVariable sv = new SuspiciousLocalVariable(method, method.toString(),
+        SuspiciousVariable sv = new SuspiciousLocalVariable(method, method,
                 variableName, DUMMY_ACTUAL_VALUE, true);
         TargetVariableTracer tracer = new TargetVariableTracer();
         return tracer.traceValuesOfTarget(sv);

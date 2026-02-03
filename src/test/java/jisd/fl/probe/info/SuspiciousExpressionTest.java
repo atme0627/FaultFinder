@@ -67,7 +67,7 @@ class SuspiciousExpressionTest {
             int locateLine = 19;
             SuspiciousLocalVariable suspVariable = new SuspiciousLocalVariable(
                     new MethodElementName(getFqmn(testMethodName)),
-                    getFqmn(testMethodName),
+                    new MethodElementName(getFqmn(testMethodName)),
                     "totalArea",
                     "32.0",
                     true
@@ -124,7 +124,7 @@ class SuspiciousExpressionTest {
             int locateLine = 34;
             SuspiciousLocalVariable suspVariable = new SuspiciousLocalVariable(
                     new MethodElementName(getFqmn(testMethodName)),
-                    getFqmn(testMethodName),
+                    new MethodElementName(getFqmn(testMethodName)),
                     "totalArea",
                     "32.0",
                     true

@@ -13,7 +13,7 @@ class SuspiciousLocalVariableMapperTest {
     void toJson() {
         SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                 new MethodElementName("org.sample.ExampleTest#test1()"),
-                "org.sample.Example#method(int)",
+                new MethodElementName("org.sample.Example#method(int)"),
                 "nums",
                 "13",
                 true,
@@ -46,7 +46,7 @@ class SuspiciousLocalVariableMapperTest {
         """;
         SuspiciousLocalVariable expected = new SuspiciousLocalVariable(
                 new MethodElementName("org.sample.ExampleTest#test1()"),
-                "org.sample.Example#method(int)",
+                new MethodElementName("org.sample.Example#method(int)"),
                 "nums",
                 "13",
                 true,
@@ -80,7 +80,7 @@ class SuspiciousLocalVariableMapperTest {
         List<SuspiciousLocalVariable> expected = List.of(
                 new SuspiciousLocalVariable(
                         new MethodElementName("org.sample.ExampleTest#test1()"),
-                        "org.sample.Example#method(int)",
+                        new MethodElementName("org.sample.Example#method(int)"),
                         "nums",
                         "13",
                         true,
@@ -88,7 +88,7 @@ class SuspiciousLocalVariableMapperTest {
                 ),
                 new SuspiciousLocalVariable(
                         new MethodElementName("org.sample.ExampleTest#test2()"),
-                        "org.sample.Example#calc(int)",
+                        new MethodElementName("org.sample.Example#calc(int)"),
                         "answer",
                         "5",
                         true

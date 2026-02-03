@@ -252,7 +252,7 @@ class JDITraceValueAtSuspiciousAssignmentStrategyTest {
             MethodElementName testMethod, int locateLine, String variableName, String actualValue) {
 
         SuspiciousVariable assignTarget = new SuspiciousLocalVariable(
-                testMethod, testMethod.toString(), variableName, actualValue, true);
+                testMethod, testMethod, variableName, actualValue, true);
 
         SuspiciousAssignment suspAssign = new SuspiciousAssignment(
                 testMethod, testMethod, locateLine, assignTarget, "", false, List.of(), List.of());

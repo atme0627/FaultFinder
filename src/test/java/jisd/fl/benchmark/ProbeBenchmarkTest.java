@@ -46,7 +46,7 @@ class ProbeBenchmarkTest {
     void bench_probe_minimum() {
         SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                 new MethodElementName("org.sample.MinimumTest#CheckRunTestAndWatchVariable()"),
-                "org.sample.MinimumTest#CheckRunTestAndWatchVariable()",
+                new MethodElementName("org.sample.MinimumTest#CheckRunTestAndWatchVariable()"),
                 "x",
                 "6",
                 true
@@ -66,7 +66,7 @@ class ProbeBenchmarkTest {
     void bench_probe_calc() {
         SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                 new MethodElementName("org.sample.CalcTest#methodCall1()"),
-                "org.sample.CalcTest#methodCall1()",
+                new MethodElementName("org.sample.CalcTest#methodCall1()"),
                 "actual",
                 "4",
                 true
@@ -109,7 +109,7 @@ class ProbeBenchmarkTest {
 
             SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                     failedTest,
-                    failedTest.fullyQualifiedName(),
+                    failedTest,
                     "actual",
                     "4",
                     true

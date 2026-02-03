@@ -34,7 +34,7 @@ class SuspiciousArgumentTest {
         MethodElementName invokeMethodName = new MethodElementName("org.sample.util.Calc#methodCalling(int, int)");
         SuspiciousLocalVariable suspVar = new SuspiciousLocalVariable(
                 new MethodElementName("org.sample.CalcTest#methodCall1()"),
-                "org.sample.util.Calc#methodCalling(int, int)",
+                new MethodElementName("org.sample.util.Calc#methodCalling(int, int)"),
                 "y",
                 "3",
                 true

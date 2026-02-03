@@ -62,7 +62,7 @@ public class LineValueWatcher {
                 if(!(ar.getValue(0) instanceof PrimitiveValue)) return;
                 result.add(new SuspiciousLocalVariable(
                         this.targetTestCaseName,
-                        locateMethod.fullyQualifiedName(),
+                        locateMethod,
                         lv.name(),
                         ar.getValue(0).toString(),
                         true,
@@ -72,7 +72,7 @@ public class LineValueWatcher {
             if(v instanceof PrimitiveValue || (v != null && v.type().name().equals("java.lang.String"))) {
                 result.add(new SuspiciousLocalVariable(
                         this.targetTestCaseName,
-                        locateMethod.fullyQualifiedName(),
+                        locateMethod,
                         lv.name(),
                         v.toString(),
                         true

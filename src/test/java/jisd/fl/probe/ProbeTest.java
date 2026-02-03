@@ -53,7 +53,7 @@ class ProbeTest {
         void CheckRunTestAndWatchVariable() {
             SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                     new MethodElementName("org.sample.MinimumTest#CheckRunTestAndWatchVariable()"),
-                    "org.sample.MinimumTest#CheckRunTestAndWatchVariable()",
+                    new MethodElementName("org.sample.MinimumTest#CheckRunTestAndWatchVariable()"),
                     "x",
                     "6",
                     true
@@ -70,7 +70,7 @@ class ProbeTest {
         void runTest() {
             SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                     new MethodElementName("org.sample.CalcTest#methodCall1()"),
-                    "org.sample.CalcTest#methodCall1()",
+                    new MethodElementName("org.sample.CalcTest#methodCall1()"),
                     "actual",
                     "4",
                     true
@@ -90,7 +90,7 @@ class ProbeTest {
         void runTest() {
             SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                     new MethodElementName("org.sample.coverage.ConditionalTest#testXEqualY()"),
-                    "org.sample.coverage.ConditionalTest#testXEqualY()",
+                    new MethodElementName("org.sample.coverage.ConditionalTest#testXEqualY()"),
                     "result",
                     "2",
                     true
@@ -119,7 +119,7 @@ class ProbeTest {
         void runTest() {
             SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                     new MethodElementName("org.sample.coverage.LoopTest#testCase1_forAndWhile_prodGreaterThanSum()"),
-                    "org.sample.coverage.LoopTest#testCase1_forAndWhile_prodGreaterThanSum()",
+                    new MethodElementName("org.sample.coverage.LoopTest#testCase1_forAndWhile_prodGreaterThanSum()"),
                     "result",
                     "8",
                     true

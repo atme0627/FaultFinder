@@ -62,7 +62,7 @@ public class ValueChangingLineFinderTest {
     private static SuspiciousLocalVariable localVar(String locateMethodFqmn, String varName) {
         return new SuspiciousLocalVariable(
                 new MethodElementName("dummy.Dummy#dummy()"),
-                locateMethodFqmn,
+                new MethodElementName(locateMethodFqmn),
                 varName,
                 "DUMMY_ACTUAL",
                 true
