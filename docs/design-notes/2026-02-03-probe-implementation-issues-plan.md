@@ -121,6 +121,57 @@ for (int i = 0; i < 3; i++) {
 
 ---
 
+## 追加の問題（2026-02-03 ベンチマーク作成時に発見）
+
+### 問題 4: 複数行にまたがる式の解析で原因行が見つからない
+
+**コード**:
+```java
+int x = d1(d2(d3(d4(d5(
+        d6(d7(d8(d9(d10(1))))))))));  // 2行にまたがる式
+```
+
+**現在の動作**: `[Probe For STATEMENT] Cause line not found.` エラー
+
+**期待する動作**: 最初の行を原因行として特定できる
+
+**回避策**: 1行に収めると動作する
+
+**修正方針**:
+- `ValueChangingLineFinder` または JavaParser の解析で、複数行にまたがる式の開始行を正しく特定する
+- 宣言文の行番号は最初の行を使用する
+
+---
+
+### 問題 5: 内部クラス（static nested class）のメソッド追跡でエラー
+
+**コード**:
+```java
+static class OrderService {
+    String processOrder(int itemId, int quantity) { ... }
+}
+
+@Test
+void test() {
+    OrderService service = new OrderService();
+    String result = service.processOrder(100, 5);  // ← この行が追跡できない
+}
+```
+
+**現在の動作**: `[Probe For STATEMENT] Cause line not found.` エラー
+
+**期待する動作**: 内部クラスのメソッド呼び出しも正しく追跡できる
+
+**原因の仮説**:
+- JavaParser でのソースファイル解析時に、内部クラスのメソッドが正しく解決できていない可能性
+- または、JDI でのクラス名の解決（`ProbeBenchmarkFixture$OrderService`）が問題
+
+**修正方針**:
+- `ValueChangingLineFinder` が内部クラスのメソッドを正しく見つけられるか確認
+- 必要に応じて、クラス名のマッピングロジックを修正
+
+---
+
 ## ステータス
 
 **未着手** - ユーザーの承認待ち

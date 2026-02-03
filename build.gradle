@@ -72,6 +72,7 @@ dependencies {
 test {
     useJUnitPlatform()
     exclude 'demo/**'
+    exclude 'jisd/fl/benchmark/**'  // ベンチマークは時間がかかるため通常テストから除外
 }
 
 jar {

@@ -64,24 +64,24 @@
 | `JDISearchSuspiciousReturnsReturnValueStrategyTest.java` | 戻り値からの疑わしい戻り値探索 |
 | `JDISearchSuspiciousReturnsArgumentStrategyTest.java` | 引数からの疑わしい戻り値探索 |
 
+### ProbeBenchmarkTest ✅
+
+- **再実装ファイル**: `src/test/java/jisd/fl/benchmark/ProbeBenchmarkTest.java`
+- **フィクスチャ**: `src/test/resources/fixtures/exec/src/main/java/jisd/fixture/ProbeBenchmarkFixture.java`
+- **テスト内容**:
+  - `bench_depth_extreme()` - 深さ極端: 20段のネスト
+  - `bench_repetition_extreme()` - 繰り返し極端: ループで同一メソッド100回
+  - `bench_branch_extreme()` - 分岐極端: 2^10 = 1024 nodes
+  - `bench_polymorphism_extreme()` - 動的解決極端: 50種類の実装
+  - `bench_realistic_multi_class()` - 現実的ケース: 複数メソッドチェーン
+- **ベンチマーク結果**: `docs/design-notes/2026-02-04-probe-benchmark-results.md`
+- **再実装日**: 2026-02-04
+
 ---
 
 ## 🔄 未実装（残タスク）
 
-### 1. 厳しめのベンチマーク追加
-
-`ProbeBenchmarkTest` に、tree の node 数が多いケースのベンチマークを追加する。
-
-**目的**:
-- 探索の計算量が多いケースでの性能評価
-- 高速化施策の効果測定
-
-**要件**:
-- 本プロジェクト内で完結すること（外部依存なし）
-- `src/test/resources/fixtures/exec/` 配下にテスト用のサンプルコードを追加
-- ネストしたメソッド呼び出し、ループ内での複数回呼び出しなど、node 数が増えるケースを用意
-
-**優先度**: 低
+なし（全て完了）
 
 ---
 
