@@ -55,7 +55,7 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         if (!currentTarget.hasMethodCalling()) return result;
 
         // Debugger生成
-        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest);
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest());
 
         // ハンドラ登録
         debugger.registerEventHandler(BreakpointEvent.class,
@@ -68,12 +68,12 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
                 (vm, ev) -> handleStep(vm, (StepEvent) ev));
 
         // ブレークポイント設定と実行
-        debugger.setBreakpoints(currentTarget.locateMethod.fullyQualifiedClassName(), List.of(currentTarget.locateLine));
+        debugger.setBreakpoints(currentTarget.locateMethod().fullyQualifiedClassName(), List.of(currentTarget.locateLine()));
         debugger.execute(() -> !result.isEmpty());
 
         if (result.isEmpty()) {
             logger.warn("引数の戻り値収集を確認できませんでした: actualValue={}, method={}, line={}",
-                    currentTarget.actualValue, currentTarget.locateMethod, currentTarget.locateLine);
+                    currentTarget.actualValue(), currentTarget.locateMethod(), currentTarget.locateLine());
         }
         return result;
     }
@@ -120,7 +120,7 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         }
 
         // invoke メソッドに入った → 引数の値で目的の実行かを検証
-        if (JDIUtils.validateIsTargetExecutionArg(mEntry, currentTarget.actualValue, currentTarget.argIndex)) {
+        if (JDIUtils.validateIsTargetExecutionArg(mEntry, currentTarget.actualValue(), currentTarget.argIndex)) {
             result.addAll(resultCandidate);
         }
         // 検証完了（成功・失敗とも）→ リクエストを無効化し、次の BreakpointEvent を待つ
@@ -211,7 +211,7 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         String actualValue = JDIUtils.getValueString(mee.returnValue());
         try {
             SuspiciousReturnValue suspReturn = factory.createReturnValue(
-                    currentTarget.failedTest,
+                    currentTarget.failedTest(),
                     invokedMethod,
                     locateLine,
                     actualValue

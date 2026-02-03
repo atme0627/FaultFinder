@@ -73,7 +73,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         assertEquals(1, result.size(), "1つのメソッド呼び出しの戻り値を収集: " + formatResult(result));
 
         SuspiciousReturnValue ret = (SuspiciousReturnValue) result.get(0);
-        assertEquals("20", ret.actualValue, "helper(10) の戻り値は 20: " + formatResult(result));
+        assertEquals("20", ret.actualValue(), "helper(10) の戻り値は 20: " + formatResult(result));
     }
 
     // ===== 複数メソッド呼び出しテスト =====
@@ -132,7 +132,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         assertEquals(1, result.size(), "compute の戻り値を収集: " + formatResult(result));
 
         SuspiciousReturnValue ret = (SuspiciousReturnValue) result.get(0);
-        assertEquals("0", ret.actualValue, "compute(0) の戻り値 0 を収集: " + formatResult(result));
+        assertEquals("0", ret.actualValue(), "compute(0) の戻り値 0 を収集: " + formatResult(result));
     }
 
     @Test
@@ -148,7 +148,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         assertEquals(1, result.size(), "compute の戻り値を収集: " + formatResult(result));
 
         SuspiciousReturnValue ret = (SuspiciousReturnValue) result.get(0);
-        assertEquals("4", ret.actualValue, "compute(2) の戻り値 4 を収集: " + formatResult(result));
+        assertEquals("4", ret.actualValue(), "compute(2) の戻り値 4 を収集: " + formatResult(result));
     }
 
     // ===== メソッド呼び出しを含まない代入テスト =====
@@ -228,7 +228,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         return result.stream()
                 .filter(e -> e instanceof SuspiciousReturnValue)
                 .map(e -> (SuspiciousReturnValue) e)
-                .anyMatch(rv -> rv.actualValue.equals(expectedValue));
+                .anyMatch(rv -> rv.actualValue().equals(expectedValue));
     }
 
     private static String formatResult(List<SuspiciousExpression> result) {
@@ -236,7 +236,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         return result.stream()
                 .map(e -> {
                     if (e instanceof SuspiciousReturnValue rv) {
-                        return String.format("ReturnValue(%s=%s)", rv.locateMethod.shortMethodName(), rv.actualValue);
+                        return String.format("ReturnValue(%s=%s)", rv.locateMethod().shortMethodName(), rv.actualValue());
                     }
                     return e.toString();
                 })

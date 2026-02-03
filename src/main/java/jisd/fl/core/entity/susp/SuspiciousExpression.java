@@ -1,62 +1,45 @@
 package jisd.fl.core.entity.susp;
 
+import jisd.fl.core.entity.element.LineElementName;
 import jisd.fl.core.entity.element.MethodElementName;
 
-import java.util.*;
+import java.util.List;
 
-public abstract class SuspiciousExpression {
-    //どのテスト実行時の話かを指定
-    public final MethodElementName failedTest;
-    //フィールドの場合は<ulinit>で良い
-    public final MethodElementName locateMethod;
-    public final int locateLine;
-    public final String actualValue;
-    private final String stmtString;
-    public final boolean hasMethodCalling;
-    public final List<String> directNeighborVariableNames;
-    public final List<String> indirectNeighborVariableNames;
+/**
+ * 疑わしい式を表す sealed interface。
+ * バグの原因追跡において、値が変化した式を表現する。
+ */
+public sealed interface SuspiciousExpression
+    permits SuspiciousAssignment, SuspiciousReturnValue, SuspiciousArgument {
 
+    /** どのテスト実行時か */
+    MethodElementName failedTest();
 
-    SuspiciousExpression(
-            MethodElementName failedTest,
-            MethodElementName locateMethod,
-            int locateLine,
-            String actualValue,
-            String stmtString,
-            boolean hasMethodCalling,
-            List<String> directNeighborVariableNames,
-            List<String> indirectNeighborVariableNames
-    ) {
-        this.failedTest = failedTest;
-        this.locateMethod = locateMethod;
-        this.locateLine = locateLine;
-        this.actualValue = actualValue;
-        this.stmtString = stmtString;
-        this.hasMethodCalling = hasMethodCalling;
-        this.directNeighborVariableNames = directNeighborVariableNames;
-        this.indirectNeighborVariableNames = indirectNeighborVariableNames;
+    /** ソースコード上の位置（メソッド + 行番号） */
+    LineElementName location();
 
+    /** 実際の値 */
+    String actualValue();
+
+    /** 文の文字列表現 */
+    String stmtString();
+
+    /** メソッド呼び出しを含むか */
+    boolean hasMethodCalling();
+
+    /** 直接使用される隣接変数名 */
+    List<String> directNeighborVariableNames();
+
+    /** 間接的に使用される隣接変数名 */
+    List<String> indirectNeighborVariableNames();
+
+    // ===== 互換性のための default メソッド =====
+
+    default MethodElementName locateMethod() {
+        return location().methodElementName;
     }
 
-    @Override
-    public boolean equals(Object obj){
-        if(!(obj instanceof SuspiciousExpression se)) return false;
-        return this.failedTest.equals(se.failedTest) &&
-                this.locateMethod.equals(se.locateMethod) &&
-                this.locateLine == se.locateLine &&
-                this.actualValue.equals(se.actualValue);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(failedTest, locateMethod, locateLine, actualValue);
-    }
-
-    public String stmtString(){
-        return stmtString;
-    }
-
-    public boolean hasMethodCalling(){
-        return hasMethodCalling;
+    default int locateLine() {
+        return location().line;
     }
 }

@@ -35,7 +35,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
         this.steppingOut = false;
 
         // Debugger生成
-        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest);
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest());
 
         // ハンドラ登録
         debugger.registerEventHandler(BreakpointEvent.class,
@@ -44,7 +44,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
                 (vm, ev) -> handleStep(vm, (StepEvent) ev));
 
         // ブレークポイント設定と実行
-        debugger.setBreakpoints(currentTarget.locateMethod.fullyQualifiedClassName(), List.of(currentTarget.locateLine));
+        debugger.setBreakpoints(currentTarget.locateMethod().fullyQualifiedClassName(), List.of(currentTarget.locateLine()));
         debugger.execute(() -> !result.isEmpty());
         return result;
     }
@@ -62,10 +62,10 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
         // 周辺の値を観測
         try {
             StackFrame frame = thread.frame(0);
-            resultCandidate = JDIUtils.watchAllVariablesInLine(frame, currentTarget.locateLine);
+            resultCandidate = JDIUtils.watchAllVariablesInLine(frame, currentTarget.locateLine());
         } catch (IncompatibleThreadStateException e) {
             String msg = String.format("スレッドがサスペンド状態ではありません。対象=%s:%d",
-                    currentTarget.locateMethod, currentTarget.locateLine);
+                    currentTarget.locateMethod(), currentTarget.locateLine());
             logger.error(msg, e);
             throw new IllegalStateException(msg, e);
         }
@@ -97,7 +97,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
      * StepOut 完了後の処理。呼び出し元に戻った状態。
      */
     private void handleStepOutCompleted(EventRequestManager manager, ThreadReference thread, int currentLine) {
-        if (currentLine == currentTarget.locateLine) {
+        if (currentLine == currentTarget.locateLine()) {
             // まだ同じ行にいる → 次のメソッド呼び出しを探す
             steppingOut = false;
             activeStepRequest = EnhancedDebugger.createStepInRequest(manager, thread);
@@ -145,7 +145,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
             List<Value> args = thread.frame(0).getArgumentValues();
             int argIndex = currentTarget.argIndex;
             return args.size() > argIndex &&
-                    JDIUtils.getValueString(args.get(argIndex)).equals(currentTarget.actualValue);
+                    JDIUtils.getValueString(args.get(argIndex)).equals(currentTarget.actualValue());
         } catch (IncompatibleThreadStateException e) {
             String msg = String.format("引数の検証中にスレッドがサスペンド状態ではありません。対象メソッド=%s, argIndex=%d",
                     currentTarget.invokeMethodName, currentTarget.argIndex);
@@ -171,12 +171,12 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
             String callerMethodName = callerLocation.method().name();
             int callerLine = callerLocation.lineNumber();
 
-            return callerClassName.equals(currentTarget.locateMethod.fullyQualifiedClassName())
-                    && callerMethodName.equals(currentTarget.locateMethod.shortMethodName())
-                    && callerLine == currentTarget.locateLine;
+            return callerClassName.equals(currentTarget.locateMethod().fullyQualifiedClassName())
+                    && callerMethodName.equals(currentTarget.locateMethod().shortMethodName())
+                    && callerLine == currentTarget.locateLine();
         } catch (IncompatibleThreadStateException e) {
             String msg = String.format("呼び出し元の確認中にスレッドがサスペンド状態ではありません。対象=%s:%d",
-                    currentTarget.locateMethod, currentTarget.locateLine);
+                    currentTarget.locateMethod(), currentTarget.locateLine());
             logger.error(msg, e);
             throw new IllegalStateException(msg, e);
         }

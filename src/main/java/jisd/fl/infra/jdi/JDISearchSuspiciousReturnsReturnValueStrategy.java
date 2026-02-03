@@ -52,7 +52,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         if (!currentTarget.hasMethodCalling()) return result;
 
         // Debugger生成
-        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest);
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest());
 
         // ハンドラ登録
         debugger.registerEventHandler(BreakpointEvent.class,
@@ -63,12 +63,12 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
                 (vm, ev) -> handleStep(vm, (StepEvent) ev));
 
         // ブレークポイント設定と実行
-        debugger.setBreakpoints(currentTarget.locateMethod.fullyQualifiedClassName(), List.of(currentTarget.locateLine));
+        debugger.setBreakpoints(currentTarget.locateMethod().fullyQualifiedClassName(), List.of(currentTarget.locateLine()));
         debugger.execute(() -> !result.isEmpty());
 
         if (result.isEmpty()) {
             logger.warn("戻り値の確認に失敗: actualValue={}, method={}, line={}",
-                    currentTarget.actualValue, currentTarget.locateMethod, currentTarget.locateLine);
+                    currentTarget.actualValue(), currentTarget.locateMethod(), currentTarget.locateLine());
         }
         return result;
     }
@@ -179,9 +179,9 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
             String callerMethodName = callerLocation.method().name();
             int callerLine = callerLocation.lineNumber();
 
-            return callerClassName.equals(currentTarget.locateMethod.fullyQualifiedClassName())
-                    && callerMethodName.equals(currentTarget.locateMethod.shortMethodName())
-                    && callerLine == currentTarget.locateLine;
+            return callerClassName.equals(currentTarget.locateMethod().fullyQualifiedClassName())
+                    && callerMethodName.equals(currentTarget.locateMethod().shortMethodName())
+                    && callerLine == currentTarget.locateLine();
         } catch (IncompatibleThreadStateException e) {
             logger.error("呼び出し元の確認中にスレッドがサスペンド状態ではありません", e);
             return false;
@@ -195,7 +195,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
      */
     private boolean validateIsTargetExecution() {
         return recentMethodExitEvent != null &&
-                JDIUtils.getValueString(recentMethodExitEvent.returnValue()).equals(currentTarget.actualValue);
+                JDIUtils.getValueString(recentMethodExitEvent.returnValue()).equals(currentTarget.actualValue());
     }
 
     /**
@@ -207,7 +207,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         String actualValue = JDIUtils.getValueString(mee.returnValue());
         try {
             SuspiciousReturnValue suspReturn = factory.createReturnValue(
-                    currentTarget.failedTest,
+                    currentTarget.failedTest(),
                     invokedMethod,
                     locateLine,
                     actualValue

@@ -21,8 +21,8 @@ public class NeighborSuspiciousVariablesSearcher {
         //SuspExprで観測できる全ての変数
         List<TracedValue> tracedNeighborValue = tracer.traceAll(suspExpr);
         //SuspExpr内で使用されている変数を静的解析により取得
-        List<String> neighborVariableNames = new ArrayList<>(suspExpr.directNeighborVariableNames);
-        if(includeIndirectUsedVariable) neighborVariableNames.addAll(suspExpr.indirectNeighborVariableNames);
+        List<String> neighborVariableNames = new ArrayList<>(suspExpr.directNeighborVariableNames());
+        if(includeIndirectUsedVariable) neighborVariableNames.addAll(suspExpr.indirectNeighborVariableNames());
 
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         //TODO: 今の実装だと、変数がローカルかフィールドか区別できない
@@ -35,15 +35,15 @@ public class NeighborSuspiciousVariablesSearcher {
                         .map(t -> {
                             return (t.isField) ?
                             new SuspiciousFieldVariable(
-                                    suspExpr.failedTest,
-                                    suspExpr.locateMethod.classElementName,
+                                    suspExpr.failedTest(),
+                                    suspExpr.locateMethod().classElementName,
                                     t.variableName,
                                     t.value,
                                     true
                             ) :
                             new SuspiciousLocalVariable(
-                                    suspExpr.failedTest,
-                                    suspExpr.locateMethod,
+                                    suspExpr.failedTest(),
+                                    suspExpr.locateMethod(),
                                     t.variableName,
                                     t.value,
                                     true

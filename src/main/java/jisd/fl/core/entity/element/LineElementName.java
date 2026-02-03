@@ -11,7 +11,7 @@ public class LineElementName implements CodeElementIdentifier<LineElementName> {
         this.line = line;
     }
 
-    LineElementName(MethodElementName methodElementName, int line){
+    public LineElementName(MethodElementName methodElementName, int line){
         this.methodElementName = methodElementName;
         this.line = line;
     }

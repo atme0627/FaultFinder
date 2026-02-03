@@ -53,7 +53,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
         if (!currentTarget.hasMethodCalling()) return result;
 
         // Debugger生成
-        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest);
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest());
 
         // ハンドラ登録
         debugger.registerEventHandler(BreakpointEvent.class,
@@ -64,12 +64,12 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
                 (vm, ev) -> handleStep(vm, (StepEvent) ev));
 
         // ブレークポイント設定と実行
-        debugger.setBreakpoints(currentTarget.locateMethod.fullyQualifiedClassName(), List.of(currentTarget.locateLine));
+        debugger.setBreakpoints(currentTarget.locateMethod().fullyQualifiedClassName(), List.of(currentTarget.locateLine()));
         debugger.execute(() -> !result.isEmpty());
 
         if (result.isEmpty()) {
             logger.warn("戻り値の確認に失敗: actualValue={}, method={}, line={}",
-                    currentTarget.actualValue, currentTarget.locateMethod, currentTarget.locateLine);
+                    currentTarget.actualValue(), currentTarget.locateMethod(), currentTarget.locateLine());
         }
         return result;
     }
@@ -158,7 +158,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
     private void handleStepOutCompleted(EventRequestManager manager, ThreadReference thread, StepEvent se) {
         int currentLine = se.location().lineNumber();
 
-        if (currentLine == currentTarget.locateLine) {
+        if (currentLine == currentTarget.locateLine()) {
             // まだ同じ行にいる → 次のメソッド呼び出しを探す
             steppingIn = true;
             activeStepRequest = EnhancedDebugger.createStepInRequest(manager, thread);
@@ -186,9 +186,9 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
             String callerMethodName = callerLocation.method().name();
             int callerLine = callerLocation.lineNumber();
 
-            return callerClassName.equals(currentTarget.locateMethod.fullyQualifiedClassName())
-                    && callerMethodName.equals(currentTarget.locateMethod.shortMethodName())
-                    && callerLine == currentTarget.locateLine;
+            return callerClassName.equals(currentTarget.locateMethod().fullyQualifiedClassName())
+                    && callerMethodName.equals(currentTarget.locateMethod().shortMethodName())
+                    && callerLine == currentTarget.locateLine();
         } catch (IncompatibleThreadStateException e) {
             logger.error("呼び出し元の確認中にスレッドがサスペンド状態ではありません", e);
             return false;
@@ -204,7 +204,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
         String actualValue = JDIUtils.getValueString(mee.returnValue());
         try {
             SuspiciousReturnValue suspReturn = factory.createReturnValue(
-                    currentTarget.failedTest,
+                    currentTarget.failedTest(),
                     invokedMethod,
                     locateLine,
                     actualValue

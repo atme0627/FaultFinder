@@ -41,7 +41,7 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
         this.recentReturnValue = null;
 
         //Debugger生成
-        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest);
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest());
 
         // ハンドラ登録
         debugger.registerEventHandler(com.sun.jdi.event.BreakpointEvent.class,
@@ -52,8 +52,8 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
                 (vm, ev) -> handleStep(vm, (StepEvent) ev));
 
         debugger.setBreakpoints(
-                currentTarget.locateMethod.fullyQualifiedClassName(),
-                List.of(currentTarget.locateLine)
+                currentTarget.locateMethod().fullyQualifiedClassName(),
+                List.of(currentTarget.locateLine())
         );
 
         //VMを実行し情報を収集
@@ -79,7 +79,7 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
         //周辺の値を観測
         try {
             StackFrame frame = thread.frame(0);
-            this.resultCandidate = JDIUtils.watchAllVariablesInLine(frame, currentTarget.locateLine);
+            this.resultCandidate = JDIUtils.watchAllVariablesInLine(frame, currentTarget.locateLine());
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException(e);
         }
@@ -99,11 +99,11 @@ public class JDITraceValueAtSuspiciousReturnValueStrategy implements TraceValueA
             String msg = String.format(
                 "StepEvent の前に MethodExitEvent が発生していません。" +
                 "対象=%s:%d, actualValue=%s",
-                currentTarget.locateMethod, currentTarget.locateLine, currentTarget.actualValue);
+                currentTarget.locateMethod(), currentTarget.locateLine(), currentTarget.actualValue());
             logger.error(msg);
             throw new IllegalStateException(msg);
         }
-        if(recentReturnValue.equals(currentTarget.actualValue)) {
+        if(recentReturnValue.equals(currentTarget.actualValue())) {
             result.addAll(resultCandidate);
         }
 

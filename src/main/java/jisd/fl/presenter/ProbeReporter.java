@@ -75,7 +75,7 @@ public class ProbeReporter {
         System.out.println();
         // Step header: [N] location (bold + white)
         System.out.println(CYAN + "[" + step + "]" + RESET
-                + " " + BOLD + LOCATION_BOLD + target.locateMethod + ":" + target.locateLine + RESET);
+                + " " + BOLD + LOCATION_BOLD + target.locateMethod() + ":" + target.locateLine() + RESET);
         // Source code line (syntax highlighted)
         System.out.println("    " + highlightJava(target.stmtString().replace("\n", " ")));
 
@@ -84,7 +84,7 @@ public class ProbeReporter {
         } else {
             for (SuspiciousExpression child : children) {
                 System.out.println("    " + GREEN + "→" + RESET
-                        + " " + coloredTypeTag(child) + LOCATION_DIM + child.locateMethod + ":" + child.locateLine + RESET
+                        + " " + coloredTypeTag(child) + LOCATION_DIM + child.locateMethod() + ":" + child.locateLine() + RESET
                         + "  " + highlightJava(child.stmtString().replace("\n", " ")));
             }
         }
@@ -114,7 +114,7 @@ public class ProbeReporter {
         sb.append(coloredTypeTag(expr));
 
         // Location in dimmer blue
-        sb.append(LOCATION_DIM).append("( ").append(expr.locateMethod).append(" line:").append(expr.locateLine).append(" )").append(RESET);
+        sb.append(LOCATION_DIM).append("( ").append(expr.locateMethod()).append(" line:").append(expr.locateLine()).append(" )").append(RESET);
 
         // Source code with syntax highlighting
         sb.append(" ").append(highlightJava(expr.stmtString().replace("\n", " ").trim()));

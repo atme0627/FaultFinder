@@ -209,7 +209,7 @@ class CauseLineFinderTest {
         assertTrue(result.isPresent(), "cause line が見つかるべき");
         assertInstanceOf(SuspiciousAssignment.class, result.get(), "SuspiciousAssignment であるべき");
         SuspiciousAssignment assignment = (SuspiciousAssignment) result.get();
-        assertEquals(expectedLine, assignment.locateLine, message);
+        assertEquals(expectedLine, assignment.locateLine(), message);
     }
 
     private void assertArgumentFound(Optional<SuspiciousExpression> result, String message) {

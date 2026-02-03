@@ -43,7 +43,7 @@ public class TraceToScoreAdjustmentConverter {
             SuspiciousExpression suspExpr = suspExprNode.suspExpr;
             int depth = depths.poll();
 
-            CodeElementIdentifier<?> elem = convertToCodeElementName(new MethodElementName(suspExpr.locateMethod.toString()), suspExpr.locateLine, g);
+            CodeElementIdentifier<?> elem = convertToCodeElementName(new MethodElementName(suspExpr.locateMethod().toString()), suspExpr.locateLine(), g);
 
             // 最小深さをマージ
             minDepth.merge(elem, depth, Math::min);

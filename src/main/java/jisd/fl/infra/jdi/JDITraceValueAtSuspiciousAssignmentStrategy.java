@@ -31,7 +31,7 @@ public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAt
         this.activeStepRequest = null;
 
         //Debugger生成
-        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest);
+        EnhancedDebugger debugger = JDIDebugServerHandle.createSharedDebugger(currentTarget.failedTest());
 
         // ハンドラ登録
         debugger.registerEventHandler(BreakpointEvent.class,
@@ -41,8 +41,8 @@ public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAt
 
         // ブレークポイント設定
         debugger.setBreakpoints(
-                currentTarget.locateMethod.fullyQualifiedClassName(),
-                List.of(currentTarget.locateLine)
+                currentTarget.locateMethod().fullyQualifiedClassName(),
+                List.of(currentTarget.locateLine())
         );
 
         // 実行（result が取得できたら終了）
@@ -64,7 +64,7 @@ public class JDITraceValueAtSuspiciousAssignmentStrategy implements TraceValueAt
         //周辺の値を観測
         try {
             StackFrame frame = thread.frame(0);
-            resultCandidate = JDIUtils.watchAllVariablesInLine(frame, currentTarget.locateLine);
+            resultCandidate = JDIUtils.watchAllVariablesInLine(frame, currentTarget.locateLine());
         } catch (IncompatibleThreadStateException e) {
             throw new RuntimeException(e);
         }

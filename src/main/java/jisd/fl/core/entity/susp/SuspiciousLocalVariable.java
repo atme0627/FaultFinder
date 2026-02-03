@@ -49,4 +49,4 @@ public record SuspiciousLocalVariable(
         return "     [LOCATION] " + locateMethod +
                 " [PROBE TARGET] " + variableName(true, true) + " == " + actualValue();
     }
-}１
+}
