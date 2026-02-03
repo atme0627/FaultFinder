@@ -14,7 +14,7 @@
 ### ProbeTest ✅
 
 - **再実装ファイル**: `src/test/java/jisd/fl/usecase/ProbeTest.java`
-- **フィクスチャ**: `src/test/resources/fixtures/exec/src/main/java/jisd/fl/fixture/ProbeFixture.java`
+- **フィクスチャ**: `src/test/resources/fixtures/exec/src/main/java/jisd/fixture/ProbeFixture.java`
 - **テスト内容**:
   - `scenario1_simple_assignment()` - 単純な代入追跡
   - `scenario1_assignment_with_neighbors()` - 隣接変数を持つ代入追跡
@@ -29,7 +29,7 @@
 ### SuspiciousExpressionTest (ポリモーフィズム部分) ✅
 
 - **再実装ファイル**: `src/test/java/jisd/fl/infra/jdi/PolymorphismSearchReturnsTest.java`
-- **フィクスチャ**: `src/test/resources/fixtures/exec/src/main/java/jisd/fl/fixture/PolymorphismFixture.java`
+- **フィクスチャ**: `src/test/resources/fixtures/exec/src/main/java/jisd/fixture/PolymorphismFixture.java`
 - **テスト内容**:
   - `polymorphism_single_call_collects_return_value()` - 単一ポリモーフィズム呼び出し
   - `polymorphism_loop_identifies_circle_execution()` - ループ内 Circle 実行の特定
@@ -37,6 +37,18 @@
   - `polymorphism_nested_collects_all_return_values()` - ネストしたポリモーフィズム
   - `polymorphism_multiple_in_return_collects_all()` - 複数の Shape を組み合わせた return
 - **本質的な検証**: `locateMethod()` が実装クラス（Circle, Rectangle）を返すことを確認
+- **再実装日**: 2026-02-03
+
+### CoverageAnalyzerTest ✅
+
+- **再実装ファイル**: `src/test/java/jisd/fl/usecase/CoverageAnalyzerTest.java`
+- **フィクスチャ**: `src/test/resources/fixtures/exec/src/main/java/jisd/fixture/CoverageFixture.java`
+- **テスト内容**:
+  - `analyze_collects_coverage_for_all_tests()` - カバレッジ収集の基本動作
+  - `analyze_counts_passed_and_failed_tests_correctly()` - 成功/失敗テストの ep/ef カウント
+  - `analyze_line_coverage_has_correct_ep_ef_ratio()` - LINE カバレッジの ep/ef 比率
+  - `analyze_covers_conditional_branches()` - 条件分岐カバレッジ
+  - `analyze_sum_method_loop_coverage()` - ループカバレッジ
 - **再実装日**: 2026-02-03
 
 ### 各戦略の単体テスト ✅
@@ -56,15 +68,7 @@
 
 ## 🔄 未実装（残タスク）
 
-### 1. CoverageAnalyzerTest
-
-- **元ファイル**: `src/test/java/jisd/fl/coverage/CoverageAnalyzerTest.java`
-- **テスト対象**: `CoverageAnalyzer` - SBFL カバレッジ解析
-- **テスト内容**:
-  - Conditional/Loop/InnerClass のテストケースに対する LINE/METHOD/CLASS 粒度のカバレッジ計算
-- **優先度**: 中
-
-### 2. LineMethodCallWatcherTest
+### 1. LineMethodCallWatcherTest
 
 - **元ファイル**: `src/test/java/experiment/util/internal/finder/LineMethodCallWatcherTest.java`
 - **テスト対象**: `LineMethodCallWatcher` - メソッド呼び出し行の監視機能
@@ -74,9 +78,9 @@
   - `nestedMethodCallReturn()` - ネストしたメソッド呼び出しの戻り値追跡
   - `callInArgument()` - 引数内のメソッド呼び出し追跡
   - `callStandardLibrary()` - 標準ライブラリ呼び出し時の追跡
-- **優先度**: 低（内部ユーティリティ）
+- **優先度**: 低（内部ユーティリティ、experiment パッケージは大幅に変わる可能性あり）
 
-### 3. 厳しめのベンチマーク追加
+### 2. 厳しめのベンチマーク追加
 
 `ProbeBenchmarkTest` に、tree の node 数が多いケースのベンチマークを追加する。
 
