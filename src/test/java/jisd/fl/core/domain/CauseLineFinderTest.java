@@ -8,6 +8,7 @@ import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.infra.javaparser.JavaParserUtils;
+import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,11 +35,12 @@ class CauseLineFinderTest {
     private static final String FIXTURE_FQCN = "jisd.fl.fixture.CauseLineFinderFixture";
     private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
     private static PropertyLoader.ProjectConfig original;
+    private static JDIDebugServerHandle session;
 
     private final CauseLineFinder finder = new CauseLineFinder();
 
     @BeforeAll
-    static void setUpProjectConfigForFixtures() {
+    static void setUpProjectConfigForFixtures() throws Exception {
         original = PropertyLoader.getTargetProjectConfig();
 
         var cfg = new PropertyLoader.ProjectConfig(
@@ -50,10 +52,15 @@ class CauseLineFinderTest {
         );
 
         PropertyLoader.setProjectConfig(cfg);
+        session = JDIDebugServerHandle.startShared();
     }
 
     @AfterAll
-    static void restoreProjectConfig() {
+    static void restoreProjectConfig() throws Exception {
+        if (session != null) {
+            session.close();
+            session = null;
+        }
         if (original != null) {
             PropertyLoader.setProjectConfig(original);
         }
