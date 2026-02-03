@@ -95,25 +95,28 @@ class PolymorphismSearchReturnsTest {
         List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "12");
 
         assertFalse(result.isEmpty(), "ループ内ポリモーフィズムの戻り値を収集できるべき");
-        // 12 は Circle と Rectangle 両方から返される可能性がある
-        assertTrue(result.size() >= 1, "area() の戻り値 12 を収集: " + formatResult(result));
+        assertEquals(1, result.size(), "Circle.area() の戻り値 12 を収集: " + formatResult(result));
+        // ポリモーフィズムの本質: Circle クラスのメソッドが追跡されること
+        assertTrue(hasReturnValueFromClass(result, "Circle", "12"),
+                "Circle.area() の戻り値 12 を収集: " + formatResult(result));
     }
 
     @Test
     @Timeout(20)
-    void polymorphism_loop_collects_different_implementations() throws Exception {
-        // ループ内で異なる実装 (Circle, Rectangle) が呼ばれる
-        // computeArea の return s.area() の戻り値を収集
-        // 特定の actualValue を指定しない場合、すべての実行が対象
+    void polymorphism_loop_identifies_rectangle_execution() throws Exception {
+        // ループ内で Rectangle.area() が呼ばれた実行を特定
+        // Rectangle(4, 5).area() = 4 * 5 = 20
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#polymorphism_loop()");
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#computeArea(Shape)");
         int targetLine = findReturnLine(targetMethod, "s.area()");
 
-        // Circle(2).area()=12 と Rectangle(3,4).area()=12 で合計 24 が loopPolymorphismReturn の戻り値
-        // ここでは actualValue=12 で Circle の実行を特定
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "12");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "20");
 
-        assertFalse(result.isEmpty(), "ポリモーフィズムのループ実行で戻り値を収集: " + formatResult(result));
+        assertFalse(result.isEmpty(), "ループ内ポリモーフィズムの戻り値を収集できるべき");
+        assertEquals(1, result.size(), "Rectangle.area() の戻り値 20 を収集: " + formatResult(result));
+        // ポリモーフィズムの本質: Rectangle クラスのメソッドが追跡されること
+        assertTrue(hasReturnValueFromClass(result, "Rectangle", "20"),
+                "Rectangle.area() の戻り値 20 を収集: " + formatResult(result));
     }
 
     // ===== ネストしたポリモーフィズム呼び出しテスト =====
@@ -132,7 +135,7 @@ class PolymorphismSearchReturnsTest {
         assertFalse(result.isEmpty(), "ネストしたポリモーフィズムの戻り値を収集できるべき");
         assertEquals(2, result.size(), "area() と transform() の両方の戻り値を収集: " + formatResult(result));
 
-        // ポリモーフィズムの本質: Rectangle.area() が追跡されること（Shape.area() ではない）
+        // Rectangle.area() が追跡されること（Shape.area() ではない）
         assertTrue(hasReturnValueFromClass(result, "Rectangle", "30"),
                 "Rectangle.area() の戻り値 30 を収集: " + formatResult(result));
         assertTrue(hasReturnValue(result, "60"), "transform(30) の戻り値 60 を収集: " + formatResult(result));

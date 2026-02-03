@@ -80,12 +80,12 @@ public class PolymorphismFixture {
     }
 
     private int loopPolymorphismReturn() {
-        Shape[] shapes = { new Circle(2), new Rectangle(3, 4) };
+        Shape[] shapes = { new Circle(2), new Rectangle(4, 5) };
         int total = 0;
         for (Shape s : shapes) {
             total += computeArea(s);  // target line: 2回実行、異なる実装
         }
-        return total;  // Circle: 3*2*2=12, Rectangle: 3*4=12, total=24
+        return total;  // Circle: 3*2*2=12, Rectangle: 4*5=20, total=32
     }
 
     private int computeArea(Shape s) {
