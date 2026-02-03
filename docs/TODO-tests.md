@@ -46,12 +46,13 @@
 - **元ファイル**: `src/test/java/jisd/fl/probe/info/SuspiciousExpressionTest.java`
 - **テスト対象**: `SuspiciousReturnsSearcher` - 疑わしい戻り値の探索
 - **テスト内容**:
-  - `polymorphism()` - ポリモーフィズムを含むメソッド呼び出しの戻り値追跡
-  - `polymorphismLoop()` - ループ内でのポリモーフィズム
+  - ~~`polymorphism()` - ポリモーフィズムを含むメソッド呼び出しの戻り値追跡~~ ✅ 再実装済み
+  - ~~`polymorphismLoop()` - ループ内でのポリモーフィズム~~ ✅ 再実装済み
   - `polymorphismLoopReturn()` - ループ内での戻り値追跡
   - `polymorphismLoopArgument()` - ループ内での引数追跡
   - 空のテストメソッド多数 (chaining, nestedCalling, etc.)
 - **依存リソース**: `org.sample.MethodCallingTest`, `org.sample.shape.*` (Project4Test)
+- **再実装済み**: `src/test/java/jisd/fl/infra/jdi/PolymorphismSearchReturnsTest.java` (2026-02-03)
 
 ### 5. SuspiciousArgumentTest
 
