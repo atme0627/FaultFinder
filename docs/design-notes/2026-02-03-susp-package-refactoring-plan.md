@@ -11,10 +11,28 @@
 |-------|------|------|----------|
 | 1 | isField 問題解決 + sealed + switch | **完了** | ea3d17f |
 | 2 | ~~Value Object 導入~~ | **スキップ** | Phase 3 に統合 |
-| 3 | Record への移行 + 不変性確保 | 未着手 | - |
+| 3 | Record への移行 + 不変性確保 | **完了** | 019d7db, 57277b7 |
 | 4 | ファクトリ・クライアント修正 | 未着手 | - |
 | 5 | Strategy → switch 式 | 未着手 | - |
 | 6 | TreeNode 責務分離 | 未着手 | - |
+
+### Phase 3 完了内容
+
+**Step 1-2** (019d7db): SuspiciousVariable の record 化
+- `SuspiciousLocalVariable` を record に変換
+- `SuspiciousFieldVariable` を record に変換
+- `isArray` 判定を `arrayNth >= 0` に統一
+
+**Step 3** (57277b7): SuspiciousExpression の sealed interface 化
+- `SuspiciousExpression` を abstract class → sealed interface に変換
+- `LineElementName` を使って `locateMethod` と `locateLine` を統合
+- 3つの実装クラス (Assignment, ReturnValue, Argument) を final class で実装
+- すべての呼び出し側でフィールドアクセスをメソッド呼び出しに変換
+
+**設計判断**:
+- `SourceLocation` Value Object は導入せず、既存の `LineElementName` を活用
+- `NeighborVariables` Value Object は冗長と判断し、`List.copyOf()` で不変性を確保
+- `SuspiciousExpression` 実装クラスは record ではなく final class を採用（public final フィールドを維持するため）
 
 ### Phase 2 スキップの理由
 
