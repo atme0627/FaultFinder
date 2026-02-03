@@ -74,6 +74,11 @@ class PolymorphismSearchReturnsTest {
 
         SuspiciousReturnValue ret = (SuspiciousReturnValue) result.get(0);
         assertEquals("300", ret.actualValue(), "Circle.area() の戻り値は 300: " + formatResult(result));
+        // ポリモーフィズムの本質: 実装クラス Circle のメソッドが追跡されること
+        assertTrue(ret.locateMethod().fullyQualifiedClassName().endsWith("Circle"),
+                "locateMethod は Circle クラスを指すべき: " + ret.locateMethod());
+        assertEquals("area", ret.locateMethod().shortMethodName(),
+                "メソッド名は area: " + ret.locateMethod());
     }
 
     // ===== ループ内でのポリモーフィズムテスト =====
@@ -127,7 +132,9 @@ class PolymorphismSearchReturnsTest {
         assertFalse(result.isEmpty(), "ネストしたポリモーフィズムの戻り値を収集できるべき");
         assertEquals(2, result.size(), "area() と transform() の両方の戻り値を収集: " + formatResult(result));
 
-        assertTrue(hasReturnValue(result, "30"), "area() の戻り値 30 を収集: " + formatResult(result));
+        // ポリモーフィズムの本質: Rectangle.area() が追跡されること（Shape.area() ではない）
+        assertTrue(hasReturnValueFromClass(result, "Rectangle", "30"),
+                "Rectangle.area() の戻り値 30 を収集: " + formatResult(result));
         assertTrue(hasReturnValue(result, "60"), "transform(30) の戻り値 60 を収集: " + formatResult(result));
     }
 
@@ -147,8 +154,11 @@ class PolymorphismSearchReturnsTest {
         assertFalse(result.isEmpty(), "複数のポリモーフィズム呼び出しの戻り値を収集できるべき");
         assertEquals(2, result.size(), "circle.area() と rectangle.area() の両方を収集: " + formatResult(result));
 
-        assertTrue(hasReturnValue(result, "27"), "circle.area() の戻り値 27 を収集: " + formatResult(result));
-        assertTrue(hasReturnValue(result, "10"), "rectangle.area() の戻り値 10 を収集: " + formatResult(result));
+        // ポリモーフィズムの本質: 各実装クラスのメソッドが個別に追跡されること
+        assertTrue(hasReturnValueFromClass(result, "Circle", "27"),
+                "Circle.area() の戻り値 27 を収集: " + formatResult(result));
+        assertTrue(hasReturnValueFromClass(result, "Rectangle", "10"),
+                "Rectangle.area() の戻り値 10 を収集: " + formatResult(result));
     }
 
     // ===== Helper methods =====
@@ -185,12 +195,31 @@ class PolymorphismSearchReturnsTest {
                 .anyMatch(rv -> rv.actualValue().equals(expectedValue));
     }
 
+    /**
+     * 指定したクラス名と戻り値を持つ SuspiciousReturnValue が存在するか確認。
+     * ポリモーフィズムの本質的な検証: 実装クラスのメソッドが正しく追跡されているか。
+     */
+    private static boolean hasReturnValueFromClass(
+            List<SuspiciousExpression> result, String expectedClassName, String expectedValue) {
+        return result.stream()
+                .filter(e -> e instanceof SuspiciousReturnValue)
+                .map(e -> (SuspiciousReturnValue) e)
+                .anyMatch(rv -> rv.actualValue().equals(expectedValue)
+                        && rv.locateMethod().fullyQualifiedClassName().endsWith(expectedClassName));
+    }
+
     private static String formatResult(List<SuspiciousExpression> result) {
         if (result.isEmpty()) return "[]";
         return result.stream()
                 .map(e -> {
                     if (e instanceof SuspiciousReturnValue rv) {
-                        return String.format("ReturnValue(%s=%s)", rv.locateMethod().shortMethodName(), rv.actualValue());
+                        // クラス名も含めて表示（ポリモーフィズムの検証に重要）
+                        String className = rv.locateMethod().fullyQualifiedClassName();
+                        String shortClassName = className.contains("$")
+                                ? className.substring(className.lastIndexOf("$") + 1)
+                                : className.substring(className.lastIndexOf(".") + 1);
+                        return String.format("ReturnValue(%s.%s=%s)",
+                                shortClassName, rv.locateMethod().shortMethodName(), rv.actualValue());
                     }
                     return e.toString();
                 })
