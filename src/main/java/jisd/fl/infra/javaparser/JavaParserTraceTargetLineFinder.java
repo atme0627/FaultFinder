@@ -5,7 +5,9 @@ import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -14,13 +16,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JavaParserTraceTargetLineFinder {
-    public static List<Integer> traceTargetLineNumbers(SuspiciousLocalVariable suspiciousLocalVariable) {
-        if(suspiciousLocalVariable.isField()) {
-            return traceLinesOfClass(suspiciousLocalVariable.locateMethod().classElementName, suspiciousLocalVariable.variableName());
-        }
-        else {
-            return traceLineOfMethod(suspiciousLocalVariable.locateMethod(), suspiciousLocalVariable.variableName());
-        }
+    public static List<Integer> traceTargetLineNumbers(SuspiciousVariable suspiciousVariable) {
+        return switch (suspiciousVariable) {
+            case SuspiciousFieldVariable field ->
+                traceLinesOfClass(field.locateClass(), field.variableName());
+            case SuspiciousLocalVariable local ->
+                traceLineOfMethod(local.locateMethod(), local.variableName());
+        };
     }
 
     private static List<Integer> traceLinesOfClass(ClassElementName targetClass, String variable){

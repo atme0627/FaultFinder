@@ -70,8 +70,7 @@ class SuspiciousExpressionTest {
                     getFqmn(testMethodName),
                     "totalArea",
                     "32.0",
-                    true,
-                    false
+                    true
             );
 
             SuspiciousAssignment suspAssignment = factory.createAssignment(
@@ -128,8 +127,7 @@ class SuspiciousExpressionTest {
                     getFqmn(testMethodName),
                     "totalArea",
                     "32.0",
-                    true,
-                    false
+                    true
             );
 
             SuspiciousAssignment suspAssignment = factory.createAssignment(

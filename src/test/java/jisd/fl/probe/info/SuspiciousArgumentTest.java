@@ -37,8 +37,7 @@ class SuspiciousArgumentTest {
                 "org.sample.util.Calc#methodCalling(int, int)",
                 "y",
                 "3",
-                true,
-                false
+                true
         );
 
         SuspiciousArgument suspArg = searcher.searchSuspiciousArgument(suspVar, invokeMethodName).get();

@@ -123,7 +123,11 @@ public class ValueChangingLineFinder {
                 : null;
 
         if(name == null || !name.equals(v.variableName())) return false;
-        return (v.isField() == target.isFieldAccessExpr());
+        boolean expectFieldAccess = switch (v) {
+            case SuspiciousFieldVariable _ -> true;
+            case SuspiciousLocalVariable _ -> false;
+        };
+        return expectFieldAccess == target.isFieldAccessExpr();
     }
 
     private record LineRange(int begin, int end) {

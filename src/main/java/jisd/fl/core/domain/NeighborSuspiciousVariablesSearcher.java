@@ -46,8 +46,7 @@ public class NeighborSuspiciousVariablesSearcher {
                                     suspExpr.locateMethod.fullyQualifiedName(),
                                     t.variableName,
                                     t.value,
-                                    true,
-                                    false
+                                    true
                             );
                         }).distinct().collect(Collectors.toList());
         return result;

@@ -56,8 +56,7 @@ class ProbeTest {
                     "org.sample.MinimumTest#CheckRunTestAndWatchVariable()",
                     "x",
                     "6",
-                    true,
-                    false
+                    true
             );
 
             Probe pfs = new Probe(target);
@@ -74,8 +73,7 @@ class ProbeTest {
                     "org.sample.CalcTest#methodCall1()",
                     "actual",
                     "4",
-                    true,
-                    false
+                    true
             );
 
             Probe pfs = new Probe(target);
@@ -95,8 +93,7 @@ class ProbeTest {
                     "org.sample.coverage.ConditionalTest#testXEqualY()",
                     "result",
                     "2",
-                    true,
-                    false
+                    true
             );
 
             Probe pfs = new Probe(target);
@@ -125,8 +122,7 @@ class ProbeTest {
                     "org.sample.coverage.LoopTest#testCase1_forAndWhile_prodGreaterThanSum()",
                     "result",
                     "8",
-                    true,
-                    false
+                    true
             );
 
             Probe pfs = new Probe(target);

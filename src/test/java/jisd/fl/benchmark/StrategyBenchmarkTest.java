@@ -221,7 +221,7 @@ class StrategyBenchmarkTest {
             MethodElementName testMethod, int locateLine, String variableName,
             String actualValue, boolean hasMethodCalling) {
         SuspiciousVariable assignTarget = new SuspiciousLocalVariable(
-                testMethod, testMethod.toString(), variableName, actualValue, true, false);
+                testMethod, testMethod.toString(), variableName, actualValue, true);
         SuspiciousAssignment suspAssign = new SuspiciousAssignment(
                 testMethod, testMethod, locateLine, assignTarget,
                 "", hasMethodCalling, List.of(), List.of());
@@ -252,7 +252,7 @@ class StrategyBenchmarkTest {
     private static List<TracedValue> traceAssignment(
             MethodElementName testMethod, int locateLine, String variableName, String actualValue) {
         SuspiciousVariable assignTarget = new SuspiciousLocalVariable(
-                testMethod, testMethod.toString(), variableName, actualValue, true, false);
+                testMethod, testMethod.toString(), variableName, actualValue, true);
         SuspiciousAssignment suspAssign = new SuspiciousAssignment(
                 testMethod, testMethod, locateLine, assignTarget, "", false, List.of(), List.of());
         return new JDITraceValueAtSuspiciousAssignmentStrategy().traceAllValuesAtSuspExpr(suspAssign);

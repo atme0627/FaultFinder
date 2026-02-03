@@ -191,11 +191,11 @@ class CauseLineFinderTest {
     // ===== Test helpers =====
 
     private SuspiciousLocalVariable localVar(MethodElementName method, String varName, String actual) {
-        return new SuspiciousLocalVariable(method, method.toString(), varName, actual, true, false);
+        return new SuspiciousLocalVariable(method, method.toString(), varName, actual, true);
     }
 
     private SuspiciousLocalVariable localVarWithCallee(MethodElementName caller, MethodElementName callee, String varName, String actual) {
-        return new SuspiciousLocalVariable(caller, callee.toString(), varName, actual, true, false);
+        return new SuspiciousLocalVariable(caller, callee.toString(), varName, actual, true);
     }
 
     private void assertAssignmentAt(Optional<SuspiciousExpression> result, int expectedLine, String message) {

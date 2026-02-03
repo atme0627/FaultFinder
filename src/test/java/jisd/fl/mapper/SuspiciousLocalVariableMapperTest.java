@@ -17,7 +17,6 @@ class SuspiciousLocalVariableMapperTest {
                 "nums",
                 "13",
                 true,
-                false,
                 2
         );
         String expected = """
@@ -26,8 +25,7 @@ class SuspiciousLocalVariableMapperTest {
                 "locateMethod":"org.sample.Example#method(int)",
                 "variableName":"nums[2]",
                 "actualValue":"13",
-                "isPrimitive":true,
-                "isField":false
+                "isPrimitive":true
                 }
                 """.replace("\n", "");
 
@@ -43,8 +41,7 @@ class SuspiciousLocalVariableMapperTest {
                 "locateMethod":"org.sample.Example#method(int)",
                 "variableName":"nums[2]",
                 "actualValue":"13",
-                "isPrimitive":true,
-                "isField":false
+                "isPrimitive":true
                 }
         """;
         SuspiciousLocalVariable expected = new SuspiciousLocalVariable(
@@ -53,7 +50,6 @@ class SuspiciousLocalVariableMapperTest {
                 "nums",
                 "13",
                 true,
-                false,
                 2
         );
         SuspiciousLocalVariable actual = SuspiciousVariableMapper.fromJson(json);
@@ -70,16 +66,14 @@ class SuspiciousLocalVariableMapperTest {
                         "locateMethod":"org.sample.Example#method(int)",
                         "variableName":"nums[2]",
                         "actualValue":"13",
-                        "isPrimitive":true,
-                        "isField":false
+                        "isPrimitive":true
                     },
                     {
                         "failedTest":"org.sample.ExampleTest#test2()",
                         "locateMethod":"org.sample.Example#calc(int)",
                         "variableName":"answer",
                         "actualValue":"5",
-                        "isPrimitive":true,
-                        "isField":false
+                        "isPrimitive":true
                     },
                 ]
         """;
@@ -90,7 +84,6 @@ class SuspiciousLocalVariableMapperTest {
                         "nums",
                         "13",
                         true,
-                        false,
                         2
                 ),
                 new SuspiciousLocalVariable(
@@ -98,8 +91,7 @@ class SuspiciousLocalVariableMapperTest {
                         "org.sample.Example#calc(int)",
                         "answer",
                         "5",
-                        true,
-                        false
+                        true
                 )
         );
         List<SuspiciousLocalVariable> actual = SuspiciousVariableMapper.fromJsonArray(json);

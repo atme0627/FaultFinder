@@ -39,8 +39,7 @@ public class FaultFinderDemo {
                 failedTestMethodName.fullyQualifiedName(),
                 "actual",
                 "4",
-                true,
-                false
+                true
         );
 
         SbflCoveragePrinter printer = new SbflCoveragePrinter();
@@ -60,8 +59,7 @@ public class FaultFinderDemo {
                 failedTestMethodName.fullyQualifiedName(),
                 "actual",
                 "4",
-                true,
-                false
+                true
         );
         faultFinder.probe(targetValue);
 

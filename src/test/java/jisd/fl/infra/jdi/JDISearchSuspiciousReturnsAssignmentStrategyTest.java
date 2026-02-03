@@ -188,7 +188,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
             String actualValue, boolean hasMethodCalling) {
 
         SuspiciousLocalVariable assignTarget = new SuspiciousLocalVariable(
-                testMethod, testMethod.toString(), variableName, actualValue, true, false);
+                testMethod, testMethod.toString(), variableName, actualValue, true);
 
         SuspiciousAssignment suspAssign = new SuspiciousAssignment(
                 testMethod, testMethod, locateLine, assignTarget,

@@ -49,8 +49,7 @@ class ProbeBenchmarkTest {
                 "org.sample.MinimumTest#CheckRunTestAndWatchVariable()",
                 "x",
                 "6",
-                true,
-                false
+                true
         );
 
         Probe probe = new Probe(target);
@@ -70,8 +69,7 @@ class ProbeBenchmarkTest {
                 "org.sample.CalcTest#methodCall1()",
                 "actual",
                 "4",
-                true,
-                false
+                true
         );
 
         Probe probe = new Probe(target);
@@ -114,8 +112,7 @@ class ProbeBenchmarkTest {
                     failedTest.fullyQualifiedName(),
                     "actual",
                     "4",
-                    true,
-                    false
+                    true
             );
 
             long probeStart = System.nanoTime();

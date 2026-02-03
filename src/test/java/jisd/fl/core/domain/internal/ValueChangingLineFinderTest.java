@@ -65,8 +65,7 @@ public class ValueChangingLineFinderTest {
                 locateMethodFqmn,
                 varName,
                 "DUMMY_ACTUAL",
-                true,
-                false
+                true
         );
     }
 

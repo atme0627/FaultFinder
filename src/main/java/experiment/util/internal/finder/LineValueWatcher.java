@@ -66,7 +66,6 @@ public class LineValueWatcher {
                         lv.name(),
                         ar.getValue(0).toString(),
                         true,
-                        false,
                         0
                 ));
             }
@@ -76,8 +75,7 @@ public class LineValueWatcher {
                         locateMethod.fullyQualifiedName(),
                         lv.name(),
                         v.toString(),
-                        true,
-                        false
+                        true
                 ));
             }
         });

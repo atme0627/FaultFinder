@@ -67,7 +67,7 @@ public class ProbeReporter {
     public void reportProbeStart(SuspiciousLocalVariable target) {
         System.out.println(BOLD + "[Probe]" + RESET
                 + " Target: " + target.variableName() + " == " + target.actualValue()
-                + " @ " + target.getLocateMethodString(false));
+                + " @ " + target.locateMethod().methodSignature);
         System.out.println(DIM + "─".repeat(SEPARATOR_WIDTH) + RESET);
     }
 
