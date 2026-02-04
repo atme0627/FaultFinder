@@ -9,7 +9,6 @@ import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.fl.core.domain.port.SearchSuspiciousReturnsStrategy;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
-import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousArgument;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
@@ -202,24 +201,8 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         }
     }
 
-    /**
-     * MethodExitEvent から戻り値を収集し、resultCandidate に追加する。
-     */
     private void collectReturnValue(MethodExitEvent mee) {
-        MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
-        int locateLine = mee.location().lineNumber();
-        String actualValue = JDIUtils.getValueString(mee.returnValue());
-        try {
-            SuspiciousReturnValue suspReturn = factory.createReturnValue(
-                    currentTarget.failedTest(),
-                    invokedMethod,
-                    locateLine,
-                    actualValue
-            );
-            resultCandidate.add(suspReturn);
-        } catch (RuntimeException e) {
-            logger.debug("SuspiciousReturnValue を作成できませんでした: {} (method={}, line={})",
-                    e.getMessage(), invokedMethod, locateLine);
-        }
+        JDIUtils.createSuspiciousReturnValue(mee, currentTarget.failedTest(), factory)
+                .ifPresent(resultCandidate::add);
     }
 }

@@ -9,7 +9,6 @@ import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.fl.core.domain.port.SearchSuspiciousReturnsStrategy;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
-import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
 import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
@@ -18,7 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspiciousReturnsStrategy {
     private static final Logger logger = LoggerFactory.getLogger(JDISearchSuspiciousReturnsAssignmentStrategy.class);
@@ -133,7 +131,7 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
         if (!isCalledFromTargetLocation(thread)) {
             // メソッドに入っていない、または対象位置からの呼び出しでない
             // → 行の実行が終わった可能性があるので検証
-            if (validateIsTargetExecution(se, currentTarget.assignTarget)) {
+            if (JDIUtils.validateIsTargetExecution(se, currentTarget.assignTarget)) {
                 result.addAll(resultCandidate);
             }
             // 結果が空の場合は次の BreakpointEvent を待つ
@@ -164,123 +162,19 @@ public class JDISearchSuspiciousReturnsAssignmentStrategy implements SearchSuspi
             activeStepRequest = EnhancedDebugger.createStepInRequest(manager, thread);
         } else {
             // 行を離れた → 行の実行が完了したので検証
-            if (validateIsTargetExecution(se, currentTarget.assignTarget)) {
+            if (JDIUtils.validateIsTargetExecution(se, currentTarget.assignTarget)) {
                 result.addAll(resultCandidate);
             }
             // 結果が空の場合は次の BreakpointEvent を待つ
         }
     }
 
-    /**
-     * 呼び出し元が対象の位置（メソッドと行番号）かどうかを確認する。
-     */
     private boolean isCalledFromTargetLocation(ThreadReference thread) {
-        try {
-            if (thread.frameCount() < 2) {
-                return false;
-            }
-            StackFrame callerFrame = thread.frame(1);
-            Location callerLocation = callerFrame.location();
-
-            String callerClassName = callerLocation.declaringType().name();
-            String callerMethodName = callerLocation.method().name();
-            int callerLine = callerLocation.lineNumber();
-
-            return callerClassName.equals(currentTarget.locateMethod().fullyQualifiedClassName())
-                    && callerMethodName.equals(currentTarget.locateMethod().shortMethodName())
-                    && callerLine == currentTarget.locateLine();
-        } catch (IncompatibleThreadStateException e) {
-            logger.error("呼び出し元の確認中にスレッドがサスペンド状態ではありません", e);
-            return false;
-        }
+        return JDIUtils.isCalledFromTargetLocation(thread, currentTarget.locateMethod(), currentTarget.locateLine());
     }
 
-    /**
-     * MethodExitEvent から戻り値を収集し、resultCandidate に追加する。
-     */
     private void collectReturnValue(MethodExitEvent mee) {
-        MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
-        int locateLine = mee.location().lineNumber();
-        String actualValue = JDIUtils.getValueString(mee.returnValue());
-        try {
-            SuspiciousReturnValue suspReturn = factory.createReturnValue(
-                    currentTarget.failedTest(),
-                    invokedMethod,
-                    locateLine,
-                    actualValue
-            );
-            resultCandidate.add(suspReturn);
-        } catch (RuntimeException e) {
-            logger.debug("SuspiciousReturnValue の作成に失敗: {} (method={}, line={})",
-                    e.getMessage(), invokedMethod, locateLine);
-        }
-    }
-
-    /**
-     * 代入先変数の現在値が actualValue と一致するか検証する。
-     * 一致すれば目的の実行であると判断する。
-     *
-     * @return 目的の実行であれば true
-     */
-    static boolean validateIsTargetExecution(StepEvent se, SuspiciousVariable assignTarget) {
-        // TODO: 配列はとりあえず考えない
-        if (!assignTarget.isPrimitive()) {
-            throw new RuntimeException("参照型はまだサポートされていません: " + assignTarget.variableName());
-        }
-        if (assignTarget.isArray()) {
-            throw new RuntimeException("配列型はまだサポートされていません: " + assignTarget.variableName());
-        }
-
-        try {
-            StackFrame frame = se.thread().frame(0);
-            String evaluatedValue = (assignTarget instanceof SuspiciousFieldVariable)
-                    ? getFieldValue(frame, assignTarget.variableName())
-                    : getLocalVariableValue(frame, assignTarget.variableName());
-            return evaluatedValue.equals(assignTarget.actualValue());
-        } catch (IncompatibleThreadStateException e) {
-            throw new RuntimeException("対象スレッドが中断状態ではありません", e);
-        } catch (AbsentInformationException e) {
-            throw new RuntimeException("デバッグ情報が不足しています（-g オプションでコンパイルされていない可能性）", e);
-        } catch (NoSuchElementException e) {
-            // 変数が存在しない → 目的の実行ではない
-            return false;
-        }
-    }
-
-    /**
-     * フィールド変数の値を取得する。
-     */
-    private static String getFieldValue(StackFrame frame, String fieldName) {
-        ObjectReference thisObject = frame.thisObject();
-        ReferenceType refType = (thisObject != null)
-                ? thisObject.referenceType()
-                : frame.location().declaringType();
-
-        Field field = refType.fieldByName(fieldName);
-        if (field == null) {
-            throw new NoSuchElementException("フィールドが見つかりません: " + fieldName);
-        }
-
-        if (field.isStatic()) {
-            return refType.getValue(field).toString();
-        } else {
-            if (thisObject == null) {
-                throw new RuntimeException(
-                        "インスタンスフィールドの取得にはthisオブジェクトが必要ですが、nullでした: " + fieldName);
-            }
-            return thisObject.getValue(field).toString();
-        }
-    }
-
-    /**
-     * ローカル変数の値を取得する。
-     */
-    private static String getLocalVariableValue(StackFrame frame, String variableName)
-            throws AbsentInformationException {
-        LocalVariable localVar = frame.visibleVariables().stream()
-                .filter(lv -> lv.name().equals(variableName))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("ローカル変数が見つかりません: " + variableName));
-        return JDIUtils.getValueString(frame.getValue(localVar));
+        JDIUtils.createSuspiciousReturnValue(mee, currentTarget.failedTest(), factory)
+                .ifPresent(resultCandidate::add);
     }
 }

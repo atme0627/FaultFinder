@@ -9,7 +9,6 @@ import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.fl.core.domain.port.SearchSuspiciousReturnsStrategy;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
-import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousReturnValue;
 import jisd.fl.infra.javaparser.JavaParserSuspiciousExpressionFactory;
@@ -164,28 +163,8 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         activeStepRequest = EnhancedDebugger.createStepInRequest(manager, thread);
     }
 
-    /**
-     * 呼び出し元が対象の位置（メソッドと行番号）かどうかを確認する。
-     */
     private boolean isCalledFromTargetLocation(ThreadReference thread) {
-        try {
-            if (thread.frameCount() < 2) {
-                return false;
-            }
-            StackFrame callerFrame = thread.frame(1);
-            Location callerLocation = callerFrame.location();
-
-            String callerClassName = callerLocation.declaringType().name();
-            String callerMethodName = callerLocation.method().name();
-            int callerLine = callerLocation.lineNumber();
-
-            return callerClassName.equals(currentTarget.locateMethod().fullyQualifiedClassName())
-                    && callerMethodName.equals(currentTarget.locateMethod().shortMethodName())
-                    && callerLine == currentTarget.locateLine();
-        } catch (IncompatibleThreadStateException e) {
-            logger.error("呼び出し元の確認中にスレッドがサスペンド状態ではありません", e);
-            return false;
-        }
+        return JDIUtils.isCalledFromTargetLocation(thread, currentTarget.locateMethod(), currentTarget.locateLine());
     }
 
     /**
@@ -198,24 +177,8 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
                 JDIUtils.getValueString(recentMethodExitEvent.returnValue()).equals(currentTarget.actualValue());
     }
 
-    /**
-     * MethodExitEvent から戻り値を収集し、resultCandidate に追加する。
-     */
     private void collectReturnValue(MethodExitEvent mee) {
-        MethodElementName invokedMethod = new MethodElementName(EnhancedDebugger.getFqmn(mee.method()));
-        int locateLine = mee.location().lineNumber();
-        String actualValue = JDIUtils.getValueString(mee.returnValue());
-        try {
-            SuspiciousReturnValue suspReturn = factory.createReturnValue(
-                    currentTarget.failedTest(),
-                    invokedMethod,
-                    locateLine,
-                    actualValue
-            );
-            resultCandidate.add(suspReturn);
-        } catch (RuntimeException e) {
-            logger.debug("SuspiciousReturnValue の作成に失敗: {} (method={}, line={})",
-                    e.getMessage(), invokedMethod, locateLine);
-        }
+        JDIUtils.createSuspiciousReturnValue(mee, currentTarget.failedTest(), factory)
+                .ifPresent(resultCandidate::add);
     }
 }

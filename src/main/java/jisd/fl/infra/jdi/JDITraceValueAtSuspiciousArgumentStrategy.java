@@ -154,31 +154,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
         }
     }
 
-    /**
-     * 呼び出し元が対象の位置（メソッドと行番号）かどうかを確認する。
-     * @return 対象位置からの呼び出しの場合 true
-     */
     private boolean isCalledFromTargetLocation(ThreadReference thread) {
-        try {
-            if (thread.frameCount() < 2) {
-                return false;
-            }
-            StackFrame callerFrame = thread.frame(1);
-            Location callerLocation = callerFrame.location();
-
-            // 呼び出し元のメソッドと行番号を確認
-            String callerClassName = callerLocation.declaringType().name();
-            String callerMethodName = callerLocation.method().name();
-            int callerLine = callerLocation.lineNumber();
-
-            return callerClassName.equals(currentTarget.locateMethod().fullyQualifiedClassName())
-                    && callerMethodName.equals(currentTarget.locateMethod().shortMethodName())
-                    && callerLine == currentTarget.locateLine();
-        } catch (IncompatibleThreadStateException e) {
-            String msg = String.format("呼び出し元の確認中にスレッドがサスペンド状態ではありません。対象=%s:%d",
-                    currentTarget.locateMethod(), currentTarget.locateLine());
-            logger.error(msg, e);
-            throw new IllegalStateException(msg, e);
-        }
+        return JDIUtils.isCalledFromTargetLocation(thread, currentTarget.locateMethod(), currentTarget.locateLine());
     }
 }

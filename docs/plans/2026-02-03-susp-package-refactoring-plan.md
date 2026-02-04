@@ -1,7 +1,7 @@
 # core.entity.susp パッケージ リファクタリング計画書
 
 **作成日**: 2026-02-03
-**更新日**: 2026-02-03
+**更新日**: 2026-02-04
 **対象パッケージ**: `jisd.fl.core.entity.susp`
 **目的**: 設計の一貫性向上、不変性の保証、コード量削減、保守性向上
 
@@ -13,8 +13,42 @@
 | 2 | ~~Value Object 導入~~ | **スキップ** | Phase 3 に統合 |
 | 3 | Record への移行 + 不変性確保 | **完了** | 019d7db, 57277b7 |
 | 4 | ファクトリ・クライアント修正 | 未着手 | - |
-| 5 | Strategy → switch 式 | 未着手 | - |
+| 5 | Strategy 基底クラス導入 | **作業中** | - |
 | 6 | TreeNode 責務分離 | 未着手 | - |
+
+### Phase 5 作業中の状態（2026-02-04）
+
+**方針変更**: 計画書の「完全統合（2クラス化）」ではなく、**基底クラス導入（テンプレートメソッドパターン）**を採用。
+
+- 各サブクラスはコンパクト（60-130行）に維持
+- 重複コードを基底クラスに集約（約140行削減）
+- 保守性向上
+
+#### 完了した作業
+
+1. `JDIUtils.java` に共通メソッドを追加（未コミット）:
+   - `getFieldValue(StackFrame, String)` - フィールド値取得
+   - `getLocalVariableValue(StackFrame, String)` - ローカル変数値取得
+   - `getVariableValue(StackFrame, String, boolean)` - 統合ヘルパー
+
+#### 未解決の設計議論
+
+`TraceValueBaseStrategy.java` 作成時に以下のフィードバックあり：
+
+1. **step を共通化するのは無理がある** - 各 Strategy で step イベントの処理が異なるため
+2. **handleBreakPoint は abstract でなくても良いのでは？** - 共通実装が可能かもしれない
+3. **getFailedTest は SuspExpr から取得できるのでは？** - `SuspiciousExpression.failedTest()` を使える
+4. **Assignment 用のメソッドは具象クラスに書く** - `validateIsTargetExecution` 等は Assignment 固有
+
+#### 次のステップ
+
+1. 上記フィードバックを踏まえて基底クラスの設計を見直す
+2. 共通化可能な部分を再検討：
+   - breakpoint 処理の共通化
+   - デバッガー初期化パターンの共通化
+   - `failedTest` は `SuspiciousExpression` から取得
+3. TraceValue 系の基底クラスを作成
+4. テスト実行で動作確認
 
 ### Phase 3 完了内容
 
