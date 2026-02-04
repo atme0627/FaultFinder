@@ -2,9 +2,11 @@ package jisd.fl.infra.jdi;
 
 import com.sun.jdi.*;
 import com.sun.jdi.event.BreakpointEvent;
+import com.sun.jdi.event.MethodEntryEvent;
 import com.sun.jdi.event.MethodExitEvent;
 import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.request.EventRequestManager;
+import com.sun.jdi.request.MethodEntryRequest;
 import com.sun.jdi.request.MethodExitRequest;
 import com.sun.jdi.request.StepRequest;
 import jisd.fl.core.domain.port.SearchSuspiciousReturnsStrategy;
@@ -28,6 +30,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
     private List<SuspiciousReturnValue> resultCandidate;
     private SuspiciousReturnValue currentTarget;
     private ThreadReference targetThread;
+    private MethodEntryRequest activeMethodEntryRequest;
     private MethodExitRequest activeMethodExitRequest;
     private StepRequest activeStepRequest;
     private MethodExitEvent recentMethodExitEvent;
@@ -35,6 +38,7 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
     // StepIn/StepOut 状態管理
     private boolean steppingIn;        // true: StepIn 完了待ち, false: StepOut 完了待ち
     private int depthAtBreakpoint;     // ブレークポイント地点でのコールスタックの深さ
+    private int callCount;             // 直接呼び出しの回数
     @Override
     public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
         // 状態の初期化
@@ -42,11 +46,13 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         this.result = new ArrayList<>();
         this.resultCandidate = new ArrayList<>();
         this.targetThread = null;
+        this.activeMethodEntryRequest = null;
         this.activeMethodExitRequest = null;
         this.activeStepRequest = null;
         this.recentMethodExitEvent = null;
         this.steppingIn = false;
         this.depthAtBreakpoint = 0;
+        this.callCount = 0;
 
         if (!currentTarget.hasMethodCalling()) return result;
 
@@ -56,6 +62,8 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         // ハンドラ登録
         debugger.registerEventHandler(BreakpointEvent.class,
                 (vm, ev) -> handleBreakpoint(vm, (BreakpointEvent) ev));
+        debugger.registerEventHandler(MethodEntryEvent.class,
+                (vm, ev) -> handleMethodEntry(vm, (MethodEntryEvent) ev));
         debugger.registerEventHandler(MethodExitEvent.class,
                 (vm, ev) -> handleMethodExit(vm, (MethodExitEvent) ev));
         debugger.registerEventHandler(StepEvent.class,
@@ -82,16 +90,36 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
         // 検索状態をリセット
         resultCandidate.clear();
         recentMethodExitEvent = null;
+        callCount = 0;
         steppingIn = true;
 
         // ブレークポイント地点でのコールスタックの深さを取得
         depthAtBreakpoint = JDIUtils.getCallStackDepth(targetThread);
+
+        // 前回の MethodEntryRequest を無効化
+        if (activeMethodEntryRequest != null) {
+            activeMethodEntryRequest.disable();
+        }
+
+        // MethodEntryRequest を作成（直接呼び出しのカウント用）
+        activeMethodEntryRequest = EnhancedDebugger.createMethodEntryRequest(manager, targetThread);
 
         // MethodExitRequest を作成（行の処理が完了するまで有効）
         activeMethodExitRequest = EnhancedDebugger.createMethodExitRequest(manager, targetThread);
 
         // メソッド呼び出しに入るための StepInRequest を作成
         activeStepRequest = EnhancedDebugger.createStepInRequest(manager, targetThread);
+    }
+
+    private void handleMethodEntry(VirtualMachine vm, MethodEntryEvent mEntry) {
+        // 対象スレッドでない場合はスキップ
+        if (!mEntry.thread().equals(targetThread)) return;
+
+        // 直接呼び出し（depth == depthAtBreakpoint + 1）のみカウント
+        int currentDepth = JDIUtils.getCallStackDepth(mEntry.thread());
+        if (currentDepth != depthAtBreakpoint + 1) return;
+
+        callCount++;
     }
 
     private void handleMethodExit(VirtualMachine vm, MethodExitEvent mee) {
@@ -178,6 +206,10 @@ public class JDISearchSuspiciousReturnsReturnValueStrategy implements SearchSusp
     }
 
     private void collectReturnValue(MethodExitEvent mee) {
+        // targetReturnCallPositions に含まれる直接呼び出しのみ収集
+        if (!currentTarget.targetReturnCallPositions.contains(callCount)) {
+            return;
+        }
         JDIUtils.createSuspiciousReturnValue(mee, currentTarget.failedTest(), factory)
                 .ifPresent(resultCandidate::add);
     }

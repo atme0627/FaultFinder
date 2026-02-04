@@ -73,7 +73,7 @@ class StrategyBenchmarkTest {
         int targetLine = findAssignLine(testMethod, "x", "helper(10)");
 
         long start = System.nanoTime();
-        List<SuspiciousExpression> result = searchReturnsAssignment(testMethod, targetLine, "x", "20", true);
+        List<SuspiciousExpression> result = searchReturnsAssignment(testMethod, targetLine, "x", "20", true, List.of(1));
         long elapsed = System.nanoTime() - start;
 
         assertFalse(result.isEmpty());
@@ -87,7 +87,7 @@ class StrategyBenchmarkTest {
         int targetLine = findAssignLine(testMethod, "x", "add(5) + multiply(3)");
 
         long start = System.nanoTime();
-        List<SuspiciousExpression> result = searchReturnsAssignment(testMethod, targetLine, "x", "19", true);
+        List<SuspiciousExpression> result = searchReturnsAssignment(testMethod, targetLine, "x", "19", true, List.of(1, 2));
         long elapsed = System.nanoTime() - start;
 
         assertFalse(result.isEmpty());
@@ -104,7 +104,7 @@ class StrategyBenchmarkTest {
         int targetLine = findReturnLine(targetMethod, "helper(10)");
 
         long start = System.nanoTime();
-        List<SuspiciousExpression> result = searchReturnsReturnValue(testMethod, targetMethod, targetLine, "20");
+        List<SuspiciousExpression> result = searchReturnsReturnValue(testMethod, targetMethod, targetLine, "20", List.of(1));
         long elapsed = System.nanoTime() - start;
 
         assertFalse(result.isEmpty());
@@ -119,7 +119,7 @@ class StrategyBenchmarkTest {
         int targetLine = findReturnLine(targetMethod, "add(5) + multiply(3)");
 
         long start = System.nanoTime();
-        List<SuspiciousExpression> result = searchReturnsReturnValue(testMethod, targetMethod, targetLine, "19");
+        List<SuspiciousExpression> result = searchReturnsReturnValue(testMethod, targetMethod, targetLine, "19", List.of(1, 2));
         long elapsed = System.nanoTime() - start;
 
         assertFalse(result.isEmpty());
@@ -219,33 +219,35 @@ class StrategyBenchmarkTest {
 
     private static List<SuspiciousExpression> searchReturnsAssignment(
             MethodElementName testMethod, int locateLine, String variableName,
-            String actualValue, boolean hasMethodCalling) {
+            String actualValue, boolean hasMethodCalling,
+            List<Integer> targetReturnCallPositions) {
         SuspiciousVariable assignTarget = new SuspiciousLocalVariable(
                 testMethod, testMethod, variableName, actualValue, true);
         SuspiciousAssignment suspAssign = new SuspiciousAssignment(
                 testMethod, testMethod, locateLine, assignTarget,
-                "", hasMethodCalling, List.of(), List.of());
+                "", hasMethodCalling, List.of(), List.of(), targetReturnCallPositions);
         return new JDISearchSuspiciousReturnsAssignmentStrategy().search(suspAssign);
     }
 
     private static List<SuspiciousExpression> searchReturnsReturnValue(
             MethodElementName testMethod, MethodElementName targetMethod,
-            int locateLine, String actualValue) {
+            int locateLine, String actualValue,
+            List<Integer> targetReturnCallPositions) {
         SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                 testMethod, targetMethod, locateLine, actualValue,
-                "", true, List.of(), List.of());
+                "", true, List.of(), List.of(), targetReturnCallPositions);
         return new JDISearchSuspiciousReturnsReturnValueStrategy().search(suspReturn);
     }
 
     private static List<SuspiciousExpression> searchReturnsArgument(
             MethodElementName testMethod, int locateLine,
             MethodElementName invokeMethodName, int argIndex,
-            String actualValue, List<Integer> collectAtCounts, int invokeCallCount) {
+            String actualValue, List<Integer> targetReturnCallPositions, int invokeCallCount) {
         SuspiciousArgument suspArg = new SuspiciousArgument(
                 testMethod, testMethod, locateLine, actualValue,
                 invokeMethodName, argIndex,
                 "", true, List.of(), List.of(),
-                collectAtCounts, invokeCallCount);
+                targetReturnCallPositions, invokeCallCount);
         return new JDISearchSuspiciousReturnsArgumentStrategy().search(suspArg);
     }
 
@@ -254,7 +256,7 @@ class StrategyBenchmarkTest {
         SuspiciousVariable assignTarget = new SuspiciousLocalVariable(
                 testMethod, testMethod, variableName, actualValue, true);
         SuspiciousAssignment suspAssign = new SuspiciousAssignment(
-                testMethod, testMethod, locateLine, assignTarget, "", false, List.of(), List.of());
+                testMethod, testMethod, locateLine, assignTarget, "", false, List.of(), List.of(), List.of());
         return new JDITraceValueAtSuspiciousAssignmentStrategy().traceAllValuesAtSuspExpr(suspAssign);
     }
 
@@ -263,7 +265,7 @@ class StrategyBenchmarkTest {
             int locateLine, String actualValue) {
         SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                 testMethod, targetMethod, locateLine, actualValue,
-                "", false, List.of(), List.of());
+                "", false, List.of(), List.of(), List.of());
         return new JDITraceValueAtSuspiciousReturnValueStrategy().traceAllValuesAtSuspExpr(suspReturn);
     }
 

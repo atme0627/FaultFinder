@@ -185,7 +185,7 @@ class JDITraceValueAtSuspiciousReturnValueStrategyTest {
 
         SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                 testMethod, targetMethod, locateLine, actualValue,
-                "", false, List.of(), List.of());
+                "", false, List.of(), List.of(), List.of());
 
         JDITraceValueAtSuspiciousReturnValueStrategy strategy = new JDITraceValueAtSuspiciousReturnValueStrategy();
         return strategy.traceAllValuesAtSuspExpr(suspReturn);

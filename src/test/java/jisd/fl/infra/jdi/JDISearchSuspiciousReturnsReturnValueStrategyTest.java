@@ -66,7 +66,7 @@ class JDISearchSuspiciousReturnsReturnValueStrategyTest {
         int targetLine = findReturnLine(targetMethod, "helper(10)");
 
         // helper(10) returns 20, so return value is 20
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "20");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "20", List.of(1));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(1, result.size(), "1つのメソッド呼び出しの戻り値を収集: " + formatResult(result));
@@ -86,7 +86,7 @@ class JDISearchSuspiciousReturnsReturnValueStrategyTest {
         int targetLine = findReturnLine(targetMethod, "add(5) + multiply(3)");
 
         // add(5) returns 10, multiply(3) returns 9, total = 19
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "19");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "19", List.of(1, 2));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(2, result.size(), "2つのメソッド呼び出しの戻り値を収集: " + formatResult(result));
@@ -99,19 +99,19 @@ class JDISearchSuspiciousReturnsReturnValueStrategyTest {
 
     @Test
     @Timeout(20)
-    void nested_method_call_collects_all_return_values() throws Exception {
-        // return outer(inner(5)) で inner と outer の両方の戻り値を収集
+    void nested_method_call_collects_outermost_return_value() throws Exception {
+        // return outer(inner(5)) で最外の outer のみの戻り値を収集
+        // inner は outer の引数として ARGUMENT 追跡で発見される
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#nested_method_call_return()");
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#nestedMethodReturn()");
         int targetLine = findReturnLine(targetMethod, "outer(inner(5))");
 
-        // inner(5) returns 10, outer(10) returns 30
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "30");
+        // eval order: inner(5)=1, outer(10)=2 → 最外の outer のみ収集
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "30", List.of(2));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
-        assertEquals(2, result.size(), "inner と outer の両方の戻り値を収集: " + formatResult(result));
+        assertEquals(1, result.size(), "outer の戻り値のみを収集: " + formatResult(result));
 
-        assertTrue(hasReturnValue(result, "10"), "inner(5) の戻り値 10 を収集: " + formatResult(result));
         assertTrue(hasReturnValue(result, "30"), "outer(10) の戻り値 30 を収集: " + formatResult(result));
     }
 
@@ -125,7 +125,7 @@ class JDISearchSuspiciousReturnsReturnValueStrategyTest {
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#computeReturn(int)");
         int targetLine = findReturnLine(targetMethod, "compute(n)");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "0");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "0", List.of(1));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(1, result.size(), "compute の戻り値を収集: " + formatResult(result));
@@ -142,7 +142,7 @@ class JDISearchSuspiciousReturnsReturnValueStrategyTest {
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#computeReturn(int)");
         int targetLine = findReturnLine(targetMethod, "compute(n)");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "4");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "4", List.of(1));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(1, result.size(), "compute の戻り値を収集: " + formatResult(result));
@@ -161,7 +161,7 @@ class JDISearchSuspiciousReturnsReturnValueStrategyTest {
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#noMethodReturn()");
         int targetLine = findReturnLine(targetMethod, "a + b");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "15", false);
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "15", false, List.of());
 
         assertTrue(result.isEmpty(), "メソッド呼び出しがない場合は空のリストを返す");
     }
@@ -170,17 +170,19 @@ class JDISearchSuspiciousReturnsReturnValueStrategyTest {
 
     private static List<SuspiciousExpression> searchReturns(
             MethodElementName testMethod, MethodElementName targetMethod,
-            int locateLine, String actualValue) {
-        return searchReturns(testMethod, targetMethod, locateLine, actualValue, true);
+            int locateLine, String actualValue,
+            List<Integer> targetReturnCallPositions) {
+        return searchReturns(testMethod, targetMethod, locateLine, actualValue, true, targetReturnCallPositions);
     }
 
     private static List<SuspiciousExpression> searchReturns(
             MethodElementName testMethod, MethodElementName targetMethod,
-            int locateLine, String actualValue, boolean hasMethodCalling) {
+            int locateLine, String actualValue, boolean hasMethodCalling,
+            List<Integer> targetReturnCallPositions) {
 
         SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                 testMethod, targetMethod, locateLine, actualValue,
-                "", hasMethodCalling, List.of(), List.of());
+                "", hasMethodCalling, List.of(), List.of(), targetReturnCallPositions);
 
         JDISearchSuspiciousReturnsReturnValueStrategy strategy =
                 new JDISearchSuspiciousReturnsReturnValueStrategy();

@@ -67,7 +67,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#single_method_call()");
         int targetLine = findAssignLine(testMethod, "x", "helper(10)");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "20", true);
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "20", true, List.of(1));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(1, result.size(), "1つのメソッド呼び出しの戻り値を収集: " + formatResult(result));
@@ -86,7 +86,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         int targetLine = findAssignLine(testMethod, "x", "add(5) + multiply(3)");
 
         // add(5) returns 10, multiply(3) returns 9, total = 19
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "19", true);
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "19", true, List.of(1, 2));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(2, result.size(), "2つのメソッド呼び出しの戻り値を収集: " + formatResult(result));
@@ -100,20 +100,18 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
 
     @Test
     @Timeout(20)
-    void nested_method_call_collects_all_return_values() throws Exception {
-        // x = outer(inner(5)) で inner と outer の両方の戻り値を収集
-        // フィルタリングは呼び出し側で行う
+    void nested_method_call_collects_outermost_return_value() throws Exception {
+        // x = outer(inner(5)) で最外の outer のみの戻り値を収集
+        // inner は outer の引数として ARGUMENT 追跡で発見される
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#nested_method_call()");
         int targetLine = findAssignLine(testMethod, "x", "outer(inner(5))");
 
-        // inner(5) returns 10, outer(10) returns 30
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "30", true);
+        // eval order: inner(5)=1, outer(10)=2 → 最外の outer のみ収集
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "30", true, List.of(2));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
-        assertEquals(2, result.size(), "inner と outer の両方の戻り値を収集: " + formatResult(result));
+        assertEquals(1, result.size(), "outer の戻り値のみを収集: " + formatResult(result));
 
-        // 収集された戻り値を確認
-        assertTrue(hasReturnValue(result, "10"), "inner(5) の戻り値 10 を収集: " + formatResult(result));
         assertTrue(hasReturnValue(result, "30"), "outer(10) の戻り値 30 を収集: " + formatResult(result));
     }
 
@@ -126,7 +124,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#loop_with_method_call()");
         int targetLine = findAssignLine(testMethod, "x", "compute(i)");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "0", true);
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "0", true, List.of(1));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(1, result.size(), "compute の戻り値を収集: " + formatResult(result));
@@ -142,7 +140,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#loop_with_method_call()");
         int targetLine = findAssignLine(testMethod, "x", "compute(i)");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "4", true);
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "4", true, List.of(1));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         assertEquals(1, result.size(), "compute の戻り値を収集: " + formatResult(result));
@@ -160,7 +158,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#no_method_call()");
         int targetLine = findAssignLine(testMethod, "x", "a + b");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "15", false);
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "15", false, List.of());
 
         assertTrue(result.isEmpty(), "メソッド呼び出しがない場合は空のリストを返す");
     }
@@ -174,7 +172,7 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#chained_method_calls()");
         int targetLine = findAssignLine(testMethod, "x", "chainStart().getValue()");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "42", true);
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetLine, "x", "42", true, List.of(1, 2));
 
         assertFalse(result.isEmpty(), "戻り値を収集できるべき");
         // chainStart() と getValue() の両方を収集
@@ -185,14 +183,15 @@ class JDISearchSuspiciousReturnsAssignmentStrategyTest {
 
     private static List<SuspiciousExpression> searchReturns(
             MethodElementName testMethod, int locateLine, String variableName,
-            String actualValue, boolean hasMethodCalling) {
+            String actualValue, boolean hasMethodCalling,
+            List<Integer> targetReturnCallPositions) {
 
         SuspiciousLocalVariable assignTarget = new SuspiciousLocalVariable(
                 testMethod, testMethod, variableName, actualValue, true);
 
         SuspiciousAssignment suspAssign = new SuspiciousAssignment(
                 testMethod, testMethod, locateLine, assignTarget,
-                "", hasMethodCalling, List.of(), List.of());
+                "", hasMethodCalling, List.of(), List.of(), targetReturnCallPositions);
 
         JDISearchSuspiciousReturnsAssignmentStrategy strategy =
                 new JDISearchSuspiciousReturnsAssignmentStrategy();

@@ -255,7 +255,7 @@ class JDITraceValueAtSuspiciousAssignmentStrategyTest {
                 testMethod, testMethod, variableName, actualValue, true);
 
         SuspiciousAssignment suspAssign = new SuspiciousAssignment(
-                testMethod, testMethod, locateLine, assignTarget, "", false, List.of(), List.of());
+                testMethod, testMethod, locateLine, assignTarget, "", false, List.of(), List.of(), List.of());
 
         JDITraceValueAtSuspiciousAssignmentStrategy strategy = new JDITraceValueAtSuspiciousAssignmentStrategy();
         return strategy.traceAllValuesAtSuspExpr(suspAssign);
@@ -269,7 +269,7 @@ class JDITraceValueAtSuspiciousAssignmentStrategyTest {
                 testMethod, locateMethod.classElementName, variableName, actualValue, true);
 
         SuspiciousAssignment suspAssign = new SuspiciousAssignment(
-                testMethod, locateMethod, locateLine, assignTarget, "", false, List.of(), List.of());
+                testMethod, locateMethod, locateLine, assignTarget, "", false, List.of(), List.of(), List.of());
 
         JDITraceValueAtSuspiciousAssignmentStrategy strategy = new JDITraceValueAtSuspiciousAssignmentStrategy();
         return strategy.traceAllValuesAtSuspExpr(suspAssign);

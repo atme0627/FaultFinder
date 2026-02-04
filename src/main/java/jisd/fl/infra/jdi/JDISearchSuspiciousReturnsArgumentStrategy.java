@@ -37,7 +37,7 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
     private int depthAtBreakpoint;
 
     // 引数式内で呼ばれたメソッドの戻り値を収集する。
-    // collectAtCounts で収集すべき直接呼び出しの番号を、
+    // targetReturnCallPositions で収集すべき直接呼び出しの番号を、
     // invokeCallCount で invoke メソッドの番号を指定し、callCount で判定する。
     @Override
     public List<SuspiciousExpression> search(SuspiciousExpression suspExpr) {
@@ -143,8 +143,8 @@ public class JDISearchSuspiciousReturnsArgumentStrategy implements SearchSuspici
         int currentDepth = JDIUtils.getCallStackDepth(mee.thread());
         if (currentDepth != depthAtBreakpoint + 1) return;
 
-        // collectAtCounts に含まれる直接呼び出しのみ収集
-        if (currentTarget.collectAtCounts.contains(callCount)) {
+        // targetReturnCallPositions に含まれる直接呼び出しのみ収集
+        if (currentTarget.targetReturnCallPositions.contains(callCount)) {
             collectReturnValue(mee);
         }
     }

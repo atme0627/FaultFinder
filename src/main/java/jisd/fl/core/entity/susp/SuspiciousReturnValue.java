@@ -19,6 +19,13 @@ public final class SuspiciousReturnValue implements SuspiciousExpression {
     private final List<String> directNeighborVariableNames;
     private final List<String> indirectNeighborVariableNames;
 
+    /**
+     * 戻り値を収集すべきメソッド呼び出しの評価順位置リスト（1-based）。
+     * 文中の全メソッド呼び出しを Java 評価順に並べたとき、
+     * このリストに含まれる位置の呼び出しの戻り値のみを収集する。
+     */
+    public final List<Integer> targetReturnCallPositions;
+
     public SuspiciousReturnValue(
             MethodElementName failedTest,
             MethodElementName locateMethod,
@@ -27,7 +34,8 @@ public final class SuspiciousReturnValue implements SuspiciousExpression {
             String stmtString,
             boolean hasMethodCalling,
             List<String> directNeighborVariableNames,
-            List<String> indirectNeighborVariableNames
+            List<String> indirectNeighborVariableNames,
+            List<Integer> targetReturnCallPositions
     ) {
         this.failedTest = Objects.requireNonNull(failedTest);
         this.location = new LineElementName(locateMethod, locateLine);
@@ -36,6 +44,7 @@ public final class SuspiciousReturnValue implements SuspiciousExpression {
         this.hasMethodCalling = hasMethodCalling;
         this.directNeighborVariableNames = List.copyOf(directNeighborVariableNames);
         this.indirectNeighborVariableNames = List.copyOf(indirectNeighborVariableNames);
+        this.targetReturnCallPositions = List.copyOf(targetReturnCallPositions);
     }
 
     @Override public MethodElementName failedTest() { return failedTest; }
@@ -45,6 +54,8 @@ public final class SuspiciousReturnValue implements SuspiciousExpression {
     @Override public boolean hasMethodCalling() { return hasMethodCalling; }
     @Override public List<String> directNeighborVariableNames() { return directNeighborVariableNames; }
     @Override public List<String> indirectNeighborVariableNames() { return indirectNeighborVariableNames; }
+
+    public List<Integer> targetReturnCallPositions() { return targetReturnCallPositions; }
 
     @Override
     public boolean equals(Object obj) {

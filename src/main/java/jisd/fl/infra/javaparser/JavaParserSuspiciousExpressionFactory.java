@@ -25,6 +25,12 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
     @Override
     public SuspiciousAssignment createAssignment(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, SuspiciousVariable assignTarget) {
         Statement stmt = JavaParserUtils.extractStmt(locateMethod.classElementName, locateLine);
+
+        // clone 前の原本 AST で targetReturnCallPositions を計算（== 比較のため）
+        Expression originalExpr = JavaParserExpressionExtractor.extractExprAssign(false, stmt);
+        List<Expression> evalOrder = getEvalOrder(stmt);
+        List<Integer> targetReturnCallPositions = getTargetReturnCallPositions(evalOrder, originalExpr);
+
         Expression expr = JavaParserExpressionExtractor.extractExprAssign(true, stmt);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
 
@@ -38,15 +44,20 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 stmtToStringNoComments(stmt),
                 hasMethodCalling,
                 directNeighborVariableNames,
-                indirectNeighborVariableNames
+                indirectNeighborVariableNames,
+                targetReturnCallPositions
         );
     }
 
     @Override
     public SuspiciousReturnValue createReturnValue(MethodElementName failedTest, MethodElementName locateMethod, int locateLine, String actualValue) {
         Statement stmt = JavaParserUtils.extractStmt(locateMethod.classElementName, locateLine);
+        // extractExprReturnValue は clone しないので原本がそのまま使える
         Expression expr = JavaParserExpressionExtractor.extractExprReturnValue(stmt);
         boolean hasMethodCalling = !expr.findAll(MethodCallExpr.class).isEmpty();
+
+        List<Expression> evalOrder = getEvalOrder(stmt);
+        List<Integer> targetReturnCallPositions = getTargetReturnCallPositions(evalOrder, expr);
 
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
         List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
@@ -58,7 +69,8 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 stmtToStringNoComments(stmt),
                 hasMethodCalling,
                 directNeighborVariableNames,
-                indirectNeighborVariableNames
+                indirectNeighborVariableNames,
+                targetReturnCallPositions
         );
     }
 
@@ -73,8 +85,10 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
         List<String> directNeighborVariableNames = extractDirectNeighborVariableNames(expr);
         List<String> indirectNeighborVariableNames = extractIndirectNeighborVariableNames(expr);
 
+        // clone 前の原本 AST で targetReturnCallPositions を計算（== 比較のため）
+        Expression originalArgExpr = JavaParserExpressionExtractor.extractExprArg(false, stmt, callCountAfterTargetInLine, argIndex, invokeMethodName);
         List<Expression> evalOrder = getEvalOrder(stmt);
-        List<Integer> collectAtCounts = getCollectAtCounts(evalOrder, expr);
+        List<Integer> targetReturnCallPositions = getTargetReturnCallPositions(evalOrder, originalArgExpr);
         int invokeCallCount = getInvokeCallCount(evalOrder, stmt, callCountAfterTargetInLine, argIndex, invokeMethodName);
         return new SuspiciousArgument(
                 failedTest,
@@ -87,7 +101,7 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
                 hasMethodCalling,
                 directNeighborVariableNames,
                 indirectNeighborVariableNames,
-                collectAtCounts,
+                targetReturnCallPositions,
                 invokeCallCount
         );
     }
@@ -143,10 +157,10 @@ public class JavaParserSuspiciousExpressionFactory implements SuspiciousExpressi
     }
 
     /**
-     * 引数式内の直接呼び出し（引数式内で親 MethodCallExpr を持たない MethodCallExpr）が
+     * 式内の直接呼び出し（式内で親 MethodCallExpr を持たない MethodCallExpr）が
      * 評価順リスト内の何番目か（1-based）をリストで返す。
      */
-    private static List<Integer> getCollectAtCounts(List<Expression> evalOrder, Expression argExpr) {
+    private static List<Integer> getTargetReturnCallPositions(List<Expression> evalOrder, Expression argExpr) {
         // 引数式内の直接呼び出し（引数式内に親 MethodCallExpr を持たない）を取得
         List<MethodCallExpr> directCalls = argExpr.findAll(MethodCallExpr.class).stream()
                 .filter(mce -> {

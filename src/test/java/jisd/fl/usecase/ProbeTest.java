@@ -161,10 +161,13 @@ class ProbeTest {
     @Test
     @Timeout(30)
     void scenario3_nested_method_calls() throws Exception {
-        // int x = outer(inner(5)); は inner と outer 両方の return を直接追跡
+        // int x = outer(inner(5)); は最外の outer のみを直接追跡
+        // inner は outer の引数として ARGUMENT 追跡経由で発見される
         // 期待: ASSIGN(x=30)
-        //         ├── RETURN(inner: return n * 2) → ARGUMENT(inner(5) の引数 5)
-        //         └── RETURN(outer: return n * 3) → ARGUMENT(outer() の引数 inner(5))
+        //         └── RETURN(outer: return n * 3)
+        //               └── ARGUMENT(outer(inner(5)) の引数 inner(5))
+        //                     └── RETURN(inner: return n * 2)
+        //                           └── ARGUMENT(inner(5) の引数 5) (leaf)
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#scenario3_nested_method_calls()");
         MethodElementName innerMethod = new MethodElementName(FIXTURE_FQCN + "#inner(int)");
         MethodElementName outerMethod = new MethodElementName(FIXTURE_FQCN + "#outer(int)");
@@ -174,13 +177,13 @@ class ProbeTest {
 
         CauseTreeNode actual = runProbe(m, "x", "30");
 
-        // outer(inner(5)) では、inner と outer の両方の return が直接追跡される
         ExpectedNode expected = assign(declLine,
-                ret(innerReturnLine,
-                        arg(declLine)  // inner(5) の引数 5（リテラルなので leaf）
-                ),
                 ret(outerReturnLine,
-                        arg(declLine)  // outer() の引数 inner(5)（leaf）
+                        arg(declLine,
+                                ret(innerReturnLine,
+                                        arg(declLine)  // inner(5) の引数 5（リテラルなので leaf）
+                                )
+                        )
                 )
         );
         assertTreeEquals(expected, actual);

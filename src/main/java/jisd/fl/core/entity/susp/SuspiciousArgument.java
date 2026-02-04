@@ -29,8 +29,12 @@ public final class SuspiciousArgument implements SuspiciousExpression {
     /** invoke メソッドが文中の何番目の直接呼び出しか（1-based） */
     public final int invokeCallCount;
 
-    /** 戻り値を収集すべき直接呼び出しの番号リスト（1-based） */
-    public final List<Integer> collectAtCounts;
+    /**
+     * 戻り値を収集すべきメソッド呼び出しの評価順位置リスト（1-based）。
+     * 文中の全メソッド呼び出しを Java 評価順に並べたとき、
+     * このリストに含まれる位置の呼び出しの戻り値のみを収集する。
+     */
+    public final List<Integer> targetReturnCallPositions;
 
     public SuspiciousArgument(
             MethodElementName failedTest,
@@ -43,7 +47,7 @@ public final class SuspiciousArgument implements SuspiciousExpression {
             boolean hasMethodCalling,
             List<String> directNeighborVariableNames,
             List<String> indirectNeighborVariableNames,
-            List<Integer> collectAtCounts,
+            List<Integer> targetReturnCallPositions,
             int invokeCallCount
     ) {
         this.failedTest = Objects.requireNonNull(failedTest);
@@ -55,7 +59,7 @@ public final class SuspiciousArgument implements SuspiciousExpression {
         this.hasMethodCalling = hasMethodCalling;
         this.directNeighborVariableNames = List.copyOf(directNeighborVariableNames);
         this.indirectNeighborVariableNames = List.copyOf(indirectNeighborVariableNames);
-        this.collectAtCounts = List.copyOf(collectAtCounts);
+        this.targetReturnCallPositions = List.copyOf(targetReturnCallPositions);
         this.invokeCallCount = invokeCallCount;
     }
 
@@ -70,7 +74,7 @@ public final class SuspiciousArgument implements SuspiciousExpression {
     public MethodElementName invokeMethodName() { return invokeMethodName; }
     public int argIndex() { return argIndex; }
     public int invokeCallCount() { return invokeCallCount; }
-    public List<Integer> collectAtCounts() { return collectAtCounts; }
+    public List<Integer> targetReturnCallPositions() { return targetReturnCallPositions; }
 
     @Override
     public boolean equals(Object obj) {

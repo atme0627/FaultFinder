@@ -67,7 +67,7 @@ class PolymorphismSearchReturnsTest {
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#singlePolymorphismReturn()");
         int targetLine = findReturnLine(targetMethod, "shape.area()");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "300");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "300", List.of(1));
 
         assertFalse(result.isEmpty(), "ポリモーフィズム呼び出しの戻り値を収集できるべき");
         assertEquals(1, result.size(), "1つのメソッド呼び出しの戻り値を収集: " + formatResult(result));
@@ -92,7 +92,7 @@ class PolymorphismSearchReturnsTest {
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#computeArea(Shape)");
         int targetLine = findReturnLine(targetMethod, "s.area()");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "12");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "12", List.of(1));
 
         assertFalse(result.isEmpty(), "ループ内ポリモーフィズムの戻り値を収集できるべき");
         assertEquals(1, result.size(), "Circle.area() の戻り値 12 を収集: " + formatResult(result));
@@ -110,7 +110,7 @@ class PolymorphismSearchReturnsTest {
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#computeArea(Shape)");
         int targetLine = findReturnLine(targetMethod, "s.area()");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "20");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "20", List.of(1));
 
         assertFalse(result.isEmpty(), "ループ内ポリモーフィズムの戻り値を収集できるべき");
         assertEquals(1, result.size(), "Rectangle.area() の戻り値 20 を収集: " + formatResult(result));
@@ -123,21 +123,19 @@ class PolymorphismSearchReturnsTest {
 
     @Test
     @Timeout(20)
-    void polymorphism_nested_collects_all_return_values() throws Exception {
+    void polymorphism_nested_collects_outermost_return_value() throws Exception {
         // return transform(shape.area());
         // Rectangle(5,6).area() = 30, transform(30) = 60
+        // eval order: area()=1, transform()=2 → 最外の transform のみ収集
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#polymorphism_nested()");
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#nestedPolymorphismReturn()");
         int targetLine = findReturnLine(targetMethod, "transform(shape.area())");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "60");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "60", List.of(2));
 
         assertFalse(result.isEmpty(), "ネストしたポリモーフィズムの戻り値を収集できるべき");
-        assertEquals(2, result.size(), "area() と transform() の両方の戻り値を収集: " + formatResult(result));
+        assertEquals(1, result.size(), "transform() の戻り値のみを収集: " + formatResult(result));
 
-        // Rectangle.area() が追跡されること（Shape.area() ではない）
-        assertTrue(hasReturnValueFromClass(result, "Rectangle", "30"),
-                "Rectangle.area() の戻り値 30 を収集: " + formatResult(result));
         assertTrue(hasReturnValue(result, "60"), "transform(30) の戻り値 60 を収集: " + formatResult(result));
     }
 
@@ -152,7 +150,7 @@ class PolymorphismSearchReturnsTest {
         MethodElementName targetMethod = new MethodElementName(FIXTURE_FQCN + "#multiplePolymorphismReturn()");
         int targetLine = findReturnLine(targetMethod, "circle.area() + rectangle.area()");
 
-        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "37");
+        List<SuspiciousExpression> result = searchReturns(testMethod, targetMethod, targetLine, "37", List.of(1, 2));
 
         assertFalse(result.isEmpty(), "複数のポリモーフィズム呼び出しの戻り値を収集できるべき");
         assertEquals(2, result.size(), "circle.area() と rectangle.area() の両方を収集: " + formatResult(result));
@@ -168,11 +166,12 @@ class PolymorphismSearchReturnsTest {
 
     private static List<SuspiciousExpression> searchReturns(
             MethodElementName testMethod, MethodElementName targetMethod,
-            int locateLine, String actualValue) {
+            int locateLine, String actualValue,
+            List<Integer> targetReturnCallPositions) {
 
         SuspiciousReturnValue suspReturn = new SuspiciousReturnValue(
                 testMethod, targetMethod, locateLine, actualValue,
-                "", true, List.of(), List.of());
+                "", true, List.of(), List.of(), targetReturnCallPositions);
 
         JDISearchSuspiciousReturnsReturnValueStrategy strategy =
                 new JDISearchSuspiciousReturnsReturnValueStrategy();

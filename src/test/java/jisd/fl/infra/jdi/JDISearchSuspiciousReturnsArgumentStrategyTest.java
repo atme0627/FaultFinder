@@ -203,7 +203,7 @@ class JDISearchSuspiciousReturnsArgumentStrategyTest {
     @Timeout(20)
     void nested_callee_collects_inner_return_values() throws Exception {
         // target8(helper2(target8(3))) で外側の target8 の引数は 8
-        // 評価順: target8(3) → helper2(...) → target8(...)  → collectAtCounts=[1,2], invokeCallCount=3
+        // 評価順: target8(3) → helper2(...) → target8(...)  → targetReturnCallPositions=[1,2], invokeCallCount=3
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#nested_callee()");
         int targetLine = findAssignLine(testMethod, "result", "target8(helper2(target8(3)))");
         MethodElementName callee = new MethodElementName(FIXTURE_FQCN + "#target8(int)");
@@ -223,14 +223,14 @@ class JDISearchSuspiciousReturnsArgumentStrategyTest {
     private static List<SuspiciousExpression> searchReturns(
             MethodElementName testMethod, int locateLine,
             MethodElementName invokeMethodName, int argIndex,
-            String actualValue, List<Integer> collectAtCounts,
+            String actualValue, List<Integer> targetReturnCallPositions,
             int invokeCallCount, boolean hasMethodCalling) {
 
         SuspiciousArgument suspArg = new SuspiciousArgument(
                 testMethod, testMethod, locateLine, actualValue,
                 invokeMethodName, argIndex,
                 "", hasMethodCalling, List.of(), List.of(),
-                collectAtCounts, invokeCallCount);
+                targetReturnCallPositions, invokeCallCount);
 
         JDISearchSuspiciousReturnsArgumentStrategy strategy =
                 new JDISearchSuspiciousReturnsArgumentStrategy();
