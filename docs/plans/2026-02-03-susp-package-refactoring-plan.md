@@ -13,42 +13,25 @@
 | 2 | ~~Value Object 導入~~ | **スキップ** | Phase 3 に統合 |
 | 3 | Record への移行 + 不変性確保 | **完了** | 019d7db, 57277b7 |
 | 4 | ファクトリ・クライアント修正 | 未着手 | - |
-| 5 | Strategy 基底クラス導入 | **作業中** | - |
+| 5 | Strategy 重複コード集約 | **完了** | 5806311 |
 | 6 | TreeNode 責務分離 | 未着手 | - |
 
-### Phase 5 作業中の状態（2026-02-04）
+### Phase 5 完了内容
 
-**方針変更**: 計画書の「完全統合（2クラス化）」ではなく、**基底クラス導入（テンプレートメソッドパターン）**を採用。
+**方針変更の経緯**:
+1. 当初計画: Strategy 3クラス → 1クラスに統合（switch 式置換）
+2. 中間検討: 基底クラス導入（テンプレートメソッドパターン）
+3. 最終方針: **共通ヘルパーを JDIUtils に集約**（クラス構造は維持）
 
-- 各サブクラスはコンパクト（60-130行）に維持
-- 重複コードを基底クラスに集約（約140行削減）
-- 保守性向上
+**採用理由**: 各 Strategy の step イベント処理が大きく異なり、基底クラスやクラス統合では
+無理のある抽象化が必要になる。共通ユーティリティの抽出が最もシンプルで効果的。
 
-#### 完了した作業
-
-1. `JDIUtils.java` に共通メソッドを追加（未コミット）:
-   - `getFieldValue(StackFrame, String)` - フィールド値取得
-   - `getLocalVariableValue(StackFrame, String)` - ローカル変数値取得
-   - `getVariableValue(StackFrame, String, boolean)` - 統合ヘルパー
-
-#### 未解決の設計議論
-
-`TraceValueBaseStrategy.java` 作成時に以下のフィードバックあり：
-
-1. **step を共通化するのは無理がある** - 各 Strategy で step イベントの処理が異なるため
-2. **handleBreakPoint は abstract でなくても良いのでは？** - 共通実装が可能かもしれない
-3. **getFailedTest は SuspExpr から取得できるのでは？** - `SuspiciousExpression.failedTest()` を使える
-4. **Assignment 用のメソッドは具象クラスに書く** - `validateIsTargetExecution` 等は Assignment 固有
-
-#### 次のステップ
-
-1. 上記フィードバックを踏まえて基底クラスの設計を見直す
-2. 共通化可能な部分を再検討：
-   - breakpoint 処理の共通化
-   - デバッガー初期化パターンの共通化
-   - `failedTest` は `SuspiciousExpression` から取得
-3. TraceValue 系の基底クラスを作成
-4. テスト実行で動作確認
+**実施内容** (5806311):
+- `JDIUtils` に3つの共通メソッドを追加:
+  - `validateIsTargetExecution(StepEvent, SuspiciousVariable)` — Assignment 系2クラスで重複
+  - `createSuspiciousReturnValue(MethodExitEvent, ...)` — SearchReturns 系3クラスで重複
+  - `isCalledFromTargetLocation(ThreadReference, MethodElementName, int)` — 3クラスで重複
+- 5つの Strategy クラスから重複メソッドを除去（約200行削減）
 
 ### Phase 3 完了内容
 
