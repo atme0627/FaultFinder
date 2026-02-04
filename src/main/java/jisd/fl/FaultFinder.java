@@ -4,7 +4,7 @@ import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.presenter.FLRankingPresenter;
 import jisd.fl.usecase.Probe;
-import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.CauseTreeNode;
 import jisd.fl.core.entity.FLRanking;
 import jisd.fl.core.entity.FLRankingElement;
 import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
@@ -121,12 +121,12 @@ public class FaultFinder {
 
     public void probe(SuspiciousLocalVariable target){
         Probe prb = new Probe(target);
-        SuspiciousExprTreeNode causeTree = prb.run(2000);
+        CauseTreeNode causeTree = prb.run(2000);
         new ProbeReporter().printCauseTree(causeTree);
         probe(causeTree);
     }
 
-    public void probe(SuspiciousExprTreeNode causeTree){
+    public void probe(CauseTreeNode causeTree){
         TraceToScoreAdjustmentConverter converter = new TraceToScoreAdjustmentConverter(this.probeLambda, granularity);
         Map<CodeElementIdentifier<?>, Double> adjustments = converter.toAdjustments(causeTree);
         adjustAll(adjustments);

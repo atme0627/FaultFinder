@@ -1,7 +1,7 @@
 package jisd.fl.ranking;
 
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.CauseTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.sbfl.Granularity;
 import jisd.fl.core.entity.element.CodeElementIdentifier;
@@ -29,18 +29,18 @@ public class TraceToScoreAdjustmentConverter {
         this.g = granularity;
     }
 
-    public Map<CodeElementIdentifier<?>, Double> toAdjustments(SuspiciousExprTreeNode root) {
+    public Map<CodeElementIdentifier<?>, Double> toAdjustments(CauseTreeNode root) {
         // ノードごとの最小深さを保持するマップ
         Map<CodeElementIdentifier<?>, Integer> minDepth   = new HashMap<>();
-        Queue<SuspiciousExprTreeNode>   queue      = new LinkedList<>();
-        Queue<Integer>                depths     = new LinkedList<>();
+        Queue<CauseTreeNode>            queue      = new LinkedList<>();
+        Queue<Integer>                  depths     = new LinkedList<>();
 
         queue.add(root);
         depths.add(1);
 
         while (!queue.isEmpty()) {
-            SuspiciousExprTreeNode suspExprNode = queue.poll();
-            SuspiciousExpression suspExpr = suspExprNode.suspExpr;
+            CauseTreeNode suspExprNode = queue.poll();
+            SuspiciousExpression suspExpr = suspExprNode.expression();
             int depth = depths.poll();
 
             CodeElementIdentifier<?> elem = convertToCodeElementName(new MethodElementName(suspExpr.locateMethod().toString()), suspExpr.locateLine(), g);
@@ -48,7 +48,7 @@ public class TraceToScoreAdjustmentConverter {
             // 最小深さをマージ
             minDepth.merge(elem, depth, Math::min);
 
-            for (SuspiciousExprTreeNode child : suspExprNode.childSuspExprs) {
+            for (CauseTreeNode child : suspExprNode.children()) {
                 queue.add(child);
                 depths.add(depth + 1);
             }

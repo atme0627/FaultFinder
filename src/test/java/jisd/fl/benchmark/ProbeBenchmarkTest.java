@@ -1,7 +1,7 @@
 package jisd.fl.benchmark;
 
 import jisd.fl.core.entity.element.MethodElementName;
-import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.CauseTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.usecase.Probe;
@@ -64,7 +64,7 @@ class ProbeBenchmarkTest {
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#bench_depth_extreme()");
 
         // 1 + 20 = 21
-        SuspiciousExprTreeNode result = runProbeWithTiming(testMethod, "x", "21", "depth (20 levels)");
+        CauseTreeNode result = runProbeWithTiming(testMethod, "x", "21", "depth (20 levels)");
         logTreeSize(result, "depth");
     }
 
@@ -78,7 +78,7 @@ class ProbeBenchmarkTest {
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#bench_repetition_extreme()");
 
         // 1+2+...+100 = 5050 (ループで同一メソッドを100回呼び出し)
-        SuspiciousExprTreeNode result = runProbeWithTiming(testMethod, "sum", "5050", "repetition (100 loop calls)");
+        CauseTreeNode result = runProbeWithTiming(testMethod, "sum", "5050", "repetition (100 loop calls)");
         logTreeSize(result, "repetition");
     }
 
@@ -92,7 +92,7 @@ class ProbeBenchmarkTest {
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#bench_branch_extreme()");
 
         // branch10(1) = 6144
-        SuspiciousExprTreeNode result = runProbeWithTiming(testMethod, "x", "6144", "branch (1024 nodes)");
+        CauseTreeNode result = runProbeWithTiming(testMethod, "x", "6144", "branch (1024 nodes)");
         logTreeSize(result, "branch");
     }
 
@@ -106,7 +106,7 @@ class ProbeBenchmarkTest {
         MethodElementName testMethod = new MethodElementName(FIXTURE_FQCN + "#bench_polymorphism_extreme()");
 
         // 1+2+...+50 = 1275
-        SuspiciousExprTreeNode result = runProbeWithTiming(testMethod, "total", "1275", "polymorphism (50 implementations)");
+        CauseTreeNode result = runProbeWithTiming(testMethod, "total", "1275", "polymorphism (50 implementations)");
         logTreeSize(result, "polymorphism");
     }
 
@@ -124,7 +124,7 @@ class ProbeBenchmarkTest {
         // subtotal = 1000 * 5 = 5000
         // discounted = 5000 (quantity < 10)
         // taxed = 5000 * 110 / 100 = 5500
-        SuspiciousExprTreeNode result = runProbeWithTiming(testMethod, "result", "5500", "realistic (multi-method chain)");
+        CauseTreeNode result = runProbeWithTiming(testMethod, "result", "5500", "realistic (multi-method chain)");
         logTreeSize(result, "realistic");
     }
 
@@ -132,7 +132,7 @@ class ProbeBenchmarkTest {
     // Helper
     // =========================================================================
 
-    private static SuspiciousExprTreeNode runProbeWithTiming(
+    private static CauseTreeNode runProbeWithTiming(
             MethodElementName testMethod, String variableName, String actualValue, String label) {
 
         SuspiciousLocalVariable target = new SuspiciousLocalVariable(
@@ -141,22 +141,22 @@ class ProbeBenchmarkTest {
         Probe probe = new Probe(target);
 
         long start = System.nanoTime();
-        SuspiciousExprTreeNode result = probe.run(0);
+        CauseTreeNode result = probe.run(0);
         long elapsed = System.nanoTime() - start;
 
         printBench(label, elapsed);
         return result;
     }
 
-    private static void logTreeSize(SuspiciousExprTreeNode root, String label) {
+    private static void logTreeSize(CauseTreeNode root, String label) {
         int nodeCount = countNodes(root);
         logger.info("[BENCH] {}/tree_size : {} nodes", label, nodeCount);
     }
 
-    private static int countNodes(SuspiciousExprTreeNode node) {
+    private static int countNodes(CauseTreeNode node) {
         if (node == null) return 0;
         int count = 1;
-        for (SuspiciousExprTreeNode child : node.childSuspExprs) {
+        for (CauseTreeNode child : node.children()) {
             count += countNodes(child);
         }
         return count;

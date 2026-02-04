@@ -2,11 +2,12 @@ package jisd.fl.usecase;
 
 import jisd.fl.core.domain.NeighborSuspiciousVariablesSearcher;
 import jisd.fl.core.domain.SuspiciousReturnsSearcher;
-import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.CauseTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.domain.CauseLineFinder;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
+import jisd.fl.presenter.CauseTreePresenter;
 import jisd.fl.presenter.ProbeReporter;
 
 import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
@@ -15,7 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class Probe{
-    private SuspiciousExprTreeNode suspiciousExprTreeRoot = new SuspiciousExprTreeNode(null);
+    private CauseTreeNode suspiciousExprTreeRoot = new CauseTreeNode(null);
     private final SuspiciousLocalVariable firstTarget;
     private final ProbeReporter reporter;
     private final CauseLineFinder causeLineFinder;
@@ -34,7 +35,7 @@ public class Probe{
     // 0. ユーザ由来のsuspVarから最初のSuspExprを特定する。
     // 1. suspExpr -- [suspVar] --> suspExpr(, suspArg) 探索済みのsuspVarは除外
     // 2. suspExpr -- [return]  --> suspExpr
-    public SuspiciousExprTreeNode run(int sleepTime){
+    public CauseTreeNode run(int sleepTime){
       try (JDIDebugServerHandle session = JDIDebugServerHandle.startShared()) {
         Deque<SuspiciousExpression> exploringTargets = new ArrayDeque<>();
         Set<SuspiciousVariable> investigatedVariables = new HashSet<>();
@@ -45,7 +46,7 @@ public class Probe{
         reporter.reportProbeStart(firstTarget);
         SuspiciousExpression suspExpr = causeLineFinder.find(firstTarget).orElseThrow(() -> new RuntimeException("[Probe For STATEMENT] Cause line not found."));
         exploringTargets.add(suspExpr);
-        this.suspiciousExprTreeRoot = new SuspiciousExprTreeNode(suspExpr);
+        this.suspiciousExprTreeRoot = new CauseTreeNode(suspExpr);
 
         //expr --> list<expr> の特定ループ
         while(!exploringTargets.isEmpty()){
@@ -101,9 +102,9 @@ public class Probe{
     }
 
     protected void addTreeElement(SuspiciousExpression parent, List<SuspiciousExpression> children){
-        SuspiciousExprTreeNode parentNode = suspiciousExprTreeRoot.find(parent);
+        CauseTreeNode parentNode = suspiciousExprTreeRoot.find(parent);
         if(parentNode == null) {
-            suspiciousExprTreeRoot.print();
+            System.out.print(CauseTreePresenter.toTreeString(suspiciousExprTreeRoot));
             throw new RuntimeException("Parent node is not found.");
         }
         parentNode.addChild(children);

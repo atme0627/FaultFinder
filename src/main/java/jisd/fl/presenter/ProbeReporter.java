@@ -1,7 +1,7 @@
 package jisd.fl.presenter;
 
 import jisd.fl.core.entity.susp.SuspiciousExpression;
-import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.CauseTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 
 import java.util.List;
@@ -97,14 +97,14 @@ public class ProbeReporter {
         System.out.println(BOLD + "[Cause Tree]" + RESET);
     }
 
-    public void printCauseTree(SuspiciousExprTreeNode root) {
+    public void printCauseTree(CauseTreeNode root) {
         StringBuilder sb = new StringBuilder();
         printTreeNode(sb, root, "", true);
         System.out.print(sb);
     }
 
-    private void printTreeNode(StringBuilder sb, SuspiciousExprTreeNode node, String prefix, boolean isTail) {
-        SuspiciousExpression expr = node.suspExpr;
+    private void printTreeNode(StringBuilder sb, CauseTreeNode node, String prefix, boolean isTail) {
+        SuspiciousExpression expr = node.expression();
 
         // Tree lines (prefix + connector) in dim gray
         String connector = isTail ? "└── " : "├── ";
@@ -121,7 +121,7 @@ public class ProbeReporter {
         sb.append("\n");
 
         // Recurse children — prefix is plain text (no ANSI) so it renders correctly in dim gray
-        var children = node.childSuspExprs;
+        var children = node.children();
         String childPrefix = prefix + (isTail ? "    " : "│   ");
         for (int i = 0; i < children.size() - 1; i++) {
             printTreeNode(sb, children.get(i), childPrefix, false);

@@ -65,7 +65,7 @@ class ProbeTest {
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#scenario1_simple_assignment()");
         int declLine = findLocalDeclLine(m, "x");
 
-        SuspiciousExprTreeNode actual = runProbe(m, "x", "1");
+        CauseTreeNode actual = runProbe(m, "x", "1");
 
         ExpectedNode expected = assign(declLine);
         assertTreeEquals(expected, actual);
@@ -83,7 +83,7 @@ class ProbeTest {
         int declLineA = findLocalDeclLine(m, "a");
         int declLineB = findLocalDeclLine(m, "b");
 
-        SuspiciousExprTreeNode actual = runProbe(m, "result", "30");
+        CauseTreeNode actual = runProbe(m, "result", "30");
 
         ExpectedNode expected = assign(declLineResult,
                 assign(declLineA),
@@ -109,7 +109,7 @@ class ProbeTest {
         int declLine = findLocalDeclLine(m, "x");
         int returnLine = findReturnLine(helperMethod);
 
-        SuspiciousExprTreeNode actual = runProbe(m, "x", "20");
+        CauseTreeNode actual = runProbe(m, "x", "20");
 
         // return n * 2 の n は引数由来 → 呼び出し元の引数式（リテラル 10）を追跡
         // 引数がリテラルなので、ARGUMENT の子ノードは空
@@ -137,7 +137,7 @@ class ProbeTest {
         int declLineB = findLocalDeclLine(m, "b");
         int returnLine = findReturnLine(calcMethod);
 
-        SuspiciousExprTreeNode actual = runProbe(m, "x", "30");
+        CauseTreeNode actual = runProbe(m, "x", "30");
 
         // return a + b の a, b は引数由来 → 呼び出し元の引数式（変数 a, b）を追跡
         // 引数が変数なので、その代入元を追跡
@@ -172,7 +172,7 @@ class ProbeTest {
         int innerReturnLine = findReturnLine(innerMethod);
         int outerReturnLine = findReturnLine(outerMethod);
 
-        SuspiciousExprTreeNode actual = runProbe(m, "x", "30");
+        CauseTreeNode actual = runProbe(m, "x", "30");
 
         // outer(inner(5)) では、inner と outer の両方の return が直接追跡される
         ExpectedNode expected = assign(declLine,
@@ -206,7 +206,7 @@ class ProbeTest {
         int processReturnLine = findReturnLine(processMethod);
         int transformReturnLine = findReturnLine(transformMethod);
 
-        SuspiciousExprTreeNode actual = runProbe(m, "result", "11");
+        CauseTreeNode actual = runProbe(m, "result", "11");
 
         ExpectedNode expected = assign(declLineResult,
                 ret(processReturnLine,
@@ -241,13 +241,13 @@ class ProbeTest {
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#scenario4_loop_variable_update()");
         int loopAssignLine = findAssignLine(m, "x", "x + i");
 
-        SuspiciousExprTreeNode actual = runProbe(m, "x", "3");
+        CauseTreeNode actual = runProbe(m, "x", "3");
 
         // ルートノードがループ内の代入行であることを確認
-        assertNotNull(actual.suspExpr, "ルートノードの式は null であってはならない");
-        assertEquals(loopAssignLine, actual.suspExpr.locateLine(),
+        assertNotNull(actual.expression(), "ルートノードの式は null であってはならない");
+        assertEquals(loopAssignLine, actual.expression().locateLine(),
                 "ルートノードの行番号がループ内の代入行と一致するべき");
-        assertInstanceOf(SuspiciousAssignment.class, actual.suspExpr,
+        assertInstanceOf(SuspiciousAssignment.class, actual.expression(),
                 "ルートノードは SuspiciousAssignment であるべき");
     }
 
@@ -265,7 +265,7 @@ class ProbeTest {
         int loopAssignLine = findAssignLine(m, "x", "compute(i)");
         int returnLine = findReturnLine(computeMethod);
 
-        SuspiciousExprTreeNode actual = runProbe(m, "x", "4");
+        CauseTreeNode actual = runProbe(m, "x", "4");
 
         ExpectedNode expected = assign(loopAssignLine,
                 ret(returnLine,
@@ -311,38 +311,38 @@ class ProbeTest {
     /**
      * 期待される木構造と実際の木構造を比較する
      */
-    private static void assertTreeEquals(ExpectedNode expected, SuspiciousExprTreeNode actual) {
+    private static void assertTreeEquals(ExpectedNode expected, CauseTreeNode actual) {
         assertTreeEqualsRecursive(expected, actual, "root");
     }
 
-    private static void assertTreeEqualsRecursive(ExpectedNode expected, SuspiciousExprTreeNode actual, String path) {
+    private static void assertTreeEqualsRecursive(ExpectedNode expected, CauseTreeNode actual, String path) {
         // ノード自体の検証
-        assertNotNull(actual.suspExpr, path + ": suspExpr が null");
-        assertEquals(expected.line(), actual.suspExpr.locateLine(),
+        assertNotNull(actual.expression(), path + ": suspExpr が null");
+        assertEquals(expected.line(), actual.expression().locateLine(),
                 path + ": 行番号が一致しない");
-        assertInstanceOf(expected.type(), actual.suspExpr,
+        assertInstanceOf(expected.type(), actual.expression(),
                 path + ": 式の型が一致しない (expected: " + expected.type().getSimpleName() +
-                        ", actual: " + actual.suspExpr.getClass().getSimpleName() + ")");
+                        ", actual: " + actual.expression().getClass().getSimpleName() + ")");
 
         // 子ノードの数を検証
-        assertEquals(expected.children().size(), actual.childSuspExprs.size(),
+        assertEquals(expected.children().size(), actual.children().size(),
                 path + ": 子ノードの数が一致しない\n" +
                         "  expected children lines: " + expected.children().stream().map(ExpectedNode::line).toList() + "\n" +
-                        "  actual children lines: " + actual.childSuspExprs.stream()
-                        .map(n -> n.suspExpr != null ? n.suspExpr.locateLine() : -1).toList());
+                        "  actual children lines: " + actual.children().stream()
+                        .map(n -> n.expression() != null ? n.expression().locateLine() : -1).toList());
 
         // 子ノードを行番号でマッチングして再帰的に検証
         List<ExpectedNode> expectedChildren = new ArrayList<>(expected.children());
-        List<SuspiciousExprTreeNode> actualChildren = new ArrayList<>(actual.childSuspExprs);
+        List<CauseTreeNode> actualChildren = new ArrayList<>(actual.children());
 
         for (ExpectedNode expectedChild : expectedChildren) {
-            SuspiciousExprTreeNode matchingActual = findMatchingChild(expectedChild, actualChildren);
+            CauseTreeNode matchingActual = findMatchingChild(expectedChild, actualChildren);
             assertNotNull(matchingActual,
                     path + ": 期待される子ノード (line=" + expectedChild.line() +
                             ", type=" + expectedChild.type().getSimpleName() + ") が見つからない\n" +
                             "  actual children: " + actualChildren.stream()
-                            .map(n -> "line=" + (n.suspExpr != null ? n.suspExpr.locateLine() : -1) +
-                                    ", type=" + (n.suspExpr != null ? n.suspExpr.getClass().getSimpleName() : "null"))
+                            .map(n -> "line=" + (n.expression() != null ? n.expression().locateLine() : -1) +
+                                    ", type=" + (n.expression() != null ? n.expression().getClass().getSimpleName() : "null"))
                             .toList());
 
             actualChildren.remove(matchingActual);
@@ -355,11 +355,11 @@ class ProbeTest {
      * 期待されるノードに一致する実際の子ノードを探す。
      * 同じ行番号・型のノードが複数ある場合は、子ノードの構造も考慮してマッチングする。
      */
-    private static SuspiciousExprTreeNode findMatchingChild(ExpectedNode expected, List<SuspiciousExprTreeNode> actualChildren) {
-        List<SuspiciousExprTreeNode> candidates = actualChildren.stream()
-                .filter(actual -> actual.suspExpr != null)
-                .filter(actual -> actual.suspExpr.locateLine() == expected.line())
-                .filter(actual -> expected.type().isInstance(actual.suspExpr))
+    private static CauseTreeNode findMatchingChild(ExpectedNode expected, List<CauseTreeNode> actualChildren) {
+        List<CauseTreeNode> candidates = actualChildren.stream()
+                .filter(actual -> actual.expression() != null)
+                .filter(actual -> actual.expression().locateLine() == expected.line())
+                .filter(actual -> expected.type().isInstance(actual.expression()))
                 .toList();
 
         if (candidates.isEmpty()) {
@@ -370,7 +370,7 @@ class ProbeTest {
         }
 
         // 同じ行番号・型のノードが複数ある場合、子ノードの構造でマッチング
-        for (SuspiciousExprTreeNode candidate : candidates) {
+        for (CauseTreeNode candidate : candidates) {
             if (matchesStructure(expected, candidate)) {
                 return candidate;
             }
@@ -382,8 +382,8 @@ class ProbeTest {
     /**
      * 期待されるノードと実際のノードの構造が一致するか確認する
      */
-    private static boolean matchesStructure(ExpectedNode expected, SuspiciousExprTreeNode actual) {
-        if (expected.children().size() != actual.childSuspExprs.size()) {
+    private static boolean matchesStructure(ExpectedNode expected, CauseTreeNode actual) {
+        if (expected.children().size() != actual.children().size()) {
             return false;
         }
         // 子ノードの行番号セットが一致するか確認
@@ -391,9 +391,9 @@ class ProbeTest {
                 .map(ExpectedNode::line)
                 .sorted()
                 .toList();
-        List<Integer> actualChildLines = actual.childSuspExprs.stream()
-                .filter(n -> n.suspExpr != null)
-                .map(n -> n.suspExpr.locateLine())
+        List<Integer> actualChildLines = actual.children().stream()
+                .filter(n -> n.expression() != null)
+                .map(n -> n.expression().locateLine())
                 .sorted()
                 .toList();
         return expectedChildLines.equals(actualChildLines);
@@ -403,7 +403,7 @@ class ProbeTest {
     // ヘルパーメソッド
     // =====================================================================
 
-    private static SuspiciousExprTreeNode runProbe(MethodElementName testMethod, String variableName, String actualValue) {
+    private static CauseTreeNode runProbe(MethodElementName testMethod, String variableName, String actualValue) {
         SuspiciousLocalVariable target = new SuspiciousLocalVariable(
                 testMethod, testMethod, variableName, actualValue, true);
         Probe probe = new Probe(target);

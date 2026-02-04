@@ -1,6 +1,6 @@
 package jisd.fl.usecase;
 
-import jisd.fl.core.entity.susp.SuspiciousExprTreeNode;
+import jisd.fl.core.entity.susp.CauseTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.domain.CauseLineFinder;
@@ -18,7 +18,7 @@ import java.util.*;
 public class SimpleProbe extends Probe {
     Set<SuspiciousLocalVariable> probedValue = new HashSet<>();
     Set<String> targetClasses = JavaParserClassNameExtractor.getClassNames();
-    SuspiciousExprTreeNode suspiciousExprTreeRoot = null;
+    CauseTreeNode suspiciousExprTreeRoot = null;
     SuspiciousLocalVariable firstTarget;
 
     public SimpleProbe(SuspiciousLocalVariable target) {
@@ -26,7 +26,7 @@ public class SimpleProbe extends Probe {
     }
 
     //調査結果の木構造のルートノードに対応するSuspExprを返す
-    public SuspiciousExprTreeNode run(int sleepTime) {
+    public CauseTreeNode run(int sleepTime) {
         List<SuspiciousVariable> probingTargets = new ArrayList<>();
         List<SuspiciousVariable> nextTargets = new ArrayList<>();
         List<SuspiciousVariable> investigatedTargets = new ArrayList<>();
