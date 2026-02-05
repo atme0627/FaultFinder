@@ -59,10 +59,12 @@ public class JavaParserUtils {
     }
 
     //その行を含む最小範囲のStatementを返す
+    //BlockStmt は除外（式の抽出に不適切なため、制御構文や具体的な文を優先）
     //行数が同じ場合は、列スパンが小さい（より具体的な）文を優先
     public static Optional<Statement> getStatementByLine(ClassElementName targetClass, int line) throws NoSuchFileException {
         return extractNode(targetClass, Statement.class)
                 .stream()
+                .filter(stmt -> !(stmt instanceof BlockStmt))
                 .filter(stmt -> stmt.getRange().isPresent())
                 .filter(stmt -> (stmt.getBegin().get().line <= line))
                 .filter(stmt -> (stmt.getEnd().get().line >= line))

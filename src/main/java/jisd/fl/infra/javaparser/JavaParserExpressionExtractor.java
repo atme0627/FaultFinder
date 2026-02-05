@@ -81,9 +81,14 @@ class JavaParserExpressionExtractor {
     }
 
     private static Expression extractAssigningExprFromStatement(Statement stmt) {
-        //更新式は1つであると仮定
+        // ForStmt: JDI の制約（earliest code index のみに BP 設定）により、
+        // ForStmt が原因行として特定される場合は必ず init フェーズが対象。
         if (stmt instanceof ForStmt forStmt) {
-            return forStmt.getUpdate().getFirst().get();
+            Optional<Expression> initOpt = forStmt.getInitialization().getFirst();
+            if (initOpt.isPresent() && initOpt.get() instanceof VariableDeclarationExpr vde) {
+                return vde.getVariable(0).getInitializer().orElseThrow();
+            }
+            return forStmt.getUpdate().getFirst().get();  // fallback
         }
         // Try to extract from assignment expression
         Optional<AssignExpr> assignExpr = stmt.findFirst(AssignExpr.class);

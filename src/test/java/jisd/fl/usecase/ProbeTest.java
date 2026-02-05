@@ -7,6 +7,7 @@ import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.*;
 import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.infra.javaparser.JavaParserUtils;
+
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -232,26 +233,29 @@ class ProbeTest {
     @Test
     @Timeout(30)
     void scenario4_loop_variable_update() throws Exception {
-        // for 内の x = x + i; の行が追跡される
-        // x = 0, i=0: x=0, i=1: x=1, i=2: x=3 -> 最終値は 3
-        // 期待: ASSIGN(x=x+i at loop, final value 3)
-        //         ├── ASSIGN(x の前の値を追跡)
-        //         └── (i はループ変数なので追跡対象外の可能性)
-        //
-        // 注: ループの場合、x = x + i の右辺の x は同じ行を指すため、
-        //     無限ループを防ぐために探索済み変数はスキップされる。
-        //     よって子ノードは空になる可能性がある。
+        // for (int i = 0; i < 3; i++) { x = x + i; }
+        // x = 0+0=0, 0+1=1, 1+2=3 → 最終値 3
+        // 各ループ反復で x = x + i の因果を追跡:
+        //   x=3 ← x=1 ← x=0 ← i=0 (for-loop init, leaf)
+        // i=1, i=2 は JDI の earliest code index BP 制約により追跡不可（今後の課題）
+        // 期待: ASSIGN(x=3, line:71)
+        //         └── ASSIGN(x=1, line:71)
+        //               └── ASSIGN(x=0, line:71)
+        //                     └── ASSIGN(i=0, line:70, leaf)
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#scenario4_loop_variable_update()");
         int loopAssignLine = findAssignLine(m, "x", "x + i");
+        int forInitLine = findLocalDeclLine(m, "i");
 
         CauseTreeNode actual = runProbe(m, "x", "3");
 
-        // ルートノードがループ内の代入行であることを確認
-        assertNotNull(actual.expression(), "ルートノードの式は null であってはならない");
-        assertEquals(loopAssignLine, actual.expression().locateLine(),
-                "ルートノードの行番号がループ内の代入行と一致するべき");
-        assertInstanceOf(SuspiciousAssignment.class, actual.expression(),
-                "ルートノードは SuspiciousAssignment であるべき");
+        ExpectedNode expected = assign(loopAssignLine,
+                assign(loopAssignLine,
+                        assign(loopAssignLine,
+                                assign(forInitLine)
+                        )
+                )
+        );
+        assertTreeEquals(expected, actual);
     }
 
     @Test
