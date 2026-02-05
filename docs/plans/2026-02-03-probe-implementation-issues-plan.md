@@ -6,27 +6,16 @@ ProbeTest で確認された3つの問題について、実装を修正する計
 
 ## 修正すべき問題
 
-### 問題 1: ネストしたメソッド呼び出しの階層構造
+### 問題 1: ネストしたメソッド呼び出しの階層構造 ✅ 完了
 
-**コード**: `int x = outer(inner(5));`
+**コミット**: 0828d62
+**設計記録**: `docs/design-notes/2026-02-04-nested-method-call-hierarchy.md`
 
-**現在の動作**:
-```
-ASSIGN(x=outer(inner(5)))
-├── RETURN(inner)
-└── RETURN(outer)
-```
-
-**期待する動作**:
-```
-ASSIGN(x=outer(inner(5)))
-└── RETURN(outer)
-      └── ARGUMENT(outer の引数 = inner(5))
-            └── RETURN(inner)
-```
-
-**修正方針**:
-`JDISearchSuspiciousReturnsAssignmentStrategy` を修正して、**最外のメソッド呼び出しの戻り値のみ**を収集するようにする。内側のメソッド呼び出しは、ARGUMENT からの追跡で取得される。
+**修正内容**:
+- `SuspiciousAssignment` / `SuspiciousReturnValue` に `targetReturnCallPositions` フィールド追加
+- `SuspiciousArgument` の `collectAtCounts` を `targetReturnCallPositions` にリネーム
+- `JDISearchSuspiciousReturnsAssignmentStrategy` / `ReturnValueStrategy` に `MethodEntryEvent` + `callCount` フィルタ追加
+- ファクトリの `createArgument` で AST クローン済みノードを使用していたバグも修正
 
 ---
 
@@ -174,4 +163,7 @@ void test() {
 
 ## ステータス
 
-**未着手** - ユーザーの承認待ち
+- **問題 1**: ✅ 完了（2026-02-04, コミット 0828d62）
+- **問題 2, 3**: 未着手
+- **問題 4**: 未着手
+- **問題 5**: 未着手
