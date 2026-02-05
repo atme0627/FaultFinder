@@ -132,6 +132,14 @@ public abstract class EnhancedDebugger implements Closeable {
                         continue;
                     }
 
+                    // CLE flush BP はハンドラに渡さず skip する
+                    if (ev instanceof BreakpointEvent bpe
+                            && Boolean.TRUE.equals(bpe.request().getProperty("cleClear"))) {
+                        System.err.println("[CLE-FLUSH] clearing CLE info at "
+                                + bpe.location().declaringType().name() + ":" + bpe.location().lineNumber());
+                        continue;
+                    }
+
                     // 登録されたハンドラーを実行
                     for (Map.Entry<Class<? extends Event>, List<JDIEventHandler<?>>> entry : handlers.entrySet()) {
                         Class<? extends Event> eventType = entry.getKey();

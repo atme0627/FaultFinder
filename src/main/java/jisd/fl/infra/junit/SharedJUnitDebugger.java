@@ -1,10 +1,15 @@
 package jisd.fl.infra.junit;
 
+import com.sun.jdi.*;
+import com.sun.jdi.request.BreakpointRequest;
+import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.EventRequestManager;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.infra.jdi.EnhancedDebugger;
 import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
@@ -32,6 +37,9 @@ public class SharedJUnitDebugger extends EnhancedDebugger {
     @Override
     public void execute(Supplier<Boolean> shouldStop) {
         testCompleted = false;
+
+        // 0. JDWP CLE info をフラッシュするダミー BP を設定
+        setupCLEFlushBreakpoint();
 
         // 1. ブレークポイント・ClassPrepareRequest 設定
         setupBreakpointsAndRequests();
@@ -83,6 +91,39 @@ public class SharedJUnitDebugger extends EnhancedDebugger {
     @Override
     public void execute() {
         execute(null);
+    }
+
+    /**
+     * JDWP CLE (Co-Located Event) info をフラッシュするためのダミー BP を設定する。
+     *
+     * JDWP エージェントは StepEvent が発火した位置を ThreadNode.cleInfo に保存し、
+     * 直後に同じ位置に設定された BreakpointRequest の発火を抑制する（CLE ポリシー）。
+     * cleInfo は次のイベントの skipEventReport() でしかクリアされないため、
+     * execute() 間でクリーンアップしても残存する。
+     *
+     * このメソッドは JDIDebugServerMain.handleCommand() のエントリに BP を設定する。
+     * RUN コマンド処理時にテストフィクスチャコードの実行前に発火し、
+     * skipEventReport() → clearCLEInfo() により残存 CLE info をクリアする。
+     * BreakpointEvent は deferEventReport() で新しい CLE info を保存しないため、
+     * クリアのみが行われる。
+     */
+    private void setupCLEFlushBreakpoint() {
+        String serverClass = "jisd.fl.infra.jdi.testexec.JDIDebugServerMain";
+        List<ReferenceType> loaded = vm.classesByName(serverClass);
+        if (loaded.isEmpty()) return;
+
+        ReferenceType rt = loaded.get(0);
+        Method handleCmd = rt.methodsByName("handleCommand").stream()
+                .filter(m -> m.argumentTypeNames().size() == 2)
+                .findFirst().orElse(null);
+        if (handleCmd == null) return;
+
+        Location entry = handleCmd.location();
+        EventRequestManager mgr = vm.eventRequestManager();
+        BreakpointRequest bp = mgr.createBreakpointRequest(entry);
+        bp.setSuspendPolicy(EventRequest.SUSPEND_ALL);
+        bp.putProperty("cleClear", Boolean.TRUE);
+        bp.enable();
     }
 
     /**
