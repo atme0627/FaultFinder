@@ -574,17 +574,70 @@ CLE ポリシーの Phase 2 を回避または CLE info をクリアする方法
 7. **Java Agent（JVMTI ネイティブ）への移行**: JDWP を介さず直接 JVMTI を使い、
    CLE ポリシーの影響を完全に回避する。
 
+## 実施した修正: CLE flush BP
+
+### 方式
+
+対策 1「CLE info 強制クリア（ダミーイベント）」を採用した。
+
+`SharedJUnitDebugger.execute()` の先頭で `JDIDebugServerMain.handleCommand()` のメソッドエントリに
+ダミー BP（CLE flush BP）を設定する。この BP は `sendRunCommand()` による RUN コマンド処理時、
+テストフィクスチャコードの実行**前に**発火する。
+
+```
+execute() 開始
+  ↓
+1. setupCLEFlushBreakpoint()  ← handleCommand() エントリに CLE flush BP 設定
+2. setupBreakpointsAndRequests()  ← 通常の BP 設定
+3. sendRunCommand()  ← RUN 送信
+4. runEventLoop()
+   ├─ CLE flush BP 発火 → skipEventReport() → clearCLEInfo() ✓
+   │   → property "cleClear" を検出、handler には渡さない
+   ├─ 通常 BP 発火 ← CLE info クリア済みなので正常発火 ✓
+   │   → 登録済み handler に dispatch（StepOver 等）
+   └─ ...
+5. cleanup（cleanupEventRequests で CLE flush BP も自動削除）
+```
+
+### 変更ファイル
+
+**`SharedJUnitDebugger.java`**:
+- `setupCLEFlushBreakpoint()` メソッドを追加
+- `handleCommand()` メソッドのエントリ位置を `Method.location()` で取得（行番号非依存）
+- BP に `putProperty("cleClear", Boolean.TRUE)` を付与して識別可能にする
+- `execute()` の先頭（Phase 0）で呼び出し
+
+**`EnhancedDebugger.java`**:
+- `runEventLoop()` 内の handler dispatch 前に CLE flush BP 判定を追加
+- `cleClear` プロパティを持つ `BreakpointEvent` は `continue` でスキップ
+
+### なぜ `handleCommand()` のメソッドエントリなのか
+
+- `JDIDebugServerMain.handleCommand()` は全 RUN コマンドで呼ばれる
+- テストフィクスチャコードの実行**前**に発火するため、通常 BP と干渉しない
+- `Method.location()` でメソッドエントリの `Location` を取得するため、行番号変更に堅牢
+- `cleanupEventRequests()` で自動削除されるため、ライフサイクル管理が不要
+
+### 検証結果
+
+| テスト | 修正前（10回, `--rerun`） | 修正後（10回, `--rerun`） |
+|--------|--------------------------|--------------------------|
+| scenario1 | 7/10 (不安定) | **10/10 SUCCESS** |
+| scenario2 | 5/10 (不安定) | **10/10 SUCCESS** |
+| 全 ProbeTest | 4-6/10 (不安定) | **10/10 SUCCESS** |
+
 ## 残存する疑問
 
 - `EventSet.resume()` と `VirtualMachine.resume()` の違いが CLE info のクリアに影響するか
-- ダミーイベント方式で CLE info を確実にクリアできるか（実験が必要）
 - JVMTI の `SetEventNotificationMode` で `SINGLE_STEP` を toggle すると CLE info がリセットされるか
 
 ## 現在のコード状態
 
 - `TargetVariableTracer`: `ValueChangingLineFinder` に統一済み（実験コードはすべて revert 済み）
+- `SharedJUnitDebugger`: CLE flush BP を各 execute() で設定
+- `EnhancedDebugger`: `runEventLoop()` で CLE flush BP をスキップ
 - `JavaParserTraceTargetLineFinder.java`: 削除済み
-- 各所に診断ログ追加済み（`[BP-DEBUG]`, `[SETUP-DEBUG]`, `[EVENT-LOOP]`, `[TCP-DEBUG]`, `[SESSION-DEBUG]`, `[DRAIN-DEBUG]`, `[ARG-TRACE]`, `[PROBE-DEBUG]`, `[NEIGHBOR-DEBUG]`）
+- 各所に診断ログ追加済み（`[BP-DEBUG]`, `[SETUP-DEBUG]`, `[EVENT-LOOP]`, `[TCP-DEBUG]`, `[SESSION-DEBUG]`, `[DRAIN-DEBUG]`, `[ARG-TRACE]`, `[PROBE-DEBUG]`, `[NEIGHBOR-DEBUG]`, `[CLE-FLUSH]`）
 - `build.gradle`: `showStandardStreams = true` 追加済み
 
 ## まとめ
@@ -597,7 +650,7 @@ CLE ポリシーの Phase 2 を回避または CLE info をクリアする方法
   `saveCLEInfo()` が呼ばれない。FaultFinder のような逐次 execute() 再利用パターンは IDE では発生しない
 - **JDK バージョン非依存**: JDK 22, 25 で同一の問題を確認。CLE ポリシーは JDWP エージェントの基本設計
 - **実験で検証済み**: StepOut 実験で因果関係を確認、追加 StepOver 実験で問題の逆転を確認
-- **有力な対策**: ダミーイベントで CLE info を強制クリア / WatchpointEvent への移行 / JVMTI 直接利用
+- **修正**: CLE flush BP（`handleCommand()` エントリへのダミー BP）で全テスト 10/10 安定化
 
 ## 参考資料
 
