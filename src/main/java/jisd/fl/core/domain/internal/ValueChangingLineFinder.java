@@ -1,13 +1,11 @@
 package jisd.fl.core.domain.internal;
 
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.expr.AssignExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.UnaryExpr;
-import com.github.javaparser.ast.stmt.BlockStmt;
 import jisd.fl.core.entity.element.ClassElementName;
-import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
@@ -56,22 +54,8 @@ public class ValueChangingLineFinder {
         ClassElementName locate = v.locateClass();
         List<LineRange> ranges = new ArrayList<>();
 
-        // 0-a) ローカル変数の宣言行（フィールドなら空の想定）
-        if(v instanceof SuspiciousLocalVariable localVariable) {
-            for (int ln : JavaParserUtils.findLocalVariableDeclarationLine(localVariable.locateMethod(), v.variableName())) {
-                ranges.add(new LineRange(ln, ln));
-            }
-        // 0-b) フィールドの宣言行
-        } else {
-            for(int ln : JavaParserUtils.findFieldVariableDeclarationLine(locate, v.variableName())) {
-                ranges.add(new LineRange(ln, ln));
-            }
-        }
-
-        // 1) スコープに応じて Assign/Unary を収集
+        // 1) スコープに応じて Node を取得（宣言検索と Assign/Unary 検索で共有）
         Node node;
-        List<AssignExpr> assigns;
-        List<UnaryExpr> unaries;
         try {
             node = (v instanceof SuspiciousLocalVariable local) ?
                     JavaParserUtils.extractBodyOfMethod(local.locateMethod())
@@ -80,17 +64,28 @@ public class ValueChangingLineFinder {
             throw new RuntimeException(e);
         }
         if (node == null) return ranges;
-        assigns = node.findAll(AssignExpr.class);
-        unaries = node.findAll(UnaryExpr.class, ValueChangingLineFinder::isIncDec);
+
+        // 0-a) ローカル変数の宣言行 — VariableDeclarator の全範囲を使用
+        if (v instanceof SuspiciousLocalVariable) {
+            node.findAll(VariableDeclarator.class).stream()
+                    .filter(vd -> vd.getNameAsString().equals(v.variableName()))
+                    .forEach(vd -> vd.getRange().ifPresent(r ->
+                            ranges.add(new LineRange(r.begin.line, r.end.line))));
+        // 0-b) フィールドの宣言行
+        } else {
+            for (int ln : JavaParserUtils.findFieldVariableDeclarationLine(locate, v.variableName())) {
+                ranges.add(new LineRange(ln, ln));
+            }
+        }
 
         // 2) 代入
-        for (AssignExpr ae : assigns) {
+        for (AssignExpr ae : node.findAll(AssignExpr.class)) {
             if (!matchesTarget(v, ae.getTarget())) continue;
             ae.getRange().ifPresent(r -> ranges.add(new LineRange(r.begin.line, r.end.line)));
         }
 
         // 3) ++ / --
-        for (UnaryExpr ue : unaries) {
+        for (UnaryExpr ue : node.findAll(UnaryExpr.class, ValueChangingLineFinder::isIncDec)) {
             if (!matchesTarget(v, ue.getExpression())) continue;
             ue.getRange().ifPresent(r -> ranges.add(new LineRange(r.begin.line, r.end.line)));
         }

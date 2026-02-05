@@ -122,6 +122,20 @@ public class ValueChangingLineFinderTest {
     }
 
     @Test
+    void multiLineDeclBpLines_includes_begin_to_end_range() throws Exception {
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#multiLineDeclaration()", "x");
+
+        int begin = lineOfFixture("@ML_DECL_BEGIN");
+        int end = lineOfFixture("@ML_DECL_END");
+
+        List<Integer> lines = ValueChangingLineFinder.findBreakpointLines(sv);
+
+        for (int ln : IntStream.rangeClosed(begin, end).toArray()) {
+            assertTrue(lines.contains(ln), "行が見つかりません: " + ln + " in " + lines);
+        }
+    }
+
+    @Test
     void arrayAssign_includes_array_assignment_line() throws Exception {
         SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#arrayAssign()", "a");
 

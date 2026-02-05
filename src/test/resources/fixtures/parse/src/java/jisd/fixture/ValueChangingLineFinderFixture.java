@@ -18,6 +18,12 @@ public class ValueChangingLineFinderFixture {
         return x;
     }
 
+    public static int multiLineDeclaration() {
+        int x =              // @ML_DECL_BEGIN
+                10 + 20;     // @ML_DECL_END
+        return x;
+    }
+
     public static int arrayAssign() {
         int[] a = {0, 0};
         a[0] = 1;           // @ARR_ASSIGN

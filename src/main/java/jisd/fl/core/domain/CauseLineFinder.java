@@ -120,7 +120,7 @@ public class CauseLineFinder {
      */
     private Optional<TracedValue> valueChangedToActualLine(SuspiciousVariable target, List<TracedValue> tracedValues, String actual) {
         // 対象の変数に値の変化が起きている行の特定
-        List<Integer> assignedLine = ValueChangingLineFinder.findCauseLines(target);
+        List<Integer> assignedLine = ValueChangingLineFinder.findBreakpointLines(target);
         return tracedValues.stream()
                 .filter(tv -> assignedLine.contains(tv.lineNumber))
                 .filter(tv -> tv.value.equals(actual))
