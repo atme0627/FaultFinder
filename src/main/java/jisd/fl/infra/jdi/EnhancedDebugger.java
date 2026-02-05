@@ -78,10 +78,14 @@ public abstract class EnhancedDebugger implements Closeable {
      * {@link #setBreakpoints(String, List)} で登録済みの情報を元にリクエストを発行する。
      */
     protected void setupBreakpointsAndRequests() {
-        if (targetClass == null) return; // MethodEntry 等、ブレークポイント不要の場合
+        if (targetClass == null) {
+            System.err.println("[SETUP-DEBUG] targetClass=null, skip BP setup");
+            return; // MethodEntry 等、ブレークポイント不要の場合
+        }
         EventRequestManager manager = vm.eventRequestManager();
         //ロード済みのクラスに対しbreakPointを設定
         List<ReferenceType> loaded = vm.classesByName(targetClass);
+        System.err.println("[SETUP-DEBUG] targetClass=" + targetClass + " breakpointLines=" + breakpointLines + " loadedClasses=" + loaded.size());
         for (ReferenceType rt : loaded) {
             for(int line : breakpointLines) {
                 setBreakpointIfLoaded(rt, manager, line);
@@ -111,6 +115,8 @@ public abstract class EnhancedDebugger implements Closeable {
                 }
 
                 for(Event ev : eventSet) {
+                    System.err.println("[EVENT-LOOP] event: " + ev.getClass().getSimpleName()
+                            + (ev instanceof com.sun.jdi.event.LocatableEvent le ? " at " + le.location().declaringType().name() + ":" + le.location().lineNumber() + " method=" + le.location().method().name() : ""));
                     //VMStartEventは無視
                     if (ev instanceof VMStartEvent) {
                         continue;
@@ -321,9 +327,10 @@ public abstract class EnhancedDebugger implements Closeable {
         try {
             List<com.sun.jdi.Location> bpLocs = rt.locationsOfLine(line);
             if (bpLocs.isEmpty()) {
-                //System.err.println("Cannot set BreakPoint at line " + line + " at " + rt.name() + ".");
+                System.err.println("[BP-DEBUG] SKIP line " + line + " at " + rt.name() + " (no locations)");
                 return;
             } else {
+                System.err.println("[BP-DEBUG] SET  line " + line + " at " + rt.name() + " (locations=" + bpLocs.size() + ")");
                 //bpLocsには指定した行に属する要素が複数含まれ、
                 //先頭の要素が行内で一番初めに実行されるものとは限らない
                 //そのためcodeIndexが最小のものを選び、それに対してbreakPointをおかなければならない

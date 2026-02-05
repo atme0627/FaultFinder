@@ -124,6 +124,7 @@ public class JDIDebugServerHandle implements Closeable {
      */
     public void sendRunCommand(MethodElementName testMethod) throws IOException {
         String cmd = "RUN " + testMethod.fullyQualifiedName() + "\n";
+        System.err.println("[TCP-DEBUG] sendRunCommand: " + cmd.trim() + " at " + System.currentTimeMillis());
         tcpOut.write(cmd.getBytes(StandardCharsets.UTF_8));
         tcpOut.flush();
     }
@@ -135,7 +136,10 @@ public class JDIDebugServerHandle implements Closeable {
      * @return true: テスト成功、false: テスト失敗
      */
     public boolean readRunResult() throws IOException {
+        long t0 = System.currentTimeMillis();
         String response = tcpIn.readLine();
+        long t1 = System.currentTimeMillis();
+        System.err.println("[TCP-DEBUG] readRunResult: response=\"" + response + "\" waitMs=" + (t1 - t0) + " at " + t1);
         if (response == null) {
             throw new EOFException("server closed connection");
         }
@@ -170,16 +174,22 @@ public class JDIDebugServerHandle implements Closeable {
      */
     public void drainEventQueue() {
         EventQueue queue = vm.eventQueue();
+        int count = 0;
         while (true) {
             try {
                 EventSet es = queue.remove(1);
                 if (es == null) break;
+                count++;
+                for (var ev : es) {
+                    System.err.println("[DRAIN-DEBUG] drained: " + ev.getClass().getSimpleName());
+                }
                 es.resume();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
         }
+        System.err.println("[DRAIN-DEBUG] total drained: " + count + " event sets");
     }
 
     @Override

@@ -52,6 +52,7 @@ public class SharedJUnitDebugger extends EnhancedDebugger {
             });
 
             // 4. イベントループ（shouldStop OR testCompleted で終了）
+            System.err.println("[SESSION-DEBUG] before eventLoop: testCompleted=" + testCompleted);
             Supplier<Boolean> combinedStop = () ->
                     testCompleted || (shouldStop != null && shouldStop.get());
             runEventLoop(combinedStop);
@@ -59,14 +60,17 @@ public class SharedJUnitDebugger extends EnhancedDebugger {
             // 5. イベントリクエストを削除し、debuggee を resume する。
             //    shouldStop で早期終了した場合、イベントループ脱出後に
             //    ブレークポイントにヒットして再 suspend されている可能性がある。
+            System.err.println("[SESSION-DEBUG] after eventLoop: testCompleted=" + testCompleted + " shouldStop=" + (shouldStop != null ? shouldStop.get() : "null"));
             session.cleanupEventRequests();
             try { vm.resume(); } catch (com.sun.jdi.VMDisconnectedException ignored) {}
 
             // 6. TCP 応答の完了を確実に待つ
             tcpResult.join();
+            System.err.println("[SESSION-DEBUG] after tcpResult.join()");
 
             // 7. EventQueue に残存するイベントを読み捨てる
             session.drainEventQueue();
+            System.err.println("[SESSION-DEBUG] after drainEventQueue()");
         } catch (IOException e) {
             throw new RuntimeException("Failed to run test via session: " + testMethod, e);
         } finally {

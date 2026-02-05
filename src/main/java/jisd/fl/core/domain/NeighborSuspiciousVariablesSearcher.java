@@ -23,6 +23,9 @@ public class NeighborSuspiciousVariablesSearcher {
         //SuspExpr内で使用されている変数を静的解析により取得
         List<String> neighborVariableNames = new ArrayList<>(suspExpr.directNeighborVariableNames());
         if(includeIndirectUsedVariable) neighborVariableNames.addAll(suspExpr.indirectNeighborVariableNames());
+        System.err.println("[NEIGHBOR-DEBUG] expr: " + suspExpr);
+        System.err.println("[NEIGHBOR-DEBUG] directNames: " + suspExpr.directNeighborVariableNames());
+        System.err.println("[NEIGHBOR-DEBUG] tracedValues: " + tracedNeighborValue.stream().map(t -> t.variableName + "=" + t.value).toList());
 
         //TODO: 今の実装だと配列のフィルタリングがうまくいかない
         //TODO: 今の実装だと、変数がローカルかフィールドか区別できない

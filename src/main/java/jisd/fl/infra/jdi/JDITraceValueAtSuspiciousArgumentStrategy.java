@@ -45,11 +45,14 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
 
         // ブレークポイント設定と実行
         debugger.setBreakpoints(currentTarget.locateMethod().fullyQualifiedClassName(), List.of(currentTarget.locateLine()));
+        System.err.println("[ARG-TRACE] START traceAll for " + currentTarget + " BP at line " + currentTarget.locateLine());
         debugger.execute(() -> !result.isEmpty());
+        System.err.println("[ARG-TRACE] END   traceAll for " + currentTarget + " result.size=" + result.size());
         return result;
     }
 
     private void handleBreakpoint(VirtualMachine vm, BreakpointEvent bpe) {
+        System.err.println("[ARG-TRACE] handleBreakpoint at line " + bpe.location().lineNumber());
         // 既に情報が取得できている場合は終了
         if (!result.isEmpty()) return;
 
@@ -76,6 +79,7 @@ public class JDITraceValueAtSuspiciousArgumentStrategy implements TraceValueAtSu
     }
 
     private void handleStep(VirtualMachine vm, StepEvent se) {
+        System.err.println("[ARG-TRACE] handleStep at " + se.location().method().name() + ":" + se.location().lineNumber() + " steppingOut=" + steppingOut);
         // 既に結果が取得できている場合はスキップ
         if (!result.isEmpty()) return;
 

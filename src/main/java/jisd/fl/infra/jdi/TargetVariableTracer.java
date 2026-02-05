@@ -4,10 +4,9 @@ import com.sun.jdi.*;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.StepEvent;
 import jisd.fl.core.domain.internal.ValueChangingLineFinder;
-import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.TracedValue;
+import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.infra.javaparser.JavaParserTraceTargetLineFinder;
 import jisd.fl.infra.jdi.testexec.JDIDebugServerHandle;
 
 import java.time.LocalDateTime;
@@ -23,14 +22,11 @@ public class TargetVariableTracer {
 
     public List<TracedValue> traceValuesOfTarget(SuspiciousVariable target) {
         // ブレークポイントを設置する行を決定
-        List<Integer> canSetLines;
-        if (target instanceof SuspiciousLocalVariable localVariable) {
-            // ローカル変数: メソッド内の変更行
-            canSetLines = JavaParserTraceTargetLineFinder.traceTargetLineNumbers(localVariable);
-        } else {
-            // フィールド: クラス全体の変更行
-            canSetLines = ValueChangingLineFinder.findBreakpointLines(target);
-        }
+        List<Integer> canSetLines = ValueChangingLineFinder.findBreakpointLines(target);
+        String locInfo = (target instanceof SuspiciousLocalVariable lv)
+                ? "method=" + lv.locateMethod().fullyQualifiedName()
+                : "class=" + target.locateClass().fullyQualifiedClassName();
+        System.err.println("[BP-DEBUG] canSetLines for " + target.variableName() + " (" + locInfo + "): " + canSetLines);
 
         // step後に観測した値が、どの行の実行によるものだったのかを記録する。
         // マルチスレッドに備えて、Thread -> line のmapで管理
@@ -49,6 +45,7 @@ public class TargetVariableTracer {
             try {
                 StackFrame frame = bpEvent.thread().frame(0);
                 int currentLine = frame.location().lineNumber();
+                System.err.println("[BP-DEBUG] HIT line " + currentLine + " for " + target.variableName());
                 stepSourceLine.put(bpEvent.thread(), currentLine);
                 // StepRequest を作成
                 EnhancedDebugger.createStepOverRequest(vm.eventRequestManager(), bpEvent.thread());

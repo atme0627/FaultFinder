@@ -56,8 +56,14 @@ public class Probe{
             // 1. suspExpr -- [suspVar] --> suspExpr(, suspArg) 探索済みのsuspVarは除外
             //SuspExprで直接使用されている(≒メソッドの引数でない)全ての変数
             List<SuspiciousVariable> neighborVariable = neighborSearcher.neighborSuspiciousVariables(false, targetExpr);
+            System.err.println("[PROBE-DEBUG] exploring: " + targetExpr);
+            System.err.println("[PROBE-DEBUG] neighbors: " + neighborVariable);
+            System.err.println("[PROBE-DEBUG] investigated: " + investigatedVariables);
             for(SuspiciousVariable suspVar : neighborVariable){
-                if(investigatedVariables.contains(suspVar)) continue;
+                if(investigatedVariables.contains(suspVar)) {
+                    System.err.println("[PROBE-DEBUG] SKIP (already investigated): " + suspVar);
+                    continue;
+                }
                 investigatedVariables.add(suspVar);
                 Optional<SuspiciousExpression> suspExprOpt = causeLineFinder.find(suspVar);
                 if(suspExprOpt.isEmpty()){
