@@ -1,6 +1,6 @@
 package jisd.fl.core.domain;
 
-import jisd.fl.infra.javaparser.ValueChangingLineFinder;
+import jisd.fl.infra.javaparser.JavaParserValueChangingLineFinder;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.element.LineElementNameResolver;
@@ -120,7 +120,7 @@ public class CauseLineFinder {
      */
     private Optional<TracedValue> valueChangedToActualLine(SuspiciousVariable target, List<TracedValue> tracedValues, String actual) {
         // 対象の変数に値の変化が起きている行の特定
-        List<Integer> assignedLine = ValueChangingLineFinder.findBreakpointLines(target);
+        List<Integer> assignedLine = JavaParserValueChangingLineFinder.findBreakpointLines(target);
         return tracedValues.stream()
                 .filter(tv -> assignedLine.contains(tv.lineNumber))
                 .filter(tv -> tv.value.equals(actual))

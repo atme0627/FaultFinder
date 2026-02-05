@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ValueChangingLineFinderTest {
+public class JavaParserValueChangingLineFinderTest {
 
     private static final Path PROJECT_ROOT = Path.of("").toAbsolutePath();
     private static PropertyLoader.ProjectConfig original;
@@ -44,9 +44,9 @@ public class ValueChangingLineFinderTest {
     }
 
     private static int lineOfFixture(String marker) throws Exception {
-        String resPath = "/fixtures/parse/src/java/jisd/fixture/ValueChangingLineFinderFixture.java";
+        String resPath = "/fixtures/parse/src/java/jisd/fixture/JavaParserValueChangingLineFinderFixture.java";
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                ValueChangingLineFinderTest.class.getResourceAsStream(resPath),
+                JavaParserValueChangingLineFinderTest.class.getResourceAsStream(resPath),
                 StandardCharsets.UTF_8
         ))) {
             String line;
@@ -82,13 +82,13 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void localCase_includes_decl_assign_unary_lines() throws Exception {
-        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#localCase()", "x");
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.JavaParserValueChangingLineFinderFixture#localCase()", "x");
 
         int decl = lineOfFixture("@DECL");
         int assign1 = lineOfFixture("@ASSIGN1");
         int unary = lineOfFixture("@UNARY");
 
-        List<Integer> lines = ValueChangingLineFinder.find(sv);
+        List<Integer> lines = JavaParserValueChangingLineFinder.find(sv);
 
         assertTrue(lines.contains(decl));
         assertTrue(lines.contains(assign1));
@@ -97,24 +97,24 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void multiLineAssignCauseLines_includes_begin_to_end_range() throws Exception {
-        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.JavaParserValueChangingLineFinderFixture#multiLineAssign()", "x");
 
         int begin = lineOfFixture("@ML_BEGIN");
         int end = lineOfFixture("@ML_END");
 
-        List<Integer> lines = ValueChangingLineFinder.findCauseLines(sv);
+        List<Integer> lines = JavaParserValueChangingLineFinder.findCauseLines(sv);
         assertTrue(lines.contains(begin));
         assertFalse(lines.contains(end));
     }
 
     @Test
     void multiLineAssignBpLines_includes_begin_to_end_range() throws Exception {
-        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#multiLineAssign()", "x");
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.JavaParserValueChangingLineFinderFixture#multiLineAssign()", "x");
 
         int begin = lineOfFixture("@ML_BEGIN");
         int end = lineOfFixture("@ML_END");
 
-        List<Integer> lines = ValueChangingLineFinder.findBreakpointLines(sv);
+        List<Integer> lines = JavaParserValueChangingLineFinder.findBreakpointLines(sv);
 
         for (int ln : IntStream.rangeClosed(begin, end).toArray()) {
             assertTrue(lines.contains(ln), "行が見つかりません: " + ln + " in " + lines);
@@ -123,12 +123,12 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void multiLineDeclBpLines_includes_begin_to_end_range() throws Exception {
-        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#multiLineDeclaration()", "x");
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.JavaParserValueChangingLineFinderFixture#multiLineDeclaration()", "x");
 
         int begin = lineOfFixture("@ML_DECL_BEGIN");
         int end = lineOfFixture("@ML_DECL_END");
 
-        List<Integer> lines = ValueChangingLineFinder.findBreakpointLines(sv);
+        List<Integer> lines = JavaParserValueChangingLineFinder.findBreakpointLines(sv);
 
         for (int ln : IntStream.rangeClosed(begin, end).toArray()) {
             assertTrue(lines.contains(ln), "行が見つかりません: " + ln + " in " + lines);
@@ -137,23 +137,23 @@ public class ValueChangingLineFinderTest {
 
     @Test
     void arrayAssign_includes_array_assignment_line() throws Exception {
-        SuspiciousLocalVariable sv = localVar("jisd.fixture.ValueChangingLineFinderFixture#arrayAssign()", "a");
+        SuspiciousLocalVariable sv = localVar("jisd.fixture.JavaParserValueChangingLineFinderFixture#arrayAssign()", "a");
 
         int arrAssign = lineOfFixture("@ARR_ASSIGN");
 
-        List<Integer> lines = ValueChangingLineFinder.find(sv);
+        List<Integer> lines = JavaParserValueChangingLineFinder.find(sv);
 
         assertTrue(lines.contains(arrAssign));
     }
 
     @Test
     void fieldAssign_includes_field_assignment_line() throws Exception {
-        SuspiciousFieldVariable sv = fieldVar("jisd.fixture.ValueChangingLineFinderFixture", "f");
+        SuspiciousFieldVariable sv = fieldVar("jisd.fixture.JavaParserValueChangingLineFinderFixture", "f");
 
         int fieldAssign = lineOfFixture("@FIELD_ASSIGN");
         int fieldAssignInMethod = lineOfFixture("@FIELD_ASSIGN_IN_METHOD");
 
-        List<Integer> lines = ValueChangingLineFinder.find(sv);
+        List<Integer> lines = JavaParserValueChangingLineFinder.find(sv);
 
         assertTrue(lines.contains(fieldAssign));
         assertTrue(lines.contains(fieldAssignInMethod));

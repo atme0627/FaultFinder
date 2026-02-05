@@ -3,7 +3,7 @@ package jisd.fl.infra.jdi;
 import com.sun.jdi.*;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.StepEvent;
-import jisd.fl.infra.javaparser.ValueChangingLineFinder;
+import jisd.fl.infra.javaparser.JavaParserValueChangingLineFinder;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
@@ -22,7 +22,7 @@ public class TargetVariableTracer {
 
     public List<TracedValue> traceValuesOfTarget(SuspiciousVariable target) {
         // ブレークポイントを設置する行を決定
-        List<Integer> canSetLines = ValueChangingLineFinder.findBreakpointLines(target);
+        List<Integer> canSetLines = JavaParserValueChangingLineFinder.findBreakpointLines(target);
         String locInfo = (target instanceof SuspiciousLocalVariable lv)
                 ? "method=" + lv.locateMethod().fullyQualifiedName()
                 : "class=" + target.locateClass().fullyQualifiedClassName();

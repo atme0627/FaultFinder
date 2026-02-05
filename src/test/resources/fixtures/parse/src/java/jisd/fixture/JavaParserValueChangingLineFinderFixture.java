@@ -1,6 +1,6 @@
 package jisd.fixture;
 
-public class ValueChangingLineFinderFixture {
+public class JavaParserValueChangingLineFinderFixture {
     private int f = 0; // @FIELD_ASSIGN
 
     public static int localCase() {

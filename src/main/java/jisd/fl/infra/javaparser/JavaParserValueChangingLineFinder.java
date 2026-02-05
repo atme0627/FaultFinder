@@ -21,7 +21,7 @@ import java.util.Set;
  * - Cause用: 変更イベントの代表行（基本は begin 行）のみ
  * - BP用: 変更イベントの begin..end を展開（複数行式の保険）
  */
-public class ValueChangingLineFinder {
+public class JavaParserValueChangingLineFinder {
     /** 互換: 従来 find は BP用（範囲展開）として扱う */
     public static List<Integer> find(SuspiciousVariable v) {
         return findBreakpointLines(v);
@@ -83,7 +83,7 @@ public class ValueChangingLineFinder {
         }
 
         // 3) ++ / --
-        for (UnaryExpr ue : node.findAll(UnaryExpr.class, ValueChangingLineFinder::isIncDec)) {
+        for (UnaryExpr ue : node.findAll(UnaryExpr.class, JavaParserValueChangingLineFinder::isIncDec)) {
             if (!matchesTarget(v, ue.getExpression())) continue;
             ue.getRange().ifPresent(r -> ranges.add(new LineRange(r.begin.line, r.end.line)));
         }
