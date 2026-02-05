@@ -1,4 +1,4 @@
-package jisd.fl.core.domain.internal;
+package jisd.fl.infra.javaparser;
 
 import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;

@@ -3,7 +3,7 @@ package jisd.fl.infra.jdi;
 import com.sun.jdi.*;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.StepEvent;
-import jisd.fl.core.domain.internal.ValueChangingLineFinder;
+import jisd.fl.infra.javaparser.ValueChangingLineFinder;
 import jisd.fl.core.entity.TracedValue;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousVariable;

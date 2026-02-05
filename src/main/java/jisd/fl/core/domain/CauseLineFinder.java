@@ -1,6 +1,6 @@
 package jisd.fl.core.domain;
 
-import jisd.fl.core.domain.internal.ValueChangingLineFinder;
+import jisd.fl.infra.javaparser.ValueChangingLineFinder;
 import jisd.fl.core.domain.port.SuspiciousArgumentsSearcher;
 import jisd.fl.core.domain.port.SuspiciousExpressionFactory;
 import jisd.fl.core.entity.element.LineElementNameResolver;

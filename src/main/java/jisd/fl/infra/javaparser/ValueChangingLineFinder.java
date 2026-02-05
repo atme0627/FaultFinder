@@ -1,4 +1,4 @@
-package jisd.fl.core.domain.internal;
+package jisd.fl.infra.javaparser;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.VariableDeclarator;
@@ -9,8 +9,6 @@ import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
-import jisd.fl.infra.javaparser.JavaParserUtils;
-
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.HashSet;
