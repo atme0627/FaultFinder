@@ -449,11 +449,22 @@ class ProbeTest {
     }
 
     private static int findFirstAssignLine(MethodElementName method, String var) throws NoSuchFileException {
+        // ローカル変数の宣言後の代入を探す
+        // 宣言時の初期化は VariableDeclarator なので AssignExpr には含まれない
         BlockStmt bs = JavaParserUtils.extractBodyOfMethod(method);
-        assertNotNull(bs, "method body is null: " + method);
+        if (bs == null) {
+            throw new AssertionError("method body is null: " + method);
+        }
 
-        return bs.findAll(AssignExpr.class).stream()
-                .filter(ae -> ae.getTarget().toString().equals(var))
+        List<AssignExpr> assigns = bs.findAll(AssignExpr.class);
+        return assigns.stream()
+                .filter(ae -> {
+                    // NameExpr の場合は名前で比較（コメントを含まない）
+                    if (ae.getTarget().isNameExpr()) {
+                        return ae.getTarget().asNameExpr().getNameAsString().equals(var);
+                    }
+                    return ae.getTarget().toString().equals(var);
+                })
                 .findFirst()
                 .map(ae -> ae.getBegin().orElseThrow().line)
                 .orElseThrow(() -> new AssertionError("代入行が見つからない: " + var + " in " + method));
@@ -488,17 +499,11 @@ class ProbeTest {
         // 複数行にまたがる代入でも正しく原因行を特定できることを確認
         // 期待: ASSIGN(x=30) のみ、子ノードなし
         MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#scenario5_multiline_assignment()");
-        // 代入は行98（宣言の次の行）から始まる
-        int assignLine = 98;  // x = の行（ProbeFixture.java:98）
+        int assignLine = findFirstAssignLine(m, "x");
 
         CauseTreeNode actual = runProbe(m, "x", "30");
 
-        // 実際の結果から行番号を確認してアサート
-        assertNotNull(actual.expression(), "root expression is null");
-        int actualLine = actual.expression().locateLine();
-        assertTrue(actualLine >= 98 && actualLine <= 100,
-                "代入行は 98-100 の範囲内であるべき (actual: " + actualLine + ")");
-        assertInstanceOf(SuspiciousAssignment.class, actual.expression());
-        assertTrue(actual.children().isEmpty(), "子ノードは空であるべき");
+        ExpectedNode expected = assign(assignLine);
+        assertTreeEquals(expected, actual);
     }
 }

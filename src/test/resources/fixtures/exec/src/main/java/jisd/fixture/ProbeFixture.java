@@ -95,9 +95,9 @@ public class ProbeFixture {
     @Test
     void scenario5_multiline_assignment() {
         int x = 0;
-        x =                  // @ML_ASSIGN_BEGIN
-                10 +
-                        20;  // @ML_ASSIGN_END
+        // マルチライン代入
+        x = 10 +
+                20;
         assertEquals(999, x);
     }
 }
