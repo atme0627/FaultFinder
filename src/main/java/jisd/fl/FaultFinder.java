@@ -1,5 +1,8 @@
 package jisd.fl;
 
+import jisd.fl.core.domain.ProbeScoreCalculator;
+import jisd.fl.core.domain.RemoveScoreCalculator;
+import jisd.fl.core.domain.SuspScoreCalculator;
 import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.presenter.FLRankingPresenter;
@@ -7,20 +10,12 @@ import jisd.fl.usecase.Probe;
 import jisd.fl.core.entity.susp.CauseTreeNode;
 import jisd.fl.core.entity.FLRanking;
 import jisd.fl.core.entity.FLRankingElement;
-import jisd.fl.ranking.TraceToScoreAdjustmentConverter;
 import jisd.fl.core.entity.sbfl.Formula;
 import jisd.fl.usecase.CoverageAnalyzer;
 import jisd.fl.core.entity.sbfl.Granularity;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.presenter.ProbeReporter;
 import jisd.fl.presenter.ScoreUpdateReport;
-import jisd.fl.core.entity.element.CodeElementIdentifier;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.DoubleFunction;
-import java.util.stream.Collectors;
 
 /**
  * テストスイートのカバレッジ情報から疑惑値ランキングを生成・操作するためのクラス。
@@ -81,40 +76,34 @@ public class FaultFinder {
     public void remove(int rank) {
         ScoreUpdateReport report = new ScoreUpdateReport();
         FLRankingElement target = flRanking.at(rank);
-        if(target == null){
-                throw new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")");
+        if (target == null) {
+            throw new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")");
         }
 
         System.out.println("[  REMOVE  ] " + target);
         report.recordChange(target);
 
-        target.suspScore = 0;
-        getNeighborElements(target).forEach(e -> {
-            updateSuspiciousnessScore(e, score -> score * this.removeConst);
-        });
+        RemoveScoreCalculator calc = new RemoveScoreCalculator(removeConst);
+        calc.apply(target.getCodeElementName(), flRanking);
 
         report.print();
-        flRanking.sort();
         presenter.printFLResults(rankingSize);
     }
 
     public void susp(int rank) {
         ScoreUpdateReport report = new ScoreUpdateReport();
         FLRankingElement target = flRanking.at(rank);
-        if(target == null){
+        if (target == null) {
             throw new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")");
         }
 
         System.out.println("[  SUSP  ] " + target);
         report.recordChange(target);
 
-        target.suspScore = 0;
-        getNeighborElements(target).forEach(e -> {
-            updateSuspiciousnessScore(e, score -> score * this.suspConst);
-        });
+        SuspScoreCalculator calc = new SuspScoreCalculator(suspConst);
+        calc.apply(target.getCodeElementName(), flRanking);
 
         report.print();
-        flRanking.sort();
         presenter.printFLResults(rankingSize);
     }
 
@@ -126,38 +115,9 @@ public class FaultFinder {
         probe(causeTree);
     }
 
-    public void probe(CauseTreeNode causeTree){
-        TraceToScoreAdjustmentConverter converter = new TraceToScoreAdjustmentConverter(this.probeLambda, granularity);
-        Map<CodeElementIdentifier<?>, Double> adjustments = converter.toAdjustments(causeTree);
-        adjustAll(adjustments);
+    public void probe(CauseTreeNode causeTree) {
+        ProbeScoreCalculator calc = new ProbeScoreCalculator(probeLambda, granularity);
+        calc.apply(causeTree, flRanking);
         printRanking(10);
-    }
-
-    //リファクタリングのための一時メソッド
-    @Deprecated
-    public Set<CodeElementIdentifier<?>> getNeighborElements(FLRankingElement target){
-        return flRanking.getAllElements().stream()
-                .filter(e -> e.isNeighbor(target.getCodeElementName()) && !e.equals(target.getCodeElementName()))
-                .map(e -> (CodeElementIdentifier<?>) e)
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * ランキングの要素を再計算
-     * @param adjustments
-     */
-    public void adjustAll(Map<CodeElementIdentifier<?>, Double> adjustments) {
-        for ( Map.Entry<CodeElementIdentifier<?>, Double> adj : adjustments.entrySet()) {
-            Optional<FLRankingElement> target = flRanking.searchElement(adj.getKey());
-            if (target.isEmpty()) continue;
-            target.get().suspScore *= adj.getValue();
-        }
-        flRanking.sort();
-    }
-
-    public void updateSuspiciousnessScore(CodeElementIdentifier<?> target, DoubleFunction<Double> f){
-        FLRankingElement e = flRanking.searchElement(target).get();
-        double newScore = f.apply(e.suspScore);
-        flRanking.updateSuspiciousnessScore(target, newScore);
     }
 }
