@@ -25,7 +25,7 @@ class RemoveScoreCalculatorTest {
     }
 
     @Test
-    void 対象要素のスコアが0になること() {
+    void setsTargetScoreToZero() {
         LineElementName target = new LineElementName("pkg.Class#method(int)", 10);
         RemoveScoreCalculator calc = new RemoveScoreCalculator(REMOVE_CONST);
 
@@ -35,7 +35,7 @@ class RemoveScoreCalculatorTest {
     }
 
     @Test
-    void 隣接要素のスコアがremoveConstで乗算されること() {
+    void multipliesNeighborScoresByRemoveConst() {
         LineElementName target = new LineElementName("pkg.Class#method(int)", 10);
         LineElementName neighbor1 = new LineElementName("pkg.Class#method(int)", 20);
         LineElementName neighbor2 = new LineElementName("pkg.Class#method(int)", 30);
@@ -48,7 +48,7 @@ class RemoveScoreCalculatorTest {
     }
 
     @Test
-    void 隣接でない要素は影響を受けないこと() {
+    void doesNotAffectNonNeighborElements() {
         LineElementName target = new LineElementName("pkg.Class#method(int)", 10);
         LineElementName otherMethod = new LineElementName("pkg.Class#other()", 15);
         LineElementName otherClass = new LineElementName("pkg.Other#method()", 10);

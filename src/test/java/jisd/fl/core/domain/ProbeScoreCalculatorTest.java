@@ -25,7 +25,7 @@ class ProbeScoreCalculatorTest {
     }
 
     @Test
-    void 深さ1のノードで乗数1_plus_lambda_1が適用されること() {
+    void appliesMultiplier1PlusLambda1ForDepth1Node() {
         // root -> depth1Node
         CauseTreeNode root = new CauseTreeNode(null);
         CauseTreeNode depth1Node = createNode("pkg.Class#method(int)", 10);
@@ -39,7 +39,7 @@ class ProbeScoreCalculatorTest {
     }
 
     @Test
-    void 深さ2のノードで乗数1_plus_lambda_2が適用されること() {
+    void appliesMultiplier1PlusLambda2ForDepth2Node() {
         // root -> depth1Node -> depth2Node
         CauseTreeNode root = new CauseTreeNode(null);
         CauseTreeNode depth1Node = createNode("pkg.Class#method(int)", 10);
@@ -57,7 +57,7 @@ class ProbeScoreCalculatorTest {
     }
 
     @Test
-    void 同一要素が複数深さで出現時_最小深さが使われること() {
+    void usesMinimumDepthWhenSameElementAppearsAtMultipleDepths() {
         // root -> depth1Node (line 10)
         //      -> depth1NodeB -> depth2Node (line 10 again)
         CauseTreeNode root = new CauseTreeNode(null);
@@ -77,7 +77,7 @@ class ProbeScoreCalculatorTest {
     }
 
     @Test
-    void locationがnullのノードはスコア計算対象外であること() {
+    void excludesNodeWithNullLocationFromScoreCalculation() {
         CauseTreeNode root = new CauseTreeNode(null);
         CauseTreeNode depth1Node = createNode("pkg.Class#method(int)", 10);
         root.addChildNode(depth1Node);
@@ -92,7 +92,7 @@ class ProbeScoreCalculatorTest {
     }
 
     @Test
-    void ランキングに存在しない要素は無視されること() {
+    void ignoresElementNotInRanking() {
         CauseTreeNode root = new CauseTreeNode(null);
         CauseTreeNode depth1Node = createNode("pkg.NotInRanking#method()", 100);
         root.addChildNode(depth1Node);
