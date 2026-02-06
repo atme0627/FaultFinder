@@ -1,7 +1,8 @@
 package jisd.fl.presenter;
 
-import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.CauseTreeNode;
+import jisd.fl.core.entity.susp.ExpressionType;
+import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 
 import java.util.List;
@@ -84,7 +85,7 @@ public class ProbeReporter {
         } else {
             for (SuspiciousExpression child : children) {
                 System.out.println("    " + GREEN + "→" + RESET
-                        + " " + coloredTypeTag(child) + LOCATION_DIM + child.locateMethod() + ":" + child.locateLine() + RESET
+                        + " " + coloredTypeTag(ExpressionType.from(child)) + LOCATION_DIM + child.locateMethod() + ":" + child.locateLine() + RESET
                         + "  " + highlightJava(child.stmtString().replace("\n", " ")));
             }
         }
@@ -104,20 +105,18 @@ public class ProbeReporter {
     }
 
     private void printTreeNode(StringBuilder sb, CauseTreeNode node, String prefix, boolean isTail) {
-        SuspiciousExpression expr = node.expression();
-
         // Tree lines (prefix + connector) in dim gray
         String connector = isTail ? "└── " : "├── ";
         sb.append(TREE_DIM).append(prefix).append(connector).append(RESET);
 
         // Type tag with color
-        sb.append(coloredTypeTag(expr));
+        sb.append(coloredTypeTag(node.type()));
 
         // Location in dimmer blue
-        sb.append(LOCATION_DIM).append("( ").append(expr.locateMethod()).append(" line:").append(expr.locateLine()).append(" )").append(RESET);
+        sb.append(LOCATION_DIM).append("( ").append(node.locateMethod()).append(" line:").append(node.locateLine()).append(" )").append(RESET);
 
         // Source code with syntax highlighting
-        sb.append(" ").append(highlightJava(expr.stmtString().replace("\n", " ").trim()));
+        sb.append(" ").append(highlightJava(node.stmtString().replace("\n", " ").trim()));
         sb.append("\n");
 
         // Recurse children — prefix is plain text (no ANSI) so it renders correctly in dim gray
@@ -131,16 +130,12 @@ public class ProbeReporter {
         }
     }
 
-    private static String coloredTypeTag(SuspiciousExpression expr) {
-        return switch (expr) {
-            case jisd.fl.core.entity.susp.SuspiciousAssignment ignored ->
-                    TAG_ASSIGN + "[  ASSIGN  ]" + RESET + " ";
-            case jisd.fl.core.entity.susp.SuspiciousReturnValue ignored ->
-                    TAG_RETURN + "[  RETURN  ]" + RESET + " ";
-            case jisd.fl.core.entity.susp.SuspiciousArgument ignored ->
-                    TAG_ARGUMENT + "[ ARGUMENT ]" + RESET + " ";
-            default ->
-                    DIM + "[   EXPR   ]" + RESET + " ";
+    private static String coloredTypeTag(ExpressionType type) {
+        if (type == null) return DIM + "[   EXPR   ]" + RESET + " ";
+        return switch (type) {
+            case ASSIGNMENT -> TAG_ASSIGN + "[  ASSIGN  ]" + RESET + " ";
+            case RETURN -> TAG_RETURN + "[  RETURN  ]" + RESET + " ";
+            case ARGUMENT -> TAG_ARGUMENT + "[ ARGUMENT ]" + RESET + " ";
         };
     }
 

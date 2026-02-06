@@ -15,25 +15,21 @@ public class CauseTreePresenter {
     /** 1階層分（親 + 直接の子）をプレーンテキストで返す */
     public static String toChildrenString(CauseTreeNode node) {
         StringBuilder sb = new StringBuilder();
-        var expr = node.expression();
-        sb.append("└── ").append(expr != null ? expr.toString().trim() : "(root)").append("\n");
+        sb.append("└── ").append(node.toString().trim()).append("\n");
         var children = node.children();
         for (int i = 0; i < children.size() - 1; i++) {
-            var childExpr = children.get(i).expression();
-            sb.append(INDENT).append("├── ").append(childExpr != null ? childExpr.toString().trim() : "(null)").append("\n");
+            sb.append(INDENT).append("├── ").append(children.get(i).toString().trim()).append("\n");
         }
         if (!children.isEmpty()) {
-            var lastExpr = children.getLast().expression();
-            sb.append(INDENT).append("└── ").append(lastExpr != null ? lastExpr.toString().trim() : "(null)").append("\n");
+            sb.append(INDENT).append("└── ").append(children.getLast().toString().trim()).append("\n");
         }
         return sb.toString();
     }
 
     private static void formatTree(StringBuilder sb, CauseTreeNode node,
                                    String prefix, boolean isTail) {
-        var expr = node.expression();
         sb.append(prefix).append(isTail ? "└── " : "├── ")
-                .append(expr != null ? expr.toString().trim() : "(root)").append("\n");
+                .append(node.toString().trim()).append("\n");
 
         var children = node.children();
         for (int i = 0; i < children.size() - 1; i++) {

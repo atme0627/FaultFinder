@@ -291,24 +291,24 @@ class ProbeTest {
      */
     private record ExpectedNode(
             int line,
-            Class<? extends SuspiciousExpression> type,
+            ExpressionType type,
             List<ExpectedNode> children
     ) {
-        ExpectedNode(int line, Class<? extends SuspiciousExpression> type, ExpectedNode... children) {
+        ExpectedNode(int line, ExpressionType type, ExpectedNode... children) {
             this(line, type, List.of(children));
         }
     }
 
     private static ExpectedNode assign(int line, ExpectedNode... children) {
-        return new ExpectedNode(line, SuspiciousAssignment.class, children);
+        return new ExpectedNode(line, ExpressionType.ASSIGNMENT, children);
     }
 
     private static ExpectedNode ret(int line, ExpectedNode... children) {
-        return new ExpectedNode(line, SuspiciousReturnValue.class, children);
+        return new ExpectedNode(line, ExpressionType.RETURN, children);
     }
 
     private static ExpectedNode arg(int line, ExpectedNode... children) {
-        return new ExpectedNode(line, SuspiciousArgument.class, children);
+        return new ExpectedNode(line, ExpressionType.ARGUMENT, children);
     }
 
     // =====================================================================
@@ -324,19 +324,19 @@ class ProbeTest {
 
     private static void assertTreeEqualsRecursive(ExpectedNode expected, CauseTreeNode actual, String path) {
         // ノード自体の検証
-        assertNotNull(actual.expression(), path + ": suspExpr が null");
-        assertEquals(expected.line(), actual.expression().locateLine(),
+        assertNotNull(actual.type(), path + ": type が null");
+        assertEquals(expected.line(), actual.locateLine(),
                 path + ": 行番号が一致しない");
-        assertInstanceOf(expected.type(), actual.expression(),
-                path + ": 式の型が一致しない (expected: " + expected.type().getSimpleName() +
-                        ", actual: " + actual.expression().getClass().getSimpleName() + ")");
+        assertEquals(expected.type(), actual.type(),
+                path + ": 式の型が一致しない (expected: " + expected.type() +
+                        ", actual: " + actual.type() + ")");
 
         // 子ノードの数を検証
         assertEquals(expected.children().size(), actual.children().size(),
                 path + ": 子ノードの数が一致しない\n" +
                         "  expected children lines: " + expected.children().stream().map(ExpectedNode::line).toList() + "\n" +
                         "  actual children lines: " + actual.children().stream()
-                        .map(n -> n.expression() != null ? n.expression().locateLine() : -1).toList());
+                        .map(CauseTreeNode::locateLine).toList());
 
         // 子ノードを行番号でマッチングして再帰的に検証
         List<ExpectedNode> expectedChildren = new ArrayList<>(expected.children());
@@ -346,14 +346,13 @@ class ProbeTest {
             CauseTreeNode matchingActual = findMatchingChild(expectedChild, actualChildren);
             assertNotNull(matchingActual,
                     path + ": 期待される子ノード (line=" + expectedChild.line() +
-                            ", type=" + expectedChild.type().getSimpleName() + ") が見つからない\n" +
+                            ", type=" + expectedChild.type() + ") が見つからない\n" +
                             "  actual children: " + actualChildren.stream()
-                            .map(n -> "line=" + (n.expression() != null ? n.expression().locateLine() : -1) +
-                                    ", type=" + (n.expression() != null ? n.expression().getClass().getSimpleName() : "null"))
+                            .map(n -> "line=" + n.locateLine() + ", type=" + n.type())
                             .toList());
 
             actualChildren.remove(matchingActual);
-            String childPath = path + " -> " + expectedChild.type().getSimpleName() + "@" + expectedChild.line();
+            String childPath = path + " -> " + expectedChild.type() + "@" + expectedChild.line();
             assertTreeEqualsRecursive(expectedChild, matchingActual, childPath);
         }
     }
@@ -364,9 +363,9 @@ class ProbeTest {
      */
     private static CauseTreeNode findMatchingChild(ExpectedNode expected, List<CauseTreeNode> actualChildren) {
         List<CauseTreeNode> candidates = actualChildren.stream()
-                .filter(actual -> actual.expression() != null)
-                .filter(actual -> actual.expression().locateLine() == expected.line())
-                .filter(actual -> expected.type().isInstance(actual.expression()))
+                .filter(actual -> actual.type() != null)
+                .filter(actual -> actual.locateLine() == expected.line())
+                .filter(actual -> expected.type() == actual.type())
                 .toList();
 
         if (candidates.isEmpty()) {
@@ -399,8 +398,8 @@ class ProbeTest {
                 .sorted()
                 .toList();
         List<Integer> actualChildLines = actual.children().stream()
-                .filter(n -> n.expression() != null)
-                .map(n -> n.expression().locateLine())
+                .filter(n -> n.type() != null)
+                .map(CauseTreeNode::locateLine)
                 .sorted()
                 .toList();
         return expectedChildLines.equals(actualChildLines);

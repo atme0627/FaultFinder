@@ -4,7 +4,7 @@ import experiment.defect4j.Defects4jUtil;
 import io.github.cdimascio.dotenv.Dotenv;
 import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.usecase.Probe;
-import jisd.fl.core.entity.susp.SuspiciousExpression;
+import jisd.fl.core.entity.susp.CauseTreeNode;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
@@ -58,7 +58,7 @@ public class doProbe {
                 }
 
                 Probe prb = new Probe((SuspiciousLocalVariable) target);
-                SuspiciousExpression result = prb.run(2000).expression();
+                CauseTreeNode result = prb.run(2000);
                 JsonIO.export(result, outputFile);
             }
         }

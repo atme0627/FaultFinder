@@ -2,7 +2,6 @@ package jisd.fl.ranking;
 
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.core.entity.susp.CauseTreeNode;
-import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.sbfl.Granularity;
 import jisd.fl.core.entity.element.CodeElementIdentifier;
 
@@ -39,16 +38,24 @@ public class TraceToScoreAdjustmentConverter {
         depths.add(1);
 
         while (!queue.isEmpty()) {
-            CauseTreeNode suspExprNode = queue.poll();
-            SuspiciousExpression suspExpr = suspExprNode.expression();
+            CauseTreeNode node = queue.poll();
             int depth = depths.poll();
 
-            CodeElementIdentifier<?> elem = convertToCodeElementName(new MethodElementName(suspExpr.locateMethod().toString()), suspExpr.locateLine(), g);
+            if (node.locateMethod() == null) {
+                // root ノード（expression なし）はスキップ
+                for (CauseTreeNode child : node.children()) {
+                    queue.add(child);
+                    depths.add(depth);
+                }
+                continue;
+            }
+
+            CodeElementIdentifier<?> elem = convertToCodeElementName(node.locateMethod(), node.locateLine(), g);
 
             // 最小深さをマージ
             minDepth.merge(elem, depth, Math::min);
 
-            for (CauseTreeNode child : suspExprNode.children()) {
+            for (CauseTreeNode child : node.children()) {
                 queue.add(child);
                 depths.add(depth + 1);
             }
