@@ -4,6 +4,26 @@
 
 `ScoreUpdateReport` クラスの出力形式にバグがあり、CLASS NAME と ELEMENT NAME が同じ値を表示していた。また、`leftPad`/`rightPad` の命名が実装と逆になっており、コードが2箇所で重複していた。
 
+## 追加改善（2026-02-06 追記）
+
+### 出力スタイルの統一
+
+FLRankingPresenter と同じスタイルに統一：
+- ANSIカラーコード（TEAL、YELLOW、DIM）
+- Unicode罫線（═、│）
+- 太字ヘッダー
+
+### ソート順の改善
+
+更新後スコア降順 → 要素名でソート（FLRanking と同じ方針）
+
+### テスト設定の改善
+
+demo/benchmark テストをタグベースで除外：
+- `@Tag("demo")`, `@Tag("benchmark")` アノテーション追加
+- `./gradlew demo`, `./gradlew benchmark` タスク追加
+- IDEから直接実行可能、`./gradlew test` では除外
+
 ## 実施した改善
 
 ### Phase 1: 出力形式バグ修正
