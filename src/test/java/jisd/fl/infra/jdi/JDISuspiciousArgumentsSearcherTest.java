@@ -72,8 +72,8 @@ class JDISuspiciousArgumentsSearcherTest {
         // helperMethod(x) の x=10 を追跡
         MethodElementName failedTest = new MethodElementName(FIXTURE_TEST_ARGUMENT_SEARCH);
         MethodElementName helperMethodName = new MethodElementName(FIXTURE_CLASS + "#helperMethod(int)");
+        MethodElementName callerMethod = new MethodElementName(FIXTURE_TEST_ARGUMENT_SEARCH);
 
-        // helperMethod 内での val パラメータ
         SuspiciousLocalVariable suspVar = new SuspiciousLocalVariable(
                 failedTest,
                 helperMethodName,
@@ -86,8 +86,15 @@ class JDISuspiciousArgumentsSearcherTest {
 
         assertTrue(result.isPresent(), "Should find the argument");
         SuspiciousArgument arg = result.get();
-        assertEquals(ARGUMENT_SEARCH_LINE, arg.locateLine(), "Should locate correct line");
-        assertEquals(0, arg.argIndex(), "Should be first argument (index 0)");
+        assertAll("SuspiciousArgument fields",
+                () -> assertEquals(failedTest, arg.failedTest(), "failedTest"),
+                () -> assertEquals(callerMethod, arg.locateMethod(), "locateMethod"),
+                () -> assertEquals(ARGUMENT_SEARCH_LINE, arg.locateLine(), "locateLine"),
+                () -> assertEquals("10", arg.actualValue(), "actualValue"),
+                () -> assertEquals(helperMethodName, arg.invokeMethodName, "invokeMethodName"),
+                () -> assertEquals(0, arg.argIndex(), "argIndex"),
+                () -> assertTrue(arg.stmtString().contains("helperMethod"), "stmtString should contain method call")
+        );
     }
 
     @Test
@@ -95,8 +102,8 @@ class JDISuspiciousArgumentsSearcherTest {
         // helper(1), helper(2), helper(3) で helper(2) を追跡
         MethodElementName failedTest = new MethodElementName(FIXTURE_TEST_SAME_METHOD);
         MethodElementName helperMethodName = new MethodElementName(FIXTURE_CLASS + "#helperIdentity(int)");
+        MethodElementName callerMethod = new MethodElementName(FIXTURE_TEST_SAME_METHOD);
 
-        // helperIdentity 内での val=2
         SuspiciousLocalVariable suspVar = new SuspiciousLocalVariable(
                 failedTest,
                 helperMethodName,
@@ -109,9 +116,17 @@ class JDISuspiciousArgumentsSearcherTest {
 
         assertTrue(result.isPresent(), "Should find the argument");
         SuspiciousArgument arg = result.get();
-        assertEquals(SAME_METHOD_LINE, arg.locateLine(), "Should locate correct line");
-        // helper(2) は2番目の呼び出し、後に helper(3) が1回呼ばれる
-        // callCountAfterTarget = 1 を期待
+        assertAll("SuspiciousArgument fields",
+                () -> assertEquals(failedTest, arg.failedTest(), "failedTest"),
+                () -> assertEquals(callerMethod, arg.locateMethod(), "locateMethod"),
+                () -> assertEquals(SAME_METHOD_LINE, arg.locateLine(), "locateLine"),
+                () -> assertEquals("2", arg.actualValue(), "actualValue"),
+                () -> assertEquals(helperMethodName, arg.invokeMethodName, "invokeMethodName"),
+                () -> assertEquals(0, arg.argIndex(), "argIndex"),
+                () -> assertTrue(arg.stmtString().contains("helperIdentity"), "stmtString should contain method call"),
+                // helper(2) は2番目の呼び出し、後に helper(3) が1回呼ばれる → invokeCallCount = 2
+                () -> assertEquals(2, arg.invokeCallCount(), "invokeCallCount (2nd call)")
+        );
     }
 
     @Test
@@ -119,8 +134,8 @@ class JDISuspiciousArgumentsSearcherTest {
         // helperAdd(5) + helperMultiply(3) で helperMultiply を追跡
         MethodElementName failedTest = new MethodElementName(FIXTURE_TEST_DIFFERENT_METHODS);
         MethodElementName multiplyMethodName = new MethodElementName(FIXTURE_CLASS + "#helperMultiply(int)");
+        MethodElementName callerMethod = new MethodElementName(FIXTURE_TEST_DIFFERENT_METHODS);
 
-        // helperMultiply 内での x=3
         SuspiciousLocalVariable suspVar = new SuspiciousLocalVariable(
                 failedTest,
                 multiplyMethodName,
@@ -133,7 +148,17 @@ class JDISuspiciousArgumentsSearcherTest {
 
         assertTrue(result.isPresent(), "Should find the argument");
         SuspiciousArgument arg = result.get();
-        assertEquals(DIFFERENT_METHODS_LINE, arg.locateLine(), "Should locate correct line");
+        assertAll("SuspiciousArgument fields",
+                () -> assertEquals(failedTest, arg.failedTest(), "failedTest"),
+                () -> assertEquals(callerMethod, arg.locateMethod(), "locateMethod"),
+                () -> assertEquals(DIFFERENT_METHODS_LINE, arg.locateLine(), "locateLine"),
+                () -> assertEquals("3", arg.actualValue(), "actualValue"),
+                () -> assertEquals(multiplyMethodName, arg.invokeMethodName, "invokeMethodName"),
+                () -> assertEquals(0, arg.argIndex(), "argIndex"),
+                () -> assertTrue(arg.stmtString().contains("helperMultiply"), "stmtString should contain method call"),
+                // helperMultiply は2番目の呼び出し → invokeCallCount = 2
+                () -> assertEquals(2, arg.invokeCallCount(), "invokeCallCount (2nd call)")
+        );
     }
 
     @Test
@@ -142,8 +167,8 @@ class JDISuspiciousArgumentsSearcherTest {
         // i=2 の呼び出しを追跡（actualValue="2"）
         MethodElementName failedTest = new MethodElementName(FIXTURE_TEST_LOOP);
         MethodElementName accumulateMethodName = new MethodElementName(FIXTURE_CLASS + "#helperAccumulate(int,int)");
+        MethodElementName callerMethod = new MethodElementName(FIXTURE_TEST_LOOP);
 
-        // helperAccumulate 内での val=2
         SuspiciousLocalVariable suspVar = new SuspiciousLocalVariable(
                 failedTest,
                 accumulateMethodName,
@@ -156,8 +181,17 @@ class JDISuspiciousArgumentsSearcherTest {
 
         assertTrue(result.isPresent(), "Should find the argument for val=2");
         SuspiciousArgument arg = result.get();
-        assertEquals(LOOP_LINE, arg.locateLine(), "Should locate correct line");
-        assertEquals(1, arg.argIndex(), "val is second argument (index 1)");
+        assertAll("SuspiciousArgument fields",
+                () -> assertEquals(failedTest, arg.failedTest(), "failedTest"),
+                () -> assertEquals(callerMethod, arg.locateMethod(), "locateMethod"),
+                () -> assertEquals(LOOP_LINE, arg.locateLine(), "locateLine"),
+                () -> assertEquals("2", arg.actualValue(), "actualValue"),
+                () -> assertEquals(accumulateMethodName, arg.invokeMethodName, "invokeMethodName"),
+                () -> assertEquals(1, arg.argIndex(), "argIndex (val is second argument)"),
+                () -> assertTrue(arg.stmtString().contains("helperAccumulate"), "stmtString should contain method call"),
+                // ループなので各反復で1回のメソッド呼び出し → invokeCallCount = 1
+                () -> assertEquals(1, arg.invokeCallCount(), "invokeCallCount")
+        );
     }
 
     @Test
@@ -166,7 +200,6 @@ class JDISuspiciousArgumentsSearcherTest {
         MethodElementName failedTest = new MethodElementName(FIXTURE_TEST_ARGUMENT_SEARCH);
         MethodElementName helperMethodName = new MethodElementName(FIXTURE_CLASS + "#helperMethod(int)");
 
-        // helperMethod に val=999 は渡されない
         SuspiciousLocalVariable suspVar = new SuspiciousLocalVariable(
                 failedTest,
                 helperMethodName,
@@ -185,6 +218,7 @@ class JDISuspiciousArgumentsSearcherTest {
         // 同一セッションで複数回検索
         MethodElementName failedTest = new MethodElementName(FIXTURE_TEST_ARGUMENT_SEARCH);
         MethodElementName helperMethodName = new MethodElementName(FIXTURE_CLASS + "#helperMethod(int)");
+        MethodElementName callerMethod = new MethodElementName(FIXTURE_TEST_ARGUMENT_SEARCH);
 
         SuspiciousLocalVariable suspVar = new SuspiciousLocalVariable(
                 failedTest,
@@ -197,13 +231,28 @@ class JDISuspiciousArgumentsSearcherTest {
         // 1回目
         Optional<SuspiciousArgument> result1 = searcher.searchSuspiciousArgument(suspVar, helperMethodName);
         assertTrue(result1.isPresent(), "First search should succeed");
+        assertAll("First search",
+                () -> assertEquals(callerMethod, result1.get().locateMethod()),
+                () -> assertEquals(ARGUMENT_SEARCH_LINE, result1.get().locateLine()),
+                () -> assertEquals("10", result1.get().actualValue())
+        );
 
         // 2回目
         Optional<SuspiciousArgument> result2 = searcher.searchSuspiciousArgument(suspVar, helperMethodName);
         assertTrue(result2.isPresent(), "Second search should succeed");
+        assertAll("Second search",
+                () -> assertEquals(callerMethod, result2.get().locateMethod()),
+                () -> assertEquals(ARGUMENT_SEARCH_LINE, result2.get().locateLine()),
+                () -> assertEquals("10", result2.get().actualValue())
+        );
 
         // 3回目
         Optional<SuspiciousArgument> result3 = searcher.searchSuspiciousArgument(suspVar, helperMethodName);
         assertTrue(result3.isPresent(), "Third search should succeed");
+        assertAll("Third search",
+                () -> assertEquals(callerMethod, result3.get().locateMethod()),
+                () -> assertEquals(ARGUMENT_SEARCH_LINE, result3.get().locateLine()),
+                () -> assertEquals("10", result3.get().actualValue())
+        );
     }
 }
