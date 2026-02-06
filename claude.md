@@ -106,6 +106,10 @@
 - Red → Green → Refactor のサイクルを明示的に
 - 既存テストが影響を受ける場合は事前に確認
 
+**テストメソッド名は英語で記述する**：
+- 日本語のメソッド名は使用しない
+- camelCase で記述（例: `setsTargetScoreToZero`, `doesNotAffectNonNeighborElements`）
+
 ### 6. コードレビューと改善提案
 コードレビューを依頼された場合：
 - **優先度別に改善点を整理**（必須・推奨・任意）
