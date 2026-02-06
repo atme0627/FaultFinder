@@ -1,6 +1,10 @@
 package jisd.fl.presenter;
 
 import jisd.fl.core.entity.FLRankingElement;
+import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.core.entity.element.CodeElementIdentifier;
+import jisd.fl.core.entity.element.LineElementName;
+import jisd.fl.core.entity.element.MethodElementName;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,20 +27,40 @@ public class ScoreUpdateReport {
         if (changes.isEmpty()) {
             return;
         }
-        // 短縮クラス名・メソッド名の計算
+        // 短縮クラス名・メソッド名・行番号の計算
         List<String> shortClassNames = new ArrayList<>();
-        List<String> shortElementNames = new ArrayList<>();
+        List<String> shortMethodNames = new ArrayList<>();
+        List<String> lineNumbers = new ArrayList<>();
         for (ChangeEntry entry : changes) {
-            shortClassNames.add(entry.updatedElement.getCodeElementName().compressedName());
-            shortElementNames.add(entry.updatedElement.getCodeElementName().compressedName());
+            CodeElementIdentifier<?> id = entry.updatedElement.getCodeElementName();
+            if (id instanceof LineElementName line) {
+                shortClassNames.add(line.methodElementName.classElementName.compressedName());
+                shortMethodNames.add(line.methodElementName.compressedMethodName());
+                lineNumbers.add(String.valueOf(line.line));
+            } else if (id instanceof MethodElementName method) {
+                shortClassNames.add(method.classElementName.compressedName());
+                shortMethodNames.add(method.compressedMethodName());
+                lineNumbers.add("");
+            } else if (id instanceof ClassElementName cls) {
+                shortClassNames.add(cls.compressedName());
+                shortMethodNames.add("---");
+                lineNumbers.add("");
+            } else {
+                shortClassNames.add(id.compressedName());
+                shortMethodNames.add("---");
+                lineNumbers.add("");
+            }
         }
 
         // 表示幅の計算
-        int classLength = shortClassNames.stream().map(String::length).max(Integer::compareTo).orElse(10);
-        int elementLength = shortElementNames.stream().map(String::length).max(Integer::compareTo).orElse(20);
+        int classLen = Math.max("CLASS NAME".length(), shortClassNames.stream().mapToInt(String::length).max().orElse(0));
+        int methodLen = Math.max("METHOD NAME".length(), shortMethodNames.stream().mapToInt(String::length).max().orElse(0));
+        int lineLen = Math.max("LINE".length(), lineNumbers.stream().mapToInt(String::length).max().orElse(0));
 
         // ヘッダーの生成
-        String header = String.format("| %s | %s | %-18s |", leftPad("CLASS NAME", classLength), rightPad("ELEMENT NAME", elementLength), "OLD -> NEW");
+        String header = String.format("| %s | %s | %s | %-18s |",
+                StringUtils.padRight("CLASS NAME", classLen), StringUtils.padLeft("METHOD NAME", methodLen),
+                StringUtils.padLeft("LINE", lineLen), "OLD -> NEW");
         String partition = "=".repeat(header.length());
 
         System.out.println(partition);
@@ -46,8 +70,11 @@ public class ScoreUpdateReport {
         // 内容の出力
         for (int i = 0; i < changes.size(); i++) {
             ChangeEntry e = changes.get(i);
-            String row = String.format("| %s | %s |  %6.4f -> %6.4f  |",
-                    leftPad(shortClassNames.get(i), classLength), rightPad(shortElementNames.get(i), elementLength), e.oldScore(), e.newScore());
+            String row = String.format("| %s | %s | %s |  %6.4f -> %6.4f  |",
+                    StringUtils.padRight(shortClassNames.get(i), classLen),
+                    StringUtils.padLeft(shortMethodNames.get(i), methodLen),
+                    StringUtils.padLeft(lineNumbers.get(i), lineLen),
+                    e.oldScore(), e.newScore());
             System.out.println(row);
         }
         System.out.println(partition);
@@ -62,13 +89,5 @@ public class ScoreUpdateReport {
             return updatedElement.getSuspScore();
     }
 
-    }
-
-    public static String leftPad(String str, int size){
-        return ("%-" + size + "s").formatted(str);
-    }
-
-    public static String rightPad(String str, int size) {
-        return ("%" + size + "s").formatted(str);
     }
 }

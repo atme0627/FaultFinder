@@ -72,9 +72,9 @@ public class FLRankingPresenter {
         String V = DIM + "│" + RESET;
         // #列=4幅, RANK列=4幅
         String header = V + String.format("  %3s ", "#") + V + String.format(" %4s ", "RANK") + V
-                + " " + leftPad("CLASS NAME", classLen) + " " + V
-                + " " + rightPad("METHOD NAME", methodLen) + " " + V
-                + " " + rightPad("LINE", lineLen) + " " + V
+                + " " + StringUtils.padRight("CLASS NAME", classLen) + " " + V
+                + " " + StringUtils.padLeft("METHOD NAME", methodLen) + " " + V
+                + " " + StringUtils.padLeft("LINE", lineLen) + " " + V
                 + " SUSP SCORE " + V;
         int visibleLen = 6 + 6 + (classLen + 2) + (methodLen + 2) + (lineLen + 2) + 12 + 8;
         String partition = DIM + "═".repeat(visibleLen) + RESET;
@@ -107,9 +107,9 @@ public class FLRankingPresenter {
             String dispRank = (sameTie) ? "      " : CYAN_DIM + String.format(" %4d ", rank) + RESET;
 
             System.out.println(V + CYAN + String.format("  %3d ", i + 1) + RESET + V + dispRank + V
-                    + " " + TEAL + leftPad(dispClass, classLen) + RESET + " " + V
-                    + " " + rightPad(dispMethod, methodLen) + " " + V
-                    + " " + rightPad(lineNumbers.get(i), lineLen) + " " + V
+                    + " " + TEAL + StringUtils.padRight(dispClass, classLen) + RESET + " " + V
+                    + " " + StringUtils.padLeft(dispMethod, methodLen) + " " + V
+                    + " " + StringUtils.padLeft(lineNumbers.get(i), lineLen) + " " + V
                     + YELLOW + String.format(" %10.4f ", element.getSuspScore()) + RESET + V);
 
             previousRank = rank;
@@ -118,13 +118,5 @@ public class FLRankingPresenter {
         }
         System.out.println(partition);
         System.out.println();
-    }
-
-    public static String leftPad(String str, int size){
-        return ("%-" + size + "s").formatted(str);
-    }
-
-    public static String rightPad(String str, int size){
-        return ("%" + size + "s").formatted(str);
     }
 }

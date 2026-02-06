@@ -4,6 +4,7 @@ import jisd.fl.core.domain.ProbeScoreCalculator;
 import jisd.fl.core.domain.RemoveScoreCalculator;
 import jisd.fl.core.domain.SuspScoreCalculator;
 import jisd.fl.core.entity.element.ClassElementName;
+import jisd.fl.core.entity.element.CodeElementIdentifier;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
 import jisd.fl.presenter.FLRankingPresenter;
 import jisd.fl.usecase.Probe;
@@ -16,6 +17,8 @@ import jisd.fl.core.entity.sbfl.Granularity;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
 import jisd.fl.presenter.ProbeReporter;
 import jisd.fl.presenter.ScoreUpdateReport;
+
+import java.util.function.BiConsumer;
 
 /**
  * テストスイートのカバレッジ情報から疑惑値ランキングを生成・操作するためのクラス。
@@ -74,34 +77,30 @@ public class FaultFinder {
     }
 
     public void remove(int rank) {
-        ScoreUpdateReport report = new ScoreUpdateReport();
-        FLRankingElement target = flRanking.at(rank);
-        if (target == null) {
-            throw new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")");
-        }
-
-        System.out.println("[  REMOVE  ] " + target);
-        report.recordChange(target);
-
         RemoveScoreCalculator calc = new RemoveScoreCalculator(removeConst);
-        calc.apply(target.getCodeElementName(), flRanking);
-
-        report.print();
-        presenter.printFLResults(rankingSize);
+        applyScoreUpdate(rank, "REMOVE", calc::apply);
     }
 
     public void susp(int rank) {
+        SuspScoreCalculator calc = new SuspScoreCalculator(suspConst);
+        applyScoreUpdate(rank, "SUSP", calc::apply);
+    }
+
+    private void applyScoreUpdate(int rank, String operationName,
+                                  BiConsumer<CodeElementIdentifier<?>, FLRanking> calculator) {
         ScoreUpdateReport report = new ScoreUpdateReport();
         FLRankingElement target = flRanking.at(rank);
         if (target == null) {
             throw new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")");
         }
 
-        System.out.println("[  SUSP  ] " + target);
+        System.out.println("[  " + operationName + "  ] " + target);
         report.recordChange(target);
+        for (var neighbor : flRanking.getNeighborsOf(target.getCodeElementName())) {
+            flRanking.searchElement(neighbor).ifPresent(report::recordChange);
+        }
 
-        SuspScoreCalculator calc = new SuspScoreCalculator(suspConst);
-        calc.apply(target.getCodeElementName(), flRanking);
+        calculator.accept(target.getCodeElementName(), flRanking);
 
         report.print();
         presenter.printFLResults(rankingSize);
