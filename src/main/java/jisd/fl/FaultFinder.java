@@ -3,6 +3,7 @@ package jisd.fl;
 import jisd.fl.core.domain.ProbeScoreCalculator;
 import jisd.fl.core.domain.RemoveScoreCalculator;
 import jisd.fl.core.domain.SuspScoreCalculator;
+import jisd.fl.core.entity.coverage.SbflCoverageProvider;
 import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.CodeElementIdentifier;
 import jisd.fl.infra.jacoco.ProjectSbflCoverage;
@@ -52,7 +53,31 @@ public class FaultFinder {
         calcSuspiciousness(coverage, granularity, f);
     }
 
-    private void calcSuspiciousness(ProjectSbflCoverage sbflCoverage, Granularity granularity, Formula f){
+    /**
+     * 復元したカバレッジデータからランキングを生成するコンストラクタ。
+     *
+     * @param coverageProvider カバレッジデータ（CSV から復元した RestoredSbflCoverage など）
+     */
+    public FaultFinder(SbflCoverageProvider coverageProvider) {
+        this(coverageProvider, Granularity.LINE, Formula.OCHIAI);
+    }
+
+    /**
+     * 復元したカバレッジデータからランキングを生成するコンストラクタ。
+     *
+     * @param coverageProvider カバレッジデータ
+     * @param granularity      ランキング粒度
+     * @param formula          SBFL 式
+     */
+    public FaultFinder(SbflCoverageProvider coverageProvider, Granularity granularity, Formula formula) {
+        this.granularity = granularity;
+        this.coverage = null;
+        flRanking = new FLRanking();
+        presenter = new FLRankingPresenter(flRanking);
+        calcSuspiciousness(coverageProvider, granularity, formula);
+    }
+
+    private void calcSuspiciousness(SbflCoverageProvider sbflCoverage, Granularity granularity, Formula f){
         switch (granularity){
             case CLASS -> sbflCoverage.classCoverageEntries().forEach(entry -> {
                 double suspScore = entry.counts().getSuspiciousness(f);

@@ -3,6 +3,7 @@ package jisd.fl.infra.jacoco;
 import jisd.fl.core.entity.coverage.ClassCoverageEntry;
 import jisd.fl.core.entity.coverage.LineCoverageEntry;
 import jisd.fl.core.entity.coverage.MethodCoverageEntry;
+import jisd.fl.core.entity.coverage.SbflCoverageProvider;
 import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.infra.javaparser.JavaParserLineElementNameResolverFactory;
 import org.jacoco.core.analysis.IClassCoverage;
@@ -12,7 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class ProjectSbflCoverage {
+public class ProjectSbflCoverage implements SbflCoverageProvider {
 
     public final Map<ClassElementName, ClassSbflCoverage> byClass = new LinkedHashMap<>();
 
@@ -42,10 +43,12 @@ public class ProjectSbflCoverage {
         return byClass.values().stream().filter(ClassSbflCoverage::hasAnyCoverage);
     }
 
+    @Override
     public Stream<ClassCoverageEntry> classCoverageEntries(){
         return coveredClasses().map(cov -> new ClassCoverageEntry(cov.targetClass, cov.classCounts()));
     }
 
+    @Override
     public Stream<MethodCoverageEntry> methodCoverageEntries(boolean hideZeroElements){
         return coveredClasses().flatMap(cov -> {
             Stream<MethodCoverageEntry> s =
@@ -56,6 +59,7 @@ public class ProjectSbflCoverage {
         });
     }
 
+    @Override
     public Stream<LineCoverageEntry> lineCoverageEntries(boolean hideZeroElements){
         return coveredClasses().flatMap(cov -> {
             Stream<LineCoverageEntry> s =
