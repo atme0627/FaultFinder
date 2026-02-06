@@ -70,9 +70,33 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform()
-    exclude 'demo/**'
-    exclude 'jisd/fl/benchmark/**'  // ベンチマークは時間がかかるため通常テストから除外
+    useJUnitPlatform {
+        excludeTags 'demo', 'benchmark'
+    }
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
+// demo テスト用タスク: ./gradlew demo --tests "demo.FaultFinderDemo.remove"
+tasks.register('demo', Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'demo'
+    }
+    testLogging {
+        showStandardStreams = true
+    }
+}
+
+// benchmark テスト用タスク: ./gradlew benchmark --tests "jisd.fl.benchmark.SomeBenchmark"
+tasks.register('benchmark', Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform {
+        includeTags 'benchmark'
+    }
     testLogging {
         showStandardStreams = true
     }

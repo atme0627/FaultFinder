@@ -6,10 +6,12 @@ import jisd.fl.core.util.PropertyLoader;
 import jisd.fl.core.entity.element.MethodElementName;
 import jisd.fl.presenter.SbflCoveragePrinter;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 
+@Tag("demo")
 public class FaultFinderDemo {
     MethodElementName failedTestMethodName = new MethodElementName("demo.SampleTest#sampleTest()");
     FaultFinder faultFinder;
@@ -67,5 +69,17 @@ public class FaultFinderDemo {
         faultFinder.remove(1);
 
         //add(...)を調べた結果バグが見つかる
+    }
+
+    @Test
+    void remove(){
+        faultFinder.printRanking(10);
+        faultFinder.remove(1);
+    }
+
+    @Test
+    void susp(){
+        faultFinder.printRanking(10);
+        faultFinder.susp(1);
     }
 }

@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * JDI Strategy のベンチマーク。
  * 各 Strategy の実行時間を計測し、高速化の効果測定に使用する。
  */
+@Tag("benchmark")
 @Execution(ExecutionMode.SAME_THREAD)
 class StrategyBenchmarkTest {
 

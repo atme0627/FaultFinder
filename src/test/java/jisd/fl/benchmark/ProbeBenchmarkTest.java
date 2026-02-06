@@ -24,6 +24,7 @@ import java.nio.file.Path;
  * 4. 動的解決極端: ポリモーフィズム解決（50種類の実装）
  * 5. 現実的ケース: 複数クラスを跨ぐ呼び出しチェーン
  */
+@Tag("benchmark")
 @Execution(ExecutionMode.SAME_THREAD)
 class ProbeBenchmarkTest {
 
