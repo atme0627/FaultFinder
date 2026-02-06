@@ -100,4 +100,18 @@ public class ProbeFixture {
                 20;
         assertEquals(999, x);
     }
+
+    // シナリオ 6: 内部クラスのメソッド追跡
+    static class Calculator {
+        int add(int a, int b) {
+            return a + b;
+        }
+    }
+
+    @Test
+    void scenario6_inner_class_method() {
+        Calculator calc = new Calculator();
+        int x = calc.add(10, 20);
+        assertEquals(999, x);
+    }
 }

@@ -169,8 +169,6 @@ public class ProbeBenchmarkFixture {
     // =========================================================================
     // 5. 現実的ケース: 複数メソッドを跨ぐ呼び出しチェーン
     //    processOrder → validate → calculate → formatResult
-    // 注: 内部クラスは Probe が追跡できないため、同一クラス内のメソッドで実装
-    //     内部クラス対応は probe-implementation-issues-plan.md の問題5として記録
     // =========================================================================
 
     @Test

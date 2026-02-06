@@ -506,4 +506,33 @@ class ProbeTest {
         ExpectedNode expected = assign(assignLine);
         assertTreeEquals(expected, actual);
     }
+
+    // =====================================================================
+    // シナリオ 6: 内部クラスのメソッド追跡
+    // =====================================================================
+
+    @Test
+    @Timeout(30)
+    void scenario6_inner_class_method() throws Exception {
+        // int x = calc.add(10, 20);
+        // 内部クラス Calculator のメソッド add の return を追跡
+        // 期待: ASSIGN(x=30)
+        //         └── RETURN(Calculator.add: return a + b)
+        //               ├── ARGUMENT(add(10, 20) の引数 10) (leaf)
+        //               └── ARGUMENT(add(10, 20) の引数 20) (leaf)
+        MethodElementName m = new MethodElementName(FIXTURE_FQCN + "#scenario6_inner_class_method()");
+        MethodElementName addMethod = new MethodElementName(FIXTURE_FQCN + "$Calculator#add(int, int)");
+        int declLine = findLocalDeclLine(m, "x");
+        int returnLine = findReturnLine(addMethod);
+
+        CauseTreeNode actual = runProbe(m, "x", "30");
+
+        ExpectedNode expected = assign(declLine,
+                ret(returnLine,
+                        arg(declLine),  // add(10, 20) の引数 10（リテラルなので leaf）
+                        arg(declLine)   // add(10, 20) の引数 20（リテラルなので leaf）
+                )
+        );
+        assertTreeEquals(expected, actual);
+    }
 }
