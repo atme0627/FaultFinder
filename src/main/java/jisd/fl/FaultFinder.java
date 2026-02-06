@@ -26,6 +26,9 @@ import java.util.function.BiConsumer;
  * remove(), susp(), probe()によってランキングに開発者の知識を与えランキングを更新できる。
  */
 public class FaultFinder {
+    private static final String RESET = "\u001B[0m";
+    private static final String BOLD = "\u001B[1m";
+
     FLRanking flRanking;
     FLRankingPresenter presenter;
     //remove時に同じクラスの他のメソッドの疑惑値にかける定数
@@ -94,7 +97,7 @@ public class FaultFinder {
             throw new RuntimeException("rank:" + rank + " is out of bounds. (max rank: " + flRanking.getSize() + ")");
         }
 
-        System.out.println("[  " + operationName + "  ] " + target);
+        System.out.println(BOLD + "[  " + operationName + "  ]" + RESET + " " + target.getCodeElementName());
         report.recordChange(target);
         for (var neighbor : flRanking.getNeighborsOf(target.getCodeElementName())) {
             flRanking.searchElement(neighbor).ifPresent(report::recordChange);
