@@ -1,76 +1,104 @@
 package jisd.fl.mapper;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import jisd.fl.core.entity.element.ClassElementName;
 import jisd.fl.core.entity.element.MethodElementName;
+import jisd.fl.core.entity.susp.SuspiciousFieldVariable;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.gson.Gson;
-
 /**
- * SuspiciousLocalVariable の JSON シリアライズ/デシリアライズを行うマッパー。
+ * SuspiciousVariable の JSON シリアライズ/デシリアライズを行うマッパー。
  */
 public class SuspiciousVariableMapper {
-    public static String toJson(SuspiciousLocalVariable suspValue) {
+    private static final Gson GSON = new Gson();
+
+    public static String toJson(SuspiciousVariable susp) {
         Map<String, Object> map = new LinkedHashMap<>();
-        map.put("failedTest", suspValue.failedTest().toString());
-        map.put("locateMethod", suspValue.locateMethod().fullyQualifiedName());
-        map.put("variableName", suspValue.variableName(true, true));
-        map.put("actualValue", suspValue.actualValue());
-        map.put("isPrimitive", suspValue.isPrimitive());
-        Gson gson = new Gson();
-        return gson.toJson(map);
-    }
+        map.put("failedTest", susp.failedTest().toString());
 
-    public static SuspiciousLocalVariable fromJson(String jsonString){
-        return fromJson(new JSONObject(jsonString));
-    }
-
-    public static SuspiciousLocalVariable fromJson(JSONObject json){
-        MethodElementName failedTest = new MethodElementName(json.getString("failedTest"));
-        MethodElementName locateMethod = new MethodElementName(json.getString("locateMethod"));
-        boolean isPrimitive = json.getBoolean("isPrimitive");
-        String variableName = json.getString("variableName");
-        String actualValue = json.getString("actualValue");
-
-        if(variableName.contains("[")){
-            int arrayNth = Integer.parseInt(variableName.substring(variableName.indexOf("[") + 1, variableName.indexOf("]")));
-            variableName = variableName.substring(0, variableName.indexOf("["));
-            return new SuspiciousLocalVariable(
-                    failedTest,
-                    locateMethod,
-                    variableName,
-                    actualValue,
-                    isPrimitive,
-                    arrayNth
-            );
+        switch (susp) {
+            case SuspiciousLocalVariable local -> {
+                map.put("locateMethod", local.locateMethod().fullyQualifiedName());
+            }
+            case SuspiciousFieldVariable field -> {
+                map.put("locateClass", field.locateClass().fullyQualifiedName());
+            }
         }
 
-        return new SuspiciousLocalVariable(
-                failedTest,
-                locateMethod,
-                variableName,
-                actualValue,
-                isPrimitive
-        );
+        map.put("variableName", susp.variableName(true, true));
+        map.put("actualValue", susp.actualValue());
+        map.put("isPrimitive", susp.isPrimitive());
+
+        switch (susp) {
+            case SuspiciousLocalVariable _ -> map.put("type", "local");
+            case SuspiciousFieldVariable _ -> map.put("type", "field");
+        }
+
+        return GSON.toJson(map);
     }
 
-    public static List<SuspiciousLocalVariable> fromJsonArray(String jsonArrayString){
-        return fromJsonArray(new JSONArray(jsonArrayString));
+    public static SuspiciousVariable fromJson(String jsonString) {
+        JsonObject json = JsonParser.parseString(jsonString).getAsJsonObject();
+        return fromJson(json);
     }
 
-    public static List<SuspiciousLocalVariable> fromJsonArray(JSONArray jsonArray){
-        List<SuspiciousLocalVariable> ret = new ArrayList<>();
-        for(Object o : jsonArray){
-            if(!(o instanceof JSONObject)){
-                throw new RuntimeException("SuspiciousVariableMapper.fromJsonArray: invalid jsonArray \n[content]\n" + o.toString());
+    public static SuspiciousVariable fromJson(JsonObject json) {
+        String type = json.get("type").getAsString();
+        MethodElementName failedTest = new MethodElementName(json.get("failedTest").getAsString());
+        boolean isPrimitive = json.get("isPrimitive").getAsBoolean();
+        String variableName = json.get("variableName").getAsString();
+        String actualValue = json.get("actualValue").getAsString();
+
+        // 配列インデックスのパース
+        int arrayNth = -1;
+        if (variableName.contains("[")) {
+            arrayNth = Integer.parseInt(
+                    variableName.substring(variableName.indexOf("[") + 1, variableName.indexOf("]")));
+            variableName = variableName.substring(0, variableName.indexOf("["));
+        }
+
+        // this. プレフィックスを除去
+        if (variableName.startsWith("this.")) {
+            variableName = variableName.substring(5);
+        }
+
+        return switch (type) {
+            case "local" -> {
+                MethodElementName locateMethod = new MethodElementName(json.get("locateMethod").getAsString());
+                yield new SuspiciousLocalVariable(
+                        failedTest, locateMethod, variableName, actualValue, isPrimitive, arrayNth);
             }
-            ret.add(fromJson((JSONObject) o));
+            case "field" -> {
+                ClassElementName locateClass = new ClassElementName(json.get("locateClass").getAsString());
+                yield new SuspiciousFieldVariable(
+                        failedTest, locateClass, variableName, actualValue, isPrimitive, arrayNth);
+            }
+            default -> throw new IllegalArgumentException("Unknown type: " + type);
+        };
+    }
+
+    public static List<SuspiciousVariable> fromJsonArray(String jsonArrayString) {
+        JsonArray jsonArray = JsonParser.parseString(jsonArrayString).getAsJsonArray();
+        return fromJsonArray(jsonArray);
+    }
+
+    public static List<SuspiciousVariable> fromJsonArray(JsonArray jsonArray) {
+        List<SuspiciousVariable> ret = new ArrayList<>();
+        for (var element : jsonArray) {
+            if (!element.isJsonObject()) {
+                throw new RuntimeException(
+                        "SuspiciousVariableMapper.fromJsonArray: invalid jsonArray \n[content]\n" + element);
+            }
+            ret.add(fromJson(element.getAsJsonObject()));
         }
         return ret;
     }

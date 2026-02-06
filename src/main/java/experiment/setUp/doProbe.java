@@ -6,6 +6,7 @@ import jisd.fl.mapper.SuspiciousVariableMapper;
 import jisd.fl.usecase.Probe;
 import jisd.fl.core.entity.susp.SuspiciousExpression;
 import jisd.fl.core.entity.susp.SuspiciousLocalVariable;
+import jisd.fl.core.entity.susp.SuspiciousVariable;
 import jisd.fl.util.JsonIO;
 
 import java.io.File;
@@ -32,13 +33,13 @@ public class doProbe {
             Defects4jUtil.compileBuggySrc(project, bugId);
 
             String jsonString = Files.readString(inputFile.toPath());
-            List<SuspiciousLocalVariable> probeTargets = SuspiciousVariableMapper.fromJsonArray(jsonString);
+            List<SuspiciousVariable> probeTargets = SuspiciousVariableMapper.fromJsonArray(jsonString);
             if(probeTargets.isEmpty()) continue;
 
             System.out.println("Finding target: [PROJECT] " + project + "  [BUG ID] " + bugId);
 
             for(int i = 0; i < probeTargets.size(); i++) {
-                SuspiciousLocalVariable target = (SuspiciousLocalVariable) probeTargets.get(i);
+                SuspiciousVariable target = probeTargets.get(i);
                 System.out.println("failedTest " + target.failedTest());
 
                 File outputFile = expDir.resolve(project + "/" + project.toLowerCase() + "_" + bugId + "b/probe/" +
@@ -56,7 +57,7 @@ public class doProbe {
                     Files.createFile(path);
                 }
 
-                Probe prb = new Probe(target);
+                Probe prb = new Probe((SuspiciousLocalVariable) target);
                 SuspiciousExpression result = prb.run(2000).expression();
                 JsonIO.export(result, outputFile);
             }
