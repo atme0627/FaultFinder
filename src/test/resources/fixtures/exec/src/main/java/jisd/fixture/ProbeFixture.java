@@ -83,4 +83,21 @@ public class ProbeFixture {
     }
 
     private int compute(int n) { return n * 2; }
+
+    // シナリオ 5: マルチライン式の追跡
+    @Test
+    void scenario5_multiline_declaration() {
+        int x =              // @ML_DECL_BEGIN
+                10 + 20;     // @ML_DECL_END
+        assertEquals(999, x);
+    }
+
+    @Test
+    void scenario5_multiline_assignment() {
+        int x = 0;
+        x =                  // @ML_ASSIGN_BEGIN
+                10 +
+                        20;  // @ML_ASSIGN_END
+        assertEquals(999, x);
+    }
 }
